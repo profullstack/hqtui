@@ -126,14 +126,35 @@ sudo sensors-detect --auto     # loads coretemp, k10temp, nct6775, ...
 Drive temperatures additionally need `smartmontools`, and reading SMART needs
 root.
 
+### Running as root
+
+`sudo bunx ...` fails with `sudo: 'bunx': command not found` on most setups.
+That is not a problem with this package: `sudo` replaces `PATH` with the
+`secure_path` from `/etc/sudoers`, and bun usually lives under your home
+directory (mise, `~/.bun/bin`), which is not on that list. Keep your `PATH`:
+
+```bash
+sudo -E env "PATH=$PATH" bunx @profullstack/hqtui-demo
+```
+
+or point at the binary directly:
+
+```bash
+sudo "$(command -v bunx)" @profullstack/hqtui-demo
+```
+
 ### What `sudo` adds
 
 Everything above works unprivileged. Running as root additionally exposes:
 
-- **process names on sockets** (`ss` shows `-` for other users' sockets)
+- **process names on sockets** — unprivileged, listeners show `-`; as root the
+  same rows read `nginx/1337`, `sshd/1305`, `rpcbind/876`
 - **failed logins** (`btmp` is root-only)
 - **HTTP access logs** (`/var/log/nginx/*` is usually root or `adm`)
 - **per-process disk I/O**, **SMART disk health**, and the **full journal**
+
+Root does **not** add temperatures. If the hardware is not there — a virtual
+machine, say — no privilege level invents it.
 
 Packet-level inspection is deliberately out of scope — it would need `CAP_NET_RAW`.
 

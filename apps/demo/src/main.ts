@@ -50,7 +50,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.1.5"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.1.6"); process.exit(0);
     }
   }
   return options;
@@ -296,7 +296,8 @@ async function main(): Promise<void> {
                 ? "Running as root: all privileged sources are readable."
                 : "Running unprivileged. sudo additionally unlocks socket process\n" +
                   "names, failed logins (btmp), HTTP access logs, per-process I/O\n" +
-                  "and the full journal.")
+                  "and the full journal. It does not add temperatures.\n" +
+                  "  sudo -E env \"PATH=$PATH\" bunx @profullstack/hqtui-demo")
             : "All metrics available on this platform.") +
           "\n\nPress any key to close.",
         buttons: [{ label: "Close", focused: true }],
