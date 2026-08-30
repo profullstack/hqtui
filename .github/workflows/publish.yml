@@ -1,0 +1,36 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "npm dist-tag"
+        default: latest
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck && bun test packages/hqtui/test && bun run build
+      - name: Publish library
+        run: npm publish --access public --tag ${{ inputs.tag || 'latest' }}
+        working-directory: packages/hqtui
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish demo
+        run: npm publish --access public --tag ${{ inputs.tag || 'latest' }}
+        working-directory: apps/demo
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
