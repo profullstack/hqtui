@@ -131,15 +131,24 @@ export default async function Home() {
         <div className="dot-grid absolute inset-0 opacity-40" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24">
           <div className="mx-auto max-w-3xl text-center">
+            <Image
+              src="/logo.png"
+              alt="HQTUI — High Quality Terminal UI for TypeScript"
+              width={2172}
+              height={724}
+              priority
+              className="mx-auto mb-6 h-16 w-auto sm:h-20"
+            />
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
               v0.1.9 · MIT · zero runtime dependencies
             </Badge>
-            <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-6xl">
-              High quality terminal UI
+            <h1 className="sr-only">HQTUI — High Quality Terminal UI for TypeScript</h1>
+            <p className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
+              Terminal dashboards that
               <span className="block bg-gradient-to-r from-[#5fff87] via-[#56d4dd] to-[#58a6ff] bg-clip-text text-transparent">
-                for TypeScript
+                look like they took months
               </span>
-            </h1>
+            </p>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg text-white/60">
               btop-grade dashboards with a one-import API. Own the terminal directly, render
               only what changed, and make beautiful graphics a first-class primitive.

@@ -23,15 +23,18 @@ export function SiteNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
       <nav className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
+        {/* The square mark, not the full logo: at nav size the logo's tagline
+            strip is unreadable, and the wordmark reads better as text. */}
         <Link href="/" className="flex items-center gap-2" aria-label="HQTUI home">
           <Image
-            src="/logo.png"
-            alt="HQTUI"
-            width={2172}
-            height={724}
+            src="/icons/icon-512x512.png"
+            alt=""
+            width={512}
+            height={512}
             priority
-            className="h-6 w-auto"
+            className="h-6 w-6"
           />
+          <span className="font-mono text-sm font-bold tracking-tight">hqtui</span>
         </Link>
         <div className="hidden items-center gap-5 text-sm text-white/60 md:flex">
           {LINKS.map((link) => (
@@ -75,7 +78,8 @@ export function SiteFooter({ views }: { views?: number }) {
     <footer className="border-t border-white/10 py-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-white/40 sm:flex-row sm:items-center sm:px-6">
         <div className="flex items-center gap-2 font-mono">
-          <Image src="/logo.png" alt="HQTUI" width={2172} height={724} className="h-4 w-auto opacity-70" />
+          <Image src="/icons/icon-512x512.png" alt="" width={512} height={512} className="h-4 w-4 opacity-70" />
+          <span>hqtui</span>
           <span className="text-white/20">·</span>
           <span>MIT</span>
         </div>
