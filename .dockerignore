@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+.git
+.next
+**/.next
+dist
+**/dist
+*.log
+.env*
+!.env.example
+apps/web/.env.local

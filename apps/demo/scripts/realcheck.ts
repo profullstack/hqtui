@@ -1,0 +1,14 @@
+import { createCollector } from "../src/system/index.ts";
+const c = await createCollector({ real: true });
+await c.refresh(1);
+await new Promise(r => setTimeout(r, 1000));
+await c.refresh(1);
+const s = c.current();
+console.log("source:", c.source, "| unavailable:", c.unavailable);
+console.log("cpu total:", (s.cpu.total*100).toFixed(1)+"%", "cores:", s.cpu.cores.length, "load:", s.cpu.load.map(n=>n.toFixed(2)).join(" "));
+console.log("mem:", (s.memory.used/1024**3).toFixed(2)+"GiB /", (s.memory.total/1024**3).toFixed(2)+"GiB", "swap:", (s.memory.swapUsed/1024**3).toFixed(2));
+console.log("disks:", s.disks.map(d=>`${d.device}@${d.mount} ${(d.used/1024**3).toFixed(0)}/${(d.total/1024**3).toFixed(0)}GiB r=${(d.readRate/1e6).toFixed(1)}MB/s`).join(" | "));
+console.log("net:", s.network.interface, s.network.ip, "down", (s.network.downRate/1e3).toFixed(1)+"KB/s", "up", (s.network.upRate/1e3).toFixed(1)+"KB/s");
+console.log("procs:", s.processes.length, "top:", s.processes.slice(0,3).map(p=>`${p.name}:${p.cpu}%`).join(" "));
+console.log("temps:", s.temperatures.slice(0,4).map(t=>`${t.label}=${t.value.toFixed(0)}C`).join(" ") || "(none)");
+console.log("system:", s.system.os, "|", s.system.hostname, "| uptime", (s.system.uptime/3600).toFixed(1)+"h");

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+// Run directly with `bun src/main.ts`, or via the compiled bin on Node.
 /**
  * The HQTUI reference dashboard.
  *
@@ -49,7 +49,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.1.0"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.1.1"); process.exit(0);
     }
   }
   return options;

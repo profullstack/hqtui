@@ -169,7 +169,13 @@ function cssColor(color: Color, fallback: string): string {
  */
 export function renderToHtml(
   view: Parameters<typeof renderToScreen>[0],
-  options: RenderOptions & { fontSize?: number; padding?: number; className?: string } = {},
+  options: RenderOptions & {
+    fontSize?: number;
+    padding?: number;
+    className?: string;
+    /** Override the font stack. The default prioritises box-drawing coverage. */
+    fontFamily?: string;
+  } = {},
 ): string {
   const screen = renderToScreen(view, options);
   const theme = resolveTheme(options.theme);
@@ -212,14 +218,19 @@ export function renderToHtml(
       run += value === 0 ? " " : cellText(value);
     }
     flush();
-    rows.push(`<div class="hqtui-row">${row || "&nbsp;"}</div>`);
+    rows.push(`<div class="hqtui-row">${row || " "}</div>`);
   }
 
   const fontSize = options.fontSize ?? 14;
   const padding = options.padding ?? 16;
+  // line-height must be exactly 1: box-drawing glyphs fill the em box, so any
+  // extra leading shows up as gaps in every vertical rule on the screen.
+  // The font stack is ordered by box-drawing and Braille coverage.
+  const font = options.fontFamily ??
+    "ui-monospace,SFMono-Regular,Menlo,'DejaVu Sans Mono','Liberation Mono',Consolas,'Segoe UI Symbol',monospace";
   return `<pre class="${options.className ?? "hqtui-screen"}" style="background:${bgFallback};color:${fgFallback};` +
-    `padding:${padding}px;font-size:${fontSize}px;line-height:1.2;font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;` +
-    `margin:0;overflow-x:auto;border-radius:8px">${rows.join("\n")}</pre>`;
+    `padding:${padding}px;font-size:${fontSize}px;line-height:1;font-family:${font};` +
+    `margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none">${rows.join("\n")}</pre>`;
 }
 
 /** Drive a view for N frames — for animation and performance assertions. */

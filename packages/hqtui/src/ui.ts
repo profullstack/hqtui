@@ -224,8 +224,8 @@ export class Container {
   }
 
   /** A horizontal rule, optionally labelled. */
-  divider(options: W.DividerOptions = {}): this {
-    return this.add((s) => W.drawDivider(s, options), { size: 1 });
+  divider(options: W.DividerOptions & ContainerOptions = {}): this {
+    return this.add((s) => W.drawDivider(s, options), this.sizeOf(options, "auto", 1));
   }
 
   // ------------------------------------------------------------------ text

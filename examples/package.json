@@ -3,5 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "dependencies": { "@profullstack/hqtui": "workspace:*" }
+  "dependencies": {
+    "@profullstack/hqtui": "^0.1.1"
+  }
 }

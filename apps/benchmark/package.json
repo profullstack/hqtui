@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": { "start": "bun src/main.ts" },
-  "dependencies": { "@profullstack/hqtui": "workspace:*" }
+  "scripts": {
+    "start": "bun src/main.ts"
+  },
+  "dependencies": {
+    "@profullstack/hqtui": "^0.1.1"
+  }
 }

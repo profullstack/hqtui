@@ -1,0 +1,128 @@
+import Image from "next/image";
+import { SiteFooter, SiteNav } from "@/components/site/nav";
+import { Terminal } from "@/components/site/terminal";
+import { Badge } from "@/components/ui/badge";
+import { heroView, themeView, widgetsView } from "@/lib/terminal";
+import { recordView } from "@/lib/db";
+import { themes } from "@profullstack/hqtui";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = { title: "Showcase" };
+
+const GALLERY = [
+  {
+    title: "Reference dashboard",
+    body: "CPU with per-core meters, memory and swap, disks with throughput history, a live network graph, the process table, temperatures, sensors and a tailing log — all on one screen.",
+    image: "/hqtui-dashboard.png",
+    width: 1672,
+    height: 941,
+  },
+  {
+    title: "Component showcase",
+    body: "Panels, gauges, tables, trees, dialogs, log viewers, sparklines, theme previews and keyboard command bars, in the density a real monitoring tool needs.",
+    image: "/hqtui-components.png",
+    width: 1536,
+    height: 1024,
+  },
+];
+
+export default async function Showcase() {
+  await recordView("/showcase");
+  const themed = [themes.tokyoNight, themes.gruvbox, themes.matrix, themes.dracula];
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <SiteNav />
+      <main className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+        <div className="max-w-3xl">
+          <Badge variant="secondary" className="mb-4 font-mono text-xs">
+            live frames, not screenshots
+          </Badge>
+          <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
+          <p className="mt-4 text-lg text-white/60">
+            Every terminal below was rendered by HQTUI itself when this page was built. The
+            two images are the original design targets from the product requirements — the
+            live frames are what the library actually produces.
+          </p>
+        </div>
+
+        <section className="mt-12 space-y-3">
+          <h2 className="text-xl font-semibold">Dashboard</h2>
+          <p className="text-sm text-white/50">
+            Grid layout, Braille area graphs, segmented meters, a zebra-striped table and a
+            function-key status bar.
+          </p>
+          <Terminal view={heroView} width={150} height={34} title="hqtui-demo — dashboard" />
+        </section>
+
+        <section className="mt-14 space-y-3">
+          <h2 className="text-xl font-semibold">Widgets</h2>
+          <p className="text-sm text-white/50">
+            Meters, gauges, donuts, controls, a process tree, multi-series graphs, heat bars
+            and a log viewer.
+          </p>
+          <Terminal view={widgetsView} width={140} height={30} title="components" />
+        </section>
+
+        <section className="mt-14">
+          <h2 className="text-xl font-semibold">Themes</h2>
+          <p className="mt-1 text-sm text-white/50">
+            The same panel, four palettes. Colour quantizes automatically when the terminal
+            cannot do truecolor.
+          </p>
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {themed.map((theme) => (
+              <Terminal
+                key={theme.name}
+                view={themeView(theme.name)}
+                theme={theme}
+                width={72}
+                height={16}
+                fontSize={12}
+                title={theme.name}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-14">
+          <h2 className="text-xl font-semibold">Design targets</h2>
+          <p className="mt-1 text-sm text-white/50">
+            The quality bar the library was written against.
+          </p>
+          <div className="mt-5 space-y-10">
+            {GALLERY.map((item) => (
+              <figure key={item.title}>
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  width={item.width}
+                  height={item.height}
+                  className="rounded-xl border border-white/10"
+                />
+                <figcaption className="mt-3">
+                  <span className="font-semibold">{item.title}</span>
+                  <span className="mt-1 block text-sm text-white/50">{item.body}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-14 rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-xl font-semibold">Run it yourself</h2>
+          <p className="mt-2 text-sm text-white/55">
+            The reference dashboard reads real metrics on Linux, macOS and Windows, or runs a
+            deterministic simulation.
+          </p>
+          <pre className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-[#0a0e14] p-4 font-mono text-sm text-[#c6d0db]">
+            <span className="text-[#5fff87]">$</span> bunx @profullstack/hqtui-demo{"\n"}
+            <span className="text-[#5fff87]">$</span> bunx @profullstack/hqtui-demo --sim
+          </pre>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
+  );
+}
