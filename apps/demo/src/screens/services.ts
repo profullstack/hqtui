@@ -70,8 +70,16 @@ export function servicesScreen(ui: Container, state: DemoState, theme: Theme): v
           p.label("(docker not installed or not reachable)", { size: 1 });
           return;
         }
+        const containers = pane(state, "services.containers", t.containers.length);
         p.table({
           rows: t.containers,
+          selected: containers.selected,
+          offset: containers.offset,
+          followSelection: true,
+          scrollbar: true,
+          onScroll: (delta) => scrollPane(containers, delta),
+          onFocus: () => focusPane(state, "services.containers"),
+          onSelectRow: (row) => { containers.selected = containers.offset + row; },
           zebra: true,
           columns: [
             { key: "name", title: "Name", min: 12, color: theme.primary },
@@ -110,8 +118,16 @@ export function servicesScreen(ui: Container, state: DemoState, theme: Theme): v
       p.label("No filesystems reported.");
       return;
     }
+    const filesystems = pane(state, "services.filesystems", t.filesystems.length);
     p.table({
       rows: t.filesystems,
+      selected: filesystems.selected,
+      offset: filesystems.offset,
+      followSelection: true,
+      scrollbar: true,
+      onScroll: (delta) => scrollPane(filesystems, delta),
+      onFocus: () => focusPane(state, "services.filesystems"),
+      onSelectRow: (row) => { filesystems.selected = filesystems.offset + row; },
       zebra: true,
       columns: [
         { key: "mount", title: "Mount", min: 14, color: theme.primary },

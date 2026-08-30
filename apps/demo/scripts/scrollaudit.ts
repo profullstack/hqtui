@@ -1,6 +1,6 @@
 import { renderToText } from "@profullstack/hqtui";
 import { createCollector } from "../src/system/index.ts";
-import { createState, pane, scrollPane } from "../src/state.ts";
+import { createState, focusPane, moveSelection, scrollPane } from "../src/state.ts";
 import * as screens from "../src/screens/index.ts";
 
 const c = await createCollector({ real: process.argv.includes("--real"), seed: 7 });
@@ -39,9 +39,11 @@ for (const [name, fn, w] of SCREENS) {
       scrollPane(p, 1);                          // wheel down
       const wheel = draw(name, fn, w, h) !== before;
 
+      // Drive the keyboard through the same function the app uses.
       p.offset = 0; p.selected = 0;
+      focusPane(state, id);
       const top = draw(name, fn, w, h);
-      p.selected = p.total - 1;                  // End
+      moveSelection(state, p.kind === "log" ? -5 : p.total - 1);
       const keys = draw(name, fn, w, h) !== top;
       p.offset = 0; p.selected = 0;
 

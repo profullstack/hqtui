@@ -56,19 +56,24 @@ export interface Pane {
   offset: number;
   /** Row count, refreshed by the screen each frame so keys can clamp. */
   total: number;
+  /**
+   * A log has no selected row: the arrows move its window instead, and it
+   * counts backwards from the newest line rather than forwards from the first.
+   */
+  kind: "list" | "log";
 }
 
 /**
  * The cursor for one scrollable, created on first use. Screens call this while
  * drawing, which is also what registers the pane as existing.
  */
-export function pane(state: DemoState, id: string, total: number): Pane {
+export function pane(state: DemoState, id: string, total: number, kind: Pane["kind"] = "list"): Pane {
   const existing = state.panes[id];
   if (existing) {
     existing.total = total;
     return existing;
   }
-  const created: Pane = { selected: 0, offset: 0, total };
+  const created: Pane = { selected: 0, offset: 0, total, kind };
   state.panes[id] = created;
   // The first pane a screen draws is the one the arrows drive by default.
   if (!state.focused[state.screen]) state.focused[state.screen] = id;
@@ -89,7 +94,24 @@ export function focusPane(state: DemoState, id: string): void {
 export function scrollPane(p: Pane, delta: number, rows = 3): void {
   const max = Math.max(0, p.total - 1);
   p.offset = Math.max(0, Math.min(p.offset + delta * rows, max));
-  p.selected = Math.max(p.offset, Math.min(p.selected, max));
+  if (p.kind !== "log") p.selected = Math.max(p.offset, Math.min(p.selected, max));
+}
+
+/**
+ * What the arrow keys do to the focused pane. Lists move the selection and let
+ * the widget scroll to follow it; logs have nothing to select, so they move
+ * their own window.
+ */
+export function moveSelection(state: DemoState, delta: number): void {
+  const p = focusedPane(state);
+  if (!p || p.total === 0) return;
+  if (p.kind === "log") {
+    // Down means newer, which is a smaller distance from the end.
+    p.offset = Math.max(0, Math.min(p.total - 1, p.offset - delta));
+    return;
+  }
+  p.selected = Math.max(0, Math.min(p.total - 1, p.selected + delta));
+  p.offset = Math.max(0, Math.min(p.offset, Math.max(0, p.total - 1)));
 }
 
 export function createState(

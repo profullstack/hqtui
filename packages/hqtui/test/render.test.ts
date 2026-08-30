@@ -251,6 +251,23 @@ test("every scrollable widget can take handlers", () => {
   assert.equal(hits, 2);
 });
 
+test("a log tails by default and scrolls back line by line", () => {
+  const entries = Array.from({ length: 80 }, (_, i) => ({ message: `entry-${i}` }));
+  const first = (fromEnd?: number) =>
+    renderToText(({ ui }) => ui.log({ entries, fromEnd }), { width: 24, height: 4 })
+      .split("\n")[0]
+      .trim();
+
+  // Default is the newest window.
+  assert.equal(first(), "entry-76");
+  // One line of scrollback moves by exactly one line, even at the bottom,
+  // which an absolute offset cannot do without knowing the panel height.
+  assert.equal(first(1), "entry-75");
+  assert.equal(first(3), "entry-73");
+  // And it stops at the oldest entry rather than running off the top.
+  assert.equal(first(999), "entry-0");
+});
+
 test("escape hatch drawing reaches the buffer", () => {
   const screen = renderToScreen(({ ui }) => {
     ui.draw((surface) => surface.text(0, 0, "raw"));

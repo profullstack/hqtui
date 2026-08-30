@@ -26,15 +26,31 @@ export const metadata: Metadata = {
     title: "HQTUI — High Quality Terminal UI for TypeScript",
     description,
     siteName: "HQTUI",
-    images: [{ url: "/hqtui-dashboard.png", width: 1672, height: 941, alt: "HQTUI dashboard" }],
+    images: [
+      { url: "/shots/dashboard.png", width: 3302, height: 1709, alt: "HQTUI dashboard" },
+    ],
   },
+  appleWebApp: { title: "HQTUI", statusBarStyle: "black-translucent" },
   twitter: {
     card: "summary_large_image",
     title: "HQTUI — High Quality Terminal UI for TypeScript",
     description,
-    images: ["/hqtui-dashboard.png"],
+    images: ["/shots/dashboard.png"],
   },
-  icons: { icon: "/favicon.svg" },
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/icons/apple-touch-icon-180x180.png", sizes: "180x180" },
+      { url: "/icons/apple-touch-icon-152x152.png", sizes: "152x152" },
+      { url: "/icons/apple-touch-icon-120x120.png", sizes: "120x120" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

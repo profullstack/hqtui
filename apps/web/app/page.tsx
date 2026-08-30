@@ -132,7 +132,7 @@ export default async function Home() {
         <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24">
           <div className="mx-auto max-w-3xl text-center">
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
-              v0.1.8 · MIT · zero runtime dependencies
+              v0.1.9 · MIT · zero runtime dependencies
             </Badge>
             <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-6xl">
               High quality terminal UI

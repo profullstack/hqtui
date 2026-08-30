@@ -116,8 +116,16 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
           { labelWidth: 5, valueWidth: 7 },
         );
         p.divider({ label: "top paths" });
+        const paths = pane(state, "traffic.paths", http.topPaths.length);
         p.table({
           rows: http.topPaths,
+          selected: paths.selected,
+          offset: paths.offset,
+          followSelection: true,
+          scrollbar: true,
+          onScroll: (delta) => scrollPane(paths, delta),
+          onFocus: () => focusPane(state, "traffic.paths"),
+          onSelectRow: (row) => { paths.selected = paths.offset + row; },
           header: false,
           columns: [
             { key: "path", title: "Path", min: 20, color: theme.primary },
@@ -167,8 +175,16 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
           p.label("No remote peers.");
           return;
         }
+        const remotes = pane(state, "traffic.remotes", t.remotes.length);
         p.table({
           rows: t.remotes,
+          selected: remotes.selected,
+          offset: remotes.offset,
+          followSelection: true,
+          scrollbar: true,
+          onScroll: (delta) => scrollPane(remotes, delta),
+          onFocus: () => focusPane(state, "traffic.remotes"),
+          onSelectRow: (row) => { remotes.selected = remotes.offset + row; },
           zebra: true,
           columns: [
             { key: "host", title: "Host", min: 16, color: theme.accent },

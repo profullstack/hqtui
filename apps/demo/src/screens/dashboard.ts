@@ -268,7 +268,20 @@ function sensorsPanel(ui: Container, state: DemoState, theme: Theme): void {
 
 function logsPanel(ui: Container, state: DemoState): void {
   ui.panel({ title: "Logs" }, (p) => {
-    p.log({ entries: state.sample.logs.map((l) => ({ time: l.time, level: l.level, message: l.message, meta: `{${l.meta}}` })) });
+    const logs = pane(state, "dashboard.logs", state.sample.logs.length, "log");
+    p.log({
+      entries: state.sample.logs.map((l) => ({
+        time: l.time,
+        level: l.level,
+        message: l.message,
+        meta: `{${l.meta}}`,
+      })),
+      // Lines scrolled back from the newest; 0 keeps it tailing.
+      fromEnd: logs.offset,
+      scrollbar: true,
+      onScroll: (delta) => scrollPane(logs, -delta),
+      onFocus: () => focusPane(state, "dashboard.logs"),
+    });
   });
 }
 

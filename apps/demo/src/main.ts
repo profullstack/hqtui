@@ -9,7 +9,7 @@
  */
 import { createApp, themeList, themes, type KeyEvent } from "@profullstack/hqtui";
 import { createCollector } from "./system/index.ts";
-import { createState, focusedPane, SCREENS, type ScreenName } from "./state.ts";
+import { createState, focusedPane, moveSelection, SCREENS, type ScreenName } from "./state.ts";
 import {
   componentsScreen, dashboardScreen, graphicsScreen, inputScreen, networkScreen, servicesScreen,
   sessionsScreen, stressScreen, themesScreen, trafficScreen, visibleProcesses,
@@ -50,7 +50,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.1.8"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.1.9"); process.exit(0);
     }
   }
   return options;
@@ -94,15 +94,6 @@ const PALETTE_COMMANDS: { label: string; hint: string; run: (state: ReturnType<t
   { label: "Sort by Memory", hint: "F6", run: (s) => { s.sort = "mem"; } },
   { label: "Pause updates", hint: "Space", run: (s) => { s.paused = !s.paused; } },
 ];
-
-/** Move the selection in whichever pane the arrows are driving. */
-function moveCursor(state: ReturnType<typeof createState>, delta: number): void {
-  const p = focusedPane(state);
-  if (!p || p.total === 0) return;
-  p.selected = Math.max(0, Math.min(p.total - 1, p.selected + delta));
-  // The widget scrolls itself via followSelection; just keep the window sane.
-  p.offset = Math.max(0, Math.min(p.offset, Math.max(0, p.total - 1)));
-}
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
@@ -211,12 +202,12 @@ async function main(): Promise<void> {
         state.paletteIndex = 0;
         return;
       case "space": state.paused = !state.paused; return;
-      case "up": moveCursor(state, -1); break;
-      case "down": moveCursor(state, 1); break;
-      case "pageup": moveCursor(state, -10); break;
-      case "pagedown": moveCursor(state, 10); break;
-      case "home": moveCursor(state, -Number.MAX_SAFE_INTEGER); break;
-      case "end": moveCursor(state, Number.MAX_SAFE_INTEGER); break;
+      case "up": moveSelection(state, -1); break;
+      case "down": moveSelection(state, 1); break;
+      case "pageup": moveSelection(state, -10); break;
+      case "pagedown": moveSelection(state, 10); break;
+      case "home": moveSelection(state, -Number.MAX_SAFE_INTEGER); break;
+      case "end": moveSelection(state, Number.MAX_SAFE_INTEGER); break;
       case "enter": state.showModal = true; return;
       case "left":
         if (state.screen === "themes") {

@@ -306,8 +306,11 @@ export class Container {
     });
   }
 
-  log(options: W.LogOptions & ContainerOptions): this {
-    return this.add((s) => W.drawLog(s, options), this.sizeOf(options, "fill", options.entries.length));
+  log(options: W.LogOptions & ContainerOptions & ScrollHandlers): this {
+    return this.add((s) => {
+      W.drawLog(s, options);
+      this.attachScroll(s, options);
+    }, this.sizeOf(options, "fill", options.entries.length));
   }
 
   // --------------------------------------------------------------- metrics

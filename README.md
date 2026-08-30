@@ -1,4 +1,6 @@
-<h1 align="center">HQTUI</h1>
+<p align="center">
+  <img src="./assets/logo.png" alt="HQTUI — High Quality Terminal UI for TypeScript" width="560">
+</p>
 <p align="center"><strong>High Quality Terminal UI for TypeScript</strong><br>
 btop-grade dashboards with a one-import API, dark by default, zero runtime dependencies.</p>
 <p align="center">

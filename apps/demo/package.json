@@ -1,6 +1,6 @@
 {
   "name": "@profullstack/hqtui-demo",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "The HQTUI reference dashboard: a btop-grade terminal system monitor. Runs on real system metrics or a deterministic simulation.",
   "license": "MIT",
   "type": "module",
@@ -27,7 +27,7 @@
     "audit:scroll": "bun scripts/scrollaudit.ts"
   },
   "dependencies": {
-    "@profullstack/hqtui": "^0.1.8"
+    "@profullstack/hqtui": "^0.1.9"
   },
   "publishConfig": {
     "access": "public"

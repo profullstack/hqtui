@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/assets/logo.png" alt="HQTUI" width="480">
+</p>
+
 # @profullstack/hqtui-demo
 
 The **HQTUI** reference dashboard: a btop-grade terminal system monitor built entirely

@@ -103,8 +103,14 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
       });
 
       left.panel({ title: "Log Viewer", size: 11 }, (p) => {
+        const clogs = pane(state, "components.logs", state.sample.logs.length, "log");
         p.log({
           entries: state.sample.logs.map((l) => ({ time: l.time, level: l.level, message: l.message, meta: `{${l.meta}}` })),
+          // Lines scrolled back from the newest; 0 keeps it tailing.
+          fromEnd: clogs.offset,
+          scrollbar: true,
+          onScroll: (delta) => scrollPane(clogs, -delta),
+          onFocus: () => focusPane(state, "components.logs"),
         });
       });
     });
@@ -115,7 +121,15 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
           r.text("Name", { fg: theme.muted, bold: true });
           r.text("CPU%   MEM%", { fg: theme.muted, bold: true, align: "right" });
         });
-        p.tree({ nodes: TREE, selected: pane(state, "components.tree", 8).selected, followSelection: true });
+        const tree = pane(state, "components.tree", 8);
+        p.tree({
+          nodes: TREE,
+          selected: tree.selected,
+          offset: tree.offset,
+          followSelection: true,
+          onScroll: (delta) => scrollPane(tree, delta),
+          onFocus: () => focusPane(state, "components.tree"),
+        });
       });
 
       right.panel({ title: "Sparklines & Gauges", size: 12 }, (p) => {
@@ -142,6 +156,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
           r.spacer("fill");
         });
         p.spacer(1);
+        const paths = pane(state, "components.list", 4);
         p.list({
           items: [
             { label: "apps/demo", color: theme.primary },
@@ -149,7 +164,12 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
             { label: "apps/web" },
             { label: "docs" },
           ],
-          selected: pane(state, "components.list", 4).selected,
+          selected: paths.selected,
+          offset: paths.offset,
+          followSelection: true,
+          onScroll: (delta) => scrollPane(paths, delta),
+          onFocus: () => focusPane(state, "components.list"),
+          onSelectRow: (row) => { paths.selected = paths.offset + row; },
           bullet: "▸",
           scrollbar: true,
         });

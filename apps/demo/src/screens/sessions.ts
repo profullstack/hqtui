@@ -12,8 +12,16 @@ export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): v
         p.label("(`who` reports nothing on this host)", { size: 1 });
         return;
       }
+      const active = pane(state, "sessions.active", t.sessions.length);
       p.table({
         rows: t.sessions,
+        selected: active.selected,
+        offset: active.offset,
+        followSelection: true,
+        scrollbar: true,
+        onScroll: (delta) => scrollPane(active, delta),
+        onFocus: () => focusPane(state, "sessions.active"),
+        onSelectRow: (row) => { active.selected = active.offset + row; },
         columns: [
           { key: "user", title: "User", width: 12, color: theme.primary },
           { key: "tty", title: "TTY", width: 10 },
@@ -73,8 +81,16 @@ export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): v
           p.label("(btmp is usually root-only)", { size: 1 });
           return;
         }
+        const failed = pane(state, "sessions.failed", t.failedLogins.length);
         p.table({
           rows: t.failedLogins,
+          selected: failed.selected,
+          offset: failed.offset,
+          followSelection: true,
+          scrollbar: true,
+          onScroll: (delta) => scrollPane(failed, delta),
+          onFocus: () => focusPane(state, "sessions.failed"),
+          onSelectRow: (row) => { failed.selected = failed.offset + row; },
           columns: [
             { key: "user", title: "User", width: 12, color: theme.danger },
             { key: "from", title: "From", min: 12 },

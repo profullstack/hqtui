@@ -303,9 +303,17 @@ export interface LogEntry {
 
 export interface LogOptions {
   entries: LogEntry[];
-  /** Pin to the newest entry. Default true. */
+  /** Pin to the newest entry. Default true. Set false to scroll with `offset`. */
   follow?: boolean;
   offset?: number;
+  /**
+   * Lines to scroll back from the newest entry. The natural control for a
+   * tailing log: only the widget knows how many rows fit, so an absolute
+   * offset makes small scrolls near the bottom clamp to nothing.
+   */
+  fromEnd?: number;
+  /** Show a scrollbar when the log is longer than the panel. */
+  scrollbar?: boolean;
   background?: Color;
   levelColors?: Record<string, Color>;
   timeColor?: Color;
@@ -329,8 +337,11 @@ export function drawLog(surface: Surface, options: LogOptions): void {
 
   const entries = options.entries;
   const follow = options.follow !== false;
-  const start = follow
-    ? Math.max(0, entries.length - surface.height)
+  const width = surface.width - (options.scrollbar ? 1 : 0);
+  const fromEnd = Math.max(0, options.fromEnd ?? 0);
+  const maxStart = Math.max(0, entries.length - surface.height);
+  const start = follow || fromEnd > 0
+    ? Math.max(0, Math.min(maxStart, entries.length - surface.height - fromEnd))
     : resolveOffset(options.offset, undefined, surface.height, entries.length);
 
   for (let i = 0; i < surface.height; i++) {
@@ -346,13 +357,13 @@ export function drawLog(surface: Surface, options: LogOptions): void {
       x += surface.text(x, i, " ", { bg: options.background });
     }
     const metaWidth = entry.meta ? stringWidth(entry.meta) + 1 : 0;
-    const msgWidth = Math.max(0, surface.width - x - metaWidth);
+    const msgWidth = Math.max(0, width - x - metaWidth);
     surface.text(x, i, truncate(entry.message, msgWidth), {
       fg: entry.color ?? theme.foreground,
       bg: options.background,
     });
-    if (entry.meta && metaWidth < surface.width) {
-      surface.text(surface.width - metaWidth + 1, i, entry.meta, {
+    if (entry.meta && metaWidth < width) {
+      surface.text(width - metaWidth + 1, i, entry.meta, {
         fg: options.metaColor ?? theme.muted,
         bg: options.background,
       });
