@@ -46,6 +46,8 @@ function parseMeminfo(text: string): Record<string, number> {
 export class LinuxCollector implements Collector {
   source = "linux /proc";
   unavailable: string[] = [];
+  /** Explains an empty temperature panel, e.g. "virtualised (kvm)". */
+  sensorNote = "";
   private sample = baseSample();
   private prevCpu: CpuTimes[] = [];
   private prevDisk = new Map<string, [number, number]>();
@@ -316,14 +318,42 @@ export class LinuxCollector implements Collector {
   }
 
   private async updateTemperatures(): Promise<void> {
-    const out = await telemetry.temperatures();
-    if (out.length === 0 && !this.unavailable.includes("temperatures")) {
-      this.unavailable.push("temperatures");
-    } else if (out.length > 0) {
-      this.unavailable = this.unavailable.filter((u) => u !== "temperatures");
+    const [temps, hardware, clocks] = await Promise.all([
+      telemetry.temperatures(),
+      telemetry.hardwareSensors(),
+      telemetry.cpuFrequencies(),
+    ]);
+
+    const note = (name: string, missing: boolean) => {
+      const has = this.unavailable.includes(name);
+      if (missing && !has) this.unavailable.push(name);
+      if (!missing && has) this.unavailable = this.unavailable.filter((u) => u !== name);
+    };
+    note("temperatures", temps.length === 0);
+    note("fans/voltage/power", hardware.length === 0);
+    if (temps.length === 0 && hardware.length === 0 && !this.sensorNote) {
+      this.sensorNote = await telemetry.sensorDiagnosis();
     }
-    this.sample.temperatures = out;
-    this.sample.sensors = out.slice(0, 6).map((t) => ({ label: t.label, value: `${t.value.toFixed(1)} °C` }));
+
+    this.sample.temperatures = temps;
+
+    // Sensors are collected independently of temperatures: a machine can report
+    // fan speeds with no thermal probes, and the reverse is just as common.
+    const sensors: { label: string; value: string }[] = hardware.map((s) => ({ label: s.label, value: s.value }));
+
+    const power = this.sample.telemetry.power;
+    if (power) {
+      sensors.push({ label: "Battery", value: `${power.battery}% (${power.timeRemaining})` });
+      if (power.powerDraw > 0) sensors.push({ label: "Battery draw", value: `${power.powerDraw.toFixed(1)} W` });
+    }
+    for (const gpu of this.sample.telemetry.gpus) {
+      sensors.push({ label: gpu.name, value: `${Math.round(gpu.utilization * 100)}% · ${gpu.temperature}°C` });
+    }
+    // Clock speed is measured, present on every host, and the only hardware
+    // reading a virtual machine reliably has.
+    sensors.push(...clocks.map((c) => ({ label: c.label, value: c.value })));
+
+    this.sample.sensors = sensors.slice(0, 14);
   }
 
   current(): SystemSample {

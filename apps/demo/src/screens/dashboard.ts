@@ -230,8 +230,10 @@ function temperaturesPanel(ui: Container, state: DemoState, theme: Theme): void 
   const temps = state.sample.temperatures;
   ui.panel({ title: "Temperatures" }, (p) => {
     if (temps.length === 0) {
-      p.label("Not available on this platform");
-      p.label("(run with --sim to see them)", { size: 1 });
+      p.text("No thermal sensors on this host.", { fg: theme.muted, size: 1 });
+      if (state.sensorNote) p.label(state.sensorNote, { wrap: true });
+      p.spacer(1);
+      p.label("Run with --sim to see this panel populated.", { wrap: true });
       return;
     }
     temps.slice(0, 10).forEach((temp) => {
@@ -248,7 +250,11 @@ function sensorsPanel(ui: Container, state: DemoState, theme: Theme): void {
   ui.panel({ title: "Sensors" }, (p) => {
     const sensors = state.sample.sensors;
     if (sensors.length === 0) {
-      p.label("No sensors reported");
+      p.text("No hardware sensors on this host.", { fg: theme.muted, size: 1 });
+      if (state.sensorNote) p.label(state.sensorNote, { wrap: true });
+      p.spacer(1);
+      p.label("Probed: /sys/class/hwmon, thermal zones, lm-sensors,", { size: 1 });
+      p.label("power supplies and nvidia-smi.", { size: 1 });
       return;
     }
     p.keyValues(sensors.map((s) => ({ label: s.label, value: s.value, color: theme.accent })));

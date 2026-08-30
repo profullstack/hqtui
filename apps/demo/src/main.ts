@@ -50,7 +50,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.1.3"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.1.4"); process.exit(0);
     }
   }
   return options;
@@ -100,7 +100,7 @@ async function main(): Promise<void> {
   const collector = await createCollector({ real: options.real, seed: options.seed });
   await collector.refresh(options.interval / 1000);
 
-  const state = createState(collector.current(), collector.source, collector.unavailable);
+  const state = createState(collector.current(), collector.source, collector.unavailable, collector.sensorNote ?? "");
   state.screen = SCREENS.includes(options.screen) ? options.screen : "dashboard";
   state.themeIndex = Math.max(0, themeList.findIndex((t) => t.name === options.theme || t === (themes as never)[options.theme]));
 
@@ -117,6 +117,7 @@ async function main(): Promise<void> {
     if (state.paused) return;
     void collector.refresh(dt).then(() => {
       state.sample = collector.current();
+      state.sensorNote = collector.sensorNote ?? state.sensorNote;
       app.invalidate();
     });
   }, options.interval);

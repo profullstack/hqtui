@@ -1,6 +1,6 @@
 {
   "name": "@profullstack/hqtui",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "High Quality Terminal UI for TypeScript. btop-grade dashboards with a one-import API, dark by default, zero runtime dependencies.",
   "license": "MIT",
   "type": "module",

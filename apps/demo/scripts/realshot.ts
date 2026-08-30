@@ -5,7 +5,7 @@ import * as screens from "../src/screens/index.ts";
 
 const c = await createCollector({ real: process.argv[5] !== "sim" });
 for (let i = 0; i < 3; i++) { await c.refresh(1); await new Promise(r => setTimeout(r, 500)); }
-const state = createState(c.current(), c.source, c.unavailable);
+const state = createState(c.current(), c.source, c.unavailable, (c as any).sensorNote ?? "");
 const name = (process.argv[2] ?? "traffic") as string;
 const fn: any = {
   dashboard: screens.dashboardScreen, traffic: screens.trafficScreen,

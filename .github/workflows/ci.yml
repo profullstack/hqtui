@@ -22,7 +22,7 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
       - name: Test
-        run: bun test packages/hqtui/test
+        run: bun test packages/hqtui/test apps/demo/test
       - name: Build
         run: bun run build
 
@@ -40,7 +40,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: bun install --frozen-lockfile
       - name: Test under Node
-        run: node --test packages/hqtui/test/*.test.ts
+        run: node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts
 
   benchmark:
     runs-on: ubuntu-latest

@@ -103,6 +103,29 @@ Anything a platform cannot provide is reported as **unavailable** rather than
 fabricated — press `F1` to see the list for your machine. Run with `--sim` to see every
 widget populated.
 
+### Temperatures and hardware sensors
+
+Temperatures come from `/sys/class/hwmon`, then `/sys/class/thermal`, then
+`lm-sensors`. Fan speeds, voltage rails, power draw, current, battery and GPU are
+read **independently** of temperature, so a machine with no thermal probes can
+still report fans, and the reverse.
+
+**On a virtual machine there is nothing to read.** A KVM, Xen or Hyper-V guest is
+not shown the host's thermal hardware, so no package will make CPU temperature
+appear inside a Droplet or an EC2 instance — `sensors-detect` there prints
+"Sorry, no sensors were detected." The demo says which case you are in rather
+than leaving the panel blank.
+
+On **bare metal**, if the panels are empty:
+
+```bash
+sudo apt install lm-sensors
+sudo sensors-detect --auto     # loads coretemp, k10temp, nct6775, ...
+```
+
+Drive temperatures additionally need `smartmontools`, and reading SMART needs
+root.
+
 ### What `sudo` adds
 
 Everything above works unprivileged. Running as root additionally exposes:

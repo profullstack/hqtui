@@ -15,6 +15,8 @@ export interface DemoState {
   screen: ScreenName;
   source: string;
   unavailable: string[];
+  /** Why hardware sensors are missing on this host, when they are. */
+  sensorNote: string;
   /** Selected process row. */
   selected: number;
   offset: number;
@@ -44,9 +46,15 @@ export interface DemoState {
   bytes: number;
 }
 
-export function createState(sample: SystemSample, source: string, unavailable: string[]): DemoState {
+export function createState(
+  sample: SystemSample,
+  source: string,
+  unavailable: string[],
+  sensorNote = "",
+): DemoState {
   return {
     sample,
+    sensorNote,
     screen: "dashboard",
     source,
     unavailable,

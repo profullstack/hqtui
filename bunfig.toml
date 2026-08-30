@@ -3,4 +3,5 @@
 exact = true
 
 [test]
-root = "./packages/hqtui/test"
+# Both the library's tests and the demo's sysfs-fixture tests.
+root = "."

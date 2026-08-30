@@ -6,11 +6,26 @@ import type {
   Listener, LoginEvent, ProcessStates, PowerStats, ServiceUnit, Session, Telemetry, GpuStats,
 } from "./telemetry.ts";
 
+/**
+ * Prefix for every sysfs path. Empty in production; tests point it at a
+ * fixture tree, because the hwmon layout cannot be exercised on a machine that
+ * has no sensors — which includes every virtual machine.
+ */
+const SYSFS = process.env.HQTUI_SYSFS_ROOT ?? "";
+
 async function read(path: string): Promise<string> {
   try {
-    return await readFile(path, "utf8");
+    return await readFile(path.startsWith("/sys") ? SYSFS + path : path, "utf8");
   } catch {
     return "";
+  }
+}
+
+async function list(path: string): Promise<string[]> {
+  try {
+    return await readdir(path.startsWith("/sys") ? SYSFS + path : path);
+  } catch {
+    return [];
   }
 }
 
@@ -261,46 +276,184 @@ export async function kernel(dt: number): Promise<KernelStats> {
   };
 }
 
+/**
+ * Why this host reports no thermal hardware. A hypervisor does not pass the
+ * physical machine's sensors through, so on a guest there is no package to
+ * install and no configuration to fix — the hardware simply is not there.
+ */
+export async function sensorDiagnosis(): Promise<string> {
+  const virt = (await sh("systemd-detect-virt", [], 3000)).trim();
+  if (virt && virt !== "none") {
+    return `virtualised (${virt}) — hypervisors do not expose thermal hardware to guests`;
+  }
+  const hasSensorsDetect = (await sh("which", ["sensors-detect"], 2000)).trim();
+  if (!hasSensorsDetect) {
+    return "no sensor chips found — install lm-sensors and run `sudo sensors-detect --auto`";
+  }
+  return "lm-sensors found no supported chips on this machine";
+}
+
+export interface SensorReading {
+  label: string;
+  value: string;
+  /** Where it came from, so the UI can explain an empty panel. */
+  kind: "fan" | "voltage" | "power" | "current" | "battery" | "gpu" | "frequency";
+}
+
+/** Directories that may hold sensor files, including the older device/ layout. */
+async function hwmonDirs(): Promise<{ dir: string; chip: string }[]> {
+  const out: { dir: string; chip: string }[] = [];
+  {
+    for (const entry of await list("/sys/class/hwmon")) {
+      const base = `/sys/class/hwmon/${entry}`;
+      const chip = (await read(`${base}/name`)).trim() || (await read(`${base}/device/name`)).trim() || entry;
+      out.push({ dir: base, chip });
+      // Kernels before ~4.x put the inputs one level down.
+      const nested = `${base}/device`;
+      const files = await list(nested);
+      if (files.some((f) => /^(temp|fan|in|power|curr)\d+_input$/.test(f))) {
+        out.push({ dir: nested, chip });
+      }
+    }
+  }
+  return out;
+}
+
+async function labelled(dir: string, entry: string, chip: string, fallback: string): Promise<string> {
+  const label = (await read(`${dir}/${entry.replace("_input", "_label").replace("_average", "_label")}`)).trim();
+  if (label) return label;
+  return chip ? `${chip} ${fallback}` : fallback;
+}
+
 /** Temperatures from hwmon and, when that is empty, the thermal zones. */
 export async function temperatures(): Promise<{ label: string; value: number; max: number }[]> {
   const out: { label: string; value: number; max: number }[] = [];
 
-  try {
-    for (const chip of await readdir("/sys/class/hwmon")) {
-      const base = `/sys/class/hwmon/${chip}`;
-      const name = (await read(`${base}/name`)).trim();
-      for (const entry of await readdir(base).catch(() => [] as string[])) {
-        if (!/^temp\d+_input$/.test(entry)) continue;
-        const value = Number(await read(`${base}/${entry}`)) / 1000;
-        if (!Number.isFinite(value) || value <= 0 || value > 150) continue;
-        const label = (await read(`${base}/${entry.replace("_input", "_label")}`)).trim();
-        const max = Number(await read(`${base}/${entry.replace("_input", "_crit")}`)) / 1000;
-        out.push({
-          label: label || `${name} ${entry.replace("_input", "")}`,
-          value,
-          max: Number.isFinite(max) && max > 0 ? max : 100,
-        });
-      }
+  for (const { dir, chip } of await hwmonDirs()) {
+    for (const entry of await list(dir)) {
+      if (!/^temp\d+_input$/.test(entry)) continue;
+      const value = Number(await read(`${dir}/${entry}`)) / 1000;
+      if (!Number.isFinite(value) || value <= 0 || value > 150) continue;
+      const max = Number(await read(`${dir}/${entry.replace("_input", "_crit")}`)) / 1000;
+      out.push({
+        label: await labelled(dir, entry, chip, entry.replace("_input", "")),
+        value,
+        max: Number.isFinite(max) && max > 0 ? max : 100,
+      });
     }
-  } catch {
-    // No hwmon: containers and most VMs.
   }
 
   // Thermal zones are present on many machines that expose no hwmon at all.
   if (out.length === 0) {
-    try {
-      for (const zone of await readdir("/sys/class/thermal")) {
+    {
+      for (const zone of await list("/sys/class/thermal")) {
         if (!zone.startsWith("thermal_zone")) continue;
         const value = Number(await read(`/sys/class/thermal/${zone}/temp`)) / 1000;
         if (!Number.isFinite(value) || value <= 0 || value > 150) continue;
         const type = (await read(`/sys/class/thermal/${zone}/type`)).trim();
         out.push({ label: type || zone, value, max: 100 });
       }
-    } catch {
-      // Neither interface exists; the UI reports temperatures as unavailable.
     }
   }
+
+  // lm-sensors reaches chips the sysfs walk can miss, and names them properly.
+  if (out.length === 0) {
+    const json = await sh("sensors", ["-j"], 4000);
+    if (json) {
+      try {
+        const parsed = JSON.parse(json) as Record<string, Record<string, Record<string, number>>>;
+        for (const [chip, features] of Object.entries(parsed)) {
+          for (const [feature, values] of Object.entries(features)) {
+            if (typeof values !== "object" || values === null) continue;
+            const input = Object.entries(values).find(([key]) => /_input$/.test(key) && key.startsWith("temp"));
+            if (!input) continue;
+            const value = Number(input[1]);
+            if (!Number.isFinite(value) || value <= 0 || value > 150) continue;
+            out.push({ label: `${chip.split("-")[0]} ${feature}`, value, max: 100 });
+          }
+        }
+      } catch {
+        // Older lm-sensors without -j support.
+      }
+    }
+  }
+
   return out.slice(0, 12);
+}
+
+/**
+ * Hardware sensors other than temperature: fans, voltage rails, power draw and
+ * current. These are independent of the temperature probes, so a machine with
+ * no thermal sensors can still report fans, and vice versa.
+ */
+export async function hardwareSensors(): Promise<SensorReading[]> {
+  const out: SensorReading[] = [];
+
+  for (const { dir, chip } of await hwmonDirs()) {
+    for (const entry of (await list(dir)).sort()) {
+      const raw = Number(await read(`${dir}/${entry}`));
+      if (!Number.isFinite(raw)) continue;
+
+      if (/^fan\d+_input$/.test(entry)) {
+        if (raw <= 0) continue;
+        out.push({
+          label: await labelled(dir, entry, chip, entry.replace("_input", "").replace("fan", "Fan ")),
+          value: `${Math.round(raw)} RPM`,
+          kind: "fan",
+        });
+      } else if (/^in\d+_input$/.test(entry)) {
+        if (raw <= 0) continue;
+        out.push({
+          label: await labelled(dir, entry, chip, entry.replace("_input", "")),
+          value: `${(raw / 1000).toFixed(2)} V`,
+          kind: "voltage",
+        });
+      } else if (/^power\d+_(average|input)$/.test(entry)) {
+        if (raw <= 0) continue;
+        out.push({
+          label: await labelled(dir, entry, chip, entry.replace(/_(average|input)$/, "")),
+          value: `${(raw / 1e6).toFixed(1)} W`,
+          kind: "power",
+        });
+      } else if (/^curr\d+_input$/.test(entry)) {
+        if (raw <= 0) continue;
+        out.push({
+          label: await labelled(dir, entry, chip, entry.replace("_input", "")),
+          value: `${(raw / 1000).toFixed(2)} A`,
+          kind: "current",
+        });
+      }
+      if (out.length >= 14) return out;
+    }
+  }
+  return out;
+}
+
+/** Current clock speed per core, which every Linux host reports. */
+export async function cpuFrequencies(): Promise<SensorReading[]> {
+  const out: SensorReading[] = [];
+  {
+    const cpus = (await list("/sys/devices/system/cpu"))
+      .filter((entry) => /^cpu\d+$/.test(entry))
+      .sort((a, b) => Number(a.slice(3)) - Number(b.slice(3)));
+    for (const cpu of cpus.slice(0, 4)) {
+      const khz = Number((await read(`/sys/devices/system/cpu/${cpu}/cpufreq/scaling_cur_freq`)).trim());
+      if (!Number.isFinite(khz) || khz <= 0) continue;
+      out.push({ label: `${cpu} clock`, value: `${(khz / 1e6).toFixed(2)} GHz`, kind: "frequency" });
+    }
+  }
+
+  if (out.length === 0) {
+    // /proc/cpuinfo still reports a measured MHz where cpufreq is missing.
+    const info = await read("/proc/cpuinfo");
+    const speeds = [...info.matchAll(/^cpu MHz\s*:\s*([\d.]+)/gm)].map((m) => Number(m[1]));
+    speeds.slice(0, 4).forEach((mhz, i) => {
+      if (Number.isFinite(mhz) && mhz > 0) {
+        out.push({ label: `cpu${i} clock`, value: `${(mhz / 1000).toFixed(2)} GHz`, kind: "frequency" });
+      }
+    });
+  }
+  return out;
 }
 
 /** GPU stats, when the NVIDIA tools are installed. */
