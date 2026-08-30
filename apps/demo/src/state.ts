@@ -18,10 +18,13 @@ export interface DemoState {
   /** Why hardware sensors are missing on this host, when they are. */
   sensorNote: string;
   /**
-   * One cursor per screen. A single shared selection meant the arrow keys moved
-   * an index the visible table did not use, so its scrollbar never moved.
+   * One cursor per scrollable pane, not per screen. Sharing a cursor across a
+   * screen meant only one of its lists could ever be driven, so the second
+   * scrollbar on a screen sat there doing nothing.
    */
-  cursors: Record<ScreenName, { selected: number; offset: number }>;
+  panes: Record<string, Pane>;
+  /** Which pane the arrow keys drive, per screen. Clicking a pane sets it. */
+  focused: Partial<Record<ScreenName, string>>;
   sort: "cpu" | "mem" | "pid" | "name";
   filter: string;
   filtering: boolean;
@@ -48,9 +51,45 @@ export interface DemoState {
   bytes: number;
 }
 
-/** The cursor for whichever screen is showing. */
-export function cursor(state: DemoState): { selected: number; offset: number } {
-  return state.cursors[state.screen] ?? { selected: 0, offset: 0 };
+export interface Pane {
+  selected: number;
+  offset: number;
+  /** Row count, refreshed by the screen each frame so keys can clamp. */
+  total: number;
+}
+
+/**
+ * The cursor for one scrollable, created on first use. Screens call this while
+ * drawing, which is also what registers the pane as existing.
+ */
+export function pane(state: DemoState, id: string, total: number): Pane {
+  const existing = state.panes[id];
+  if (existing) {
+    existing.total = total;
+    return existing;
+  }
+  const created: Pane = { selected: 0, offset: 0, total };
+  state.panes[id] = created;
+  // The first pane a screen draws is the one the arrows drive by default.
+  if (!state.focused[state.screen]) state.focused[state.screen] = id;
+  return created;
+}
+
+/** The pane the arrow keys act on, for the screen that is showing. */
+export function focusedPane(state: DemoState): Pane | undefined {
+  const id = state.focused[state.screen];
+  return id ? state.panes[id] : undefined;
+}
+
+export function focusPane(state: DemoState, id: string): void {
+  state.focused[state.screen] = id;
+}
+
+/** Move a pane's window, dragging the selection so it stays inside. */
+export function scrollPane(p: Pane, delta: number, rows = 3): void {
+  const max = Math.max(0, p.total - 1);
+  p.offset = Math.max(0, Math.min(p.offset + delta * rows, max));
+  p.selected = Math.max(p.offset, Math.min(p.selected, max));
 }
 
 export function createState(
@@ -65,9 +104,8 @@ export function createState(
     screen: "dashboard",
     source,
     unavailable,
-    cursors: Object.fromEntries(
-      SCREENS.map((screen) => [screen, { selected: 0, offset: 0 }]),
-    ) as DemoState["cursors"],
+    panes: {},
+    focused: {},
     sort: "cpu",
     filter: "",
     filtering: false,

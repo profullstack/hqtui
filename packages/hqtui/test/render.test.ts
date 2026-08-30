@@ -200,6 +200,57 @@ test("lists and trees follow their selection too", () => {
   assert.ok(tree.contains("node-25"));
 });
 
+test("a scrollable widget registers a mouse region the wheel can reach", () => {
+  const rows = Array.from({ length: 40 }, (_, i) => ({ name: `row-${i}` }));
+  const columns = [{ key: "name", title: "Name" }];
+  let scrolled = 0;
+  let clickedRow = -1;
+
+  const screen = renderToScreen(({ ui }) => {
+    ui.table({
+      rows,
+      columns,
+      scrollbar: true,
+      onScroll: (delta) => { scrolled += delta; },
+      onSelectRow: (row) => { clickedRow = row; },
+    });
+  }, { width: 30, height: 8 });
+
+  assert.equal(screen.regions.length, 1, "the table should claim one region");
+  const region = screen.regions[0];
+  assert.equal(region.rect.width, 30);
+  assert.equal(region.rect.height, 8);
+
+  region.onScroll?.(1);
+  assert.equal(scrolled, 1);
+
+  // Row 0 of the region is the header, so the first body row is y = 1.
+  region.onClick?.(0, 1, "left");
+  assert.equal(clickedRow, 0);
+  region.onClick?.(0, 3, "left");
+  assert.equal(clickedRow, 2);
+});
+
+test("a widget with no handlers claims no mouse region", () => {
+  const screen = renderToScreen(({ ui }) => {
+    ui.table({ rows: [{ name: "a" }], columns: [{ key: "name" }] });
+  }, { width: 20, height: 4 });
+  assert.equal(screen.regions.length, 0);
+});
+
+test("every scrollable widget can take handlers", () => {
+  let hits = 0;
+  const screen = renderToScreen(({ ui }) => {
+    ui.row({}, (row) => {
+      row.list({ items: ["a", "b"], onScroll: () => { hits++; } });
+      row.tree({ nodes: [{ label: "a" }], onScroll: () => { hits++; } });
+    });
+  }, { width: 40, height: 6 });
+  assert.equal(screen.regions.length, 2);
+  for (const region of screen.regions) region.onScroll?.(1);
+  assert.equal(hits, 2);
+});
+
 test("escape hatch drawing reaches the buffer", () => {
   const screen = renderToScreen(({ ui }) => {
     ui.draw((surface) => surface.text(0, 0, "raw"));

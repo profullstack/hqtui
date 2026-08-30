@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { cursor, type DemoState } from "../state.ts";
+import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
 import { bytes, num, percent } from "../format.ts";
 
 function rate(value: number): string {
@@ -23,11 +23,15 @@ export function servicesScreen(ui: Container, state: DemoState, theme: Theme): v
         p.label("systemd not available on this host.");
         return;
       }
+      const units = pane(state, "services.units", t.services.length);
       p.table({
         rows: t.services,
-        selected: cursor(state).selected,
-        offset: cursor(state).offset,
+        selected: units.selected,
+        offset: units.offset,
         followSelection: true,
+        onScroll: (delta) => scrollPane(units, delta),
+        onFocus: () => focusPane(state, "services.units"),
+        onSelectRow: (row) => { units.selected = units.offset + row; },
         zebra: true,
         scrollbar: true,
         columns: [

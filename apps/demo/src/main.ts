@@ -9,7 +9,7 @@
  */
 import { createApp, themeList, themes, type KeyEvent } from "@profullstack/hqtui";
 import { createCollector } from "./system/index.ts";
-import { createState, cursor, SCREENS, type ScreenName } from "./state.ts";
+import { createState, focusedPane, SCREENS, type ScreenName } from "./state.ts";
 import {
   componentsScreen, dashboardScreen, graphicsScreen, inputScreen, networkScreen, servicesScreen,
   sessionsScreen, stressScreen, themesScreen, trafficScreen, visibleProcesses,
@@ -50,7 +50,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.1.7"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.1.8"); process.exit(0);
     }
   }
   return options;
@@ -95,27 +95,13 @@ const PALETTE_COMMANDS: { label: string; hint: string; run: (state: ReturnType<t
   { label: "Pause updates", hint: "Space", run: (s) => { s.paused = !s.paused; } },
 ];
 
-/** Row count of the list the arrow keys drive on each screen. */
-function rowCount(state: ReturnType<typeof createState>): number {
-  const t = state.sample.telemetry;
-  switch (state.screen) {
-    case "dashboard": return visibleProcesses(state).length;
-    case "traffic": return t.ssh.length;
-    case "sessions": return t.logins.length;
-    case "network": return t.connections.length;
-    case "services": return t.services.length;
-    case "components": return 5;
-    default: return 0;
-  }
-}
-
+/** Move the selection in whichever pane the arrows are driving. */
 function moveCursor(state: ReturnType<typeof createState>, delta: number): void {
-  const c = cursor(state);
-  const total = rowCount(state);
-  if (total === 0) return;
-  c.selected = Math.max(0, Math.min(total - 1, c.selected + delta));
-  // The table scrolls itself via followSelection; keep the offset in range.
-  c.offset = Math.max(0, Math.min(c.offset, Math.max(0, total - 1)));
+  const p = focusedPane(state);
+  if (!p || p.total === 0) return;
+  p.selected = Math.max(0, Math.min(p.total - 1, p.selected + delta));
+  // The widget scrolls itself via followSelection; just keep the window sane.
+  p.offset = Math.max(0, Math.min(p.offset, Math.max(0, p.total - 1)));
 }
 
 async function main(): Promise<void> {
@@ -165,15 +151,8 @@ async function main(): Promise<void> {
 
   app.on("mouse", (event) => {
     state.lastMouse = `${event.action} ${event.button} @ ${event.x},${event.y}${event.scroll ? ` scroll ${event.scroll}` : ""}`;
-    if (event.action === "scroll") {
-      // Scrolling moves the window and drags the selection along with it, so
-      // the highlighted row never scrolls off and snaps the view back.
-      const c = cursor(state);
-      const total = rowCount(state);
-      c.offset = Math.max(0, Math.min(c.offset + event.scroll * 3, Math.max(0, total - 1)));
-      c.selected = Math.max(c.offset, Math.min(c.selected, c.offset + 20));
-      app.invalidate();
-    }
+    // Each scrollable registers its own region, so the wheel is handled by
+    // whatever sits under the pointer rather than by one list per screen.
   });
 
   app.on("key", (event: KeyEvent) => {
@@ -334,7 +313,7 @@ async function main(): Promise<void> {
     if (state.showModal) {
       ui.modal({
         title: "Confirm Action",
-        message: `Are you sure you want to terminate process ${visibleProcesses(state)[cursor(state).selected]?.pid ?? "—"} (${visibleProcesses(state)[cursor(state).selected]?.name ?? "—"})?`,
+        message: `Are you sure you want to terminate process ${visibleProcesses(state)[focusedPane(state)?.selected ?? 0]?.pid ?? "—"} (${visibleProcesses(state)[focusedPane(state)?.selected ?? 0]?.name ?? "—"})?`,
         buttons: [
           { label: "Yes", variant: "success", focused: true },
           { label: "No", variant: "ghost" },

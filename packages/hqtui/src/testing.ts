@@ -1,7 +1,7 @@
 import { FrameBuffer } from "./buffer.ts";
 import { Encoder } from "./diff.ts";
 import { createSurface, Surface } from "./surface.ts";
-import { Container, type RenderContext } from "./ui.ts";
+import { Container, type RenderContext, type HitRegion } from "./ui.ts";
 import { type Theme, type ThemeName, resolveTheme } from "./theme.ts";
 import { detectCapabilities, type Capabilities, type CapabilityOverrides } from "./capabilities.ts";
 import { CONTINUATION, cellText } from "./unicode.ts";
@@ -29,6 +29,12 @@ export interface RenderedScreen {
   width: number;
   height: number;
   buffer: FrameBuffer;
+  /**
+   * Mouse regions the view registered, in draw order. Lets a test assert that
+   * a widget is actually reachable by the wheel or a click, which is otherwise
+   * only observable by running a real terminal.
+   */
+  regions: HitRegion[];
   /** Plain text, one line per row, trailing spaces trimmed. */
   text(): string;
   /** One row of plain text. */
@@ -78,6 +84,7 @@ export function renderToScreen(
   buffer.clear(theme.background, theme.foreground);
 
   const overlays: ((root: Surface) => void)[] = [];
+  const regions: HitRegion[] = [];
   let focusCursor = 0;
   const ctx: RenderContext = {
     theme,
@@ -91,7 +98,7 @@ export function renderToScreen(
       const index = focusCursor++;
       return { index, focused: index === (options.focus ?? 0) };
     },
-    hit: () => {},
+    hit: (region) => regions.push(region),
     overlay: (draw) => overlays.push(draw),
     invalidate: () => {},
   };
@@ -106,6 +113,7 @@ export function renderToScreen(
     width,
     height,
     buffer,
+    regions,
     text: () => buffer.toText(),
     line: (y: number) => buffer.rowText(y).replace(/\s+$/, ""),
     ansi: () => {

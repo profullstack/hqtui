@@ -39,6 +39,16 @@ export interface RenderContext {
   invalidate(): void;
 }
 
+/** Mouse behaviour shared by every scrollable widget. */
+export interface ScrollHandlers {
+  /** Wheel over this widget. `delta` is -1 up, 1 down. */
+  onScroll?: (delta: number) => void;
+  /** Click on a visible row, counted from the first body row. */
+  onSelectRow?: (visibleRow: number) => void;
+  /** Click anywhere on the widget, including its header. */
+  onFocus?: () => void;
+}
+
 interface Child {
   constraint: Constraint;
   draw: (surface: Surface) => void;
@@ -256,17 +266,44 @@ export class Container {
 
   // ------------------------------------------------------------------ data
 
-  table<Row>(options: W.TableOptions<Row> & ContainerOptions): this {
+  /**
+   * Mouse handlers turn a widget into its own scroll region: the wheel acts on
+   * whatever is under the pointer, rather than on one list per screen.
+   */
+  table<Row>(options: W.TableOptions<Row> & ContainerOptions & ScrollHandlers): this {
     const intrinsic = options.rows.length + (options.header === false ? 0 : 1);
-    return this.add((s) => W.drawTable(s, options), this.sizeOf(options, "fill", intrinsic));
+    return this.add((s) => {
+      W.drawTable(s, options);
+      this.attachScroll(s, options, options.header === false ? 0 : 1);
+    }, this.sizeOf(options, "fill", intrinsic));
   }
 
-  list(options: W.ListOptions & ContainerOptions): this {
-    return this.add((s) => W.drawList(s, options), this.sizeOf(options, "fill", options.items.length));
+  list(options: W.ListOptions & ContainerOptions & ScrollHandlers): this {
+    return this.add((s) => {
+      W.drawList(s, options);
+      this.attachScroll(s, options);
+    }, this.sizeOf(options, "fill", options.items.length));
   }
 
-  tree(options: W.TreeOptions & ContainerOptions): this {
-    return this.add((s) => W.drawTree(s, options), this.sizeOf(options, "fill"));
+  tree(options: W.TreeOptions & ContainerOptions & ScrollHandlers): this {
+    return this.add((s) => {
+      W.drawTree(s, options);
+      this.attachScroll(s, options);
+    }, this.sizeOf(options, "fill"));
+  }
+
+  /** Register the widget's rect so the wheel and clicks reach it. */
+  private attachScroll(surface: Surface, handlers: ScrollHandlers, headerRows = 0): void {
+    if (!handlers.onScroll && !handlers.onSelectRow && !handlers.onFocus) return;
+    this.ctx.hit({
+      rect: surface.hitRect(),
+      onScroll: handlers.onScroll ? (delta) => handlers.onScroll?.(delta) : undefined,
+      onClick: (_x, y) => {
+        handlers.onFocus?.();
+        // Row 0 is the header when there is one; clicks there only focus.
+        if (handlers.onSelectRow && y >= headerRows) handlers.onSelectRow(y - headerRows);
+      },
+    });
   }
 
   log(options: W.LogOptions & ContainerOptions): this {

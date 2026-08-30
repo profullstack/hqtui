@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { cursor, type DemoState } from "../state.ts";
+import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
 import { byteRate, bytes } from "../format.ts";
 
 /** Interfaces, live throughput, open connections and listening ports. */
@@ -53,11 +53,15 @@ export function networkScreen(ui: Container, state: DemoState, theme: Theme): vo
         p.label("No connections visible (`ss` unavailable).");
         return;
       }
+      const conns = pane(state, "network.connections", t.connections.length);
       p.table({
         rows: t.connections,
-        selected: cursor(state).selected,
-        offset: cursor(state).offset,
+        selected: conns.selected,
+        offset: conns.offset,
         followSelection: true,
+        onScroll: (delta) => scrollPane(conns, delta),
+        onFocus: () => focusPane(state, "network.connections"),
+        onSelectRow: (row) => { conns.selected = conns.offset + row; },
         zebra: true,
         scrollbar: true,
         columns: [
@@ -72,8 +76,15 @@ export function networkScreen(ui: Container, state: DemoState, theme: Theme): vo
 
     row.column({ width: "0.7fr", gap: 1 }, (column) => {
       column.panel({ title: "Listening Ports", subtitle: String(t.listeners.length), borderColor: theme.warning }, (p) => {
+        const listeners = pane(state, "network.listeners", t.listeners.length);
         p.table({
           rows: t.listeners,
+          selected: listeners.selected,
+          offset: listeners.offset,
+          followSelection: true,
+          onScroll: (delta) => scrollPane(listeners, delta),
+          onFocus: () => focusPane(state, "network.listeners"),
+          onSelectRow: (row) => { listeners.selected = listeners.offset + row; },
           zebra: true,
           scrollbar: true,
           columns: [

@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { cursor, type DemoState } from "../state.ts";
+import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
 import { bytes, percent } from "../format.ts";
 
 const FILES = [
@@ -83,9 +83,15 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
       });
 
       left.panel({ title: "Table Widget", size: "1fr" }, (p) => {
+        const files = pane(state, "components.files", FILES.length);
         p.table({
           rows: FILES,
-          selected: cursor(state).selected % FILES.length,
+          selected: files.selected,
+          offset: files.offset,
+          followSelection: true,
+          onScroll: (delta) => scrollPane(files, delta),
+          onFocus: () => focusPane(state, "components.files"),
+          onSelectRow: (row) => { files.selected = files.offset + row; },
           zebra: true,
           columns: [
             { key: "name", title: "Name", min: 10, color: theme.primary },
@@ -109,7 +115,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
           r.text("Name", { fg: theme.muted, bold: true });
           r.text("CPU%   MEM%", { fg: theme.muted, bold: true, align: "right" });
         });
-        p.tree({ nodes: TREE, selected: cursor(state).selected % 8, followSelection: true });
+        p.tree({ nodes: TREE, selected: pane(state, "components.tree", 8).selected, followSelection: true });
       });
 
       right.panel({ title: "Sparklines & Gauges", size: 12 }, (p) => {
@@ -143,7 +149,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
             { label: "apps/web" },
             { label: "docs" },
           ],
-          selected: cursor(state).selected % 4,
+          selected: pane(state, "components.list", 4).selected,
           bullet: "▸",
           scrollbar: true,
         });

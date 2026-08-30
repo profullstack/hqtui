@@ -1,6 +1,6 @@
 import type { Container, Theme } from "@profullstack/hqtui";
 import { seriesColor } from "@profullstack/hqtui";
-import { cursor, type DemoState } from "../state.ts";
+import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
 import { num, percent } from "../format.ts";
 
 function rate(value: number): string {
@@ -133,11 +133,15 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
           p.label("No sshd events in the journal.");
           return;
         }
+        const ssh = pane(state, "traffic.ssh", t.ssh.length);
         p.table({
           rows: [...t.ssh].reverse(),
-          selected: cursor(state).selected,
-          offset: cursor(state).offset,
+          selected: ssh.selected,
+          offset: ssh.offset,
           followSelection: true,
+          onScroll: (delta) => scrollPane(ssh, delta),
+          onFocus: () => focusPane(state, "traffic.ssh"),
+          onSelectRow: (row) => { ssh.selected = ssh.offset + row; },
           zebra: true,
           scrollbar: true,
           columns: [
@@ -178,8 +182,15 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
 
   if (http && http.recent.length) {
     ui.panel({ title: "Recent Requests", size: 10, borderColor: theme.primary }, (p) => {
+      const requests = pane(state, "traffic.requests", http.recent.length);
       p.table({
         rows: http.recent,
+        selected: requests.selected,
+        offset: requests.offset,
+        followSelection: true,
+        onScroll: (delta) => scrollPane(requests, delta),
+        onFocus: () => focusPane(state, "traffic.requests"),
+        onSelectRow: (row) => { requests.selected = requests.offset + row; },
         zebra: true,
         scrollbar: true,
         columns: [

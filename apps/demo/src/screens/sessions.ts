@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { cursor, type DemoState } from "../state.ts";
+import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
 
 /** Who is on this machine, who has been, and who failed to get in. */
 export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): void {
@@ -40,11 +40,15 @@ export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): v
         p.label("No login history available.");
         return;
       }
+      const logins = pane(state, "sessions.logins", t.logins.length);
       p.table({
         rows: t.logins,
-        selected: cursor(state).selected,
-          offset: cursor(state).offset,
-          followSelection: true,
+        selected: logins.selected,
+        offset: logins.offset,
+        followSelection: true,
+        onScroll: (delta) => scrollPane(logins, delta),
+        onFocus: () => focusPane(state, "sessions.logins"),
+        onSelectRow: (row) => { logins.selected = logins.offset + row; },
         zebra: true,
         scrollbar: true,
         columns: [
