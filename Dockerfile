@@ -27,12 +27,12 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+# The oven/bun image is Debian-slim and already ships a non-root `bun` user,
+# so there is no adduser to call and no user to create.
+COPY --from=builder --chown=bun:bun /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=bun:bun /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=bun:bun /app/apps/web/public ./apps/web/public
 
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
-
-USER nextjs
+USER bun
 EXPOSE 3000
 CMD ["bun", "apps/web/server.js"]
