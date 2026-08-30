@@ -1,0 +1,8 @@
+{
+  "name": "@profullstack/hqtui-benchmark",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "start": "bun src/main.ts" },
+  "dependencies": { "@profullstack/hqtui": "workspace:*" }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "hqtui-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "examples/*"
+  ],
+  "engines": {
+    "bun": ">=1.1",
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "build": "cd packages/hqtui && bun run build",
+    "demo": "bun apps/demo/src/main.ts",
+    "bench": "bun apps/benchmark/src/main.ts",
+    "test": "bun test packages/hqtui/test",
+    "test:node": "node --test packages/hqtui/test/*.test.ts",
+    "typecheck": "cd packages/hqtui && bun run typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5.7.2"
+  }
+}

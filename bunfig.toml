@@ -1,0 +1,6 @@
+[install]
+# Everything the library needs at runtime ships with the runtime itself.
+exact = true
+
+[test]
+root = "./packages/hqtui/test"

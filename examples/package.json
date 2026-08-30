@@ -1,0 +1,7 @@
+{
+  "name": "@profullstack/hqtui-examples",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": { "@profullstack/hqtui": "workspace:*" }
+}

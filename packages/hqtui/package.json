@@ -1,0 +1,56 @@
+{
+  "name": "@profullstack/hqtui",
+  "version": "0.1.0",
+  "description": "High Quality Terminal UI for TypeScript. btop-grade dashboards with a one-import API, dark by default, zero runtime dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "bun": ">=1.1",
+    "node": ">=22.6"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./graphics": {
+      "types": "./dist/graphics/index.d.ts",
+      "default": "./dist/graphics/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "default": "./dist/testing.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun x tsc -p tsconfig.build.json",
+    "typecheck": "bun x tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "tui",
+    "terminal",
+    "cli",
+    "dashboard",
+    "ansi",
+    "braille",
+    "truecolor",
+    "framebuffer",
+    "btop"
+  ],
+  "homepage": "https://hqtui.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/profullstack/hqtui.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
