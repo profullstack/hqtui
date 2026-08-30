@@ -131,17 +131,13 @@ export default async function Home() {
         <div className="dot-grid absolute inset-0 opacity-40" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24">
           <div className="mx-auto max-w-3xl text-center">
-            {/* The square mark, not the logo: the nav already carries the
-                wordmark, and repeating it twice on one screen reads as a
-                mistake. This is favicon.png at full resolution — the generator
-                downsizes the file of that name to 32px. */}
             <Image
-              src="/icon-mark.png"
-              alt="HQTUI"
-              width={1254}
-              height={1254}
+              src="/logo.png"
+              alt="HQTUI — High Quality Terminal UI for TypeScript"
+              width={2172}
+              height={724}
               priority
-              className="mx-auto mb-6 h-24 w-24 sm:h-32 sm:w-32"
+              className="mx-auto mb-6 w-[22rem] max-w-full sm:w-[30rem]"
             />
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
               v0.1.9 · MIT · zero runtime dependencies

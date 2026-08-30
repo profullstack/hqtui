@@ -22,15 +22,18 @@ const LINKS = [
 export function SiteNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
-      <nav className="mx-auto flex h-24 max-w-7xl items-center gap-8 px-4 sm:px-6">
+      <nav className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
+        {/* The square mark here, the full logo in the hero: at nav size the
+            logo's tagline strip is unreadable, and showing the same artwork
+            twice on one screen reads as a mistake. */}
         <Link href="/" className="shrink-0" aria-label="HQTUI home">
           <Image
-            src="/logo.png"
-            alt="HQTUI — High Quality Terminal UI for TypeScript"
-            width={2172}
-            height={724}
+            src="/icons/icon-512x512.png"
+            alt="HQTUI"
+            width={512}
+            height={512}
             priority
-            className="w-60"
+            className="h-8 w-8"
           />
         </Link>
         <div className="hidden items-center gap-5 text-sm text-white/60 md:flex">
@@ -75,7 +78,7 @@ export function SiteFooter({ views }: { views?: number }) {
     <footer className="border-t border-white/10 py-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-white/40 sm:flex-row sm:items-center sm:px-6">
         <div className="flex items-center gap-2 font-mono">
-          <Image src="/logo.png" alt="HQTUI" width={2172} height={724} className="h-5 w-auto opacity-80" />
+          <Image src="/icons/icon-512x512.png" alt="HQTUI" width={512} height={512} className="h-4 w-4 opacity-70" />
           <span className="text-white/20">·</span>
           <span>MIT</span>
         </div>
