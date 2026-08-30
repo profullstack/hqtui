@@ -218,7 +218,7 @@ export function renderToHtml(
       run += value === 0 ? " " : cellText(value);
     }
     flush();
-    rows.push(`<div class="hqtui-row">${row || " "}</div>`);
+    rows.push(row);
   }
 
   const fontSize = options.fontSize ?? 14;
@@ -228,9 +228,13 @@ export function renderToHtml(
   // The font stack is ordered by box-drawing and Braille coverage.
   const font = options.fontFamily ??
     "ui-monospace,SFMono-Regular,Menlo,'DejaVu Sans Mono','Liberation Mono',Consolas,'Segoe UI Symbol',monospace";
+  // One <pre> with newline-separated rows: wrapping each row in its own element
+  // gives the browser licence to lay out lines independently, which pulls
+  // box-drawing rules apart. A single text flow tiles the grid exactly.
   return `<pre class="${options.className ?? "hqtui-screen"}" style="background:${bgFallback};color:${fgFallback};` +
-    `padding:${padding}px;font-size:${fontSize}px;line-height:1;font-family:${font};` +
-    `margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none">${rows.join("\n")}</pre>`;
+    `padding:${padding}px;font-size:${fontSize}px;line-height:${(fontSize * 1.18).toFixed(2)}px;font-family:${font};` +
+    `margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;` +
+    `-webkit-font-smoothing:antialiased">${rows.join("\n")}</pre>`;
 }
 
 /** Drive a view for N frames — for animation and performance assertions. */

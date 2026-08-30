@@ -11,7 +11,7 @@ import { Code, InstallCommand } from "@/components/site/code";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
 import { ThemeGallery, type ThemeCard } from "@/components/site/theme-gallery";
-import { heroView, helloView, render, themeView, widgetsView } from "@/lib/terminal";
+
 import { recordView, themeVotes, totalViews } from "@/lib/db";
 import { themes } from "@profullstack/hqtui";
 
@@ -113,14 +113,14 @@ export default async function Home() {
   const [votes, views] = await Promise.all([themeVotes(), totalViews()]);
   const voteMap = new Map(votes.map((v) => [v.theme, v.votes]));
 
-  const themeCards: ThemeCard[] = Object.values(themes)
-    .filter((theme) => theme.dark)
-    .map((theme) => ({
-      name: theme.name,
-      label: theme.name.replace(/-/g, " "),
-      html: render(themeView(theme.name), { width: 74, height: 16, theme, fontSize: 12 }),
-      votes: voteMap.get(theme.name) ?? 0,
-    }));
+  // Only themes with a captured screenshot appear in the gallery.
+  const SHOT_THEMES = ["dark", "dracula", "nord", "tokyo-night", "gruvbox", "matrix"];
+  const themeCards: ThemeCard[] = SHOT_THEMES.map((name) => ({
+    name,
+    label: name.replace(/-/g, " "),
+    shot: `theme-${name}`,
+    votes: voteMap.get(name) ?? 0,
+  }));
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -164,9 +164,14 @@ export default async function Home() {
           </div>
 
           <div className="mt-12">
-            <Terminal view={heroView} width={150} height={34} title="hqtui-demo — dashboard" />
+            <Terminal
+              shot="hero"
+              title="hqtui-demo — dashboard"
+              alt="HQTUI dashboard: CPU, memory, network and processes"
+              priority
+            />
             <p className="mt-3 text-center font-mono text-xs text-white/30">
-              Not a screenshot. This frame was produced by HQTUI&apos;s own renderer when the page was built.
+              Captured from HQTUI&apos;s own renderer at 2x — the real frame, not a mockup.
             </p>
           </div>
 
@@ -212,7 +217,7 @@ export default async function Home() {
           </div>
           <div className="space-y-4">
             <Code code={HELLO} filename="hello.ts" />
-            <Terminal view={helloView} width={60} height={7} bare />
+            <Terminal shot="hello" bare alt="A hello world panel rendered by HQTUI" />
           </div>
         </div>
       </section>
@@ -258,7 +263,7 @@ export default async function Home() {
             <TabsTrigger value="testing">Testing</TabsTrigger>
           </TabsList>
           <TabsContent value="widgets">
-            <Terminal view={widgetsView} width={140} height={30} title="components" />
+            <Terminal shot="widgets" title="components" alt="The HQTUI widget catalogue" />
           </TabsContent>
           <TabsContent value="dashboard">
             <div className="grid gap-4 lg:grid-cols-2">

@@ -27,6 +27,9 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
+# Railway injects HOSTNAME as the container id; Next's standalone server binds
+# to it literally and then answers nothing. It must listen on all interfaces.
+ENV HOSTNAME=0.0.0.0
 # The oven/bun image is Debian-slim and already ships a non-root `bun` user,
 # so there is no adduser to call and no user to create.
 COPY --from=builder --chown=bun:bun /app/apps/web/.next/standalone ./

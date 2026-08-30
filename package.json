@@ -23,8 +23,5 @@
   "devDependencies": {
     "@types/node": "^22",
     "typescript": "^5.7.2"
-  },
-  "dependencies": {
-    "@profullstack/hqtui": "workspace:*"
   }
 }

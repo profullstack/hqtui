@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Code } from "@/components/site/code";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
-import { helloView, widgetsView } from "@/lib/terminal";
+
 import { recordView } from "@/lib/db";
 import { Separator } from "@/components/ui/separator";
 
@@ -98,7 +98,7 @@ app.render(({ ui }) => {
 
 await app.start();`}
             />
-            <Terminal view={helloView} width={54} height={9} bare />
+            <Terminal shot="hello" bare alt="A hello world panel rendered by HQTUI" />
           </div>
           <P>
             The render callback runs on every frame. Keep it pure: read your state, describe the
@@ -152,7 +152,7 @@ ui.row({ gap: 1 }, (row) => {
             histograms, heat bars, tabs, status bars, buttons, checkboxes, toggles, radios,
             selects, text inputs, modals, command palettes, tooltips, badges and dividers.
           </P>
-          <Terminal className="mt-5" view={widgetsView} width={132} height={30} title="widgets" />
+          <Terminal className="mt-5" shot="widgets" title="widgets" alt="The HQTUI widget catalogue" />
           <Code
             className="mt-4"
             code={`p.table({

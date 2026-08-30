@@ -40,7 +40,7 @@ export const heroView: View = ({ ui, theme }) => {
   });
   ui.spacer(1);
   ui.row({ size: "1fr", gap: 1 }, (row) => {
-    row.panel({ title: "CPU Overview", subtitle: percent(sample.cpu.total) }, (p) => {
+    row.panel({ title: "CPU Overview", subtitle: percent(sample.cpu.total), borderColor: theme.success }, (p) => {
       p.graph({ values: sample.cpu.history, min: 0, max: 100, fill: true, color: theme.success, size: "1fr" });
       p.meters(sample.cpu.cores.slice(0, 8).map((value, i) => ({ label: `P${i}`, value })), {
         columns: 2,
@@ -48,7 +48,7 @@ export const heroView: View = ({ ui, theme }) => {
         style: "segmented",
       });
     });
-    row.panel({ title: "Memory", width: "0.7fr" }, (p) => {
+    row.panel({ title: "Memory", width: "0.7fr", borderColor: theme.warning }, (p) => {
       p.meter({ label: "Used", value: sample.memory.used / sample.memory.total, style: "segmented" });
       p.meter({ label: "Swap", value: sample.memory.swapUsed / sample.memory.swapTotal, style: "segmented" });
       p.spacer(1);
@@ -60,7 +60,7 @@ export const heroView: View = ({ ui, theme }) => {
       p.spacer("fill");
       p.sparkline({ label: "hist", values: sample.memory.history, color: theme.primary });
     });
-    row.panel({ title: "Network", width: "0.8fr" }, (p) => {
+    row.panel({ title: "Network", width: "0.8fr", borderColor: theme.primary }, (p) => {
       p.text(`↓ ${mbps(sample.network.downRate)}`, { fg: theme.primary, size: 1 });
       p.graph({ values: sample.network.downHistory, fill: true, color: theme.primary, min: 0 });
       p.text(`↑ ${mbps(sample.network.upRate)}`, { fg: theme.secondary, size: 1 });
@@ -68,7 +68,7 @@ export const heroView: View = ({ ui, theme }) => {
     });
   });
   ui.spacer(1);
-  ui.panel({ title: "Processes", size: 9 }, (p) => {
+  ui.panel({ title: "Processes", size: 9, borderColor: theme.accent }, (p) => {
     p.table({
       rows: sample.processes.slice(0, 6),
       selected: 0,
@@ -100,7 +100,7 @@ export const heroView: View = ({ ui, theme }) => {
 export const widgetsView: View = ({ ui, theme }) => {
   ui.row({ size: "1fr", gap: 1 }, (row) => {
     row.column({ gap: 1 }, (left) => {
-      left.panel({ title: "Meters & Gauges", size: 10 }, (p) => {
+      left.panel({ title: "Meters & Gauges", size: 10, borderColor: theme.success }, (p) => {
         p.meter({ label: "cpu", value: 0.22 });
         p.meter({ label: "mem", value: 0.58 });
         p.meter({ label: "disk", value: 0.87 });
@@ -110,7 +110,7 @@ export const widgetsView: View = ({ ui, theme }) => {
           r.donut({ segments: [{ value: 27 }, { value: 73 }] });
         });
       });
-      left.panel({ title: "Controls", size: 8 }, (p) => {
+      left.panel({ title: "Controls", size: 8, borderColor: theme.primary }, (p) => {
         p.row({ size: 1, gap: 1 }, (r) => {
           r.button({ label: "Primary", width: 11, size: 11, focused: true });
           r.button({ label: "Success", width: 11, size: 11, variant: "success" });
@@ -127,7 +127,7 @@ export const widgetsView: View = ({ ui, theme }) => {
         p.spacer(1);
         p.textInput({ label: "Filter", value: "postgres", focused: true });
       });
-      left.panel({ title: "Log Viewer", size: "1fr" }, (p) => {
+      left.panel({ title: "Log Viewer", size: "1fr", borderColor: theme.danger }, (p) => {
         p.log({
           entries: [
             { time: "15:34:12", level: "INFO", message: "Server started on port 3000" },
@@ -141,7 +141,7 @@ export const widgetsView: View = ({ ui, theme }) => {
       });
     });
     row.column({ gap: 1 }, (right) => {
-      right.panel({ title: "Process Tree", size: 11 }, (p) => {
+      right.panel({ title: "Process Tree", size: 11, borderColor: theme.secondary }, (p) => {
         p.tree({
           nodes: [{
             label: "systemd",
@@ -164,7 +164,7 @@ export const widgetsView: View = ({ ui, theme }) => {
           selected: 2,
         });
       });
-      right.panel({ title: "Graphs", size: "1fr" }, (p) => {
+      right.panel({ title: "Graphs", size: "1fr", borderColor: theme.accent }, (p) => {
         p.multiGraph(
           [
             { values: sample.cpu.history, color: theme.primary, label: "cpu" },
@@ -173,7 +173,7 @@ export const widgetsView: View = ({ ui, theme }) => {
           { min: 0, max: 100, legend: true, axis: true },
         );
       });
-      right.panel({ title: "Temperatures", size: 8 }, (p) => {
+      right.panel({ title: "Temperatures", size: 8, borderColor: theme.warning }, (p) => {
         sample.temperatures.slice(0, 5).forEach((temp) => {
           p.row({ size: 1 }, (r) => {
             r.text(temp.label, { fg: theme.muted, width: 15 });

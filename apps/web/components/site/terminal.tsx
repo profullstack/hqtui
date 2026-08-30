@@ -1,21 +1,24 @@
-import { render, type TerminalOptions } from "@/lib/terminal";
-import { renderToHtml } from "@profullstack/hqtui";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-interface TerminalProps extends TerminalOptions {
-  view: Parameters<typeof renderToHtml>[0];
+export interface TerminalShotProps {
+  /** Basename in /public/shots, without the extension. */
+  shot: string;
   title?: string;
   className?: string;
   /** Hide the title bar for inline snippets. */
   bare?: boolean;
+  priority?: boolean;
+  alt: string;
 }
 
 /**
- * A terminal frame whose contents are produced by HQTUI's own renderer at build
- * time and emitted as HTML. Nothing on this site is a screenshot of a terminal.
+ * Terminal frames are rendered by HQTUI itself and captured at 2x by
+ * `bun run shots`. Browsers do not lay text out on a grid — box-drawing rules
+ * drift apart and the frame stops looking like a terminal — so the site serves
+ * the real thing as a high-DPI image instead.
  */
-export function Terminal({ view, title, className, bare, ...options }: TerminalProps) {
-  const html = render(view, options);
+export function Terminal({ shot, title, className, bare, priority, alt }: TerminalShotProps) {
   return (
     <div className={cn("terminal-frame", className)}>
       {bare ? null : (
@@ -26,7 +29,16 @@ export function Terminal({ view, title, className, bare, ...options }: TerminalP
           <span className="ml-2 font-mono text-[11px] text-white/40">{title ?? "hqtui"}</span>
         </div>
       )}
-      <div className="terminal-frame__scroll" dangerouslySetInnerHTML={{ __html: html }} />
+      <Image
+        src={`/shots/${shot}.png`}
+        alt={alt}
+        width={1600}
+        height={900}
+        priority={priority}
+        sizes="(max-width: 1280px) 100vw, 1280px"
+        className="h-auto w-full"
+        unoptimized
+      />
     </div>
   );
 }

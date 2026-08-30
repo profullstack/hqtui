@@ -227,13 +227,16 @@ export function bar(surface: Surface, options: BarOptions): void {
   const trackColor = options.track ?? mix(theme.background, theme.border, 0.8);
   const heat = options.heat ? makeGradient(theme.heat) : undefined;
   const color = options.color ?? theme.primary;
-  const trackChar = options.trackChar ?? (style === "ascii" ? "-" : style === "segmented" ? "░" : "─");
+  const trackChar = options.trackChar ?? (style === "ascii" ? "-" : style === "segmented" ? "▮" : "─");
 
   const filled = ratio * w;
   const full = Math.floor(filled);
+  // Segmented draws discrete ticks with gaps, so stacked bars stay separable
+  // instead of merging into one block of colour. This is the btop look.
+  const fillChar = style === "ascii" ? "#" : style === "segmented" ? "▮" : "█";
   for (let x = 0; x < w; x++) {
     if (x < full) {
-      surface.char(x, 0, style === "ascii" ? "#" : "█", {
+      surface.char(x, 0, fillChar, {
         fg: heat ? heat(w <= 1 ? ratio : x / (w - 1)) : color,
         bg: options.background,
       });

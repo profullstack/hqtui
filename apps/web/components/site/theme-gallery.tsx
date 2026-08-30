@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { Check, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,14 +8,13 @@ import { cn } from "@/lib/utils";
 export interface ThemeCard {
   name: string;
   label: string;
-  html: string;
+  shot: string;
   votes: number;
 }
 
 /**
- * Every card is a real HQTUI frame rendered server-side in that theme. Voting
- * writes to SQLite (Turso); a failed vote leaves the UI unchanged rather than
- * pretending it counted.
+ * Each card is a real HQTUI frame captured at 2x. Voting writes to SQLite; a
+ * failed vote leaves the count alone rather than pretending it landed.
  */
 export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
   const [active, setActive] = useState(themes[0]?.name ?? "dark");
@@ -40,7 +40,7 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
       setVotes((previous) => ({ ...previous, [name]: data.votes }));
       setVoted(name);
     } catch {
-      // Offline or the database is unreachable: leave the count alone.
+      // Offline or the database is unreachable.
     } finally {
       setPending(false);
     }
@@ -67,21 +67,22 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
       </div>
 
       <div className="space-y-3">
-        <div
-          className="terminal-frame"
-          key={current?.name}
-        >
+        <div className="terminal-frame">
           <div className="terminal-frame__bar">
             <span className="terminal-frame__dot bg-[#ff5f57]" />
             <span className="terminal-frame__dot bg-[#febc2e]" />
             <span className="terminal-frame__dot bg-[#28c840]" />
-            <span className="ml-2 font-mono text-[11px] text-white/40">
-              theme: {current?.label}
-            </span>
+            <span className="ml-2 font-mono text-[11px] text-white/40">theme: {current?.label}</span>
           </div>
-          <div
-            className="terminal-frame__scroll"
-            dangerouslySetInnerHTML={{ __html: current?.html ?? "" }}
+          <Image
+            key={current?.name}
+            src={`/shots/${current?.shot}.png`}
+            alt={`HQTUI rendered with the ${current?.label} theme`}
+            width={1618}
+            height={647}
+            sizes="(max-width: 1280px) 100vw, 1100px"
+            className="h-auto w-full"
+            unoptimized
           />
         </div>
 

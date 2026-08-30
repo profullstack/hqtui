@@ -2,9 +2,9 @@ import Image from "next/image";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
 import { Badge } from "@/components/ui/badge";
-import { heroView, themeView, widgetsView } from "@/lib/terminal";
+
 import { recordView } from "@/lib/db";
-import { themes } from "@profullstack/hqtui";
+
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +29,7 @@ const GALLERY = [
 
 export default async function Showcase() {
   await recordView("/showcase");
-  const themed = [themes.tokyoNight, themes.gruvbox, themes.matrix, themes.dracula];
+  const themed = ["tokyo-night", "gruvbox", "matrix", "dracula"];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -53,7 +53,7 @@ export default async function Showcase() {
             Grid layout, Braille area graphs, segmented meters, a zebra-striped table and a
             function-key status bar.
           </p>
-          <Terminal view={heroView} width={150} height={34} title="hqtui-demo — dashboard" />
+          <Terminal shot="hero" title="hqtui-demo — dashboard" alt="HQTUI dashboard" priority />
         </section>
 
         <section className="mt-14 space-y-3">
@@ -62,7 +62,7 @@ export default async function Showcase() {
             Meters, gauges, donuts, controls, a process tree, multi-series graphs, heat bars
             and a log viewer.
           </p>
-          <Terminal view={widgetsView} width={140} height={30} title="components" />
+          <Terminal shot="widgets" title="components" alt="The HQTUI widget catalogue" />
         </section>
 
         <section className="mt-14">
@@ -72,15 +72,12 @@ export default async function Showcase() {
             cannot do truecolor.
           </p>
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            {themed.map((theme) => (
+            {themed.map((name) => (
               <Terminal
-                key={theme.name}
-                view={themeView(theme.name)}
-                theme={theme}
-                width={72}
-                height={16}
-                fontSize={12}
-                title={theme.name}
+                key={name}
+                shot={`theme-${name}`}
+                title={name}
+                alt={`HQTUI rendered with the ${name} theme`}
               />
             ))}
           </div>
