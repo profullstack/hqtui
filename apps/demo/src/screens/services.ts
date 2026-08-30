@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { cursor, type DemoState } from "../state.ts";
 import { bytes, num, percent } from "../format.ts";
 
 function rate(value: number): string {
@@ -25,8 +25,9 @@ export function servicesScreen(ui: Container, state: DemoState, theme: Theme): v
       }
       p.table({
         rows: t.services,
-        selected: state.selected % Math.max(1, t.services.length),
-        offset: state.offset,
+        selected: cursor(state).selected,
+        offset: cursor(state).offset,
+        followSelection: true,
         zebra: true,
         scrollbar: true,
         columns: [

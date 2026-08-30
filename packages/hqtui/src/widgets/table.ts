@@ -27,6 +27,11 @@ export interface TableOptions<Row = Record<string, unknown>> {
   selected?: number;
   /** First visible row; combine with `selected` for scrolling lists. */
   offset?: number;
+  /**
+   * Scroll so `selected` stays visible. Only the table knows how many rows fit,
+   * so working the offset out here saves every caller from tracking heights.
+   */
+  followSelection?: boolean;
   zebra?: boolean;
   gap?: number;
   background?: Color;
@@ -41,6 +46,26 @@ function cellValue<Row>(row: Row, column: Column<Row>, index: number): string {
   const v = (row as Record<string, unknown>)[column.key];
   if (v === null || v === undefined) return "";
   return String(v);
+}
+
+/**
+ * Where the visible window should start: the caller's offset, nudged just far
+ * enough to keep the selected row on screen, and clamped to the list.
+ */
+export function resolveOffset(
+  offset: number | undefined,
+  selected: number | undefined,
+  capacity: number,
+  total: number,
+  follow = false,
+): number {
+  const maxOffset = Math.max(0, total - capacity);
+  let start = Math.max(0, Math.min(offset ?? 0, maxOffset));
+  if (follow && selected !== undefined && capacity > 0) {
+    if (selected < start) start = selected;
+    else if (selected >= start + capacity) start = selected - capacity + 1;
+  }
+  return Math.max(0, Math.min(start, maxOffset));
 }
 
 /** A dense, column-aligned table with optional selection and scrollbar. */
@@ -84,8 +109,8 @@ export function drawTable<Row>(surface: Surface, options: TableOptions<Row>): vo
     });
   }
 
-  const offset = Math.max(0, options.offset ?? 0);
   const capacity = Math.max(0, surface.height - headerRows);
+  const offset = resolveOffset(options.offset, options.selected, capacity, options.rows.length, options.followSelection);
   const zebraBg = options.zebra ? elevate(theme, 0.04) : undefined;
 
   for (let i = 0; i < capacity; i++) {
@@ -147,6 +172,8 @@ export interface ListOptions {
   items: (string | { label: string; color?: Color; badge?: string })[];
   selected?: number;
   offset?: number;
+  /** Scroll so `selected` stays visible. */
+  followSelection?: boolean;
   background?: Color;
   bullet?: string;
   scrollbar?: boolean;
@@ -156,7 +183,9 @@ export function drawList(surface: Surface, options: ListOptions): void {
   if (surface.empty) return;
   const theme = surface.theme;
   const width = surface.width - (options.scrollbar ? 1 : 0);
-  const offset = Math.max(0, options.offset ?? 0);
+  const offset = resolveOffset(
+    options.offset, options.selected, surface.height, options.items.length, options.followSelection,
+  );
   for (let i = 0; i < surface.height; i++) {
     const index = offset + i;
     const raw = options.items[index];
@@ -190,6 +219,8 @@ export interface TreeOptions {
   nodes: TreeNode[];
   selected?: number;
   offset?: number;
+  /** Scroll so `selected` stays visible. */
+  followSelection?: boolean;
   background?: Color;
   /** Draw the ├─ └─ connectors. */
   guides?: boolean;
@@ -219,7 +250,9 @@ export function drawTree(surface: Surface, options: TreeOptions): void {
   const flat: FlatNode[] = [];
   flatten(options.nodes, 0, [], flat);
 
-  const offset = Math.max(0, options.offset ?? 0);
+  const offset = resolveOffset(
+    options.offset, options.selected, surface.height, flat.length, options.followSelection,
+  );
   const guides = options.guides !== false;
   const guideColor = options.guideColor ?? mix(theme.border, theme.foreground, 0.15);
 
@@ -298,7 +331,7 @@ export function drawLog(surface: Surface, options: LogOptions): void {
   const follow = options.follow !== false;
   const start = follow
     ? Math.max(0, entries.length - surface.height)
-    : Math.max(0, options.offset ?? 0);
+    : resolveOffset(options.offset, undefined, surface.height, entries.length);
 
   for (let i = 0; i < surface.height; i++) {
     const entry = entries[start + i];

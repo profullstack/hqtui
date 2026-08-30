@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { cursor, type DemoState } from "../state.ts";
 import { byteRate, bytes } from "../format.ts";
 
 /** Interfaces, live throughput, open connections and listening ports. */
@@ -55,8 +55,9 @@ export function networkScreen(ui: Container, state: DemoState, theme: Theme): vo
       }
       p.table({
         rows: t.connections,
-        selected: state.selected % Math.max(1, t.connections.length),
-        offset: state.offset,
+        selected: cursor(state).selected,
+        offset: cursor(state).offset,
+        followSelection: true,
         zebra: true,
         scrollbar: true,
         columns: [

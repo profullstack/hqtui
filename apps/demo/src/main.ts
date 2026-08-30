@@ -9,7 +9,7 @@
  */
 import { createApp, themeList, themes, type KeyEvent } from "@profullstack/hqtui";
 import { createCollector } from "./system/index.ts";
-import { createState, SCREENS, type ScreenName } from "./state.ts";
+import { createState, cursor, SCREENS, type ScreenName } from "./state.ts";
 import {
   componentsScreen, dashboardScreen, graphicsScreen, inputScreen, networkScreen, servicesScreen,
   sessionsScreen, stressScreen, themesScreen, trafficScreen, visibleProcesses,
@@ -50,7 +50,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.1.6"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.1.7"); process.exit(0);
     }
   }
   return options;
@@ -94,6 +94,29 @@ const PALETTE_COMMANDS: { label: string; hint: string; run: (state: ReturnType<t
   { label: "Sort by Memory", hint: "F6", run: (s) => { s.sort = "mem"; } },
   { label: "Pause updates", hint: "Space", run: (s) => { s.paused = !s.paused; } },
 ];
+
+/** Row count of the list the arrow keys drive on each screen. */
+function rowCount(state: ReturnType<typeof createState>): number {
+  const t = state.sample.telemetry;
+  switch (state.screen) {
+    case "dashboard": return visibleProcesses(state).length;
+    case "traffic": return t.ssh.length;
+    case "sessions": return t.logins.length;
+    case "network": return t.connections.length;
+    case "services": return t.services.length;
+    case "components": return 5;
+    default: return 0;
+  }
+}
+
+function moveCursor(state: ReturnType<typeof createState>, delta: number): void {
+  const c = cursor(state);
+  const total = rowCount(state);
+  if (total === 0) return;
+  c.selected = Math.max(0, Math.min(total - 1, c.selected + delta));
+  // The table scrolls itself via followSelection; keep the offset in range.
+  c.offset = Math.max(0, Math.min(c.offset, Math.max(0, total - 1)));
+}
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
@@ -143,7 +166,13 @@ async function main(): Promise<void> {
   app.on("mouse", (event) => {
     state.lastMouse = `${event.action} ${event.button} @ ${event.x},${event.y}${event.scroll ? ` scroll ${event.scroll}` : ""}`;
     if (event.action === "scroll") {
-      state.offset = Math.max(0, state.offset + event.scroll * 3);
+      // Scrolling moves the window and drags the selection along with it, so
+      // the highlighted row never scrolls off and snaps the view back.
+      const c = cursor(state);
+      const total = rowCount(state);
+      c.offset = Math.max(0, Math.min(c.offset + event.scroll * 3, Math.max(0, total - 1)));
+      c.selected = Math.max(c.offset, Math.min(c.selected, c.offset + 20));
+      app.invalidate();
     }
   });
 
@@ -203,12 +232,12 @@ async function main(): Promise<void> {
         state.paletteIndex = 0;
         return;
       case "space": state.paused = !state.paused; return;
-      case "up": state.selected = Math.max(0, state.selected - 1); break;
-      case "down": state.selected = Math.min(visibleProcesses(state).length - 1, state.selected + 1); break;
-      case "pageup": state.selected = Math.max(0, state.selected - 10); break;
-      case "pagedown": state.selected = Math.min(visibleProcesses(state).length - 1, state.selected + 10); break;
-      case "home": state.selected = 0; break;
-      case "end": state.selected = Math.max(0, visibleProcesses(state).length - 1); break;
+      case "up": moveCursor(state, -1); break;
+      case "down": moveCursor(state, 1); break;
+      case "pageup": moveCursor(state, -10); break;
+      case "pagedown": moveCursor(state, 10); break;
+      case "home": moveCursor(state, -Number.MAX_SAFE_INTEGER); break;
+      case "end": moveCursor(state, Number.MAX_SAFE_INTEGER); break;
       case "enter": state.showModal = true; return;
       case "left":
         if (state.screen === "themes") {
@@ -231,8 +260,7 @@ async function main(): Promise<void> {
       if (index < SCREENS.length) state.screen = SCREENS[index];
     }
 
-    // Keep the selected row inside the visible window.
-    if (state.selected < state.offset) state.offset = state.selected;
+
   });
 
   app.render(({ ui, theme, height }) => {
@@ -306,7 +334,7 @@ async function main(): Promise<void> {
     if (state.showModal) {
       ui.modal({
         title: "Confirm Action",
-        message: `Are you sure you want to terminate process ${visibleProcesses(state)[state.selected]?.pid ?? "—"} (${visibleProcesses(state)[state.selected]?.name ?? "—"})?`,
+        message: `Are you sure you want to terminate process ${visibleProcesses(state)[cursor(state).selected]?.pid ?? "—"} (${visibleProcesses(state)[cursor(state).selected]?.name ?? "—"})?`,
         buttons: [
           { label: "Yes", variant: "success", focused: true },
           { label: "No", variant: "ghost" },

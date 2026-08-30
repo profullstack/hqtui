@@ -21,7 +21,7 @@
     },
     "apps/demo": {
       "name": "@profullstack/hqtui-demo",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "bin": {
         "hqtui-demo": "./src/main.ts",
       },
@@ -58,7 +58,7 @@
     },
     "packages/hqtui": {
       "name": "@profullstack/hqtui",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "bin": {
         "hqtui": "./bin/hqtui.mjs",
       },

@@ -1,6 +1,6 @@
 import type { Container, Theme } from "@profullstack/hqtui";
 import { heatColor } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { cursor, type DemoState } from "../state.ts";
 import { bitRate, byteRate, bytes, clock, duration, num, percent } from "../format.ts";
 
 const TIME_LABELS = ["60s", "45s", "30s", "15s", "0s"];
@@ -154,8 +154,9 @@ function processesPanel(ui: Container, state: DemoState, theme: Theme): void {
   }, (p) => {
     p.table({
       rows,
-      selected: state.selected,
-      offset: state.offset,
+      selected: cursor(state).selected,
+      offset: cursor(state).offset,
+      followSelection: true,
       scrollbar: true,
       columns: [
         { key: "pid", title: "PID", width: 7, align: "right" },

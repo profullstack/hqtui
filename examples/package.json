@@ -4,6 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@profullstack/hqtui": "^0.1.6"
+    "@profullstack/hqtui": "^0.1.7"
   }
 }

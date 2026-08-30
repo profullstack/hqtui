@@ -17,9 +17,11 @@ export interface DemoState {
   unavailable: string[];
   /** Why hardware sensors are missing on this host, when they are. */
   sensorNote: string;
-  /** Selected process row. */
-  selected: number;
-  offset: number;
+  /**
+   * One cursor per screen. A single shared selection meant the arrow keys moved
+   * an index the visible table did not use, so its scrollbar never moved.
+   */
+  cursors: Record<ScreenName, { selected: number; offset: number }>;
   sort: "cpu" | "mem" | "pid" | "name";
   filter: string;
   filtering: boolean;
@@ -46,6 +48,11 @@ export interface DemoState {
   bytes: number;
 }
 
+/** The cursor for whichever screen is showing. */
+export function cursor(state: DemoState): { selected: number; offset: number } {
+  return state.cursors[state.screen] ?? { selected: 0, offset: 0 };
+}
+
 export function createState(
   sample: SystemSample,
   source: string,
@@ -58,8 +65,9 @@ export function createState(
     screen: "dashboard",
     source,
     unavailable,
-    selected: 0,
-    offset: 0,
+    cursors: Object.fromEntries(
+      SCREENS.map((screen) => [screen, { selected: 0, offset: 0 }]),
+    ) as DemoState["cursors"],
     sort: "cpu",
     filter: "",
     filtering: false,

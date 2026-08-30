@@ -1,6 +1,6 @@
 import type { Container, Theme } from "@profullstack/hqtui";
 import { seriesColor } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { cursor, type DemoState } from "../state.ts";
 import { num, percent } from "../format.ts";
 
 function rate(value: number): string {
@@ -135,6 +135,9 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
         }
         p.table({
           rows: [...t.ssh].reverse(),
+          selected: cursor(state).selected,
+          offset: cursor(state).offset,
+          followSelection: true,
           zebra: true,
           scrollbar: true,
           columns: [

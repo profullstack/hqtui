@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { cursor, type DemoState } from "../state.ts";
 
 /** Who is on this machine, who has been, and who failed to get in. */
 export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): void {
@@ -42,7 +42,9 @@ export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): v
       }
       p.table({
         rows: t.logins,
-        selected: state.selected % Math.max(1, t.logins.length),
+        selected: cursor(state).selected,
+          offset: cursor(state).offset,
+          followSelection: true,
         zebra: true,
         scrollbar: true,
         columns: [

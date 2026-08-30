@@ -140,6 +140,66 @@ test("HTML output carries the cell colors", () => {
   assert.ok(html.startsWith("<pre"));
 });
 
+test("followSelection scrolls the selected row into view", () => {
+  const rows = Array.from({ length: 50 }, (_, i) => ({ id: i, name: `row-${i}` }));
+  const columns = [{ key: "name", title: "Name" }];
+
+  // Row 40 is far outside a 6-row window, so the table has to scroll to it.
+  const scrolled = renderToScreen(
+    ({ ui }) => ui.table({ rows, columns, selected: 40, followSelection: true }),
+    { width: 30, height: 7 },
+  );
+  assert.ok(scrolled.contains("row-40"), "expected the selected row to be visible");
+  assert.ok(!scrolled.contains("row-0"), "expected the window to have moved off the top");
+
+  // Without it the table stays at the offset it was given.
+  const pinned = renderToScreen(
+    ({ ui }) => ui.table({ rows, columns, selected: 40 }),
+    { width: 30, height: 7 },
+  );
+  assert.ok(pinned.contains("row-0"));
+  assert.ok(!pinned.contains("row-40"));
+});
+
+test("an explicit offset scrolls the table", () => {
+  const rows = Array.from({ length: 50 }, (_, i) => ({ name: `row-${i}` }));
+  const columns = [{ key: "name", title: "Name" }];
+  const screen = renderToScreen(
+    ({ ui }) => ui.table({ rows, columns, offset: 20 }),
+    { width: 30, height: 7 },
+  );
+  assert.ok(screen.contains("row-20"));
+  assert.ok(!screen.contains("row-19"));
+});
+
+test("the offset never scrolls past the end of the list", () => {
+  const rows = Array.from({ length: 8 }, (_, i) => ({ name: `row-${i}` }));
+  const columns = [{ key: "name", title: "Name" }];
+  const screen = renderToScreen(
+    ({ ui }) => ui.table({ rows, columns, offset: 9999 }),
+    { width: 30, height: 7 },
+  );
+  // Six body rows fit, so the furthest the window can start is row 2.
+  assert.ok(screen.contains("row-7"), "the last row should still be visible");
+  assert.ok(screen.contains("row-2"));
+});
+
+test("lists and trees follow their selection too", () => {
+  const items = Array.from({ length: 40 }, (_, i) => `item-${i}`);
+  const list = renderToScreen(
+    ({ ui }) => ui.list({ items, selected: 30, followSelection: true }),
+    { width: 24, height: 6 },
+  );
+  assert.ok(list.contains("item-30"));
+
+  const nodes = Array.from({ length: 30 }, (_, i) => ({ label: `node-${i}` }));
+  const tree = renderToScreen(
+    ({ ui }) => ui.tree({ nodes, selected: 25, followSelection: true }),
+    { width: 24, height: 6 },
+  );
+  assert.ok(tree.contains("node-25"));
+});
+
 test("escape hatch drawing reaches the buffer", () => {
   const screen = renderToScreen(({ ui }) => {
     ui.draw((surface) => surface.text(0, 0, "raw"));

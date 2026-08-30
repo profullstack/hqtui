@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { cursor, type DemoState } from "../state.ts";
 import { bytes, percent } from "../format.ts";
 
 const FILES = [
@@ -85,7 +85,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
       left.panel({ title: "Table Widget", size: "1fr" }, (p) => {
         p.table({
           rows: FILES,
-          selected: state.selected % FILES.length,
+          selected: cursor(state).selected % FILES.length,
           zebra: true,
           columns: [
             { key: "name", title: "Name", min: 10, color: theme.primary },
@@ -109,7 +109,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
           r.text("Name", { fg: theme.muted, bold: true });
           r.text("CPU%   MEM%", { fg: theme.muted, bold: true, align: "right" });
         });
-        p.tree({ nodes: TREE, selected: state.selected % 8 });
+        p.tree({ nodes: TREE, selected: cursor(state).selected % 8, followSelection: true });
       });
 
       right.panel({ title: "Sparklines & Gauges", size: 12 }, (p) => {
@@ -143,7 +143,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
             { label: "apps/web" },
             { label: "docs" },
           ],
-          selected: state.selected % 4,
+          selected: cursor(state).selected % 4,
           bullet: "▸",
           scrollbar: true,
         });
