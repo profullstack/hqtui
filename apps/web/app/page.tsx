@@ -137,7 +137,7 @@ export default async function Home() {
               width={2172}
               height={724}
               priority
-              className="mx-auto mb-6 h-16 w-auto sm:h-20"
+              className="mx-auto mb-6 w-[22rem] max-w-full sm:w-[30rem]"
             />
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
               v0.1.9 · MIT · zero runtime dependencies
