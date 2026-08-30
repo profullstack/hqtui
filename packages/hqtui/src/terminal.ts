@@ -86,9 +86,16 @@ export class Terminal {
   }
 
   size(): TerminalSize {
+    // Bun reports 0 for columns and rows on some ptys, and `?? 80` does not
+    // catch a zero — which leaves a 0x0 framebuffer that renders nothing at
+    // all. Anything not a positive finite number means "ask somewhere else".
+    const usable = (value: unknown): number | undefined => {
+      const n = Number(value);
+      return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+    };
     return {
-      columns: this.output.columns ?? 80,
-      rows: this.output.rows ?? 24,
+      columns: usable(this.output.columns) ?? usable(process.env.COLUMNS) ?? 80,
+      rows: usable(this.output.rows) ?? usable(process.env.LINES) ?? 24,
     };
   }
 

@@ -13,7 +13,7 @@ import { join } from "node:path";
 const root = mkdtempSync(join(tmpdir(), "hqtui-sysfs-"));
 
 function write(path: string, contents: string): void {
-  const full = join(root, path);
+  const full = join(root, ...path.split("/"));
   mkdirSync(join(full, ".."), { recursive: true });
   writeFileSync(full, contents);
 }
@@ -45,7 +45,10 @@ write("sys/class/hwmon/hwmon2/device/temp1_input", "41000\n");
 write("sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "2900000\n");
 write("sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq", "3100000\n");
 
-process.env.HQTUI_SYSFS_ROOT = join(root, "sys").replace(/\/sys$/, "");
+// The collector prefixes this onto absolute /sys paths, so it is the parent of
+// the fake sys tree. Deriving it by trimming a "/sys" suffix broke on Windows,
+// where join() produces a backslash the regex never matched.
+process.env.HQTUI_SYSFS_ROOT = root;
 
 const telemetry = await import("../src/system/linux-telemetry.ts");
 
