@@ -277,13 +277,18 @@ export default async function Home() {
           <TabsContent value="dashboard">
             <div className="grid gap-4 lg:grid-cols-2">
               <Code code={DASHBOARD} filename="dashboard.ts" />
-              <Image
-                src="/hqtui-components.png"
-                alt="HQTUI component showcase"
-                width={1536}
-                height={1024}
-                className="rounded-xl border border-white/10"
-              />
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6 text-sm text-white/60">
+                <h3 className="mb-2 font-semibold text-white">One API for the whole screen</h3>
+                <p>
+                  Panels, graphs, meters and tables are all methods on the same container, sized
+                  by the same layout engine and themed by the same tokens. There is no second
+                  system for &quot;advanced&quot; widgets.
+                </p>
+                <p className="mt-3">
+                  The dashboard above is roughly forty lines of this, which is why the reference
+                  demo fits in a file you can read in one sitting.
+                </p>
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="testing">
@@ -383,13 +388,10 @@ export default async function Home() {
                 Six screens: dashboard, components, graphics, themes, input visualizer, stress test.
               </p>
             </div>
-            <Image
-              src="/hqtui-dashboard.png"
-              alt="HQTUI reference dashboard"
-              width={1672}
-              height={941}
-              className="rounded-xl border border-white/10"
-              priority={false}
+            <Terminal
+              shot="traffic"
+              title="hqtui-demo — traffic"
+              alt="HQTUI traffic screen reading a live machine"
             />
           </div>
         </div>

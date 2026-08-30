@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
 import { Badge } from "@/components/ui/badge";
@@ -10,22 +9,6 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Showcase" };
 
-const GALLERY = [
-  {
-    title: "Reference dashboard",
-    body: "CPU with per-core meters, memory and swap, disks with throughput history, a live network graph, the process table, temperatures, sensors and a tailing log — all on one screen.",
-    image: "/hqtui-dashboard.png",
-    width: 1672,
-    height: 941,
-  },
-  {
-    title: "Component showcase",
-    body: "Panels, gauges, tables, trees, dialogs, log viewers, sparklines, theme previews and keyboard command bars, in the density a real monitoring tool needs.",
-    image: "/hqtui-components.png",
-    width: 1536,
-    height: 1024,
-  },
-];
 
 export default async function Showcase() {
   await recordView("/showcase");
@@ -47,9 +30,8 @@ export default async function Showcase() {
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
           <p className="mt-4 text-lg text-white/60">
-            Every terminal below was rendered by HQTUI itself when this page was built. The
-            two images are the original design targets from the product requirements — the
-            live frames are what the library actually produces.
+            Every frame below is a real screen from <code className="font-mono text-white/80">hqtui-demo</code>,
+            rendered by HQTUI and captured at 2x. Nothing here is a mockup.
           </p>
         </div>
 
@@ -108,29 +90,6 @@ export default async function Showcase() {
           </div>
         </section>
 
-        <section className="mt-14">
-          <h2 className="text-xl font-semibold">Design targets</h2>
-          <p className="mt-1 text-sm text-white/50">
-            The quality bar the library was written against.
-          </p>
-          <div className="mt-5 space-y-10">
-            {GALLERY.map((item) => (
-              <figure key={item.title}>
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  width={item.width}
-                  height={item.height}
-                  className="rounded-xl border border-white/10"
-                />
-                <figcaption className="mt-3">
-                  <span className="font-semibold">{item.title}</span>
-                  <span className="mt-1 block text-sm text-white/50">{item.body}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
 
         <section className="mt-14 rounded-xl border border-white/10 bg-white/[0.02] p-6">
           <h2 className="text-xl font-semibold">Run it yourself</h2>

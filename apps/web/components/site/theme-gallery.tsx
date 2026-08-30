@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Check, ThumbsUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import shots from "@/public/shots/shots.json";
 
 export interface ThemeCard {
   name: string;
@@ -25,6 +26,9 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
   const [pending, setPending] = useState(false);
 
   const current = themes.find((t) => t.name === active) ?? themes[0];
+  // A 2x capture has to be drawn at exactly half, or the box rules blur.
+  const size = (shots as Record<string, { width: number; height: number }>)[current?.shot ?? ""] ??
+    { width: 2560, height: 1440 };
 
   async function vote(name: string) {
     if (pending || voted === name) return;
@@ -78,10 +82,11 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
             key={current?.name}
             src={`/shots/${current?.shot}.png`}
             alt={`HQTUI rendered with the ${current?.label} theme`}
-            width={1618}
-            height={647}
-            sizes="(max-width: 1280px) 100vw, 1100px"
+            width={size.width}
+            height={size.height}
+            sizes={`${Math.round(size.width / 2)}px`}
             className="h-auto w-full"
+            style={{ maxWidth: `${Math.round(size.width / 2)}px` }}
             unoptimized
           />
         </div>

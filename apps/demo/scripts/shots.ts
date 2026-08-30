@@ -9,7 +9,7 @@
  * the images are what ship — to the READMEs, npm and hqtui.com.
  */
 import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync, existsSync, readdirSync, copyFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync, readdirSync, copyFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToHtml, themes, type Theme } from "@profullstack/hqtui";
 import { createCollector } from "../src/system/index.ts";
@@ -131,10 +131,30 @@ const HELLO = ({ ui }: { ui: { panel: (o: unknown, b: (p: never) => void) => voi
   console.log("· hello (54x8 cells, dark)");
 }
 
+/**
+ * Font size so the 2x capture lands near 2560px wide.
+ *
+ * The site shows these in a 1280px column. A capture wider than 2560 gets
+ * resampled to some fraction that is not a half, and 1px box-drawing rules do
+ * not survive that — they turn to mush. Sized this way the browser draws the
+ * image at exactly 50%, which is what a 2x asset is for.
+ *
+ * The advance is measured from the captures rather than taken from the font
+ * metrics: 0.602em is what DejaVu declares, and 0.64 is what actually comes
+ * out of the renderer once the frame's own padding is in the picture.
+ */
+const ADVANCE = 0.64;
+
+function fontSizeFor(columns: number, targetWidth = 2540, padding = 20): number {
+  const usable = targetWidth - padding * 2 * SCALE;
+  const size = usable / (columns * ADVANCE * SCALE);
+  return Math.max(11, Math.min(16, Math.floor(size)));
+}
+
 for (const shot of SHOTS) {
   const theme = shot.theme ?? themes.dark;
   const draw = RENDERERS[shot.screen];
-  const fontSize = 15;
+  const fontSize = fontSizeFor(shot.width);
 
   const html = renderToHtml(
     // The demo screens take (container, state, theme); the renderer supplies the first.
@@ -173,8 +193,17 @@ if (crop.status !== 0) {
   process.exit(1);
 }
 
-// The website serves the same images.
+// The website serves the same images, plus the dimensions of each one: the
+// pages have to know the real size to render a 2x asset at exactly half.
+const sizes: Record<string, { width: number; height: number }> = {};
 for (const file of readdirSync(OUT)) {
-  if (file.endsWith(".png")) copyFileSync(join(OUT, file), join(SITE, file));
+  if (!file.endsWith(".png")) continue;
+  copyFileSync(join(OUT, file), join(SITE, file));
+  const header = readFileSync(join(OUT, file)).subarray(16, 24);
+  sizes[file.replace(/\.png$/, "")] = {
+    width: header.readUInt32BE(0),
+    height: header.readUInt32BE(4),
+  };
 }
-console.log(`copied ${readdirSync(OUT).length} screenshots to the website`);
+writeFileSync(join(SITE, "shots.json"), `${JSON.stringify(sizes, null, 2)}\n`);
+console.log(`copied ${Object.keys(sizes).length} screenshots to the website`);

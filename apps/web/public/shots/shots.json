@@ -1,0 +1,58 @@
+{
+  "dashboard-matrix": {
+    "width": 2439,
+    "height": 1270
+  },
+  "graphics": {
+    "width": 2444,
+    "height": 982
+  },
+  "dashboard-tokyo-night": {
+    "width": 2439,
+    "height": 1270
+  },
+  "traffic": {
+    "width": 2534,
+    "height": 1209
+  },
+  "network": {
+    "width": 2628,
+    "height": 1039
+  },
+  "services": {
+    "width": 2359,
+    "height": 1039
+  },
+  "hello": {
+    "width": 1116,
+    "height": 378
+  },
+  "sessions": {
+    "width": 2441,
+    "height": 925
+  },
+  "dashboard-gruvbox": {
+    "width": 2439,
+    "height": 1270
+  },
+  "themes": {
+    "width": 2508,
+    "height": 925
+  },
+  "dashboard": {
+    "width": 2439,
+    "height": 1270
+  },
+  "components": {
+    "width": 2319,
+    "height": 1039
+  },
+  "dashboard-dracula": {
+    "width": 2439,
+    "height": 1270
+  },
+  "dashboard-nord": {
+    "width": 2439,
+    "height": 1270
+  }
+}
