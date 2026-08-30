@@ -27,8 +27,10 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
 
   const current = themes.find((t) => t.name === active) ?? themes[0];
   // A 2x capture has to be drawn at exactly half, or the box rules blur.
-  const size = (shots as Record<string, { width: number; height: number }>)[current?.shot ?? ""] ??
-    { width: 2560, height: 1440 };
+  const size = (shots as Record<string, { width: number; height: number; scale?: number }>)[
+    current?.shot ?? ""
+  ] ?? { width: 2560, height: 1440, scale: 2 };
+  const displayWidth = Math.round(size.width / (size.scale ?? 2));
 
   async function vote(name: string) {
     if (pending || voted === name) return;
@@ -84,9 +86,9 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
             alt={`HQTUI rendered with the ${current?.label} theme`}
             width={size.width}
             height={size.height}
-            sizes={`${Math.round(size.width / 2)}px`}
+            sizes={`${displayWidth}px`}
             className="h-auto w-full"
-            style={{ maxWidth: `${Math.round(size.width / 2)}px` }}
+            style={{ maxWidth: `${displayWidth}px` }}
             unoptimized
           />
         </div>

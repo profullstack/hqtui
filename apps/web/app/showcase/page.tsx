@@ -23,23 +23,24 @@ export default async function Showcase() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteNav />
-      <main className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      <main className="mx-auto max-w-[1640px] px-4 py-14 sm:px-6">
         <div className="max-w-3xl">
           <Badge variant="secondary" className="mb-4 font-mono text-xs">
             live frames, not screenshots
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
           <p className="mt-4 text-lg text-white/60">
-            Every frame below is a real screen from <code className="font-mono text-white/80">hqtui-demo</code>,
-            rendered by HQTUI and captured at 2x. Nothing here is a mockup.
+            Screenshots of <code className="font-mono text-white/80">hqtui-demo</code> running on
+            real machines — a laptop and a server, reading their own metrics. Nothing here is a
+            mockup, and nothing is staged.
           </p>
         </div>
 
         <section className="mt-12 space-y-3">
           <h2 className="text-xl font-semibold">Dashboard</h2>
           <p className="text-sm text-white/50">
-            Grid layout, Braille area graphs, segmented meters, a zebra-striped table and a
-            function-key status bar.
+            A laptop reading itself: per-core meters, real thermal sensors and voltage rails,
+            live disk and network throughput, and the process table.
           </p>
           <Terminal shot="dashboard" title="hqtui-demo — dashboard" alt="HQTUI dashboard" priority />
         </section>
@@ -47,8 +48,8 @@ export default async function Showcase() {
         <section className="mt-14">
           <h2 className="text-xl font-semibold">Real-time telemetry</h2>
           <p className="mt-1 text-sm text-white/50">
-            The reference dashboard goes well past CPU and memory. Every screen below is
-            reading a real machine.
+            Well past CPU and memory. Every screen below is reading a real machine — the
+            login origins in Sessions are masked, nothing else is touched.
           </p>
           <div className="mt-5 space-y-8">
             {SCREENS.map((screen) => (

@@ -1,58 +1,72 @@
 {
   "dashboard-matrix": {
     "width": 2439,
-    "height": 1270
+    "height": 1270,
+    "scale": 2
   },
   "graphics": {
     "width": 2444,
-    "height": 982
+    "height": 982,
+    "scale": 2
   },
   "dashboard-tokyo-night": {
     "width": 2439,
-    "height": 1270
+    "height": 1270,
+    "scale": 2
   },
   "traffic": {
-    "width": 2534,
-    "height": 1209
+    "width": 1892,
+    "height": 928,
+    "scale": 1
   },
   "network": {
-    "width": 2628,
-    "height": 1039
+    "width": 1920,
+    "height": 935,
+    "scale": 1
   },
   "services": {
-    "width": 2359,
-    "height": 1039
+    "width": 1920,
+    "height": 935,
+    "scale": 1
   },
   "hello": {
     "width": 1116,
-    "height": 378
+    "height": 378,
+    "scale": 2
   },
   "sessions": {
-    "width": 2441,
-    "height": 925
+    "width": 1920,
+    "height": 935,
+    "scale": 1
   },
   "dashboard-gruvbox": {
     "width": 2439,
-    "height": 1270
+    "height": 1270,
+    "scale": 2
   },
   "themes": {
     "width": 2508,
-    "height": 925
+    "height": 925,
+    "scale": 2
   },
   "dashboard": {
-    "width": 2439,
-    "height": 1270
+    "width": 1892,
+    "height": 947,
+    "scale": 1
   },
   "components": {
     "width": 2319,
-    "height": 1039
+    "height": 1039,
+    "scale": 2
   },
   "dashboard-dracula": {
     "width": 2439,
-    "height": 1270
+    "height": 1270,
+    "scale": 2
   },
   "dashboard-nord": {
     "width": 2439,
-    "height": 1270
+    "height": 1270,
+    "scale": 2
   }
 }

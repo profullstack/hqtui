@@ -180,7 +180,8 @@ export default async function Home() {
               priority
             />
             <p className="mt-3 text-center font-mono text-xs text-white/30">
-              Captured from HQTUI&apos;s own renderer at 2x — the real frame, not a mockup.
+              A screenshot of <code className="font-mono">hqtui-demo</code> on a laptop, reading
+              its own sensors. Not a mockup.
             </p>
           </div>
 
