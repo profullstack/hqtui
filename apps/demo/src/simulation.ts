@@ -23,8 +23,15 @@ export interface ProcessSample {
   state: string;
 }
 
+import { type Telemetry, emptyTelemetry } from "./system/telemetry.ts";
+import { updateTelemetry } from "./system/simulated-telemetry.ts";
+
+export type { Telemetry };
+
 export interface SystemSample {
   time: number;
+  /** Everything beyond classic CPU/memory/disk monitoring. */
+  telemetry: Telemetry;
   cpu: {
     total: number;
     cores: number[];
@@ -153,6 +160,7 @@ export class SystemSimulation {
     const totalMemory = 16 * 1024 ** 3;
     this.state = {
       time: 0,
+      telemetry: emptyTelemetry(),
       cpu: {
         total: 0.18,
         cores: new Array(cores).fill(0.15),
@@ -331,6 +339,10 @@ export class SystemSimulation {
       { label: "CPU Power", value: `${(6 + s.cpu.total * 22).toFixed(1)} W` },
       { label: "GPU Power", value: `${(4 + s.cpu.total * 9).toFixed(1)} W` },
     ];
+
+    updateTelemetry(s.telemetry, this.random, this.tick, s.cpu.total);
+    s.system.processCount = s.telemetry.states.total;
+    s.system.threadCount = 940 + Math.round(s.cpu.total * 120);
 
     s.system.uptime += dt;
     s.system.threadCount = 940 + Math.round(s.cpu.total * 120);

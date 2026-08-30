@@ -152,7 +152,7 @@ ui.row({ gap: 1 }, (row) => {
             histograms, heat bars, tabs, status bars, buttons, checkboxes, toggles, radios,
             selects, text inputs, modals, command palettes, tooltips, badges and dividers.
           </P>
-          <Terminal className="mt-5" shot="widgets" title="widgets" alt="The HQTUI widget catalogue" />
+          <Terminal className="mt-5" shot="components" title="widgets" alt="The HQTUI widget catalogue" />
           <Code
             className="mt-4"
             code={`p.table({

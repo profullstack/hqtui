@@ -135,17 +135,48 @@ export function plot(surface: Surface, series: Series[], options: PlotOptions = 
     else canvas.polyline(points);
 
     const wantFill = s.fill ?? options.fill ?? false;
-    const fillAlpha = options.fillAlpha ?? 0.35;
+    const fillAlpha = options.fillAlpha ?? 0.5;
     if (wantFill) {
-      const area = new BrailleCanvas(w, h);
-      area.polyline(points);
-      area.fillUnder(points, py - 1);
-      // Fade the shading downwards so the line stays the brightest thing on screen.
+      // The area is drawn with block elements rather than Braille: eight
+      // scattered dots per cell reads as noise, a block reads as an area. The
+      // line stays Braille, so it keeps the sub-cell resolution.
       const base = bg ?? theme.background;
-      blit(surface, area, (_col, row) => {
-        const depth = h <= 1 ? 0 : row / (h - 1);
-        return mix(base, color, fillAlpha * (1 - depth * 0.6));
-      }, bg);
+      const values = s.values;
+      // The fill has to walk the same window as the line, averaging the samples
+      // that land inside each cell — otherwise the area drifts out of step.
+      const sampleCount = Math.min(values.length, px);
+      const sampleStart = values.length - sampleCount;
+      for (let x = 0; x < w; x++) {
+        const from = sampleStart + Math.floor((x / w) * sampleCount);
+        const to = Math.max(from + 1, sampleStart + Math.floor(((x + 1) / w) * sampleCount));
+        let sum = 0;
+        let seen = 0;
+        for (let i = from; i < to && i < values.length; i++) {
+          const sample = values[i];
+          if (Number.isFinite(sample)) {
+            sum += sample;
+            seen++;
+          }
+        }
+        if (seen === 0) continue;
+        const value = sum / seen;
+        const ratio = Math.max(0, Math.min(1, (value - min) / span));
+        const filled = ratio * h;
+        const full = Math.floor(filled);
+        for (let k = 0; k < full && k < h; k++) {
+          const row = h - 1 - k;
+          const depth = h <= 1 ? 0 : row / (h - 1);
+          surface.char(x, row, "█", { fg: mix(base, color, fillAlpha * (1 - depth * 0.3)), bg });
+        }
+        if (full < h) {
+          const glyph = verticalGlyph(filled - full, "block");
+          if (glyph !== " ") {
+            const row = h - 1 - full;
+            const depth = h <= 1 ? 0 : row / (h - 1);
+            surface.char(x, row, glyph, { fg: mix(base, color, fillAlpha * (1 - depth * 0.3) + 0.12), bg });
+          }
+        }
+      }
     }
     const ramp = options.colors ? makeGradient(options.colors) : undefined;
     blit(surface, canvas, (col, row) => {

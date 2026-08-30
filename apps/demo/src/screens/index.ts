@@ -1,4 +1,8 @@
 export { dashboardScreen, visibleProcesses } from "./dashboard.ts";
+export { sessionsScreen } from "./sessions.ts";
+export { networkScreen } from "./network.ts";
+export { trafficScreen } from "./traffic.ts";
+export { servicesScreen } from "./services.ts";
 export { componentsScreen } from "./components.ts";
 export { graphicsScreen } from "./graphics.ts";
 export { themesScreen } from "./themes.ts";

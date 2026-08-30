@@ -1,9 +1,14 @@
 import type { Theme } from "@profullstack/hqtui";
 import type { SystemSample } from "./system/index.ts";
 
-export type ScreenName = "dashboard" | "components" | "graphics" | "themes" | "input" | "stress";
+export type ScreenName =
+  | "dashboard" | "traffic" | "sessions" | "network" | "services"
+  | "components" | "graphics" | "themes" | "input" | "stress";
 
-export const SCREENS: ScreenName[] = ["dashboard", "components", "graphics", "themes", "input", "stress"];
+export const SCREENS: ScreenName[] = [
+  "dashboard", "traffic", "sessions", "network", "services",
+  "components", "graphics", "themes", "input", "stress",
+];
 
 export interface DemoState {
   sample: SystemSample;

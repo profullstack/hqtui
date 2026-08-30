@@ -30,6 +30,12 @@ const GALLERY = [
 export default async function Showcase() {
   await recordView("/showcase");
   const themed = ["tokyo-night", "gruvbox", "matrix", "dracula"];
+  const SCREENS = [
+    { shot: "traffic", title: "Traffic", body: "Every protocol in and out of the host: socket breakdown, TCP counters with retransmit rate, live HTTP request tracking from access logs, and sshd auth events." },
+    { shot: "network", title: "Network", body: "Per-interface throughput graphs with totals and error counts, open connections with owning processes, and every listening port." },
+    { shot: "sessions", title: "Sessions", body: "Who is logged in right now, login history from wtmp, failed attempts from btmp, and process state breakdown." },
+    { shot: "services", title: "Services", body: "systemd units with failures first, containers, kernel counters, and filesystems with inode usage." },
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -53,7 +59,26 @@ export default async function Showcase() {
             Grid layout, Braille area graphs, segmented meters, a zebra-striped table and a
             function-key status bar.
           </p>
-          <Terminal shot="hero" title="hqtui-demo — dashboard" alt="HQTUI dashboard" priority />
+          <Terminal shot="dashboard" title="hqtui-demo — dashboard" alt="HQTUI dashboard" priority />
+        </section>
+
+        <section className="mt-14">
+          <h2 className="text-xl font-semibold">Real-time telemetry</h2>
+          <p className="mt-1 text-sm text-white/50">
+            The reference dashboard goes well past CPU and memory. Every screen below is
+            reading a real machine.
+          </p>
+          <div className="mt-5 space-y-8">
+            {SCREENS.map((screen) => (
+              <figure key={screen.shot}>
+                <Terminal shot={screen.shot} title={screen.title.toLowerCase()} alt={`HQTUI ${screen.title} screen`} />
+                <figcaption className="mt-3">
+                  <span className="font-semibold">{screen.title}</span>
+                  <span className="mt-1 block text-sm text-white/50">{screen.body}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </section>
 
         <section className="mt-14 space-y-3">
@@ -62,7 +87,7 @@ export default async function Showcase() {
             Meters, gauges, donuts, controls, a process tree, multi-series graphs, heat bars
             and a log viewer.
           </p>
-          <Terminal shot="widgets" title="components" alt="The HQTUI widget catalogue" />
+          <Terminal shot="components" title="components" alt="The HQTUI widget catalogue" />
         </section>
 
         <section className="mt-14">
@@ -75,7 +100,7 @@ export default async function Showcase() {
             {themed.map((name) => (
               <Terminal
                 key={name}
-                shot={`theme-${name}`}
+                shot={`dashboard-${name}`}
                 title={name}
                 alt={`HQTUI rendered with the ${name} theme`}
               />

@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import os from "node:os";
 import type { SystemSample } from "../simulation.ts";
+import { emptyTelemetry } from "./telemetry.ts";
 
 const run = promisify(execFile);
 
@@ -31,6 +32,7 @@ export function baseSample(): SystemSample {
   const total = os.totalmem();
   return {
     time: 0,
+    telemetry: emptyTelemetry(),
     cpu: {
       total: 0,
       cores: new Array(Math.max(1, cpus.length)).fill(0),

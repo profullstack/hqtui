@@ -2,6 +2,9 @@ import { readFile, readdir } from "node:fs/promises";
 import os from "node:os";
 import type { Collector, SystemSample } from "./types.ts";
 import { baseSample, loadAverage, primaryInterface, push, ratePerSecond, sh } from "./common.ts";
+import type { Interface } from "./telemetry.ts";
+import * as telemetry from "./linux-telemetry.ts";
+import * as traffic from "./linux-traffic.ts";
 
 async function read(path: string): Promise<string> {
   try {
@@ -49,6 +52,8 @@ export class LinuxCollector implements Collector {
   private prevNet: [number, number] | null = null;
   private sectorSize = 512;
   private mounts: { device: string; mount: string }[] = [];
+  private ticks = 0;
+  private interfaceHistory = new Map<string, Interface>();
 
   async refresh(dt: number): Promise<void> {
     const s = this.sample;
@@ -168,6 +173,93 @@ export class LinuxCollector implements Collector {
     s.network.speed = speed.trim() && Number(speed) > 0 ? `${Number(speed) / 1000} Gb/s` : "-";
 
     await Promise.all([this.updateProcesses(), this.updateTemperatures()]);
+    await this.updateTelemetry(dt);
+  }
+
+  /**
+   * Cheap counters every tick; anything that shells out runs on a slower
+   * cadence so the dashboard never stalls waiting on `systemctl` or `last`.
+   */
+  private async updateTelemetry(dt: number): Promise<void> {
+    const t = this.sample.telemetry;
+    this.ticks++;
+
+    // Every tick: pure /proc reads.
+    const [kernel, interfaces] = await Promise.all([
+      telemetry.kernel(dt),
+      telemetry.interfaces(dt, this.interfaceHistory),
+    ]);
+    t.kernel = kernel;
+    t.interfaces = interfaces;
+
+    // TCP/UDP/ICMP counters are a single /proc read, so every tick.
+    t.net = await traffic.counters();
+    push(t.netInHistory, t.net.rates.inSegs);
+    push(t.netOutHistory, t.net.rates.outSegs);
+    push(t.retransHistory, t.net.rates.retrans);
+    this.sample.system.contextSwitches = kernel.contextSwitches;
+
+    // Every other tick: one cheap command each.
+    if (this.ticks % 2 === 1) {
+      const [sockets, states] = await Promise.all([telemetry.sockets(), telemetry.processStates()]);
+      t.connections = sockets.connections;
+      t.listeners = sockets.listeners;
+      t.states = states;
+      push(t.connectionHistory, sockets.connections.length);
+
+      const split = traffic.breakdown(sockets.connections, sockets.listeners);
+      t.protocols = split.protocols;
+      t.remotes = split.remotes;
+      t.inboundConnections = split.inbound;
+      t.outboundConnections = split.outbound;
+      this.sample.system.processCount = states.total;
+    }
+
+    // Every 5 ticks: sessions, journal and filesystems.
+    if (this.ticks % 5 === 1) {
+      const [sessions, journal, filesystems] = await Promise.all([
+        telemetry.sessions(),
+        telemetry.journal(80),
+        telemetry.filesystems(),
+      ]);
+      t.sessions = sessions;
+      t.journal = journal;
+      t.filesystems = filesystems;
+      push(t.sessionHistory, sessions.length);
+      // The dashboard log panel reads sample.logs, so mirror the real journal in.
+      this.sample.logs = journal.map((entry) => ({
+        time: entry.time,
+        level: entry.level,
+        message: entry.message,
+        meta: entry.unit,
+      }));
+    }
+
+    // Every 15 ticks: the slow ones.
+    if (this.ticks % 15 === 1) {
+      const [services, containers, logins, failed, gpus, power] = await Promise.all([
+        telemetry.services(),
+        telemetry.containers(),
+        telemetry.logins(20),
+        telemetry.failedLogins(15),
+        telemetry.gpus(),
+        telemetry.power(),
+      ]);
+      t.services = services;
+      t.containers = containers;
+      t.logins = logins;
+      t.failedLogins = failed;
+      t.gpus = gpus;
+      t.power = power;
+      const [ssh, http] = await Promise.all([traffic.sshEvents(40), traffic.http()]);
+      t.ssh = ssh;
+      t.http = http;
+      if (!http && !this.unavailable.includes("http access logs")) {
+        this.unavailable.push("http access logs");
+      }
+      if (gpus.length === 0 && !this.unavailable.includes("gpu")) this.unavailable.push("gpu");
+      if (!power && !this.unavailable.includes("battery")) this.unavailable.push("battery");
+    }
   }
 
   private async loadMounts(): Promise<void> {
@@ -224,29 +316,11 @@ export class LinuxCollector implements Collector {
   }
 
   private async updateTemperatures(): Promise<void> {
-    const out: { label: string; value: number; max: number }[] = [];
-    try {
-      const zones = await readdir("/sys/class/hwmon");
-      for (const zone of zones) {
-        const base = `/sys/class/hwmon/${zone}`;
-        const chip = (await read(`${base}/name`)).trim();
-        const entries = await readdir(base).catch(() => [] as string[]);
-        for (const entry of entries) {
-          if (!/^temp\d+_input$/.test(entry)) continue;
-          const raw = await read(`${base}/${entry}`);
-          const value = Number(raw) / 1000;
-          if (!Number.isFinite(value) || value <= 0 || value > 150) continue;
-          const label = (await read(`${base}/${entry.replace("_input", "_label")}`)).trim();
-          out.push({ label: label || `${chip} ${entry.replace("_input", "")}`, value, max: 100 });
-          if (out.length >= 10) break;
-        }
-        if (out.length >= 10) break;
-      }
-    } catch {
-      // hwmon is optional; containers and VMs frequently have none.
-    }
+    const out = await telemetry.temperatures();
     if (out.length === 0 && !this.unavailable.includes("temperatures")) {
       this.unavailable.push("temperatures");
+    } else if (out.length > 0) {
+      this.unavailable = this.unavailable.filter((u) => u !== "temperatures");
     }
     this.sample.temperatures = out;
     this.sample.sensors = out.slice(0, 6).map((t) => ({ label: t.label, value: `${t.value.toFixed(1)} °C` }));

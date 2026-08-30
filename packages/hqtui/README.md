@@ -7,7 +7,7 @@ btop-grade dashboards with a one-import API, dark by default, zero runtime depen
   <a href="./docs">docs</a>
 </p>
 
-![HQTUI dashboard](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/hqtui-dashboard.png)
+![HQTUI dashboard](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/dashboard.png)
 
 ---
 
@@ -88,10 +88,15 @@ await app.start();
 ```bash
 bunx @profullstack/hqtui-demo          # your real machine
 bunx @profullstack/hqtui-demo --sim    # deterministic simulation
+hqtui doctor                           # what your terminal supports
 ```
 
-Six screens: dashboard, components, graphics, themes, input visualizer, stress test.
-Real metrics are collected on Linux, macOS and Windows with no native dependencies.
+![Traffic screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/traffic.png)
+
+Ten screens covering system metrics, network traffic by protocol, HTTP requests, SSH
+activity, sessions, services and the full widget catalogue.
+
+![Components screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/components.png)
 
 ## What is in the box
 

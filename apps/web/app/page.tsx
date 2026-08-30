@@ -118,7 +118,7 @@ export default async function Home() {
   const themeCards: ThemeCard[] = SHOT_THEMES.map((name) => ({
     name,
     label: name.replace(/-/g, " "),
-    shot: `theme-${name}`,
+    shot: name === "dark" ? "dashboard" : `dashboard-${name}`,
     votes: voteMap.get(name) ?? 0,
   }));
 
@@ -165,7 +165,7 @@ export default async function Home() {
 
           <div className="mt-12">
             <Terminal
-              shot="hero"
+              shot="dashboard"
               title="hqtui-demo — dashboard"
               alt="HQTUI dashboard: CPU, memory, network and processes"
               priority
@@ -263,7 +263,7 @@ export default async function Home() {
             <TabsTrigger value="testing">Testing</TabsTrigger>
           </TabsList>
           <TabsContent value="widgets">
-            <Terminal shot="widgets" title="components" alt="The HQTUI widget catalogue" />
+            <Terminal shot="components" title="components" alt="The HQTUI widget catalogue" />
           </TabsContent>
           <TabsContent value="dashboard">
             <div className="grid gap-4 lg:grid-cols-2">

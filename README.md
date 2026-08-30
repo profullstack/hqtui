@@ -7,7 +7,9 @@ btop-grade dashboards with a one-import API, dark by default, zero runtime depen
   <a href="./docs">docs</a>
 </p>
 
-![HQTUI dashboard](./assets/hqtui-dashboard.png)
+![HQTUI dashboard](./assets/screens/dashboard.png)
+
+<p align="center"><em>Every screenshot on this page is a real frame from <code>hqtui-demo</code>, captured at 2x.</em></p>
 
 ---
 
@@ -90,8 +92,46 @@ bunx @profullstack/hqtui-demo          # your real machine
 bunx @profullstack/hqtui-demo --sim    # deterministic simulation
 ```
 
-Six screens: dashboard, components, graphics, themes, input visualizer, stress test.
-Real metrics are collected on Linux, macOS and Windows with no native dependencies.
+Ten screens. Real metrics on Linux, macOS and Windows, with no native dependencies.
+
+### Traffic — every protocol in and out of the host
+
+![Traffic screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/traffic.png)
+
+Live sockets grouped by protocol, TCP/UDP/ICMP counters with retransmit rate, HTTP
+request tracking parsed from nginx/apache access logs (req/s, status mix, top paths,
+WebSocket upgrades), and sshd authentication events from the journal.
+
+### Network — interfaces, connections, listening ports
+
+![Network screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/network.png)
+
+### Sessions — who is on the box, and who tried
+
+![Sessions screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/sessions.png)
+
+Active sessions from `who`, login history from wtmp, failed attempts from btmp, and a
+process state breakdown.
+
+### Services — units, containers, kernel, filesystems
+
+![Services screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/services.png)
+
+systemd units with failures first, docker containers, kernel counters (context
+switches, interrupts, forks, entropy, open file descriptors) and filesystems with
+inode usage.
+
+### Components — every widget in the library
+
+![Components screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/components.png)
+
+### Themes
+
+![Themes screen](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/themes.png)
+
+Nothing above needs root. Running with `sudo` additionally unlocks socket process
+names, failed logins, HTTP access logs, per-process I/O and the full journal — the
+demo tells you which of those it could not read.
 
 ## What is in the box
 
@@ -131,6 +171,15 @@ Changing `CPU 72%` to `CPU 73%` writes a single character, not a screen.
 
 ```bash
 bun run bench
+```
+
+```text
+160x50 (8,000 cells) · bun 1.4 · linux x64
+renderer.frame.unchanged     0.068ms     no output written
+renderer.frame.1pct          0.140ms     627 bytes/frame
+renderer.frame.10pct         0.291ms     2,639 bytes/frame
+renderer.frame.100pct        1.409ms     8,341 bytes/frame
+widgets.dashboard            0.425ms     6 panels, layout + widgets + diff
 ```
 
 ## Repository

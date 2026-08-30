@@ -11,7 +11,8 @@ import { createApp, themeList, themes, type KeyEvent } from "@profullstack/hqtui
 import { createCollector } from "./system/index.ts";
 import { createState, SCREENS, type ScreenName } from "./state.ts";
 import {
-  componentsScreen, dashboardScreen, graphicsScreen, inputScreen, stressScreen, themesScreen, visibleProcesses,
+  componentsScreen, dashboardScreen, graphicsScreen, inputScreen, networkScreen, servicesScreen,
+  sessionsScreen, stressScreen, themesScreen, trafficScreen, visibleProcesses,
 } from "./screens/index.ts";
 import { clock, num } from "./format.ts";
 
@@ -49,7 +50,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.1.2"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.1.3"); process.exit(0);
     }
   }
   return options;
@@ -80,11 +81,15 @@ Keys:
 
 const PALETTE_COMMANDS: { label: string; hint: string; run: (state: ReturnType<typeof createState>) => void }[] = [
   { label: "Go to Dashboard", hint: "1", run: (s) => { s.screen = "dashboard"; } },
-  { label: "Go to Components", hint: "2", run: (s) => { s.screen = "components"; } },
-  { label: "Go to Graphics", hint: "3", run: (s) => { s.screen = "graphics"; } },
-  { label: "Go to Themes", hint: "4", run: (s) => { s.screen = "themes"; } },
-  { label: "Go to Input", hint: "5", run: (s) => { s.screen = "input"; } },
-  { label: "Go to Stress Test", hint: "6", run: (s) => { s.screen = "stress"; } },
+  { label: "Go to Traffic", hint: "2", run: (s) => { s.screen = "traffic"; } },
+  { label: "Go to Sessions", hint: "3", run: (s) => { s.screen = "sessions"; } },
+  { label: "Go to Network", hint: "4", run: (s) => { s.screen = "network"; } },
+  { label: "Go to Services", hint: "5", run: (s) => { s.screen = "services"; } },
+  { label: "Go to Components", hint: "6", run: (s) => { s.screen = "components"; } },
+  { label: "Go to Graphics", hint: "7", run: (s) => { s.screen = "graphics"; } },
+  { label: "Go to Themes", hint: "8", run: (s) => { s.screen = "themes"; } },
+  { label: "Go to Input", hint: "9", run: (s) => { s.screen = "input"; } },
+  { label: "Go to Stress Test", hint: "0", run: (s) => { s.screen = "stress"; } },
   { label: "Sort by CPU", hint: "F6", run: (s) => { s.sort = "cpu"; } },
   { label: "Sort by Memory", hint: "F6", run: (s) => { s.sort = "mem"; } },
   { label: "Pause updates", hint: "Space", run: (s) => { s.paused = !s.paused; } },
@@ -220,8 +225,9 @@ async function main(): Promise<void> {
     }
 
     const digit = Number(event.name);
-    if (Number.isInteger(digit) && digit >= 1 && digit <= SCREENS.length) {
-      state.screen = SCREENS[digit - 1];
+    if (Number.isInteger(digit) && event.name.length === 1) {
+      const index = digit === 0 ? 9 : digit - 1;
+      if (index < SCREENS.length) state.screen = SCREENS[index];
     }
 
     // Keep the selected row inside the visible window.
@@ -232,7 +238,7 @@ async function main(): Promise<void> {
     ui.row({ size: 1 }, (header) => {
       header.text(" hqtui.com", { fg: theme.title, bold: true, size: 12 });
       header.tabs({
-        tabs: SCREENS.map((s, i) => `${i + 1} ${s}`),
+        tabs: SCREENS.map((s, i) => `${(i + 1) % 10} ${s}`),
         active: SCREENS.indexOf(state.screen),
         onSelect: (index) => { state.screen = SCREENS[index]; },
       });
@@ -245,6 +251,10 @@ async function main(): Promise<void> {
 
     ui.column({ size: height - 4 }, (body) => {
       switch (state.screen) {
+        case "traffic": trafficScreen(body, state, theme); break;
+        case "sessions": sessionsScreen(body, state, theme); break;
+        case "network": networkScreen(body, state, theme); break;
+        case "services": servicesScreen(body, state, theme); break;
         case "components": componentsScreen(body, state, theme); break;
         case "graphics": graphicsScreen(body, state, theme); break;
         case "themes": themesScreen(body, state, theme); break;
@@ -280,7 +290,12 @@ async function main(): Promise<void> {
           "Arrows, PageUp/PageDown, Home/End move the selection.\n" +
           "Mouse: click tabs and buttons, scroll the process list.\n\n" +
           (state.unavailable.length
-            ? `Unavailable on this platform: ${state.unavailable.join(", ")}.\nRun with --sim to see every widget populated.`
+            ? `Unavailable here: ${state.unavailable.join(", ")}.\n` +
+              (state.sample.telemetry.privileged
+                ? "Running as root: all privileged sources are readable."
+                : "Running unprivileged. sudo additionally unlocks socket process\n" +
+                  "names, failed logins (btmp), HTTP access logs, per-process I/O\n" +
+                  "and the full journal.")
             : "All metrics available on this platform.") +
           "\n\nPress any key to close.",
         buttons: [{ label: "Close", focused: true }],
