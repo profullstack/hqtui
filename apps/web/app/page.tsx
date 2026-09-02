@@ -303,7 +303,7 @@ export default async function Home() {
                   or the raw cell grid with per-cell colours and attributes.
                 </p>
                 <p className="mt-3">
-                  The 83 tests in this repository run in 65 ms under both{" "}
+                  The 99 tests in this repository run in well under a second under both{" "}
                   <code className="font-mono text-white/80">bun test</code> and{" "}
                   <code className="font-mono text-white/80">node --test</code>.
                 </p>
@@ -386,7 +386,8 @@ export default async function Home() {
                 <InstallCommand command="bunx @profullstack/hqtui-demo --sim" />
               </div>
               <p className="mt-4 text-sm text-white/40">
-                Six screens: dashboard, components, graphics, themes, input visualizer, stress test.
+                Ten screens: dashboard, sessions, network, traffic, services, components,
+                graphics, themes, input visualizer, stress test.
               </p>
             </div>
             <Terminal

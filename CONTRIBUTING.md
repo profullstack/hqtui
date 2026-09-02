@@ -8,7 +8,7 @@ Thanks for helping. HQTUI is MIT licensed and permanently open source.
 git clone https://github.com/profullstack/hqtui
 cd hqtui
 bun install
-bun test                  # 80+ tests, no TTY required
+bun test                  # ~100 tests, no TTY required
 bun run typecheck
 bun run demo -- --sim     # the reference dashboard
 bun run bench             # renderer benchmarks

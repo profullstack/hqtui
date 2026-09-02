@@ -260,9 +260,9 @@ expect(screen.cell(0, 4).bg).toBe(theme.selection);
 expect(renderToText(view, { width: 40, height: 10 })).toMatchSnapshot();`}
           />
           <P>
-            Every frame on this website is produced by{" "}
-            <code className="font-mono text-white/80">renderToHtml()</code> at build time — the
-            same renderer, the same output, just emitted as HTML instead of ANSI.
+            <code className="font-mono text-white/80">renderToHtml()</code> emits the same
+            frame as HTML instead of ANSI — the same renderer and the same output, which is what
+            makes a rendered frame reviewable in a browser or a pull request.
           </P>
 
           <H2 id="escape-hatches">Escape hatches</H2>

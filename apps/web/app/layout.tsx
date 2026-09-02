@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description,
     siteName: "HQTUI",
     images: [
-      { url: "/shots/dashboard.png", width: 3302, height: 1709, alt: "HQTUI dashboard" },
+      { url: "/shots/dashboard.png", width: 1892, height: 947, alt: "HQTUI dashboard" },
     ],
   },
   appleWebApp: { title: "HQTUI", statusBarStyle: "black-translucent" },

@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# hqtui.com
 
-## Getting Started
+The HQTUI marketing site and documentation. Next.js App Router, Tailwind v4,
+deployed to Railway from the `Dockerfile` at the repository root.
 
-First, run the development server:
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install          # from the repository root
+bun run --cwd apps/web dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The site imports `@profullstack/hqtui` from the workspace, so build the library
+first if you have not already:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+bun run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Screenshots
 
-## Learn More
+The terminal frames on the site are real captures of `hqtui-demo` running on
+real machines, not browser-rendered mockups. Regenerate them with:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+bun run --cwd apps/web shots
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+That writes intermediate HTML and pre-crop frames into `apps/web/.shots-tmp/`,
+which is ignored, and finished PNGs into `public/shots/`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Analytics
 
-## Deploy on Vercel
+Theme votes and page views are stored in Turso and read through a small
+`fetch`-based client in `lib/db.ts`. Both are optional: with
+`TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` unset the site renders normally
+and the counters read zero.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Railway builds the root `Dockerfile`, which compiles the library, builds the
+site in standalone mode, and serves it with `bun apps/web/server.js`. See
+`railway.json`.

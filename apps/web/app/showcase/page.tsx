@@ -26,7 +26,7 @@ export default async function Showcase() {
       <main className="mx-auto max-w-[1640px] px-4 py-14 sm:px-6">
         <div className="max-w-3xl">
           <Badge variant="secondary" className="mb-4 font-mono text-xs">
-            live frames, not screenshots
+            real machines, not mockups
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight">Showcase</h1>
           <p className="mt-4 text-lg text-white/60">
