@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const sans = Geist({ variable: "--font-sans", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
@@ -56,7 +57,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${sans.variable} ${mono.variable} antialiased`}>{children}</body>
+      <body className={`${sans.variable} ${mono.variable} antialiased`}>{children}        <Script data-site="78aa3a25-d804-46fc-b49e-28ffeb75861f" src="https://crawlproof.com/stats.js" strategy="afterInteractive" />
+      </body>
     </html>
   );
 }
