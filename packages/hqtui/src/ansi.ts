@@ -1,4 +1,5 @@
 /** Raw VT/ANSI control sequences. Nothing above this layer writes an escape by hand. */
+import { stripUnsafe } from "./unicode.ts";
 
 export const ESC = "\x1b";
 export const CSI = "\x1b[";
@@ -50,7 +51,10 @@ export function moveToColumn(x: number): string {
 }
 
 export function setTitle(title: string): string {
-  return `${ESC}]0;${title.replace(/[\x00-\x1f]/g, "")}\x07`;
+  // The title is interpolated into an OSC sequence, so anything that could end
+  // or restart it has to go. `stripUnsafe` is the same policy the grid uses:
+  // C0, DEL, C1 (8-bit ST and CSI included) and the bidi overrides.
+  return `${ESC}]0;${stripUnsafe(title)}\x07`;
 }
 
 export function fgTrue(r: number, g: number, b: number): string {
@@ -80,8 +84,31 @@ export function bg16(i: number): string {
 export const fgDefault = `${CSI}39m`;
 export const bgDefault = `${CSI}49m`;
 
-/** Strip escape sequences — used by the headless renderer and by tests. */
+/**
+ * Strip escape sequences — used by the headless renderer and by tests, and
+ * exported for apps that want to sanitise text themselves.
+ *
+ * Two things the obvious regex misses, both of which leave a live sequence
+ * behind: CSI may carry intermediate bytes (0x20-0x2f) before its final byte,
+ * as in `ESC [ 0 SP q`; and every sequence has an 8-bit C1 form where a single
+ * byte replaces `ESC x`. After the structured pass, anything still holding a
+ * control or bidi override is removed outright, so the result cannot steer a
+ * terminal even if a form was missed.
+ */
 export function stripAnsi(text: string): string {
-  // eslint-disable-next-line no-control-regex
-  return text.replace(/\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07\x1b]*(\x07|\x1b\\)|\x1b[@-Z\\-_]/g, "");
+  const stripped = text.replace(
+    // eslint-disable-next-line no-control-regex
+    /(?:\x1b\[|\x9b)[0-9;?<=>]*[ -/]*[@-~]|(?:\x1b\]|\x9d)[\s\S]*?(?:\x07|\x1b\\|\x9c|$)|(?:\x1bP|\x90)[\s\S]*?(?:\x1b\\|\x9c|$)|\x1b[@-Z\\-_]/g,
+    "",
+  );
+  return stripped.replace(TEXT_UNSAFE, "");
 }
+
+/**
+ * The grid's unsafe set minus tab, newline and carriage return. `stripAnsi`
+ * works on text, not cells, and multi-line callers rely on those three; the
+ * framebuffer refuses them separately, which is the right layer for it.
+ */
+// eslint-disable-next-line no-control-regex -- matching controls is the point
+const TEXT_UNSAFE =
+  /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/gu;

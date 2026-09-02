@@ -166,6 +166,16 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>]/g, (c) => HTML_ESCAPES[c]);
 }
 
+const ATTR_ESCAPES: Record<string, string> = { ...HTML_ESCAPES, '"': "&quot;", "'": "&#39;" };
+
+/**
+ * Attribute values need the quote characters escaped too, or a caller-supplied
+ * `className` or `fontFamily` closes the attribute and opens its own.
+ */
+function escapeAttr(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => ATTR_ESCAPES[c]);
+}
+
 function cssColor(color: Color, fallback: string): string {
   if (color === DEFAULT_COLOR) return fallback;
   return `#${((color & 0xffffff) >>> 0).toString(16).padStart(6, "0")}`;
@@ -229,18 +239,27 @@ export function renderToHtml(
     rows.push(row);
   }
 
-  const fontSize = options.fontSize ?? 14;
-  const padding = options.padding ?? 16;
+  // Every one of these is spliced into an attribute, so none may be trusted to
+  // be the type the signature claims. Numbers are coerced and bounded; a font
+  // stack is reduced to the characters a font stack can legitimately contain,
+  // because escaping alone still lets `;` open a new CSS property.
+  const number = (value: unknown, fallback: number): number => {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 && n <= 1000 ? n : fallback;
+  };
+  const fontSize = number(options.fontSize, 14);
+  const padding = number(options.padding, 16);
   // line-height must be exactly 1: box-drawing glyphs fill the em box, so any
   // extra leading shows up as gaps in every vertical rule on the screen.
   // The font stack is ordered by box-drawing and Braille coverage.
-  const font = options.fontFamily ??
-    "ui-monospace,SFMono-Regular,Menlo,'DejaVu Sans Mono','Liberation Mono',Consolas,'Segoe UI Symbol',monospace";
+  const font = String(options.fontFamily ??
+    "ui-monospace,SFMono-Regular,Menlo,'DejaVu Sans Mono','Liberation Mono',Consolas,'Segoe UI Symbol',monospace")
+    .replace(/[^A-Za-z0-9 ,._'-]/g, "");
   // One <pre> with newline-separated rows: wrapping each row in its own element
   // gives the browser licence to lay out lines independently, which pulls
   // box-drawing rules apart. A single text flow tiles the grid exactly.
-  return `<pre class="${options.className ?? "hqtui-screen"}" style="background:${bgFallback};color:${fgFallback};` +
-    `padding:${padding}px;font-size:${fontSize}px;line-height:${(fontSize * 1.18).toFixed(2)}px;font-family:${font};` +
+  return `<pre class="${escapeAttr(options.className ?? "hqtui-screen")}" style="background:${bgFallback};color:${fgFallback};` +
+    `padding:${padding}px;font-size:${fontSize}px;line-height:${(fontSize * 1.18).toFixed(2)}px;font-family:${escapeAttr(font)};` +
     `margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;` +
     `-webkit-font-smoothing:antialiased">${rows.join("\n")}</pre>`;
 }

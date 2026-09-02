@@ -1,5 +1,7 @@
 import { DEFAULT_COLOR, type Color } from "./color.ts";
-import { CONTINUATION, cellWidth, graphemes, cellText } from "./unicode.ts";
+import {
+  CONTINUATION, REPLACEMENT, cellWidth, graphemes, cellText, isLoneSurrogate, isUnsafeCodepoint,
+} from "./unicode.ts";
 
 /** Style attribute bits packed into the cell's 16-bit attribute slot. */
 export const Attr = {
@@ -80,6 +82,24 @@ export class FrameBuffer {
   /** Write one already-decoded cell value. Returns columns consumed. */
   setCell(x: number, y: number, value: number, style?: Style): number {
     if (!this.inBounds(x, y)) return 0;
+    // The last line of defence: this is the only path that writes a character
+    // into the grid, and the encoder hands cell text straight to the terminal.
+    // Refusing unsafe values here means the buffer *cannot* hold a live escape,
+    // whatever the caller passes — including the low-level escape hatch.
+    //
+    // Validate what will actually be stored, not what was passed. `chars` is a
+    // Uint32Array, so it applies ToUint32: 2**32 + 0x1b looks like a harmless
+    // large number but truncates to a live ESC. Coerce first, then check.
+    // A lead-less continuation is not writable either; it would silently eat a
+    // column out of the row. Ordered so printable ASCII costs one comparison.
+    value = value >>> 0;
+    if (value >= 0x7f) {
+      if (isUnsafeCodepoint(value) || value === CONTINUATION) value = 32;
+      // A lone surrogate would fuse with its neighbour into a single glyph.
+      else if (isLoneSurrogate(value)) value = REPLACEMENT;
+    } else if (value < 0x20) {
+      value = 32;
+    }
     const w = cellWidth(value);
     const i = this.index(x, y);
     // Overwriting the tail of a wide char to our left would orphan it; blank it.
