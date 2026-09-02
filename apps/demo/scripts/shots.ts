@@ -13,7 +13,7 @@ import { mkdirSync, writeFileSync, existsSync, readdirSync, copyFileSync, readFi
 import { join } from "node:path";
 import { renderToHtml, themes, type Theme } from "@profullstack/hqtui";
 import { createCollector } from "../src/system/index.ts";
-import { createState, type DemoState } from "../src/state.ts";
+import { createState, type DemoState, pane } from "../src/state.ts";
 import * as screens from "../src/screens/index.ts";
 
 const REPO = join(import.meta.dir, "..", "..", "..");
@@ -97,7 +97,10 @@ for (let i = 0; i < (real ? 4 : 30); i++) {
 }
 
 const state = createState(collector.current(), collector.source, collector.unavailable);
-state.selected = 1;
+// Highlight a row in the process table so the screenshots show selection.
+// This was `state.selected = 1`, a property DemoState has never had, so every
+// published screenshot has in fact been taken with nothing selected.
+pane(state, "dashboard.processes", 1).selected = 1;
 
 const chrome = findChrome();
 console.log(`chrome: ${chrome}`);
