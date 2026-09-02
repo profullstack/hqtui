@@ -43,7 +43,7 @@ export default async function Docs() {
       <SiteNav />
       <div className="mx-auto flex max-w-7xl gap-10 px-4 py-12 sm:px-6">
         <aside className="sticky top-20 hidden h-fit w-52 shrink-0 lg:block">
-          <p className="mb-3 font-mono text-xs uppercase tracking-wide text-white/35">On this page</p>
+          <p className="mb-3 font-mono text-xs uppercase tracking-wide text-white/50">On this page</p>
           <nav className="space-y-1.5 text-sm">
             {SECTIONS.map((section) => (
               <a
@@ -314,7 +314,7 @@ widgets.dashboard            0.425ms      6 panels`}
           </P>
 
           <Separator className="my-10 bg-white/10" />
-          <p className="text-sm text-white/45">
+          <p className="text-sm text-white/50">
             Full API reference in the{" "}
             <a className="text-white/80 underline" href="https://github.com/profullstack/hqtui">
               repository
