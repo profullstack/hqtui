@@ -1,7 +1,9 @@
 import { readFile, readdir } from "node:fs/promises";
 import os from "node:os";
 import type { Collector, SystemSample } from "./types.ts";
-import { baseSample, loadAverage, primaryInterface, push, ratePerSecond, sh } from "./common.ts";
+import {
+  baseSample, loadAverage, primaryInterface, processName, push, ratePerSecond, sh,
+} from "./common.ts";
 import type { Interface } from "./telemetry.ts";
 import * as telemetry from "./linux-telemetry.ts";
 import * as traffic from "./linux-traffic.ts";
@@ -92,7 +94,7 @@ export class LinuxCollector implements Collector {
     const ctxt = /^ctxt (\d+)/m.exec(stat);
     if (ctxt) s.system.contextSwitches = Number(ctxt[1]);
     const procs = /^procs_running (\d+)/m.exec(stat);
-    if (procs) s.system.threadCount = Number(procs[1]);
+    // `procs_running` is runnable processes; the thread total comes from ps.
 
     // Memory.
     const mem = parseMeminfo(meminfo);
@@ -294,27 +296,37 @@ export class LinuxCollector implements Collector {
   }
 
   private async updateProcesses(): Promise<void> {
-    const text = await sh("ps", ["-eo", "pid,comm,pcpu,pmem,rss,nlwp,user,state,args", "--sort=-pcpu"]);
+    // `comm` is deliberately absent: it can contain spaces, which shifts every
+    // column parsed after it. Every field here is space-free, so `args` — which
+    // may contain anything — is the only free-form one and it comes last.
+    const text = await sh("ps", ["-eo", "pid,pcpu,pmem,rss,nlwp,user,state,args", "--sort=-pcpu"]);
     if (!text) {
       if (!this.unavailable.includes("processes")) this.unavailable.push("processes");
       return;
     }
-    const lines = text.trim().split("\n").slice(1, 60);
-    this.sample.processes = lines.map((line) => {
+    const rows = text.trim().split("\n").slice(1);
+    this.sample.processes = rows.slice(0, 59).map((line) => {
       const parts = line.trim().split(/\s+/);
+      const command = parts.slice(7).join(" ");
       return {
         pid: Number(parts[0]),
-        name: parts[1] ?? "-",
-        cpu: Number(parts[2]) || 0,
-        mem: Number(parts[3]) || 0,
-        rss: (Number(parts[4]) || 0) * 1024,
-        threads: Number(parts[5]) || 1,
-        user: parts[6] ?? "-",
-        state: parts[7] ?? "-",
-        command: parts.slice(8).join(" "),
+        name: processName(command),
+        cpu: Number(parts[1]) || 0,
+        mem: Number(parts[2]) || 0,
+        rss: (Number(parts[3]) || 0) * 1024,
+        threads: Number(parts[4]) || 1,
+        user: parts[5] ?? "-",
+        state: parts[6] ?? "-",
+        command,
       };
     });
-    this.sample.system.processCount = this.sample.processes.length;
+    // Count every row, not the truncated table: this used to overwrite the real
+    // total from /proc with at most 59, so the figure alternated every tick.
+    this.sample.system.processCount = rows.length;
+    this.sample.system.threadCount = rows.reduce(
+      (total, line) => total + (Number(line.trim().split(/\s+/)[4]) || 0),
+      0,
+    );
   }
 
   private async updateTemperatures(): Promise<void> {

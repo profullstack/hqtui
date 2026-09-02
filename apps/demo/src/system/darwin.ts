@@ -1,6 +1,8 @@
 import os from "node:os";
 import type { Collector, SystemSample } from "./types.ts";
-import { baseSample, loadAverage, primaryInterface, push, ratePerSecond, sh } from "./common.ts";
+import {
+  baseSample, loadAverage, primaryInterface, processName, push, ratePerSecond, sh,
+} from "./common.ts";
 
 /**
  * macOS has no /proc, so everything comes from small command-line tools that
@@ -8,7 +10,7 @@ import { baseSample, loadAverage, primaryInterface, push, ratePerSecond, sh } fr
  */
 export class DarwinCollector implements Collector {
   source = "macOS sysctl";
-  unavailable = ["temperatures", "fan speed"];
+  unavailable = ["temperatures", "fan speed", "per-core CPU", "thread count"];
   private sample = baseSample();
   private prevCpu: { idle: number; total: number } | null = null;
   private prevNet: [number, number] | null = null;
@@ -28,12 +30,12 @@ export class DarwinCollector implements Collector {
     }
     const load = loadAverage();
     s.cpu.load = load;
+    // `top` reports one aggregate figure. Per-core detail would need
+    // host_processor_info, so every core shows the measured total rather than
+    // a synthesised spread around it — the README promises that anything a
+    // platform cannot provide is reported as unavailable, not fabricated.
     const cores = Math.max(1, os.cpus().length);
-    s.cpu.cores = Array.from({ length: cores }, (_, i) => {
-      // Spread total load across cores with a stable per-core offset.
-      const jitter = ((i * 37) % 17) / 100;
-      return Math.max(0, Math.min(1, s.cpu.total + jitter - 0.08));
-    });
+    s.cpu.cores = new Array(cores).fill(s.cpu.total);
     push(s.cpu.history, s.cpu.total * 100);
 
     // Memory via vm_stat page counts.
@@ -133,25 +135,32 @@ export class DarwinCollector implements Collector {
   }
 
   private async updateProcesses(): Promise<void> {
-    const text = await sh("ps", ["-Ao", "pid,comm,pcpu,pmem,rss,user,state,args", "-r"]);
-    if (!text) return;
-    const lines = text.trim().split("\n").slice(1, 60);
-    this.sample.processes = lines.map((line) => {
+    // `comm` is omitted: macOS truncates it to 16 characters, so taking the
+    // last path segment yields a fragment — "/System/Applicat" became
+    // "Applicat", and a 16-character path ending in "/" became "".
+    const text = await sh("ps", ["-Ao", "pid,pcpu,pmem,rss,user,state,args", "-r"]);
+    if (!text) {
+      if (!this.unavailable.includes("processes")) this.unavailable.push("processes");
+      return;
+    }
+    const rows = text.trim().split("\n").slice(1);
+    this.sample.processes = rows.slice(0, 59).map((line) => {
       const parts = line.trim().split(/\s+/);
-      const name = (parts[1] ?? "-").split("/").pop() ?? "-";
+      const command = parts.slice(6).join(" ");
       return {
         pid: Number(parts[0]),
-        name,
-        cpu: Number(parts[2]) || 0,
-        mem: Number(parts[3]) || 0,
-        rss: (Number(parts[4]) || 0) * 1024,
+        name: processName(command),
+        cpu: Number(parts[1]) || 0,
+        mem: Number(parts[2]) || 0,
+        rss: (Number(parts[3]) || 0) * 1024,
         threads: 1,
-        user: parts[5] ?? "-",
-        state: parts[6] ?? "-",
-        command: parts.slice(7).join(" "),
+        user: parts[4] ?? "-",
+        state: parts[5] ?? "-",
+        command,
       };
     });
-    this.sample.system.processCount = this.sample.processes.length;
+    // Every row, not the truncated table.
+    this.sample.system.processCount = rows.length;
   }
 
   current(): SystemSample {
