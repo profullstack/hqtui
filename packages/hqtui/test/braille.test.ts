@@ -61,13 +61,44 @@ test("block glyph ramps are monotonic", () => {
   assert.notEqual(verticalGlyph(0.5), verticalGlyph(0.9));
 });
 
-test("braille ignores non-finite coordinates instead of looping forever", () => {
+test("braille draws nothing for a NaN coordinate", () => {
+  // NaN has no position and no direction, so there is nothing to draw.
   const canvas = new BrailleCanvas(20, 8);
   canvas.line(0, 0, 5, Number.NaN);
   canvas.line(Number.NaN, 0, 5, 5);
-  canvas.line(0, 0, Number.POSITIVE_INFINITY, 5);
   canvas.pixel(Number.NaN, 0);
   canvas.pixel(0, Number.NaN);
-  // Nothing was drawn at the origin by a NaN coordinate.
-  assert.equal(canvas.get(0, 0), false);
+  canvas.vline(0, 0, Number.NaN);
+  canvas.circle(4, 4, Number.NaN);
+  assert.equal(canvas.toLines().join("").trim(), "");
+});
+
+test("every braille primitive terminates on any coordinate", () => {
+  // Each of these once ran forever. Endpoint finiteness was not enough: `dx` is
+  // derived from the endpoints and overflows, and past 2^53 `x += 1` does not
+  // advance, so an all-finite call could still never reach its endpoint.
+  const canvas = new BrailleCanvas(20, 8);
+  const M = Number.MAX_VALUE;
+  const I = Number.POSITIVE_INFINITY;
+  canvas.line(-M, 0, M, 0);
+  canvas.line(1e17, 0, 2e17, 0);
+  canvas.line(0, 0, I, 5);
+  canvas.polyline([[0, 0], [1024 / 1e-300, 0]]);
+  canvas.vline(0, 0, I);
+  canvas.vline(0, 0, 1e17);
+  canvas.hline(0, 0, I);
+  canvas.rect(0, 0, 5, I);
+  canvas.fillRect(0, 0, I, 5);
+  canvas.fillUnder([[0, 0], [I, 0]], 3);
+  canvas.circle(4, 4, I);
+  canvas.circle(4, 4, 1e17);
+  // Reaching here at all is the assertion; the canvas keeps its declared shape.
+  assert.equal(canvas.toLines().length, 8);
+  assert.ok(canvas.toLines().every((line) => [...line].length === 20));
+});
+
+test("a line crossing the canvas from far away still draws its visible part", () => {
+  const canvas = new BrailleCanvas(20, 8);
+  canvas.line(-1e9, 4, 1e9, 4);
+  assert.ok(canvas.toLines().join("").trim().length > 0, "the visible span was lost");
 });

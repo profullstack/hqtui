@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { rgb, hex, mix, gradient, to256, to16, from256, contrast, grayscale, DEFAULT_COLOR } from "../src/color.ts";
 import { heatColor, themes } from "../src/theme.ts";
 import { renderToText } from "../src/testing.ts";
+import { detectCapabilities } from "../src/capabilities.ts";
 
 test("hex and rgb produce the same packed value", () => {
   assert.equal(hex("#00d7ff"), rgb(0, 215, 255));
@@ -78,4 +79,35 @@ test("a meter with a non-finite value renders a real percentage", () => {
   });
   assert.ok(!out.includes("NaN"), out);
   assert.ok(out.includes("0%"));
+});
+
+test("FORCE_COLOR raises the floor without lowering the ceiling", () => {
+  const tty = { isTTY: true, columns: 80, rows: 24 } as unknown as NodeJS.WriteStream;
+  const truecolor = { COLORTERM: "truecolor", TERM: "xterm-256color" };
+  const depth = (env: Record<string, string>, out = tty) =>
+    detectCapabilities({}, env as unknown as NodeJS.ProcessEnv, out).colors;
+
+  // Asserting that color works must not cap a terminal that can do better.
+  assert.equal(depth(truecolor), "truecolor");
+  assert.equal(depth({ ...truecolor, FORCE_COLOR: "true" }), "truecolor");
+  // It does waive the tty check, which is the point of the variable.
+  assert.equal(depth({ ...truecolor, FORCE_COLOR: "true" }, { isTTY: false } as unknown as NodeJS.WriteStream), "truecolor");
+  assert.equal(depth(truecolor, { isTTY: false } as unknown as NodeJS.WriteStream), "none");
+  // Explicit levels still pin exactly, and the off switches still win.
+  assert.equal(depth({ ...truecolor, FORCE_COLOR: "1" }), "ansi16");
+  assert.equal(depth({ ...truecolor, FORCE_COLOR: "0" }), "none");
+  assert.equal(depth({ ...truecolor, FORCE_COLOR: "false" }), "none");
+  assert.equal(depth({ ...truecolor, NO_COLOR: "1", FORCE_COLOR: "true" }), "none");
+});
+
+test("the Linux console keeps unicode but not braille", () => {
+  const tty = { isTTY: true, columns: 80, rows: 24 } as unknown as NodeJS.WriteStream;
+  const caps = (term: string) =>
+    detectCapabilities({}, { TERM: term, LANG: "en_US.UTF-8" } as unknown as NodeJS.ProcessEnv, tty);
+  // Its default font draws box and block elements; only braille is missing.
+  assert.equal(caps("linux").unicode, true);
+  assert.equal(caps("linux").braille, false);
+  // A dumb terminal has no glyph repertoire to speak of.
+  assert.equal(caps("dumb").unicode, false);
+  assert.equal(caps("dumb").braille, false);
 });

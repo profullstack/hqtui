@@ -54,10 +54,13 @@ function detectColors(env: NodeJS.ProcessEnv, tty: boolean): ColorDepth {
   if (env.FORCE_COLOR === "1") return "ansi16";
   if (env.FORCE_COLOR === "2") return "ansi256";
   if (env.FORCE_COLOR === "3") return "truecolor";
-  // Node and npm commonly export FORCE_COLOR=true, and anything set but not a
-  // level still means "yes". Only "0" means no.
-  if (env.FORCE_COLOR !== undefined && env.FORCE_COLOR !== "") return "ansi16";
-  if (!tty) return "none";
+  // `FORCE_COLOR=false` means off, as it does for supports-color and chalk.
+  if (env.FORCE_COLOR === "false") return "none";
+  // Any other non-empty value — `FORCE_COLOR=true` is the common one — asserts
+  // that color works. It is a floor, not a ceiling: returning a level here
+  // would cap a truecolor terminal at 16 colors. It only waives the tty check.
+  const forced = env.FORCE_COLOR !== undefined && env.FORCE_COLOR !== "";
+  if (!tty && !forced) return "none";
   const term = env.TERM ?? "";
   if (term === "dumb") return "none";
   const colorterm = (env.COLORTERM ?? "").toLowerCase();
@@ -72,10 +75,11 @@ function detectColors(env: NodeJS.ProcessEnv, tty: boolean): ColorDepth {
 }
 
 function detectUnicode(env: NodeJS.ProcessEnv): boolean {
-  // Degrading colors but not glyphs leaves a dumb terminal being told it can
-  // draw Braille, which is the one thing it certainly cannot.
+  // A dumb terminal has no glyph repertoire to speak of. The Linux console is
+  // not in that category — its default font draws box and block elements
+  // perfectly well — so only Braille is withheld from it, below.
   const term = env.TERM ?? "";
-  if (term === "dumb" || term === "linux") return false;
+  if (term === "dumb") return false;
   const locale = env.LC_ALL || env.LC_CTYPE || env.LANG || "";
   if (/UTF-?8/i.test(locale)) return true;
   // Windows Terminal and modern emulators are UTF-8 regardless of locale vars.
@@ -105,7 +109,10 @@ export function detectCapabilities(
     colors,
     trueColor: colors === "truecolor",
     unicode,
-    braille: overrides.braille ?? (unicode && program !== "apple-terminal"),
+    // The Linux console draws box and block elements but has no Braille in its
+    // default font, which is the one glyph class it genuinely lacks.
+    braille: overrides.braille ??
+      (unicode && program !== "apple-terminal" && term !== "linux"),
     mouse: overrides.mouse ?? (tty && term !== "dumb" && term !== "linux"),
     synchronizedOutput: overrides.synchronizedOutput ?? (tty && syncCapable),
     bracketedPaste: tty && term !== "dumb",
