@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/profullstack/hqtui/security/advisories/new
+    about: Report privately. Please do not open a public issue — see SECURITY.md.
+  - name: Documentation
+    url: https://hqtui.com/docs
+    about: The API reference and guides.

@@ -1,0 +1,13 @@
+# Review is requested automatically from the owners listed here.
+# Adjust or remove as suits — this file only exists because nothing did.
+
+*                       @ralyodio
+
+# The library's public surface and its rendering core: changes here reach every
+# consumer, and CONTRIBUTING's rules (zero dependencies, no allocation per cell,
+# survives a 1x1 terminal, always restores the terminal) apply most sharply.
+/packages/hqtui/        @ralyodio
+
+# The promises in these are the ones people rely on when auditing.
+/SECURITY.md            @ralyodio
+/.github/workflows/     @ralyodio
