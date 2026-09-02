@@ -27,6 +27,10 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
+      # `typecheck` builds the library itself, because apps/demo and examples
+      # resolve `@profullstack/hqtui` through its published `types`, which point
+      # into dist. Running it before Build in a clean checkout — as CI does —
+      # left them with no types to find.
       - name: Typecheck
         run: bun run typecheck
       - name: Test
