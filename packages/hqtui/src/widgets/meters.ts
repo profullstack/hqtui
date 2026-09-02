@@ -24,11 +24,21 @@ export interface MeterOptions {
   showValue?: boolean;
 }
 
+/**
+ * A 0-1 ratio. Ordered so NaN falls through to 0 — `Math.min`/`Math.max`
+ * propagate it, which rendered "NaN%" in black on black.
+ */
+export function clampRatio(value: number): number {
+  return value > 1 ? 1 : value > 0 ? value : 0;
+}
+
 /** `label ████████░░░░ 42%` on a single row. The most-used widget here. */
 export function drawMeter(surface: Surface, options: MeterOptions): void {
   if (surface.empty) return;
   const theme = surface.theme;
-  const ratio = Math.max(0, Math.min(1, options.max ? options.value / options.max : options.value));
+  // `Math.min`/`Math.max` propagate NaN, so a non-finite value used to render
+  // as "NaN%" in black on black.
+  const ratio = clampRatio(options.max ? options.value / options.max : options.value);
   const label = options.label ?? "";
   const labelWidth = label ? (options.labelWidth ?? stringWidth(label) + 1) : 0;
   const valueText = options.showValue === false ? "" : options.text ?? `${Math.round(ratio * 100)}%`;

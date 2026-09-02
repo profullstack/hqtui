@@ -54,6 +54,9 @@ function detectColors(env: NodeJS.ProcessEnv, tty: boolean): ColorDepth {
   if (env.FORCE_COLOR === "1") return "ansi16";
   if (env.FORCE_COLOR === "2") return "ansi256";
   if (env.FORCE_COLOR === "3") return "truecolor";
+  // Node and npm commonly export FORCE_COLOR=true, and anything set but not a
+  // level still means "yes". Only "0" means no.
+  if (env.FORCE_COLOR !== undefined && env.FORCE_COLOR !== "") return "ansi16";
   if (!tty) return "none";
   const term = env.TERM ?? "";
   if (term === "dumb") return "none";
@@ -69,6 +72,10 @@ function detectColors(env: NodeJS.ProcessEnv, tty: boolean): ColorDepth {
 }
 
 function detectUnicode(env: NodeJS.ProcessEnv): boolean {
+  // Degrading colors but not glyphs leaves a dumb terminal being told it can
+  // draw Braille, which is the one thing it certainly cannot.
+  const term = env.TERM ?? "";
+  if (term === "dumb" || term === "linux") return false;
   const locale = env.LC_ALL || env.LC_CTYPE || env.LANG || "";
   if (/UTF-?8/i.test(locale)) return true;
   // Windows Terminal and modern emulators are UTF-8 regardless of locale vars.

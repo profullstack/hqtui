@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rgb, hex, mix, gradient, to256, to16, from256, contrast, grayscale, DEFAULT_COLOR } from "../src/color.ts";
+import { heatColor, themes } from "../src/theme.ts";
+import { renderToText } from "../src/testing.ts";
 
 test("hex and rgb produce the same packed value", () => {
   assert.equal(hex("#00d7ff"), rgb(0, 215, 255));
@@ -57,4 +59,23 @@ test("grayscale keeps luminance ordering", () => {
   const dark = grayscale(hex("#102030"));
   const light = grayscale(hex("#e0e0e0"));
   assert.ok((dark & 255) < (light & 255));
+});
+
+test("a non-finite ratio does not become black", () => {
+  // The clamp compared false against both bounds, so NaN reached cols[NaN] and
+  // mix() coerced undefined to rgb(0,0,0) — black on black in a meter.
+  const ramp = gradient(["#ffffff", "#000000"]);
+  assert.equal(ramp(Number.NaN), ramp(0));
+  assert.equal(ramp(Number.POSITIVE_INFINITY), ramp(1));
+  assert.equal(ramp(Number.NEGATIVE_INFINITY), ramp(0));
+  assert.equal(heatColor(themes.dark, Number.NaN), heatColor(themes.dark, 0));
+});
+
+test("a meter with a non-finite value renders a real percentage", () => {
+  const out = renderToText(({ ui }) => ui.meter({ label: "CPU", value: Number.NaN }), {
+    width: 28,
+    height: 1,
+  });
+  assert.ok(!out.includes("NaN"), out);
+  assert.ok(out.includes("0%"));
 });

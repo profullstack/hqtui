@@ -295,3 +295,60 @@ test("a non-finite axis bound does not hang the renderer", () => {
     assert.equal(typeof screen.text(), "string");
   }
 });
+test("a cell that does not fit does not delete the cells after it", () => {
+  // The placement cursor is shared, so a cell that could never be placed used
+  // to burn it to exhaustion and drop every later cell too.
+  const screen = renderToScreen(({ ui }) => {
+    ui.grid({ columns: 3, rows: 1 }, (g) => {
+      g.panel({ title: "A" }, (p) => p.text("a"));
+      g.panel({ title: "WIDE", colSpan: 5 }, (p) => p.text("w"));
+      g.panel({ title: "C" }, (p) => p.text("c"));
+    });
+  }, { width: 44, height: 4 });
+  assert.ok(screen.contains("A"), "first cell lost");
+  assert.ok(screen.contains("C"), "cell after an unplaceable one was dropped");
+});
+
+test("a colSpan wider than a collapsed grid still renders every panel", () => {
+  // The realistic trigger: a full-width header in a responsive layout that
+  // narrows to a single column.
+  const screen = renderToScreen(({ ui }) => {
+    ui.grid({ columns: 1, rows: 3 }, (g) => {
+      g.panel({ title: "HEADER", colSpan: 2 }, (p) => p.text("h"));
+      g.panel({ title: "LEFT" }, (p) => p.text("l"));
+      g.panel({ title: "RIGHT" }, (p) => p.text("r"));
+    });
+  }, { width: 24, height: 9 });
+  for (const label of ["HEADER", "LEFT", "RIGHT"]) {
+    assert.ok(screen.contains(label), `${label} vanished`);
+  }
+});
+
+test("a widget's data range is not a layout constraint", () => {
+  // `min`/`max` mean the data domain on meters, progress and plots. Reading
+  // them as layout bounds deleted a progress bar whose max was 0 (an empty
+  // queue), and let a graph's pinned y-axis evict its siblings.
+  const emptyQueue = renderToScreen(({ ui }) => {
+    ui.text("BEFORE");
+    ui.progress({ label: "Tasks", value: 0, max: 0 });
+    ui.text("AFTER");
+  }, { width: 34, height: 3 });
+  assert.ok(emptyQueue.contains("Tasks"), "progress with max 0 disappeared");
+
+  const pinnedAxis = renderToScreen(({ ui }) => {
+    ui.graph({ values: [40, 50, 60], min: 30, max: 90 });
+    ui.text("FOOTER");
+  }, { width: 30, height: 10 });
+  assert.ok(pinnedAxis.contains("FOOTER"), "a pinned y-axis evicted the sibling");
+});
+
+test("a subtitle does not overwrite the title", () => {
+  const both = renderToText(({ ui }) => ui.panel(
+    { title: "A Long Panel Title", subtitle: "99%" },
+    (p) => p.text(""),
+  ), { width: 26, height: 3 }).split("\n")[0];
+  assert.ok(both.includes("99%"), "subtitle missing");
+  // The title is truncated to the space it actually has, rather than being
+  // painted over mid-word by the subtitle.
+  assert.ok(!both.includes("Tit 99%"), `title collided with subtitle: ${both}`);
+});
