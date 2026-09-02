@@ -1,6 +1,5 @@
 import { readFile, stat } from "node:fs/promises";
-import { open } from "node:fs/promises";
-import { sh } from "./common.ts";
+import { sh, tailFile } from "./common.ts";
 
 /**
  * Protocol-level visibility without root: socket classification, kernel
@@ -224,7 +223,8 @@ export async function sshEvents(limit = 40): Promise<SshEvent[]> {
   const text = await sh("journalctl", [
     "-u", "ssh", "-u", "sshd", "-n", String(limit * 2), "--no-pager", "--output=short-iso",
   ], 5000);
-  const source = text || (await read("/var/log/auth.log"));
+  // Tailed, not read whole: this file grows without bound under a brute force.
+  const source = text || (await tailFile("/var/log/auth.log"));
   if (!source) return [];
 
   const events: SshEvent[] = [];
@@ -302,17 +302,11 @@ export async function http(tailBytes = 256 * 1024): Promise<HttpStats | null> {
   }
   if (!path) return null;
 
-  let text = "";
-  try {
-    const handle = await open(path, "r");
-    const start = Math.max(0, size - tailBytes);
-    const buffer = Buffer.alloc(Math.min(tailBytes, size));
-    await handle.read(buffer, 0, buffer.length, start);
-    await handle.close();
-    text = buffer.toString("utf8");
-  } catch {
-    return null;
-  }
+  // Shares `tailFile`'s handling of a rotation between the stat and the read,
+  // which otherwise leaves the tail of the buffer as NUL bytes — and those flow
+  // into `split("\n")` and into the request-rate denominator below.
+  const text = await tailFile(path, tailBytes);
+  if (!text) return null;
 
   const lines = text.split("\n").slice(1).filter(Boolean);
   const statusClasses = new Map<string, number>();

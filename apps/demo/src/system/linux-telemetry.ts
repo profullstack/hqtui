@@ -1,6 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import os from "node:os";
-import { sh, push } from "./common.ts";
+import { sh, push, tailFile } from "./common.ts";
 import type {
   Connection, Container, Filesystem, Interface, JournalEntry, KernelStats,
   Listener, LoginEvent, ProcessStates, PowerStats, ServiceUnit, Session, Telemetry, GpuStats,
@@ -542,7 +542,8 @@ export async function journal(limit = 60): Promise<JournalEntry[]> {
   }
 
   for (const path of ["/var/log/syslog", "/var/log/messages"]) {
-    const raw = await read(path);
+    // Tailed, not read whole; only the last `limit` lines are used anyway.
+    const raw = await tailFile(path);
     if (!raw) continue;
     return raw.trim().split("\n").slice(-limit).map((line) => {
       const match = /^(\w+\s+\d+\s+[\d:]+)\s+\S+\s+([^:[]+)/.exec(line);
