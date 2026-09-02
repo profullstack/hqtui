@@ -157,3 +157,20 @@ test("paste content that resembles the end marker is kept", () => {
   // ESC[200~ inside a paste is content; only ESC[201~ ends it.
   assert.equal(paste?.type === "paste" && paste.text, "a\x1b[200~b");
 });
+
+test("a bare binding does not fire on the shifted key", () => {
+  // Tab and Shift+Tab move focus in opposite directions; a "tab" binding that
+  // also matched Shift+Tab did both at once.
+  const shiftTab: KeyEvent = {
+    type: "key", name: "tab", key: "shift+tab",
+    shift: true, ctrl: false, alt: false, raw: "\x1b[Z",
+  };
+  assert.equal(matchKey(shiftTab, "tab"), false);
+  assert.equal(matchKey(shiftTab, "shift+tab"), true);
+  // Shift is what produces a capital letter, so it is not a modifier there.
+  const shiftA: KeyEvent = {
+    type: "key", name: "a", key: "a",
+    shift: true, ctrl: false, alt: false, char: "A", raw: "A",
+  };
+  assert.equal(matchKey(shiftA, "a"), true);
+});

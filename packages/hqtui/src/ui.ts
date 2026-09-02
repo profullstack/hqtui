@@ -136,6 +136,19 @@ export class Container {
     return this;
   }
 
+  /**
+   * Constraint for a widget whose own options use `min`/`max` as a data domain
+   * rather than a layout bound — meters, progress, gauges and plots.
+   *
+   * Reading those as layout constraints meant `max: 0` on an empty queue or an
+   * unprobed disk deleted the widget outright, and pinning a graph's y-axis
+   * with `min: 30` reserved thirty rows and evicted its siblings. Use `size`,
+   * `width` or `height` to constrain these.
+   */
+  private sizeOfData(o: ContainerOptions | undefined, fallback: Size, intrinsic?: number): Constraint {
+    return this.sizeOf(o ? { ...o, min: undefined, max: undefined } : o, fallback, intrinsic);
+  }
+
   private sizeOf(o: ContainerOptions | undefined, fallback: Size, intrinsic?: number): Constraint {
     const explicit = o?.size ?? (this.direction === "column" ? o?.height : o?.width);
     if (explicit !== undefined) return { size: explicit, min: o?.min, max: o?.max, intrinsic };
@@ -317,23 +330,23 @@ export class Container {
 
   /** `label ████████░░░ 42%` */
   meter(options: W.MeterOptions & ContainerOptions): this {
-    return this.add((s) => W.drawMeter(s, options), this.sizeOf(options, "auto", 1));
+    return this.add((s) => W.drawMeter(s, options), this.sizeOfData(options, "auto", 1));
   }
 
   /** A stack or grid of meters. */
   meters(items: W.MetersOptions["items"], options: Omit<W.MetersOptions, "items"> & ContainerOptions = {}): this {
     const columns = Math.max(1, options.columns ?? 1);
     const rows = Math.ceil(items.length / columns);
-    return this.add((s) => W.drawMeters(s, { ...options, items }), this.sizeOf(options, "auto", rows));
+    return this.add((s) => W.drawMeters(s, { ...options, items }), this.sizeOfData(options, "auto", rows));
   }
 
   progress(options: W.ProgressOptions & ContainerOptions): this {
-    return this.add((s) => W.drawProgress(s, options), this.sizeOf(options, "auto", 1));
+    return this.add((s) => W.drawProgress(s, options), this.sizeOfData(options, "auto", 1));
   }
 
   /** Braille line/area graph. Fills the space it is given. */
   graph(options: W.GraphOptions & ContainerOptions): this {
-    return this.add((s) => W.drawGraph(s, options), this.sizeOf(options, "fill"));
+    return this.add((s) => W.drawGraph(s, options), this.sizeOfData(options, "fill"));
   }
 
   /** A filled area graph — `graph` with `fill` on. */
@@ -347,16 +360,16 @@ export class Container {
   }
 
   sparkline(options: W.SparklineOptions & ContainerOptions): this {
-    return this.add((s) => W.drawSparklineWidget(s, options), this.sizeOf(options, "auto", 1));
+    return this.add((s) => W.drawSparklineWidget(s, options), this.sizeOfData(options, "auto", 1));
   }
 
   histogram(options: W.ColumnsOptions & ContainerOptions): this {
-    return this.add((s) => W.drawColumns(s, options), this.sizeOf(options, "fill"));
+    return this.add((s) => W.drawColumns(s, options), this.sizeOfData(options, "fill"));
   }
 
   /** A semicircular dial. Wants at least 9x5. */
   gauge(options: W.GaugeOptions & ContainerOptions): this {
-    return this.add((s) => W.drawGauge(s, options), this.sizeOf(options, "fill"));
+    return this.add((s) => W.drawGauge(s, options), this.sizeOfData(options, "fill"));
   }
 
   donut(options: W.DonutOptions & ContainerOptions): this {
@@ -365,7 +378,7 @@ export class Container {
 
   /** Segmented temperature-style bar. */
   heatBar(options: W.HeatBarOptions & ContainerOptions): this {
-    return this.add((s) => W.drawHeatBar(s, options), this.sizeOf(options, "auto", 1));
+    return this.add((s) => W.drawHeatBar(s, options), this.sizeOfData(options, "auto", 1));
   }
 
   // ---------------------------------------------------------------- inputs
@@ -579,11 +592,19 @@ export class GridContainer {
     let cursor = 0;
 
     for (const cell of this.cells) {
-      const colSpan = Math.max(1, cell.options.colSpan ?? 1);
-      const rowSpan = Math.max(1, cell.options.rowSpan ?? 1);
+      // Clamp to the grid. A span wider than the track count can never satisfy
+      // `col + colSpan <= colWidths.length`, so the placement loop below used to
+      // burn the shared cursor to exhaustion — dropping this cell and every one
+      // after it. A responsive layout collapsing to one column made a
+      // full-width `colSpan: 2` header blank the whole grid.
+      const colSpan = Math.min(Math.max(1, cell.options.colSpan ?? 1), colWidths.length);
+      const rowSpan = Math.min(Math.max(1, cell.options.rowSpan ?? 1), rowHeights.length);
 
-      // Find the next free slot that fits the span.
+      // Find the next free slot that fits the span. The cursor is shared across
+      // cells, so a cell that cannot be placed must hand it back — otherwise it
+      // burns the cursor to exhaustion and every later cell disappears too.
       let placed = false;
+      const searchFrom = cursor;
       while (!placed && cursor < colWidths.length * rowHeights.length + colWidths.length) {
         const col = cursor % colWidths.length;
         const row = Math.floor(cursor / colWidths.length);
@@ -620,6 +641,7 @@ export class GridContainer {
         placed = true;
         cursor++;
       }
+      if (!placed) cursor = searchFrom;
     }
     this.cells.length = 0;
   }

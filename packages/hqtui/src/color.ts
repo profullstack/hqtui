@@ -95,7 +95,10 @@ export function gradient(stops: (Color | string)[]): (t: number) => Color {
   if (cols.length === 0) return () => DEFAULT_COLOR;
   if (cols.length === 1) return () => cols[0];
   return (t: number) => {
-    const k = t < 0 ? 0 : t > 1 ? 1 : t;
+    // Ordered so NaN falls through to 0. Written the other way round it
+    // compares false against both bounds and reaches `cols[NaN]`, which `mix`
+    // coerced to black. Infinities still clamp to the ends.
+    const k = t > 1 ? 1 : t > 0 ? t : 0;
     const pos = k * (cols.length - 1);
     const i = Math.min(Math.floor(pos), cols.length - 2);
     return mix(cols[i], cols[i + 1], pos - i);

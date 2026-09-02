@@ -198,23 +198,32 @@ export class Surface {
       this.vline(w - 1, 1, h - 2, b.v, borderStyle);
     }
 
+    // Measured before the title is drawn: both share the top border row, and
+    // the title used to be truncated against the full width and then painted
+    // over by the subtitle.
+    const subtitle = options.subtitle ? ` ${options.subtitle} ` : "";
+    const subtitleWidth = subtitle && stringWidth(subtitle) + 4 < w ? stringWidth(subtitle) : 0;
+
     if (options.title) {
       const titleColor = options.titleColor ?? this.theme.title;
       const label = ` ${options.title} `;
-      const maxLabel = Math.max(0, w - 4);
-      const shown = truncate(label, maxLabel);
+      // Both labels carry a space of padding, and those two spaces may share a
+      // column — but only while the title fits, since a truncated one ends in
+      // content rather than padding.
+      const strict = Math.max(0, w - 4 - subtitleWidth);
+      const room = subtitleWidth > 0 && stringWidth(label) <= strict + 1 ? strict + 1 : strict;
+      const shown = truncate(label, room);
       const tw = stringWidth(shown);
       const align = options.titleAlign ?? "left";
       const tx = align === "left" ? 2 : align === "right" ? Math.max(2, w - 2 - tw) : Math.max(2, Math.floor((w - tw) / 2));
       this.text(tx, 0, shown, { fg: titleColor, bg, attrs: 1 /* bold */ });
     }
 
-    if (options.subtitle) {
-      const sub = ` ${options.subtitle} `;
-      const sw = stringWidth(sub);
-      if (sw + 4 < w) {
-        this.text(w - 2 - sw, 0, sub, { fg: options.subtitleColor ?? this.theme.muted, bg });
-      }
+    if (subtitleWidth > 0) {
+      this.text(w - 2 - subtitleWidth, 0, subtitle, {
+        fg: options.subtitleColor ?? this.theme.muted,
+        bg,
+      });
     }
 
     if (options.footer && h > 2) {

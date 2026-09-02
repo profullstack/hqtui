@@ -330,6 +330,11 @@ const SPECIAL_KEYS_SORTED = Object.keys(SPECIAL).sort((a, b) => b.length - a.len
 export function matchKey(event: KeyEvent, binding: string): boolean {
   const b = binding.toLowerCase().trim();
   if (event.key.toLowerCase() === b) return true;
-  if (event.name.toLowerCase() === b && !event.ctrl && !event.alt) return true;
+  // `keyEvent` only spells shift into `key` for named keys, so only named keys
+  // may reject it here — otherwise a binding on "tab" would also fire on
+  // Shift+Tab and move focus backwards and forwards at once. For a printable
+  // character shift is what produced the character, so it is not a modifier.
+  const shiftMatters = event.shift && event.name.length > 1;
+  if (event.name.toLowerCase() === b && !event.ctrl && !event.alt && !shiftMatters) return true;
   return false;
 }
