@@ -30,7 +30,7 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
       - name: Test
-        run: bun test packages/hqtui/test apps/demo/test
+        run: bun test packages/hqtui/test apps/demo/test apps/web/test
       - name: Build
         run: bun run build
 
@@ -48,7 +48,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: bun install --frozen-lockfile
       - name: Test under Node
-        run: node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts
+        run: node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts apps/web/test/*.test.ts
 
   # apps/web is the deployed artifact and the largest TypeScript surface in the
   # repo, but nothing built or typechecked it — a broken site reached Railway
