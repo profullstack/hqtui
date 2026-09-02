@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { renderToScreen, renderToText, renderToHtml } from "../src/testing.ts";
+import type { Container } from "../src/ui.ts";
 import { themes } from "../src/theme.ts";
 import { hex } from "../src/color.ts";
 
@@ -273,4 +274,24 @@ test("escape hatch drawing reaches the buffer", () => {
     ui.draw((surface) => surface.text(0, 0, "raw"));
   }, { width: 10, height: 2 });
   assert.ok(screen.contains("raw"));
+});
+
+test("a non-finite axis bound does not hang the renderer", () => {
+  // `sum / count` with no samples is NaN. NaN compares false against
+  // everything, so it slipped every bounds test in BrailleCanvas.pixel and
+  // left Bresenham's only exit condition unreachable — the render loop never
+  // returned, so the app could not be quit and the terminal was never restored.
+  const views: ((ui: Container) => void)[] = [
+    (ui) => ui.graph({ values: [1, 2, 3], max: Number.NaN }),
+    (ui) => ui.graph({ values: [1, 2, 3], min: Number.NaN }),
+    (ui) => ui.graph({ values: [1, 2, 3], min: Number.NaN, max: Number.NaN }),
+    (ui) => ui.graph({ values: [1, 2, 3], max: Number.POSITIVE_INFINITY }),
+    (ui) => ui.graph({ values: [Number.NaN, 1, Number.NaN] }),
+    (ui) => ui.sparkline({ values: [1, Number.NaN, 3] }),
+    (ui) => ui.histogram({ values: [1, 2], max: Number.NaN }),
+  ];
+  for (const view of views) {
+    const screen = renderToScreen(({ ui }) => view(ui), { width: 30, height: 6 });
+    assert.equal(typeof screen.text(), "string");
+  }
 });

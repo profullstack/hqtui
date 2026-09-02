@@ -83,9 +83,25 @@ function keyEvent(
  * Feed it chunks, get events. Stateful so a sequence split across two reads
  * (common over SSH) still decodes correctly.
  */
+const PASTE_END = "\x1b[201~";
+
+/** Length of the longest suffix of `text` that is a proper prefix of `marker`. */
+function partialSuffix(text: string, marker: string): number {
+  for (let n = Math.min(text.length, marker.length - 1); n > 0; n--) {
+    if (text.endsWith(marker.slice(0, n))) return n;
+  }
+  return 0;
+}
+
 export class InputParser {
   private pending = "";
   private pasteBuffer: string | null = null;
+  /**
+   * Bytes held back mid-paste because they could be the start of the end
+   * marker. Kept separate from `pending` so they do not look like an
+   * unterminated escape and trip the Escape-key timeout.
+   */
+  private pasteTail = "";
 
   /** True when bytes are buffered awaiting the rest of a sequence. */
   get hasPending(): boolean {
@@ -98,6 +114,12 @@ export class InputParser {
    * so the terminal calls this on a short timeout.
    */
   flush(): InputEvent[] {
+    // Mid-paste, held-back bytes are a partial end marker that never completed,
+    // so they are paste content — not a lone Escape.
+    if (this.pasteBuffer !== null && this.pasteTail.length > 0) {
+      this.pasteBuffer += this.pasteTail;
+      this.pasteTail = "";
+    }
     if (this.pending.length === 0) return [];
     const data = this.pending;
     this.pending = "";
@@ -113,19 +135,29 @@ export class InputParser {
     const events: InputEvent[] = [];
     let data = this.pending + chunk;
     this.pending = "";
+    if (this.pasteTail.length > 0) {
+      data = this.pasteTail + data;
+      this.pasteTail = "";
+    }
 
     while (data.length > 0) {
       if (this.pasteBuffer !== null) {
-        const end = data.indexOf("\x1b[201~");
+        const end = data.indexOf(PASTE_END);
         if (end === -1) {
-          this.pasteBuffer += data;
+          // The end marker can straddle two reads, which is routine over SSH.
+          // Swallowing a partial one here used to lose it for good: the paste
+          // never ended, and every later keystroke — Ctrl+C included — went
+          // into the buffer instead of being dispatched.
+          const keep = partialSuffix(data, PASTE_END);
+          this.pasteBuffer += keep > 0 ? data.slice(0, data.length - keep) : data;
+          this.pasteTail = keep > 0 ? data.slice(data.length - keep) : "";
           data = "";
           break;
         }
         this.pasteBuffer += data.slice(0, end);
         events.push({ type: "paste", text: this.pasteBuffer });
         this.pasteBuffer = null;
-        data = data.slice(end + 6);
+        data = data.slice(end + PASTE_END.length);
         continue;
       }
 

@@ -31,9 +31,16 @@ export interface PlotOptions {
   baseline?: number;
 }
 
+/** A finite number, or undefined — `sum / count` with no samples is NaN. */
+function bound(value: number | undefined): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
 function extent(seriesList: Series[], options: PlotOptions): [number, number] {
-  let min = options.min;
-  let max = options.max;
+  // A caller's axis bound is data, and data can be NaN. Falling back to the
+  // computed extent keeps every plotted coordinate finite.
+  let min = bound(options.min);
+  let max = bound(options.max);
   if (min === undefined || max === undefined) {
     let lo = Infinity;
     let hi = -Infinity;
