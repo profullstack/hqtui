@@ -5,6 +5,14 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+# A new push supersedes the run in flight for the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     name: test (${{ matrix.os }})
@@ -41,6 +49,25 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Test under Node
         run: node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts
+
+  # apps/web is the deployed artifact and the largest TypeScript surface in the
+  # repo, but nothing built or typechecked it — a broken site reached Railway
+  # before it reached CI. `next build` does both.
+  site:
+    name: build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Build the library the site imports
+        run: bun run build
+      - name: Build site
+        run: bun run --cwd apps/web build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
 
   benchmark:
     runs-on: ubuntu-latest

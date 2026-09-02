@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # Nothing currently watches the resolved dependency tree or the action
+  # versions pinned in the workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /packages/hqtui
+      - /apps/web
+      - /apps/demo
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    groups:
+      types:
+        patterns: ["@types/*"]
+      next:
+        patterns: ["next", "react", "react-dom", "@types/react", "@types/react-dom"]

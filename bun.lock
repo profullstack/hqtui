@@ -56,6 +56,13 @@
         "typescript": "^5",
       },
     },
+    "examples": {
+      "name": "@profullstack/hqtui-examples",
+      "version": "0.1.0",
+      "dependencies": {
+        "@profullstack/hqtui": "^0.1.9",
+      },
+    },
     "packages/hqtui": {
       "name": "@profullstack/hqtui",
       "version": "0.1.9",
@@ -243,6 +250,8 @@
     "@profullstack/hqtui-benchmark": ["@profullstack/hqtui-benchmark@workspace:apps/benchmark"],
 
     "@profullstack/hqtui-demo": ["@profullstack/hqtui-demo@workspace:apps/demo"],
+
+    "@profullstack/hqtui-examples": ["@profullstack/hqtui-examples@workspace:examples"],
 
     "@profullstack/hqtui-web": ["@profullstack/hqtui-web@workspace:apps/web"],
 

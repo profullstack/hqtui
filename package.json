@@ -6,7 +6,7 @@
   "workspaces": [
     "packages/*",
     "apps/*",
-    "examples/*"
+    "examples"
   ],
   "engines": {
     "bun": ">=1.1",
@@ -18,7 +18,10 @@
     "bench": "bun apps/benchmark/src/main.ts",
     "test": "bun test packages/hqtui/test apps/demo/test",
     "test:node": "node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts",
-    "typecheck": "cd packages/hqtui && bun run typecheck"
+    "typecheck": "bun run typecheck:lib && bun run typecheck:demo && bun run typecheck:examples",
+    "typecheck:lib": "cd packages/hqtui && bun run typecheck",
+    "typecheck:demo": "cd apps/demo && bun x tsc -p tsconfig.check.json",
+    "typecheck:examples": "cd examples && bun x tsc -p tsconfig.json"
   },
   "devDependencies": {
     "@types/node": "^22",
