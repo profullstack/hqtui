@@ -155,6 +155,7 @@ export async function interfaces(dt: number, history: Map<string, Interface>): P
   if (!netdev) return [];
   const addresses = os.networkInterfaces();
   const out: Interface[] = [];
+  const seen = new Set<string>();
 
   for (const line of netdev.split("\n").slice(2)) {
     const match = /^\s*([\w.@-]+):\s*(.*)$/.exec(line);
@@ -172,6 +173,7 @@ export async function interfaces(dt: number, history: Map<string, Interface>): P
     const txRate = previous && txBytes >= previous[1] ? (txBytes - previous[1]) / dt : 0;
     previousInterfaces[name] = [rxBytes, txBytes];
 
+    seen.add(name);
     const address = (addresses[name] ?? []).find((a) => a.family === "IPv4");
     const existing = history.get(name);
     const entry: Interface = {
@@ -194,6 +196,16 @@ export async function interfaces(dt: number, history: Map<string, Interface>): P
     history.set(name, entry);
     out.push(entry);
   }
+  // Both maps are keyed by interface name and neither was ever pruned. On a
+  // container host the veth* names churn constantly, and each retained entry
+  // holds two 240-element history arrays — unbounded growth over an uptime.
+  for (const name of Object.keys(previousInterfaces)) {
+    if (!seen.has(name)) delete previousInterfaces[name];
+  }
+  for (const name of history.keys()) {
+    if (!seen.has(name)) history.delete(name);
+  }
+
   return out;
 }
 
