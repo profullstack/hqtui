@@ -9,6 +9,7 @@
  */
 import { createApp, themeList, themes, type KeyEvent } from "@profullstack/hqtui";
 import { createCollector } from "./system/index.ts";
+import { intervalMs } from "./options.ts";
 import { createState, focusedPane, moveSelection, SCREENS, type ScreenName } from "./state.ts";
 import {
   componentsScreen, dashboardScreen, graphicsScreen, inputScreen, networkScreen, servicesScreen,
@@ -46,7 +47,7 @@ function parseArgs(argv: string[]): Options {
       case "--fps": options.fps = Number(value) || 30; i++; break;
       case "--theme": options.theme = value ?? "dark"; i++; break;
       case "--screen": options.screen = (value as ScreenName) ?? "dashboard"; i++; break;
-      case "--interval": options.interval = Number(value) || 1000; i++; break;
+      case "--interval": options.interval = intervalMs(value); i++; break;
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
@@ -112,14 +113,33 @@ async function main(): Promise<void> {
   });
 
   // Metrics refresh on their own clock; rendering runs at the frame rate.
-  const dt = options.interval / 1000;
+  // One refresh at a time. Collecting can outrun the interval — the tick-15 path
+  // alone allows journalctl five seconds — and every concurrent call mutates the
+  // same sample, the same previous-counter state, and the same tick counter that
+  // drives the staggered cadences, while spawning its own ps, ss, df and
+  // journalctl.
+  let refreshing = false;
+  let lastRefreshAt = Date.now();
   const poll = setInterval(() => {
-    if (state.paused) return;
-    void collector.refresh(dt).then(() => {
-      state.sample = collector.current();
-      state.sensorNote = collector.sensorNote ?? state.sensorNote;
-      app.invalidate();
-    });
+    if (state.paused || refreshing) return;
+    // Every rate is a counter delta divided by this, so it has to be the time
+    // that actually passed. A fixed interval overstated every rate by the skip
+    // factor whenever a refresh outran its tick — and `sh()` alone allows four
+    // seconds per command.
+    const now = Date.now();
+    const elapsed = Math.max(0.001, (now - lastRefreshAt) / 1000);
+    lastRefreshAt = now;
+    refreshing = true;
+    void collector
+      .refresh(elapsed)
+      .then(() => {
+        state.sample = collector.current();
+        state.sensorNote = collector.sensorNote ?? state.sensorNote;
+        app.invalidate();
+      })
+      .finally(() => {
+        refreshing = false;
+      });
   }, options.interval);
   poll.unref?.();
 
