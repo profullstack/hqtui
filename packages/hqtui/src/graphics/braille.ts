@@ -32,11 +32,15 @@ export class BrailleCanvas {
     this.dots.fill(0);
   }
 
-  /** Set one pixel. Out-of-range coordinates are ignored, not clamped. */
+  /**
+   * Set one pixel. Out-of-range coordinates are ignored, not clamped — and the
+   * test is written positively so that NaN, which compares false against
+   * everything, is ignored too rather than landing in cell 0.
+   */
   pixel(x: number, y: number): void {
     const px = Math.round(x);
     const py = Math.round(y);
-    if (px < 0 || py < 0 || px >= this.width || py >= this.height) return;
+    if (!(px >= 0 && py >= 0 && px < this.width && py < this.height)) return;
     const cell = (py >> 2) * this.cols + (px >> 1);
     this.dots[cell] |= DOT_BITS[py & 3][px & 1];
   }
@@ -44,7 +48,7 @@ export class BrailleCanvas {
   unset(x: number, y: number): void {
     const px = Math.round(x);
     const py = Math.round(y);
-    if (px < 0 || py < 0 || px >= this.width || py >= this.height) return;
+    if (!(px >= 0 && py >= 0 && px < this.width && py < this.height)) return;
     const cell = (py >> 2) * this.cols + (px >> 1);
     this.dots[cell] &= ~DOT_BITS[py & 3][px & 1];
   }
@@ -52,7 +56,7 @@ export class BrailleCanvas {
   get(x: number, y: number): boolean {
     const px = Math.round(x);
     const py = Math.round(y);
-    if (px < 0 || py < 0 || px >= this.width || py >= this.height) return false;
+    if (!(px >= 0 && py >= 0 && px < this.width && py < this.height)) return false;
     const cell = (py >> 2) * this.cols + (px >> 1);
     return (this.dots[cell] & DOT_BITS[py & 3][px & 1]) !== 0;
   }
@@ -63,6 +67,10 @@ export class BrailleCanvas {
     let y = Math.round(y0);
     const ex = Math.round(x1);
     const ey = Math.round(y1);
+    // The loop below only ends at `x === ex && y === ey`. A non-finite endpoint
+    // makes every comparison false, so it would never end at all — the render
+    // loop would hang and the terminal would never be restored.
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(ex) || !Number.isFinite(ey)) return;
     const dx = Math.abs(ex - x);
     const dy = -Math.abs(ey - y);
     const sx = x < ex ? 1 : -1;

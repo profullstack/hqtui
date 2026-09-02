@@ -117,3 +117,43 @@ test("matchKey accepts both bare and modified forms", () => {
   assert.ok(matchKey(ctrlC, "ctrl+c"));
   assert.ok(!matchKey(ctrlC, "c"));
 });
+
+test("a paste terminator split across reads still ends the paste", () => {
+  // Routine over SSH. A partial end marker used to be swallowed into the paste
+  // buffer and lost, so the paste never ended and every later keystroke —
+  // Ctrl+C included — was buffered instead of dispatched.
+  const START = "\x1b[200~";
+  const END = "\x1b[201~";
+  for (let cut = 0; cut <= END.length; cut++) {
+    const parser = new InputParser();
+    const full = START + "hello" + END;
+    const at = START.length + "hello".length + cut;
+    const events = [...parser.parse(full.slice(0, at)), ...parser.parse(full.slice(at))];
+    const paste = events.find((e) => e.type === "paste");
+    assert.ok(paste, `split at ${cut} lost the paste`);
+    assert.equal(paste.type === "paste" && paste.text, "hello");
+    // And the parser is still usable afterwards.
+    assert.equal(parser.parse("q")[0]?.type, "key");
+  }
+});
+
+test("a paste delivered one byte at a time still decodes", () => {
+  const parser = new InputParser();
+  const events: ReturnType<InputParser["parse"]> = [];
+  for (const ch of "\x1b[200~abc\x1b[201~") events.push(...parser.parse(ch));
+  const paste = events.find((e) => e.type === "paste");
+  assert.equal(paste?.type === "paste" && paste.text, "abc");
+  const key = parser.parse("z")[0];
+  assert.equal(key?.type === "key" && key.key, "z");
+});
+
+test("paste content that resembles the end marker is kept", () => {
+  const parser = new InputParser();
+  const events = [
+    ...parser.parse("\x1b[200~a\x1b[20"),
+    ...parser.parse("0~b\x1b[201~"),
+  ];
+  const paste = events.find((e) => e.type === "paste");
+  // ESC[200~ inside a paste is content; only ESC[201~ ends it.
+  assert.equal(paste?.type === "paste" && paste.text, "a\x1b[200~b");
+});

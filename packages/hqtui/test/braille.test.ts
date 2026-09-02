@@ -60,3 +60,14 @@ test("block glyph ramps are monotonic", () => {
   assert.equal(horizontalGlyph(1), "█");
   assert.notEqual(verticalGlyph(0.5), verticalGlyph(0.9));
 });
+
+test("braille ignores non-finite coordinates instead of looping forever", () => {
+  const canvas = new BrailleCanvas(20, 8);
+  canvas.line(0, 0, 5, Number.NaN);
+  canvas.line(Number.NaN, 0, 5, 5);
+  canvas.line(0, 0, Number.POSITIVE_INFINITY, 5);
+  canvas.pixel(Number.NaN, 0);
+  canvas.pixel(0, Number.NaN);
+  // Nothing was drawn at the origin by a NaN coordinate.
+  assert.equal(canvas.get(0, 0), false);
+});
