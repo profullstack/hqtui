@@ -24,13 +24,22 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: bun install --frozen-lockfile
       - run: bun run typecheck && bun test packages/hqtui/test && bun run build
+      # `id-token: write` above is what provenance needs, but without the flag
+      # nothing is attested — the permission was granted and unused.
+      #
+      # The dist-tag goes through the environment rather than being
+      # interpolated into the shell: `${{ inputs.tag }}` is attacker-controlled
+      # text on a workflow_dispatch, and expressions are substituted before the
+      # shell ever sees them.
       - name: Publish library
-        run: npm publish --access public --tag ${{ inputs.tag || 'latest' }}
+        run: npm publish --access public --provenance --tag "$DIST_TAG"
         working-directory: packages/hqtui
         env:
+          DIST_TAG: ${{ inputs.tag || 'latest' }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish demo
-        run: npm publish --access public --tag ${{ inputs.tag || 'latest' }}
+        run: npm publish --access public --provenance --tag "$DIST_TAG"
         working-directory: apps/demo
         env:
+          DIST_TAG: ${{ inputs.tag || 'latest' }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
