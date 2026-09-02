@@ -43,6 +43,7 @@ export class Terminal {
   private inputListeners = new Set<Listener<InputEvent>>();
   private resizeListeners = new Set<Listener<TerminalSize>>();
   private cleanupHandlers: (() => void)[] = [];
+  private teardownListeners = new Set<() => void>();
   private escapeTimer: NodeJS.Timeout | null = null;
   private onData = (chunk: Buffer | string): void => {
     const text = typeof chunk === "string" ? chunk : chunk.toString("utf8");
@@ -168,6 +169,16 @@ export class Terminal {
     return () => this.resizeListeners.delete(listener);
   }
 
+  /**
+   * Called when an exit handler tears the terminal down without the owner
+   * asking. Whoever is driving a render loop has to know: the alternate screen
+   * is gone, so anything it draws next lands in the user's live shell.
+   */
+  onTeardown(listener: () => void): () => void {
+    this.teardownListeners.add(listener);
+    return () => this.teardownListeners.delete(listener);
+  }
+
   private installExitHandlers(): void {
     const restore = () => this.restore();
 
@@ -176,12 +187,26 @@ export class Terminal {
       process.exit(signal === "SIGINT" ? 130 : 143);
     };
     const onExit = () => restore();
-    const onError = (error: unknown) => {
+    // Restoring is not negotiable — a crash must not leave an unusable shell —
+    // but deciding the process should die is the host's call, not a rendering
+    // library's. If the embedding app installed its own handler, hand over once
+    // the terminal is safe; only act as the last resort when nobody else will.
+    const onError = (event: "uncaughtException" | "unhandledRejection") => (error: unknown) => {
+      // Counted before restoring: `restore()` runs the cleanup handlers, and
+      // those remove this very listener — so asking afterwards excludes us and
+      // one host handler reads as none.
+      const handedOver = process.listenerCount(event) > 1;
       restore();
+      // Anything still rendering must stop, or it paints into the shell the
+      // alternate screen just gave back.
+      for (const listener of this.teardownListeners) listener();
+      if (handedOver) return;
       // The terminal is usable again, so the stack trace is actually readable.
       console.error(error);
       process.exit(1);
     };
+    const onUncaught = onError("uncaughtException");
+    const onRejection = onError("unhandledRejection");
 
     const sigint = onSignal("SIGINT");
     const sigterm = onSignal("SIGTERM");
@@ -191,16 +216,16 @@ export class Terminal {
     process.on("SIGTERM", sigterm);
     process.on("SIGHUP", sighup);
     process.on("exit", onExit);
-    process.on("uncaughtException", onError);
-    process.on("unhandledRejection", onError);
+    process.on("uncaughtException", onUncaught);
+    process.on("unhandledRejection", onRejection);
 
     this.cleanupHandlers.push(() => {
       process.off("SIGINT", sigint);
       process.off("SIGTERM", sigterm);
       process.off("SIGHUP", sighup);
       process.off("exit", onExit);
-      process.off("uncaughtException", onError);
-      process.off("unhandledRejection", onError);
+      process.off("uncaughtException", onUncaught);
+      process.off("unhandledRejection", onRejection);
     });
   }
 }

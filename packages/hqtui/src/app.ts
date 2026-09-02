@@ -89,6 +89,8 @@ export class App {
   private frameCount = 0;
   private lastFrameAt = 0;
   private exitResolve: (() => void) | null = null;
+  /** Terminal subscriptions, released on stop so a restart does not double them. */
+  private subscriptions: (() => void)[] = [];
 
   private focusIndex = 0;
   private focusCount = 0;
@@ -183,15 +185,21 @@ export class App {
     this.startedAt = Date.now();
     this.terminal.enter();
 
-    this.terminal.onInput((event) => this.handleInput(event));
-    this.terminal.onResizeEvent(({ columns, rows }) => {
+    // Kept so `stop()` can release them. `Terminal.restore()` detaches from the
+    // stream but keeps its listener sets, so discarding these meant a second
+    // `start()` handled every keystroke twice, and again for every restart.
+    // If an exit handler tears the terminal down and hands the decision to the
+    // host, the render loop must not keep drawing into the restored shell.
+    this.subscriptions.push(this.terminal.onTeardown(() => this.stop()));
+    this.subscriptions.push(this.terminal.onInput((event) => this.handleInput(event)));
+    this.subscriptions.push(this.terminal.onResizeEvent(({ columns, rows }) => {
       this.current.resize(columns, rows);
       this.previous.resize(columns, rows);
       this.forceRepaint = true;
       this.dirty = true;
       this.emit("resize", { width: columns, height: rows });
       this.frame();
-    });
+    }));
 
     const fps = this.targetFps();
     const interval = Math.max(8, Math.floor(1000 / fps));
@@ -218,6 +226,8 @@ export class App {
     this.running = false;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    for (const off of this.subscriptions) off();
+    this.subscriptions = [];
     this.terminal.restore();
     this.emit("exit", undefined);
     this.exitResolve?.();
