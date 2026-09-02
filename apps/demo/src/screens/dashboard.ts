@@ -119,8 +119,10 @@ function systemPanel(ui: Container, state: DemoState, theme: Theme): void {
           q.keyValues([
             { label: "Uptime", value: duration(s.system.uptime), color: theme.accent },
             { label: "Procs", value: String(s.system.processCount || s.processes.length), color: theme.accent },
-            { label: "Threads", value: String(s.system.threadCount), color: theme.accent },
-            { label: "Ctx/s", value: `${(s.system.contextSwitches / 1000).toFixed(1)}K`, color: theme.accent },
+            { label: "Threads", value: s.system.threadCount ? String(s.system.threadCount) : "—", color: theme.accent },
+            // contextSwitches is cumulative since boot; the per-second rate is
+            // what the label claims, and what the Services screen already uses.
+            { label: "Ctx/s", value: `${(s.telemetry.kernel.contextSwitchRate / 1000).toFixed(1)}K`, color: theme.accent },
           ]);
         });
         r.panel({ title: "Memory" }, (q) => {

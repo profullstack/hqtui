@@ -16,6 +16,22 @@ export async function sh(command: string, args: string[], timeout = 4000): Promi
   }
 }
 
+/**
+ * A process name from its command line.
+ *
+ * `ps -o comm` is not usable for this: Linux truncates it to 15 bytes and it
+ * may contain spaces (Firefox ships "Web Content", "Isolated Web Co"), which
+ * shifts every whitespace-split column after it; macOS emits the full path
+ * truncated to 16 characters, so the tail is a fragment rather than a name.
+ * argv[0] has neither problem.
+ */
+export function processName(args: string): string {
+  const argv0 = args.trim().split(/\s+/)[0] ?? "";
+  // Kernel threads are already bracketed names, not paths.
+  if (argv0.startsWith("[")) return argv0;
+  return argv0.split("/").pop() || argv0 || "-";
+}
+
 export function push(history: number[], value: number, limit = 240): void {
   history.push(value);
   if (history.length > limit) history.shift();
