@@ -179,7 +179,7 @@ export default async function Home() {
               alt="HQTUI dashboard: CPU, memory, network and processes"
               priority
             />
-            <p className="mt-3 text-center font-mono text-xs text-white/30">
+            <p className="mt-3 text-center font-mono text-xs text-white/50">
               A screenshot of <code className="font-mono">hqtui-demo</code> on a laptop, reading
               its own sensors. Not a mockup.
             </p>
@@ -194,7 +194,7 @@ export default async function Home() {
             ].map(([value, label]) => (
               <div key={label} className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-5">
                 <div className="font-mono text-2xl font-bold text-[#5fff87]">{value}</div>
-                <div className="mt-1 text-xs text-white/45">{label}</div>
+                <div className="mt-1 text-xs text-white/50">{label}</div>
               </div>
             ))}
           </div>
@@ -342,14 +342,14 @@ export default async function Home() {
               <code className="font-mono text-white/80">CPU 73%</code> writes a single character.
             </p>
             <Separator className="my-6 bg-white/10" />
-            <p className="font-mono text-xs text-white/35">
+            <p className="font-mono text-xs text-white/50">
               160x50 (8,000 cells) · bun 1.4 · linux x64 · reproduce with{" "}
               <span className="text-white/60">bun run bench</span>
             </p>
           </div>
           <div className="overflow-hidden rounded-xl border border-white/10">
             <table className="w-full text-sm">
-              <thead className="bg-white/[0.04] text-left font-mono text-xs uppercase tracking-wide text-white/40">
+              <thead className="bg-white/[0.04] text-left font-mono text-xs uppercase tracking-wide text-white/50">
                 <tr>
                   <th className="px-4 py-3">Benchmark</th>
                   <th className="px-4 py-3 text-right">Mean</th>
@@ -361,7 +361,7 @@ export default async function Home() {
                   <tr key={row.name} className="border-t border-white/[0.06]">
                     <td className="px-4 py-3 text-white/75">{row.name}</td>
                     <td className="px-4 py-3 text-right font-mono text-[#5fff87]">{row.mean}</td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-white/40">{row.note}</td>
+                    <td className="px-4 py-3 text-right font-mono text-xs text-white/50">{row.note}</td>
                   </tr>
                 ))}
               </tbody>
@@ -385,7 +385,7 @@ export default async function Home() {
                 <InstallCommand command="bunx @profullstack/hqtui-demo" />
                 <InstallCommand command="bunx @profullstack/hqtui-demo --sim" />
               </div>
-              <p className="mt-4 text-sm text-white/40">
+              <p className="mt-4 text-sm text-white/50">
                 Ten screens: dashboard, sessions, network, traffic, services, components,
                 graphics, themes, input visualizer, stress test.
               </p>

@@ -54,10 +54,21 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
-      <div className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+      <div
+        role="tablist"
+        aria-label="Theme"
+        className="flex flex-row gap-2 overflow-x-auto lg:flex-col lg:overflow-visible"
+      >
         {themes.map((theme) => (
           <button
             key={theme.name}
+            type="button"
+            role="tab"
+            // Which theme is selected was conveyed by border and background
+            // colour alone, so it was invisible to a screen reader and to
+            // anyone in a high-contrast or forced-colours mode.
+            aria-selected={theme.name === active}
+            aria-controls="theme-preview"
             onClick={() => setActive(theme.name)}
             className={cn(
               "flex shrink-0 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
@@ -67,18 +78,21 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
             )}
           >
             <span className="font-mono">{theme.label}</span>
-            <span className="font-mono text-xs text-white/30">{votes[theme.name] ?? 0}</span>
+            <span className="font-mono text-xs text-white/50">
+              <span className="sr-only">votes: </span>
+              {votes[theme.name] ?? 0}
+            </span>
           </button>
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div id="theme-preview" role="tabpanel" aria-live="polite" className="space-y-3">
         <div className="terminal-frame">
           <div className="terminal-frame__bar">
             <span className="terminal-frame__dot bg-[#ff5f57]" />
             <span className="terminal-frame__dot bg-[#febc2e]" />
             <span className="terminal-frame__dot bg-[#28c840]" />
-            <span className="ml-2 font-mono text-[11px] text-white/40">theme: {current?.label}</span>
+            <span className="ml-2 font-mono text-[11px] text-white/50">theme: {current?.label}</span>
           </div>
           <Image
             key={current?.name}
@@ -105,7 +119,7 @@ export function ThemeGallery({ themes }: { themes: ThemeCard[] }) {
         >
           {voted === active ? <Check className="h-4 w-4" /> : <ThumbsUp className="h-4 w-4" />}
           {voted === active ? "Voted" : `Vote for ${current?.label}`}
-          <span className="font-mono text-xs text-white/40">{votes[active] ?? 0}</span>
+          <span className="font-mono text-xs text-white/50">{votes[active] ?? 0}</span>
         </button>
       </div>
     </div>

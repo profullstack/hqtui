@@ -42,7 +42,7 @@ export function Terminal({ shot, title, className, bare, priority, alt }: Termin
           <span className="terminal-frame__dot bg-[#ff5f57]" />
           <span className="terminal-frame__dot bg-[#febc2e]" />
           <span className="terminal-frame__dot bg-[#28c840]" />
-          <span className="ml-2 font-mono text-[11px] text-white/40">{title ?? "hqtui"}</span>
+          <span className="ml-2 font-mono text-[11px] text-white/50">{title ?? "hqtui"}</span>
         </div>
       )}
       <Image

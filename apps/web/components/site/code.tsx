@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 type Rule = { pattern: RegExp; className: string };
 
 const RULES: Rule[] = [
-  { pattern: /\/\/[^\n]*/g, className: "text-white/30" },
+  { pattern: /\/\/[^\n]*/g, className: "text-white/50" },
   { pattern: /"[^"\n]*"|'[^'\n]*'|`[^`\n]*`/g, className: "text-[#f1fa8c]" },
   {
     pattern: /\b(?:import|from|const|let|await|async|return|function|export|new|if|else|for|of|type|interface)\b/g,
@@ -65,7 +65,7 @@ export function Code({
   return (
     <div className={cn("overflow-hidden rounded-xl border border-white/10 bg-[#0a0e14]", className)}>
       {filename ? (
-        <div className="border-b border-white/10 px-4 py-2 font-mono text-[11px] text-white/40">
+        <div className="border-b border-white/10 px-4 py-2 font-mono text-[11px] text-white/50">
           {filename}
         </div>
       ) : null}

@@ -76,10 +76,10 @@ export function SiteNav() {
 export function SiteFooter({ views }: { views?: number }) {
   return (
     <footer className="border-t border-white/10 py-10">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-white/40 sm:flex-row sm:items-center sm:px-6">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-white/50 sm:flex-row sm:items-center sm:px-6">
         <div className="flex items-center gap-2 font-mono">
           <Image src="/icons/icon-512x512.png" alt="HQTUI" width={512} height={512} className="h-4 w-4 opacity-70" />
-          <span className="text-white/20">·</span>
+          <span className="text-white/50">·</span>
           <span>MIT</span>
         </div>
         <div className="flex flex-wrap gap-4 sm:ml-auto">
@@ -88,7 +88,7 @@ export function SiteFooter({ views }: { views?: number }) {
           <Link className="hover:text-white" href="/docs">Docs</Link>
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui/blob/main/docs/PRD.md">PRD</a>
         </div>
-        {views ? <span className="font-mono text-xs text-white/25">{views.toLocaleString()} views</span> : null}
+        {views ? <span className="font-mono text-xs text-white/50">{views.toLocaleString()} views</span> : null}
       </div>
     </footer>
   );
