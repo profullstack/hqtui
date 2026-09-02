@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import os from "node:os";
 import type { Collector, SystemSample } from "./types.ts";
 import {
-  baseSample, loadAverage, primaryInterface, processName, push, ratePerSecond, sh,
+  baseSample, loadAverage, primaryInterface, bestName, processName, processNames, push, ratePerSecond, sh,
 } from "./common.ts";
 import type { Interface } from "./telemetry.ts";
 import * as telemetry from "./linux-telemetry.ts";
@@ -304,13 +304,15 @@ export class LinuxCollector implements Collector {
       if (!this.unavailable.includes("processes")) this.unavailable.push("processes");
       return;
     }
+    // `comm` in its own read, where its spaces cannot shift a column.
+    const names = await processNames(["-eo", "pid,comm"]);
     const rows = text.trim().split("\n").slice(1);
     this.sample.processes = rows.slice(0, 59).map((line) => {
       const parts = line.trim().split(/\s+/);
       const command = parts.slice(7).join(" ");
       return {
         pid: Number(parts[0]),
-        name: processName(command),
+        name: bestName(names.get(Number(parts[0])), processName(command)),
         cpu: Number(parts[1]) || 0,
         mem: Number(parts[2]) || 0,
         rss: (Number(parts[3]) || 0) * 1024,

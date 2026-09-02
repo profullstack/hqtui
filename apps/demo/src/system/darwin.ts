@@ -1,7 +1,7 @@
 import os from "node:os";
 import type { Collector, SystemSample } from "./types.ts";
 import {
-  baseSample, loadAverage, primaryInterface, processName, push, ratePerSecond, sh,
+  baseSample, loadAverage, primaryInterface, bestName, processName, processNames, push, ratePerSecond, sh,
 } from "./common.ts";
 
 /**
@@ -143,13 +143,17 @@ export class DarwinCollector implements Collector {
       if (!this.unavailable.includes("processes")) this.unavailable.push("processes");
       return;
     }
+    // `comm` in its own read, where its spaces cannot shift a column.
+    // macOS `comm` is the full path truncated to 16 characters; `ucomm` is the
+    // accounting name, which is what a process table wants.
+    const names = await processNames(["-Ao", "pid,ucomm"]);
     const rows = text.trim().split("\n").slice(1);
     this.sample.processes = rows.slice(0, 59).map((line) => {
       const parts = line.trim().split(/\s+/);
       const command = parts.slice(6).join(" ");
       return {
         pid: Number(parts[0]),
-        name: processName(command),
+        name: bestName(names.get(Number(parts[0])), processName(command)),
         cpu: Number(parts[1]) || 0,
         mem: Number(parts[2]) || 0,
         rss: (Number(parts[3]) || 0) * 1024,

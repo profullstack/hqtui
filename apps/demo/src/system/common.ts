@@ -17,19 +17,62 @@ export async function sh(command: string, args: string[], timeout = 4000): Promi
 }
 
 /**
- * A process name from its command line.
+ * A process name from its command line, used when `comm` is unavailable.
  *
- * `ps -o comm` is not usable for this: Linux truncates it to 15 bytes and it
- * may contain spaces (Firefox ships "Web Content", "Isolated Web Co"), which
- * shifts every whitespace-split column after it; macOS emits the full path
- * truncated to 16 characters, so the tail is a fragment rather than a name.
- * argv[0] has neither problem.
+ * `args` is argv joined by spaces, so an executable whose own path contains a
+ * space is ambiguous: "/tmp/Google Chrome 60" could be argv0 "/tmp/Google"
+ * with an argument, or "/tmp/Google Chrome" with one. Nothing in the string
+ * resolves it, which is why `comm` is read separately and preferred.
  */
 export function processName(args: string): string {
   const argv0 = args.trim().split(/\s+/)[0] ?? "";
   // Kernel threads are already bracketed names, not paths.
   if (argv0.startsWith("[")) return argv0;
   return argv0.split("/").pop() || argv0 || "-";
+}
+
+/**
+ * Reconcile the two names a process has, neither of which is reliable alone.
+ *
+ * The accounting name (`comm` on Linux, `ucomm` on macOS) keeps spaces but is
+ * truncated — to 15 bytes on Linux, 16 on macOS. The name derived from argv[0]
+ * is untruncated but splits at the first space, because `args` is argv joined
+ * by spaces and nothing in it says where argv[0] ended.
+ *
+ * So: trust argv[0], and take the accounting name only when it *extends* it —
+ * which is exactly the case where argv[0] was cut at a space. Anything else the
+ * accounting name says is not corroborated, and it is not always a name at all:
+ * on macOS `ucomm` for one live process here reads "2.1.243".
+ *
+ *   argv0 "Web"                      comm  "Web Content"      -> "Web Content"
+ *   argv0 "StorageManagementService" ucomm "StorageManagemen" -> argv0's
+ *   argv0 "claude"                   ucomm "2.1.243"          -> argv0's
+ */
+export function bestName(accounting: string | undefined, fromArgs: string): string {
+  if (!fromArgs || fromArgs === "-") return accounting || fromArgs;
+  if (!accounting) return fromArgs;
+  return accounting.length > fromArgs.length && accounting.startsWith(fromArgs)
+    ? accounting
+    : fromArgs;
+}
+
+/**
+ * pid -> accounting name, read with that name as the only free-form column so
+ * its spaces cannot shift anything. Parsing it out of a combined `ps` row is
+ * what corrupted every column after it.
+ */
+export async function processNames(psArgs: string[]): Promise<Map<number, string>> {
+  const names = new Map<number, string>();
+  const text = await sh("ps", psArgs);
+  for (const line of text.trim().split("\n").slice(1)) {
+    const trimmed = line.trim();
+    const gap = trimmed.indexOf(" ");
+    if (gap < 0) continue;
+    const pid = Number(trimmed.slice(0, gap));
+    const comm = trimmed.slice(gap + 1).trim();
+    if (Number.isFinite(pid) && comm) names.set(pid, comm);
+  }
+  return names;
 }
 
 export function push(history: number[], value: number, limit = 240): void {
