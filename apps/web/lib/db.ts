@@ -153,18 +153,26 @@ export async function themeVotes(): Promise<ThemeVote[]> {
   }
 }
 
-export async function voteForTheme(theme: string): Promise<number> {
+export async function voteForTheme(theme: string): Promise<number | null> {
   if (!configured()) return 0;
-  await migrate();
-  const [, rows] = await execute([
-    {
-      sql: `INSERT INTO theme_votes (theme, votes) VALUES (?, 1)
-            ON CONFLICT(theme) DO UPDATE SET votes = votes + 1, updated_at = datetime('now')`,
-      args: [theme],
-    },
-    { sql: "SELECT votes FROM theme_votes WHERE theme = ?", args: [theme] },
-  ]);
-  return Number(rows[0]?.votes ?? 0);
+  try {
+    await migrate();
+    const [, rows] = await execute([
+      {
+        sql: `INSERT INTO theme_votes (theme, votes) VALUES (?, 1)
+              ON CONFLICT(theme) DO UPDATE SET votes = votes + 1, updated_at = datetime('now')`,
+        args: [theme],
+      },
+      { sql: "SELECT votes FROM theme_votes WHERE theme = ?", args: [theme] },
+    ]);
+    return Number(rows[0]?.votes ?? 0);
+  } catch (error) {
+    // The same rule the rest of this module follows: an unreachable database
+    // must never take the site down. Null distinguishes "not recorded" from a
+    // genuine zero, so the caller can answer honestly.
+    console.error("hqtui: voteForTheme failed", error);
+    return null;
+  }
 }
 
 export async function recordView(path: string): Promise<void> {

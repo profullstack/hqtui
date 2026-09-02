@@ -19,5 +19,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "unknown theme" }, { status: 400 });
   }
   const votes = await voteForTheme(theme);
+  if (votes === null) {
+    return NextResponse.json({ error: "vote not recorded" }, { status: 503 });
+  }
   return NextResponse.json({ theme, votes });
 }
