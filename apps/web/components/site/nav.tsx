@@ -42,6 +42,12 @@ export function SiteNav() {
               {link.label}
             </Link>
           ))}
+          {/* A plain anchor, not next/link: the board is a separate origin on
+              its own subdomain, so there is no route for the router to
+              prefetch and nothing it could do with one. */}
+          <a href="https://bbs.hqtui.com" className="transition-colors hover:text-white">
+            BBS
+          </a>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Button
@@ -83,6 +89,7 @@ export function SiteFooter({ views }: { views?: number }) {
           <span>MIT</span>
         </div>
         <div className="flex flex-wrap gap-4 sm:ml-auto">
+          <a className="hover:text-white" href="https://bbs.hqtui.com">BBS</a>
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui">GitHub</a>
           <a className="hover:text-white" href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a>
           <Link className="hover:text-white" href="/docs">Docs</Link>
