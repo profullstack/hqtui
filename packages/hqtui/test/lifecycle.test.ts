@@ -71,7 +71,7 @@ test("a fatal error hands the decision to a host that has its own handler", asyn
   // and the library exited anyway, which was the whole point of the change.
   const { spawn } = await import("node:child_process");
   const program = (hosts: number) => `
-    const { createApp } = await import(${JSON.stringify(new URL("../src/app.ts", import.meta.url).pathname)});
+    const { createApp } = await import(${JSON.stringify(new URL("../src/app.ts", import.meta.url).href)});
     const { PassThrough } = await import("node:stream");
     const input = new PassThrough(); const output = new PassThrough();
     let after = 0, armed = false;
