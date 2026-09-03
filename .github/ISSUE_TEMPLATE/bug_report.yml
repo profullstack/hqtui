@@ -1,0 +1,54 @@
+name: Bug report
+description: Something renders wrong, throws, hangs, or leaves the terminal broken.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A reproduction beats a description. The headless renderer needs no TTY:
+
+        ```ts
+        import { renderToText } from "@profullstack/hqtui";
+        console.log(renderToText(({ ui }) => ui.text("CPU 72%"), { width: 40, height: 3 }));
+        ```
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: The smallest view that shows it, or the exact commands.
+      render: ts
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: hqtui version
+      placeholder: "0.1.9"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and OS
+      placeholder: "bun 1.4.0, macOS 15 / node 22.6, Ubuntu 24.04"
+    validations:
+      required: true
+  - type: input
+    id: terminal
+    attributes:
+      label: Terminal
+      description: The output of `hqtui doctor` is ideal.
+      placeholder: "iTerm2, TERM=xterm-256color, truecolor"
+  - type: checkboxes
+    id: terminal-state
+    attributes:
+      label: Did the terminal survive?
+      options:
+        - label: The terminal was left unusable (raw mode, alternate screen, hidden cursor)

@@ -24,6 +24,52 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: bun install --frozen-lockfile
       - run: bun run typecheck && bun test packages/hqtui/test && bun run build
+      # Nothing tied the release tag to what actually gets published, so a tag
+      # could ship a version it does not name. This runs on every trigger, not
+      # only `release`: a workflow_dispatch publishes just as readily, and
+      # gating the check on the event left that path unchecked. The ref goes
+      # through the environment rather than the shell, as the dist-tag does.
+      - name: Check the versions being published
+        env:
+          RELEASE_REF: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+          DIST_TAG: ${{ inputs.tag || 'latest' }}
+        run: |
+          lib="$(node -p "require('./packages/hqtui/package.json').version")"
+          demo="$(node -p "require('./apps/demo/package.json').version")"
+
+          # Both are published together from one commit, on every trigger.
+          if [ "$lib" != "$demo" ]; then
+            echo "the two packages disagree about the version being published:"
+            echo "  packages/hqtui  $lib"
+            echo "  apps/demo       $demo"
+            exit 1
+          fi
+
+          # A prerelease must not become what `npm install` resolves to.
+          case "$lib" in
+            *-*)
+              if [ "$DIST_TAG" = "latest" ]; then
+                echo "$lib is a prerelease and would be published as 'latest'."
+                echo "re-run with a dist-tag such as 'next'."
+                exit 1
+              fi
+              echo "prerelease $lib publishing under dist-tag '$DIST_TAG'"
+              ;;
+          esac
+
+          # On a release the tag names the version; on a dispatch ref_name is a
+          # branch, so there is nothing to compare it against.
+          if [ "$EVENT" = "release" ]; then
+            tag="${RELEASE_REF#v}"
+            if [ "$tag" != "$lib" ]; then
+              echo "release tag '$RELEASE_REF' does not name the version it would publish ($lib)"
+              exit 1
+            fi
+            echo "tag '$RELEASE_REF' matches both packages at $lib"
+          else
+            echo "$EVENT: publishing $lib under dist-tag '$DIST_TAG'"
+          fi
       # `id-token: write` above is what provenance needs, but without the flag
       # nothing is attested — the permission was granted and unused.
       #
