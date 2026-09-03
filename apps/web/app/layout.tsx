@@ -39,6 +39,7 @@ export const metadata: Metadata = {
     images: ["/shots/dashboard.png"],
   },
   manifest: "/manifest.json",
+  alternates: { types: { "application/rss+xml": "/blog/feed.xml" } },
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png" },

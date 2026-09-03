@@ -32,6 +32,14 @@ const nextConfig: NextConfig = {
   // The workspace root is two levels up, so tracing has to start there or the
   // library's files are left out of the standalone build.
   outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
+  // The blog reads its markdown at request time from content/blog. The tracer
+  // only follows imports, so the files have to be named or the standalone
+  // image ships an empty blog.
+  outputFileTracingIncludes: {
+    "/blog": ["./content/blog/**/*"],
+    "/blog/[slug]": ["./content/blog/**/*"],
+    "/blog/feed.xml": ["./content/blog/**/*"],
+  },
   poweredByHeader: false,
   reactStrictMode: true,
   images: {
