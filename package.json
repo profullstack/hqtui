@@ -24,7 +24,7 @@
     "typecheck:examples": "cd examples && bun x tsc -p tsconfig.json"
   },
   "devDependencies": {
-    "@types/node": "^22",
+    "@types/node": "^26",
     "typescript": "^5.7.2"
   },
   "dependencies": {
