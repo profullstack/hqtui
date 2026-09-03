@@ -114,12 +114,11 @@ export class InputParser {
    * so the terminal calls this on a short timeout.
    */
   flush(): InputEvent[] {
-    // Mid-paste, held-back bytes are a partial end marker that never completed,
-    // so they are paste content — not a lone Escape.
-    if (this.pasteBuffer !== null && this.pasteTail.length > 0) {
-      this.pasteBuffer += this.pasteTail;
-      this.pasteTail = "";
-    }
+    // `pasteTail` is deliberately left alone. Folding it into the paste content
+    // here destroyed a partial end marker whenever the Escape timeout fired
+    // between the two reads carrying it: the rest of the marker then arrived
+    // alone, never matched, and the paste could never end — the exact wedge
+    // this holdback exists to prevent.
     if (this.pending.length === 0) return [];
     const data = this.pending;
     this.pending = "";
@@ -330,11 +329,11 @@ const SPECIAL_KEYS_SORTED = Object.keys(SPECIAL).sort((a, b) => b.length - a.len
 export function matchKey(event: KeyEvent, binding: string): boolean {
   const b = binding.toLowerCase().trim();
   if (event.key.toLowerCase() === b) return true;
-  // `keyEvent` only spells shift into `key` for named keys, so only named keys
-  // may reject it here — otherwise a binding on "tab" would also fire on
-  // Shift+Tab and move focus backwards and forwards at once. For a printable
-  // character shift is what produced the character, so it is not a modifier.
-  const shiftMatters = event.shift && event.name.length > 1;
-  if (event.name.toLowerCase() === b && !event.ctrl && !event.alt && !shiftMatters) return true;
+  // A bare name matches whatever the shift state. Rejecting shift here was
+  // justified by Tab focus firing both ways at once, which was simply wrong —
+  // `App` reads `event.name` directly and never calls this — and it silently
+  // stopped every shifted named key (shift+up, shift+home, shift+f1, …) from
+  // matching its own name. Bind "shift+tab" to distinguish; `key` carries it.
+  if (event.name.toLowerCase() === b && !event.ctrl && !event.alt) return true;
   return false;
 }

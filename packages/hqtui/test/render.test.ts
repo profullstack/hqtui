@@ -342,13 +342,67 @@ test("a widget's data range is not a layout constraint", () => {
   assert.ok(pinnedAxis.contains("FOOTER"), "a pinned y-axis evicted the sibling");
 });
 
-test("a subtitle does not overwrite the title", () => {
-  const both = renderToText(({ ui }) => ui.panel(
-    { title: "A Long Panel Title", subtitle: "99%" },
-    (p) => p.text(""),
-  ), { width: 26, height: 3 }).split("\n")[0];
-  assert.ok(both.includes("99%"), "subtitle missing");
-  // The title is truncated to the space it actually has, rather than being
-  // painted over mid-word by the subtitle.
-  assert.ok(!both.includes("Tit 99%"), `title collided with subtitle: ${both}`);
+test("a subtitle is never painted over by the title", () => {
+  // Reserving the width is not enough on its own: right- and centre-aligned
+  // titles are positioned from the panel edge, so they were still drawn over
+  // the subtitle, and a wide glyph straddling the boundary bisected it.
+  //
+  // Compared by cell column, because a wide character is one string index but
+  // two columns — an index-wise comparison silently passes.
+  const columns = (options: Parameters<Container["panel"]>[0], width: number) => {
+    const screen = renderToScreen(({ ui }) => ui.panel(options, (p) => p.text("")), {
+      width,
+      height: 3,
+    });
+    return Array.from({ length: width }, (_, x) => screen.cell(x, 0).char);
+  };
+
+  const titles = ["T", "A Long Panel Title", "\u65e5\u672c\u8a9e\u306e\u30bf\u30a4\u30c8\u30eb", "Mixed \u65e5\u672c Title"];
+  const subtitles = ["99%", "12.5 MB/s", "\u65e5\u672c"];
+  for (const title of titles) {
+    for (const subtitle of subtitles) {
+      for (const titleAlign of ["left", "center", "right"] as const) {
+        for (let width = 4; width <= 40; width++) {
+          const withTitle = columns({ title, subtitle, titleAlign }, width);
+          const alone = columns({ subtitle }, width);
+          for (let x = 0; x < width; x++) {
+            const isSubtitleGlyph = !["", " ", "\u2500", "\u256d", "\u256e"].includes(alone[x]);
+            if (!isSubtitleGlyph) continue;
+            assert.equal(
+              withTitle[x],
+              alone[x],
+              `${titleAlign} w=${width} title=${JSON.stringify(title)}: subtitle corrupted at column ${x}`,
+            );
+          }
+        }
+      }
+    }
+  }
+});
+
+test("a layout bound survives on widgets that have no data range", () => {
+  // `min`/`max` mean the data domain only where a widget declares them.
+  // GaugeOptions, MetersOptions and HeatBarOptions declare neither, so there
+  // the only possible meaning was the ContainerOptions layout bound — and
+  // stripping it silently changed sizes that were correct.
+  const bottomRow = (view: (ui: Container) => void) =>
+    renderToText(({ ui }) => {
+      view(ui);
+      ui.text("BOTTOM");
+    }, { width: 30, height: 12 })
+      .split("\n")
+      .findIndex((line) => line.includes("BOTTOM"));
+
+  assert.equal(bottomRow((ui) => ui.gauge({ value: 0.5, max: 3 })), 3, "gauge lost its layout max");
+  assert.equal(bottomRow((ui) => ui.meters([{ label: "a", value: 0.5 }], { min: 5 })), 5, "meters lost its layout min");
+  assert.equal(bottomRow((ui) => ui.heatBar({ value: 0.5, min: 4 })), 4, "heatBar lost its layout min");
+  // meter and progress declare `max` but not `min`, so `min` is still layout.
+  assert.equal(bottomRow((ui) => ui.meter({ label: "m", value: 0.5, min: 4 })), 4, "meter lost its layout min");
+  assert.equal(bottomRow((ui) => ui.progress({ label: "p", value: 3, max: 10, min: 4 })), 4, "progress lost its layout min");
+
+  // And the data range each widget does declare is still not a layout bound.
+  const emptyQueue = renderToScreen(({ ui }) => {
+    ui.progress({ label: "Tasks", value: 0, max: 0 });
+  }, { width: 34, height: 3 });
+  assert.ok(emptyQueue.contains("Tasks"), "progress with max 0 disappeared again");
 });

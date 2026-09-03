@@ -158,19 +158,50 @@ test("paste content that resembles the end marker is kept", () => {
   assert.equal(paste?.type === "paste" && paste.text, "a\x1b[200~b");
 });
 
-test("a bare binding does not fire on the shifted key", () => {
-  // Tab and Shift+Tab move focus in opposite directions; a "tab" binding that
-  // also matched Shift+Tab did both at once.
+test("a bare binding matches its key whatever the shift state", () => {
+  // Rejecting shift here silently stopped every shifted named key — shift+up,
+  // shift+home, shift+f1 — from matching its own name. Bind "shift+tab" when
+  // the distinction matters; `key` carries it either way.
   const shiftTab: KeyEvent = {
     type: "key", name: "tab", key: "shift+tab",
     shift: true, ctrl: false, alt: false, raw: "\x1b[Z",
   };
-  assert.equal(matchKey(shiftTab, "tab"), false);
+  assert.equal(matchKey(shiftTab, "tab"), true);
   assert.equal(matchKey(shiftTab, "shift+tab"), true);
-  // Shift is what produces a capital letter, so it is not a modifier there.
-  const shiftA: KeyEvent = {
-    type: "key", name: "a", key: "a",
-    shift: true, ctrl: false, alt: false, char: "A", raw: "A",
+
+  // Real byte sequences, not hand-built events.
+  for (const [seq, name] of [["\x1b[1;2A", "up"], ["\x1b[1;2H", "home"], ["\x1b[5;2~", "pageup"]] as const) {
+    const event = new InputParser().parse(seq)[0];
+    assert.equal(event?.type, "key");
+    if (event?.type !== "key") continue;
+    assert.equal(event.shift, true);
+    assert.equal(matchKey(event, name), true, `shift+${name} stopped matching "${name}"`);
+    assert.equal(matchKey(event, `shift+${name}`), true);
+  }
+
+  // ctrl and alt are still modifiers, and still exclude a bare binding.
+  const ctrlA: KeyEvent = {
+    type: "key", name: "a", key: "ctrl+a",
+    shift: false, ctrl: true, alt: false, raw: "\x01",
   };
-  assert.equal(matchKey(shiftA, "a"), true);
+  assert.equal(matchKey(ctrlA, "a"), false);
+  assert.equal(matchKey(ctrlA, "ctrl+a"), true);
+});
+
+test("flush mid-paste keeps a partial end marker held back", () => {
+  // Folding the held-back bytes into the paste content destroyed the marker
+  // whenever the Escape timeout fired between the two reads carrying it: the
+  // rest arrived alone, never matched, and the paste could never end.
+  const END = "\x1b[201~";
+  for (let cut = 1; cut < END.length; cut++) {
+    const parser = new InputParser();
+    parser.parse("\x1b[200~hello" + END.slice(0, cut));
+    parser.flush();
+    const events = [...parser.parse(END.slice(cut)), ...parser.parse("q")];
+    const paste = events.find((e) => e.type === "paste");
+    assert.ok(paste, `flush() at cut ${cut} lost the paste`);
+    assert.equal(paste.type === "paste" && paste.text, "hello");
+    const key = events.find((e) => e.type === "key");
+    assert.ok(key, `flush() at cut ${cut} wedged the parser`);
+  }
 });

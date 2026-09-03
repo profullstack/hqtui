@@ -61,16 +61,95 @@ export class BrailleCanvas {
     return (this.dots[cell] & DOT_BITS[py & 3][px & 1]) !== 0;
   }
 
+  /**
+   * Coordinates are clamped to this before anything iterates over them. It is
+   * far larger than any canvas and far below 2^53, where `x += 1` stops
+   * advancing and a Bresenham walk can never reach its endpoint.
+   */
+  private static readonly LIMIT = 1e7;
+
+  /**
+   * Above this many Bresenham steps the walk is clipped to the canvas first.
+   * Clipping shifts which pixels a partly-offscreen line lands on, so it is
+   * reserved for walks long enough that their exact pattern cannot matter.
+   */
+  private static readonly MAX_WALK = 100_000;
+
+  /** Finite, bounded, and direction-preserving. NaN has no direction. */
+  private static finite(v: number): number | null {
+    if (Number.isNaN(v)) return null;
+    const L = BrailleCanvas.LIMIT;
+    return v > L ? L : v < -L ? -L : v;
+  }
+
+  /**
+   * The inclusive row/column span an axis-aligned loop should cover, clipped to
+   * the canvas. Nothing outside it can draw, so clipping here is what makes
+   * every loop below finite for any input — infinite, enormous, or NaN.
+   */
+  private span(a: number, b: number, limit: number): [number, number] {
+    const lo = Math.min(a, b);
+    const hi = Math.max(a, b);
+    if (!(lo <= hi)) return [0, -1];
+    return [Math.max(0, Math.ceil(lo)), Math.min(limit - 1, Math.floor(hi))];
+  }
+
+  /**
+   * Liang-Barsky. Clipping before the walk — rather than clamping the endpoints,
+   * which would change the slope — keeps the line where it belongs and bounds
+   * the number of steps to the canvas.
+   */
+  private clip(
+    x0: number, y0: number, x1: number, y1: number,
+  ): [number, number, number, number] | null {
+    const fx0 = BrailleCanvas.finite(x0), fy0 = BrailleCanvas.finite(y0);
+    const fx1 = BrailleCanvas.finite(x1), fy1 = BrailleCanvas.finite(y1);
+    if (fx0 === null || fy0 === null || fx1 === null || fy1 === null) return null;
+    const dx = fx1 - fx0;
+    const dy = fy1 - fy0;
+    let t0 = 0;
+    let t1 = 1;
+    const edges: [number, number][] = [
+      [-dx, fx0 - 0], [dx, this.width - 1 - fx0],
+      [-dy, fy0 - 0], [dy, this.height - 1 - fy0],
+    ];
+    for (const [p, q] of edges) {
+      if (p === 0) {
+        if (q < 0) return null;
+        continue;
+      }
+      const r = q / p;
+      if (p < 0) {
+        if (r > t1) return null;
+        if (r > t0) t0 = r;
+      } else {
+        if (r < t0) return null;
+        if (r < t1) t1 = r;
+      }
+    }
+    return [fx0 + t0 * dx, fy0 + t0 * dy, fx0 + t1 * dx, fy0 + t1 * dy];
+  }
+
   /** Bresenham. Used for every line graph in the library. */
   line(x0: number, y0: number, x1: number, y1: number): void {
-    let x = Math.round(x0);
-    let y = Math.round(y0);
-    const ex = Math.round(x1);
-    const ey = Math.round(y1);
-    // The loop below only ends at `x === ex && y === ey`. A non-finite endpoint
-    // makes every comparison false, so it would never end at all — the render
-    // loop would hang and the terminal would never be restored.
-    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(ex) || !Number.isFinite(ey)) return;
+    // The walk below only ends at `x === ex && y === ey`. Testing the endpoints
+    // for finiteness is not enough to guarantee it gets there: `dx` is derived
+    // from them and overflows to Infinity, and past 2^53 `x += 1` does not
+    // advance at all. Clipping to the canvas bounds the walk for every input.
+    let ax = BrailleCanvas.finite(x0);
+    let ay = BrailleCanvas.finite(y0);
+    let bx = BrailleCanvas.finite(x1);
+    let by = BrailleCanvas.finite(y1);
+    if (ax === null || ay === null || bx === null || by === null) return;
+    if (Math.max(Math.abs(bx - ax), Math.abs(by - ay)) > BrailleCanvas.MAX_WALK) {
+      const clipped = this.clip(ax, ay, bx, by);
+      if (clipped === null) return;
+      [ax, ay, bx, by] = clipped;
+    }
+    let x = Math.round(ax);
+    let y = Math.round(ay);
+    const ex = Math.round(bx);
+    const ey = Math.round(by);
     const dx = Math.abs(ex - x);
     const dy = -Math.abs(ey - y);
     const sx = x < ex ? 1 : -1;
@@ -98,14 +177,12 @@ export class BrailleCanvas {
   }
 
   vline(x: number, y0: number, y1: number): void {
-    const a = Math.min(y0, y1);
-    const b = Math.max(y0, y1);
+    const [a, b] = this.span(y0, y1, this.height);
     for (let y = a; y <= b; y++) this.pixel(x, y);
   }
 
   hline(y: number, x0: number, x1: number): void {
-    const a = Math.min(x0, x1);
-    const b = Math.max(x0, x1);
+    const [a, b] = this.span(x0, x1, this.width);
     for (let x = a; x <= b; x++) this.pixel(x, y);
   }
 
@@ -117,9 +194,8 @@ export class BrailleCanvas {
   }
 
   fillRect(x0: number, y0: number, x1: number, y1: number): void {
-    for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) {
-      this.hline(y, x0, x1);
-    }
+    const [a, b] = this.span(y0, y1, this.height);
+    for (let y = a; y <= b; y++) this.hline(y, x0, x1);
   }
 
   /** Fill the area under a series — the shaded region of an area graph. */
@@ -127,7 +203,8 @@ export class BrailleCanvas {
     for (let i = 1; i < points.length; i++) {
       const [x0, y0] = points[i - 1];
       const [x1, y1] = points[i];
-      const steps = Math.max(1, Math.round(Math.abs(x1 - x0)));
+      // Bounded by the canvas: a span wider than it cannot add a new column.
+      const steps = Math.max(1, Math.min(this.width, Math.round(Math.abs(x1 - x0)) || 1));
       for (let s = 0; s <= steps; s++) {
         const t = steps === 0 ? 0 : s / steps;
         const x = x0 + (x1 - x0) * t;
@@ -138,7 +215,11 @@ export class BrailleCanvas {
   }
 
   circle(cx: number, cy: number, radius: number): void {
-    let x = Math.round(radius);
+    // A radius larger than the canvas draws the same arc as one exactly its
+    // size, and an unbounded one never finishes the `x >= y` walk.
+    const r = BrailleCanvas.finite(radius);
+    if (r === null) return;
+    let x = Math.round(Math.min(Math.abs(r), this.width + this.height));
     let y = 0;
     let err = 1 - x;
     while (x >= y) {
