@@ -1,0 +1,21 @@
+name: Feature request
+description: A widget, an option, or a capability that is missing.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to build
+      description: The dashboard or app you have in mind, not the API you imagine for it.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do today
+      description: The workaround, if there is one — including drawing straight onto the surface.
+  - type: textarea
+    id: shape
+    attributes:
+      label: What the API might look like
+      render: ts

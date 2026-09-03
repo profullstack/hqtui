@@ -1,8 +1,9 @@
 import { readFile, readdir } from "node:fs/promises";
 import os from "node:os";
 import type { Collector, SystemSample } from "./types.ts";
+import { bitRate } from "../format.ts";
 import {
-  baseSample, loadAverage, primaryInterface, processName, push, ratePerSecond, sh,
+  baseSample, loadAverage, primaryInterface, bestName, processName, processNames, push, ratePerSecond, sh,
 } from "./common.ts";
 import type { Interface } from "./telemetry.ts";
 import * as telemetry from "./linux-telemetry.ts";
@@ -174,7 +175,10 @@ export class LinuxCollector implements Collector {
     s.network.downPeak = Math.max(s.network.downPeak, s.network.downRate);
     s.network.upPeak = Math.max(s.network.upPeak, s.network.upRate);
     const speed = await read(`/sys/class/net/${iface.name}/speed`);
-    s.network.speed = speed.trim() && Number(speed) > 0 ? `${Number(speed) / 1000} Gb/s` : "-";
+    // /sys reports Mb/s. Dividing unconditionally rendered a 100 Mb/s NIC as
+    // "0.1 Gb/s"; bitRate picks the unit the number belongs in.
+    const mbps = Number(speed);
+    s.network.speed = speed.trim() && mbps > 0 ? bitRate((mbps * 1e6) / 8) : "-";
 
     await Promise.all([this.updateProcesses(), this.updateTemperatures()]);
     await this.updateTelemetry(dt);
@@ -304,13 +308,15 @@ export class LinuxCollector implements Collector {
       if (!this.unavailable.includes("processes")) this.unavailable.push("processes");
       return;
     }
+    // `comm` in its own read, where its spaces cannot shift a column.
+    const names = await processNames(["-eo", "pid,comm"]);
     const rows = text.trim().split("\n").slice(1);
     this.sample.processes = rows.slice(0, 59).map((line) => {
       const parts = line.trim().split(/\s+/);
       const command = parts.slice(7).join(" ");
       return {
         pid: Number(parts[0]),
-        name: processName(command),
+        name: bestName(names.get(Number(parts[0])), processName(command)),
         cpu: Number(parts[1]) || 0,
         mem: Number(parts[2]) || 0,
         rss: (Number(parts[3]) || 0) * 1024,

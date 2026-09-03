@@ -22,7 +22,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -34,7 +34,7 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
       - name: Test
-        run: bun test packages/hqtui/test apps/demo/test
+        run: bun test packages/hqtui/test apps/demo/test apps/web/test
       - name: Build
         run: bun run build
 
@@ -45,14 +45,14 @@ jobs:
       matrix:
         node: ["22.x", "24.x"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - run: bun install --frozen-lockfile
       - name: Test under Node
-        run: node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts
+        run: node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts apps/web/test/*.test.ts
 
   # apps/web is the deployed artifact and the largest TypeScript surface in the
   # repo, but nothing built or typechecked it — a broken site reached Railway
@@ -61,7 +61,7 @@ jobs:
     name: build site
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -76,11 +76,11 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run bench | tee benchmark.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: benchmark
           path: benchmark.txt

@@ -207,15 +207,22 @@ export class Surface {
     if (options.title) {
       const titleColor = options.titleColor ?? this.theme.title;
       const label = ` ${options.title} `;
+      // The title lives in [2, limit). Reserving the width is not enough on its
+      // own: right- and centre-aligned titles are positioned from the panel
+      // edge, so they would still be drawn over the subtitle — and a wide glyph
+      // straddling the boundary bisects it, leaving an orphaned half-character.
       // Both labels carry a space of padding, and those two spaces may share a
-      // column — but only while the title fits, since a truncated one ends in
-      // content rather than padding.
-      const strict = Math.max(0, w - 4 - subtitleWidth);
-      const room = subtitleWidth > 0 && stringWidth(label) <= strict + 1 ? strict + 1 : strict;
+      // column, so the region ends one past the subtitle when there is one.
+      const limit = subtitleWidth > 0 ? w - 1 - subtitleWidth : w - 2;
+      const room = Math.max(0, limit - 2);
       const shown = truncate(label, room);
       const tw = stringWidth(shown);
       const align = options.titleAlign ?? "left";
-      const tx = align === "left" ? 2 : align === "right" ? Math.max(2, w - 2 - tw) : Math.max(2, Math.floor((w - tw) / 2));
+      const tx = align === "left"
+        ? 2
+        : align === "right"
+          ? Math.max(2, limit - tw)
+          : Math.max(2, Math.min(limit - tw, Math.floor((w - tw) / 2)));
       this.text(tx, 0, shown, { fg: titleColor, bg, attrs: 1 /* bold */ });
     }
 

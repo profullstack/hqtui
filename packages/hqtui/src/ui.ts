@@ -137,16 +137,26 @@ export class Container {
   }
 
   /**
-   * Constraint for a widget whose own options use `min`/`max` as a data domain
-   * rather than a layout bound — meters, progress, gauges and plots.
+   * Constraint for a widget that uses `min` and/or `max` as a *data* domain
+   * rather than a layout bound, so the solver never reads them as one.
    *
-   * Reading those as layout constraints meant `max: 0` on an empty queue or an
+   * Reading them as layout constraints meant `max: 0` on an empty queue or an
    * unprobed disk deleted the widget outright, and pinning a graph's y-axis
-   * with `min: 30` reserved thirty rows and evicted its siblings. Use `size`,
-   * `width` or `height` to constrain these.
+   * with `min: 30` reserved thirty rows and evicted its siblings.
+   *
+   * Only the keys a widget actually declares are stripped. `gauge`, `meters`
+   * and `heatBar` declare neither, so for them these can only ever have meant
+   * the layout bound, and taking it away silently broke sizes that worked.
    */
-  private sizeOfData(o: ContainerOptions | undefined, fallback: Size, intrinsic?: number): Constraint {
-    return this.sizeOf(o ? { ...o, min: undefined, max: undefined } : o, fallback, intrinsic);
+  private sizeOfData(
+    o: ContainerOptions | undefined,
+    fallback: Size,
+    strip: "max" | "min-max",
+    intrinsic?: number,
+  ): Constraint {
+    if (!o) return this.sizeOf(o, fallback, intrinsic);
+    const shadowed = strip === "min-max" ? { ...o, min: undefined, max: undefined } : { ...o, max: undefined };
+    return this.sizeOf(shadowed, fallback, intrinsic);
   }
 
   private sizeOf(o: ContainerOptions | undefined, fallback: Size, intrinsic?: number): Constraint {
@@ -330,23 +340,23 @@ export class Container {
 
   /** `label ████████░░░ 42%` */
   meter(options: W.MeterOptions & ContainerOptions): this {
-    return this.add((s) => W.drawMeter(s, options), this.sizeOfData(options, "auto", 1));
+    return this.add((s) => W.drawMeter(s, options), this.sizeOfData(options, "auto", "max", 1));
   }
 
   /** A stack or grid of meters. */
   meters(items: W.MetersOptions["items"], options: Omit<W.MetersOptions, "items"> & ContainerOptions = {}): this {
     const columns = Math.max(1, options.columns ?? 1);
     const rows = Math.ceil(items.length / columns);
-    return this.add((s) => W.drawMeters(s, { ...options, items }), this.sizeOfData(options, "auto", rows));
+    return this.add((s) => W.drawMeters(s, { ...options, items }), this.sizeOf(options, "auto", rows));
   }
 
   progress(options: W.ProgressOptions & ContainerOptions): this {
-    return this.add((s) => W.drawProgress(s, options), this.sizeOfData(options, "auto", 1));
+    return this.add((s) => W.drawProgress(s, options), this.sizeOfData(options, "auto", "max", 1));
   }
 
   /** Braille line/area graph. Fills the space it is given. */
   graph(options: W.GraphOptions & ContainerOptions): this {
-    return this.add((s) => W.drawGraph(s, options), this.sizeOfData(options, "fill"));
+    return this.add((s) => W.drawGraph(s, options), this.sizeOfData(options, "fill", "min-max"));
   }
 
   /** A filled area graph — `graph` with `fill` on. */
@@ -360,16 +370,16 @@ export class Container {
   }
 
   sparkline(options: W.SparklineOptions & ContainerOptions): this {
-    return this.add((s) => W.drawSparklineWidget(s, options), this.sizeOfData(options, "auto", 1));
+    return this.add((s) => W.drawSparklineWidget(s, options), this.sizeOfData(options, "auto", "min-max", 1));
   }
 
   histogram(options: W.ColumnsOptions & ContainerOptions): this {
-    return this.add((s) => W.drawColumns(s, options), this.sizeOfData(options, "fill"));
+    return this.add((s) => W.drawColumns(s, options), this.sizeOfData(options, "fill", "max"));
   }
 
   /** A semicircular dial. Wants at least 9x5. */
   gauge(options: W.GaugeOptions & ContainerOptions): this {
-    return this.add((s) => W.drawGauge(s, options), this.sizeOfData(options, "fill"));
+    return this.add((s) => W.drawGauge(s, options), this.sizeOf(options, "fill"));
   }
 
   donut(options: W.DonutOptions & ContainerOptions): this {
@@ -378,7 +388,7 @@ export class Container {
 
   /** Segmented temperature-style bar. */
   heatBar(options: W.HeatBarOptions & ContainerOptions): this {
-    return this.add((s) => W.drawHeatBar(s, options), this.sizeOfData(options, "auto", 1));
+    return this.add((s) => W.drawHeatBar(s, options), this.sizeOf(options, "auto", 1));
   }
 
   // ---------------------------------------------------------------- inputs
