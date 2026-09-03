@@ -7,7 +7,7 @@ btop-grade dashboards with a one-import API, dark by default, zero runtime depen
   <a href="https://hqtui.com">hqtui.com</a> ·
   <a href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a> ·
   <a href="https://hqtui.com/docs">docs</a> ·
-  <a href="https://bbs.hqtui.com/">forum</a>
+  <a href="https://bbs.hqtui.com/">discussions</a>
 </p>
 
 ![HQTUI dashboard](./assets/screens/dashboard.png)
@@ -195,7 +195,7 @@ examples/        small, focused programs
 docs/            the original PRD
 ```
 
-## Community
+## Discussions
 
 Questions, showcases and bug reports have a home at
 **[bbs.hqtui.com](https://bbs.hqtui.com/)** — a board running
