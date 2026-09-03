@@ -1,6 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import os from "node:os";
 import type { Collector, SystemSample } from "./types.ts";
+import { bitRate } from "../format.ts";
 import {
   baseSample, loadAverage, primaryInterface, bestName, processName, processNames, push, ratePerSecond, sh,
 } from "./common.ts";
@@ -174,7 +175,10 @@ export class LinuxCollector implements Collector {
     s.network.downPeak = Math.max(s.network.downPeak, s.network.downRate);
     s.network.upPeak = Math.max(s.network.upPeak, s.network.upRate);
     const speed = await read(`/sys/class/net/${iface.name}/speed`);
-    s.network.speed = speed.trim() && Number(speed) > 0 ? `${Number(speed) / 1000} Gb/s` : "-";
+    // /sys reports Mb/s. Dividing unconditionally rendered a 100 Mb/s NIC as
+    // "0.1 Gb/s"; bitRate picks the unit the number belongs in.
+    const mbps = Number(speed);
+    s.network.speed = speed.trim() && mbps > 0 ? bitRate((mbps * 1e6) / 8) : "-";
 
     await Promise.all([this.updateProcesses(), this.updateTemperatures()]);
     await this.updateTelemetry(dt);
