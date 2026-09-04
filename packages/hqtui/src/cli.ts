@@ -13,7 +13,7 @@ import { detectCapabilities } from "./capabilities.ts";
 import { themeList, themes } from "./theme.ts";
 import { BrailleCanvas } from "./graphics/braille.ts";
 
-const VERSION = "0.1.10";
+const VERSION = "0.1.11";
 
 function help(): void {
   console.log(`hqtui ${VERSION} — High Quality Terminal UI for TypeScript

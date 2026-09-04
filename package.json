@@ -13,7 +13,7 @@
     "node": ">=22.6"
   },
   "scripts": {
-    "build": "cd packages/hqtui && bun run build",
+    "build": "cd packages/hqtui && bun run build && cd ../../apps/demo && bun run build",
     "demo": "bun apps/demo/src/main.ts",
     "bench": "bun apps/benchmark/src/main.ts",
     "test": "bun test packages/hqtui/test apps/demo/test apps/web/test",

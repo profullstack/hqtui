@@ -21,7 +21,7 @@
     },
     "apps/demo": {
       "name": "@profullstack/hqtui-demo",
-      "version": "0.1.10",
+      "version": "0.1.11",
       "bin": {
         "hqtui-demo": "./src/main.ts",
       },
@@ -34,7 +34,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@base-ui/react": "1.7.0",
-        "@profullstack/hqtui": "^0.1.10",
+        "@profullstack/hqtui": "^0.1.11",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
         "lucide-react": "1.37.0",
@@ -58,12 +58,12 @@
       "name": "@profullstack/hqtui-examples",
       "version": "0.1.0",
       "dependencies": {
-        "@profullstack/hqtui": "^0.1.10",
+        "@profullstack/hqtui": "^0.1.11",
       },
     },
     "packages/hqtui": {
       "name": "@profullstack/hqtui",
-      "version": "0.1.10",
+      "version": "0.1.11",
       "bin": {
         "hqtui": "./bin/hqtui.mjs",
       },
