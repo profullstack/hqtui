@@ -9,10 +9,25 @@ btop-grade dashboards with a one-import API, dark by default, zero runtime depen
   <a href="https://hqtui.com/docs">docs</a> ·
   <a href="https://bbs.hqtui.com/">discussions</a>
 </p>
+<p align="center">
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node-%E2%89%A5%2022.6-5FA04E?logo=nodedotjs&logoColor=white" alt="Node 22.6 or newer"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/Bun-%E2%89%A5%201.1-000000?logo=bun&logoColor=white" alt="Bun 1.1 or newer"></a>
+  <a href="https://deno.com"><img src="https://img.shields.io/badge/Deno-2.x-000000?logo=deno&logoColor=white" alt="Deno 2"></a>
+</p>
 
 ![HQTUI dashboard](./assets/screens/dashboard.png)
 
 <p align="center"><em>Every screenshot on this page is a real frame from <code>hqtui-demo</code>, captured at 2x.</em></p>
+
+Run it yourself on whichever runtime you already have:
+
+```bash
+bunx @profullstack/hqtui-demo                    # Bun
+npx  @profullstack/hqtui-demo                    # Node 22.6+
+deno run -A npm:@profullstack/hqtui-demo         # Deno 2
+```
+
+Add `--sim` to any of them for a deterministic simulation instead of your real machine.
 
 ---
 
@@ -28,8 +43,9 @@ No ncurses. No browser DOM. No React. No native addon. No network access. Ever.
 ## Install
 
 ```bash
-bun add @profullstack/hqtui     # Bun is the default runtime
-npm  add @profullstack/hqtui    # Node 22.6+ works too
+bun  add @profullstack/hqtui        # Bun is the default runtime
+npm  add @profullstack/hqtui        # Node 22.6+ works too
+deno add npm:@profullstack/hqtui    # Deno 2
 ```
 
 ## Hello, terminal
@@ -91,9 +107,12 @@ await app.start();
 ## See it running
 
 ```bash
-bunx @profullstack/hqtui-demo          # your real machine
-bunx @profullstack/hqtui-demo --sim    # deterministic simulation
+bunx @profullstack/hqtui-demo                    # Bun
+npx  @profullstack/hqtui-demo                    # Node 22.6+
+deno run -A npm:@profullstack/hqtui-demo         # Deno 2
 ```
+
+Any of them takes `--sim` to run a deterministic simulation instead of your real machine.
 
 Ten screens. Real metrics on Linux, macOS and Windows, with no native dependencies.
 
@@ -207,7 +226,8 @@ conversations.
 ## Runtimes
 
 Bun is the default. Node 22.6+ runs everything unchanged (it strips TypeScript natively).
-Deno support is best-effort. Tested on Linux, macOS and Windows Terminal; degrades
+Deno 2 runs the library and the demo through its npm compatibility layer (`deno run -A`);
+it is exercised by hand rather than in CI. Tested on Linux, macOS and Windows Terminal; degrades
 gracefully on limited terminals (no mouse, quantized color, ASCII instead of Braille).
 
 ## License
