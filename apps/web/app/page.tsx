@@ -140,7 +140,7 @@ export default async function Home() {
               className="mx-auto mb-6 w-[22rem] max-w-full sm:w-[30rem]"
             />
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
-              v0.1.9 · MIT · zero runtime dependencies
+              v0.1.10 · MIT · zero runtime dependencies
             </Badge>
             <h1 className="sr-only">HQTUI — High Quality Terminal UI for TypeScript</h1>
             <p className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
