@@ -135,7 +135,7 @@ func (s *state) dashboard(p *ui.Container) {
 				}
 				graph(p, c["history"], "CPU History")
 			}},
-			panelView{"Temperatures & Sensors", func(p *ui.Container) {
+			panelView{"Temperatures", func(p *ui.Container) {
 				temps := arr(s.sample["temperatures"])
 				if len(temps) == 0 {
 					p.Label("No thermal sensors available")
@@ -143,6 +143,16 @@ func (s *state) dashboard(p *ui.Container) {
 				for _, v := range temps {
 					t := obj(v)
 					p.Meter(ui.MeterOptions{Value: num(t["value"]) / 100, Label: str(t["label"]), Text: fmt.Sprintf("%.0f°C", num(t["value"]))})
+				}
+			}},
+			panelView{"Sensors", func(p *ui.Container) {
+				rows := arr(s.sample["sensors"])
+				if len(rows) == 0 {
+					p.Label("No sensor readings available")
+				}
+				for _, v := range rows {
+					row := obj(v)
+					p.Label(str(row["label"]) + ": " + str(row["value"]))
 				}
 			}},
 			panelView{"Logs", func(p *ui.Container) {
@@ -190,6 +200,12 @@ func (s *state) telemetry(p *ui.Container) {
 	cols := 2
 	if s.screen == 1 && p.Width() >= 120 {
 		cols = 3
+	}
+	if s.screen == 2 {
+		panels = append(panels, tab("Failed Logins", "failedLogins", []column{{"user", "User"}, {"tty", "TTY"}, {"from", "From"}, {"when", "When"}, {"status", "Status"}}))
+	}
+	if s.screen == 1 && s.real {
+		p.Label("Protocol/direction: port-based estimates; HTTP rate: estimated from log growth")
 	}
 	grid(p, panels, cols)
 }

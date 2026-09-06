@@ -17,6 +17,8 @@ import time
 from pathlib import Path
 
 from .model import blank_sample, push
+from . import sensors as hardware
+from . import traffic
 
 MAX_OUTPUT=1024*1024
 
@@ -64,6 +66,7 @@ class Collector:
         self.root=Path(root); self.sysroot=Path(sysroot); self.clock=clock
         self.sample=blank_sample(); self.unavailable=[]
         self.slow_missing=[]
+        self.http=traffic.HttpCollector()
         self.previous={}; self.last=0.; self.last_slow=-1e9; self.cpu_previous={}; self.proc_previous={}
         self.sample["system"].update(os=platform.system(),kernel=platform.release(),hostname=socket.gethostname(),shell=os.environ.get("SHELL",""),terminal=os.environ.get("TERM",""))
         self.sample["cpu"]["model"]=platform.processor() or platform.machine()
@@ -84,6 +87,7 @@ class Collector:
         except (OSError,ValueError,IndexError,KeyError) as error: self.unavailable.append("procfs: "+type(error).__name__)
         if now-self.last_slow>=5:
             self.last_slow=now; self.slow()
+        self.sensors()
         self.unavailable.extend(self.slow_missing)
 
     def portable(self):
@@ -139,7 +143,7 @@ class Collector:
         uptime=read(self.root/"uptime").split()
         s["system"]["uptime"]=float(uptime[0]) if uptime else 0
         s["system"]["contextSwitches"]=t["kernel"]["contextSwitches"]
-        self.network(dt); self.disks(dt); self.sensors()
+        self.network(dt); self.disks(dt)
 
     def processes(self,dt):
         s=self.sample; rows=[]; current={}; ticks=os.sysconf("SC_CLK_TCK"); pages=os.sysconf("SC_PAGE_SIZE")
@@ -194,6 +198,7 @@ class Collector:
         net=s["telemetry"]["net"]
         for key in list(net):
             source=key[:3].capitalize()+key[3:] if key.startswith(("tcp","udp")) else "Icmp"+key[4:]
+            if key=="tcpEstablished": source="TcpCurrEstab"
             if source in counters: net[key]=counters[source]
         for key,source in (("inSegs","tcpInSegs"),("outSegs","tcpOutSegs"),("retrans","tcpRetransSegs"),("activeOpens","tcpActiveOpens"),("passiveOpens","tcpPassiveOpens"),("udpIn","udpInDatagrams"),("udpOut","udpOutDatagrams")):
             net["rates"][key]=self.delta(source,net[source],dt)
@@ -213,31 +218,22 @@ class Collector:
         self.sample["disks"]=disks[:128]
 
     def sensors(self):
-        temps=[]; sensors=[]
-        for folder in (self.sysroot/"class/hwmon").glob("hwmon*"):
-            name=read(folder/"name",256).strip()
-            for entry in folder.glob("temp*_input"):
-                try:
-                    value=float(read(entry,256))/1000
-                    label=read(entry.with_name(entry.name.replace("_input","_label")),256).strip() or entry.stem
-                    if -50<=value<=200: temps.append(dict(label=f"{name} {label}",value=value,max=100))
-                except ValueError: continue
-            for entry in folder.glob("fan*_input"):
-                value=read(entry,256).strip()
-                if value: sensors.append(dict(label=name+" "+entry.stem,value=value+" RPM"))
-        self.sample["temperatures"]=temps[:128]; self.sample["sensors"]=sensors[:128]
-        self.sensor_note="" if temps else "Thermal sensors are not exposed by this host"
+        result=hardware.collect(self.sysroot,read(self.root/"cpuinfo"),self.sample["telemetry"]["gpus"],lambda:command(["sensors","-j"]))
+        self.sample["temperatures"]=result["temperatures"]; self.sample["sensors"]=result["sensors"]
+        self.sample["telemetry"]["power"]=result["power"]
+        self.sensor_note="" if result["temperatures"] else "Thermal sensors are not exposed by this host"
+        if not result["temperatures"]: self.unavailable.append("temperatures")
+        if not result["hardware_count"]: self.unavailable.append("fans/voltage/power")
 
     def slow(self):
         t=self.sample["telemetry"]; missing=[]
+        t["gpus"]=hardware.parse_gpus(command(["nvidia-smi","--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw","--format=csv,noheader,nounits"]) or "")
+        if not t["gpus"]: missing.append("GPU telemetry")
         def run(label,args):
             result=command(args)
             if result is None: missing.append(label)
             return result or ""
-        sessions=[]
-        for line in run("sessions",["who"]).splitlines():
-            f=line.split()
-            if len(f)>=4: sessions.append(dict(user=f[0],tty=f[1],loginAt=" ".join(f[2:4]),idle="—",what="—",**{"from":" ".join(f[4:]).strip("()") or "local"}))
+        sessions=traffic.sessions(run("sessions",["who","-u"]))
         t["sessions"]=sessions
         services=[]
         for line in run("services",["systemctl","list-units","--type=service","--all","--no-legend","--no-pager","--plain"]).splitlines()[:1000]:
@@ -250,13 +246,10 @@ class Collector:
             if len(f)<6: continue
             proto,state,_,_,local,remote=f[:6]; process=f[6] if len(f)>6 else "—"
             connections.append(dict(proto=proto,state=state,local=local,remote=remote,process=process))
-            if state in ("LISTEN","UNCONN"):
+            if state == "LISTEN":
                 address,_,port=local.rpartition(":"); listeners.append(dict(proto=proto,address=address,port=port,process=process))
         t["connections"]=connections; t["listeners"]=listeners
-        # Socket snapshots alone do not establish connection direction or the
-        # application protocol. Do not invent HTTP/SSH attribution from ports.
-        t["protocols"]=[]; t["remotes"]=[dict(host=host,connections=count,protocols="—") for host,count in collections.Counter(c["remote"] for c in connections).most_common(200)]
-        missing.append("connection direction/application protocols")
+        t.update(traffic.breakdown(connections,listeners))
         push(t["connectionHistory"],len(connections)); push(t["sessionHistory"],len(sessions))
         journal=[]
         for line in run("journal",["journalctl","-n","100","--no-pager","-o","json"]).splitlines():
@@ -275,6 +268,14 @@ class Collector:
                     if device.rsplit("/",1)[-1]==d["device"]: d.update(mount=mount,total=int(total),used=int(used))
             except ValueError: continue
         t["filesystems"]=filesystems
-        # Protected sources are absent, not populated from the simulation.
-        missing.extend(["login history", "SSH authentication log", "HTTP access log", "GPU/power"])
+        t["logins"]=traffic.logins(run("login history",["last","-n","20","-w"]),"ok")
+        t["failedLogins"]=traffic.logins(run("failed login history",["lastb","-n","15","-w"]),"failed")
+        auth=command(["journalctl","-u","ssh","-u","sshd","-n","80","--no-pager","--output=short-iso"])
+        if not auth or not traffic.ssh(auth):
+            fallback=traffic.tail(Path("/var/log/auth.log"))
+            if fallback: auth=fallback[0]
+        t["ssh"]=traffic.ssh(auth or "")
+        if auth is None: missing.append("SSH authentication log")
+        t["http"]=self.http.sample(Path("/"),self.clock())
+        if t["http"] is None: missing.append("HTTP access log")
         self.slow_missing=missing

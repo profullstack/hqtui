@@ -104,6 +104,7 @@ pub const Pane = struct {
     }
 };
 pub const State = struct {
+    http: @import("traffic.zig").HttpCollector = .{},
     parsed: std.json.Parsed(Value),
     gpa: std.mem.Allocator,
     real: bool,
@@ -142,6 +143,10 @@ pub const State = struct {
     rx_history: [240]f64 = [_]f64{0} ** 240,
     tx_history: [240]f64 = [_]f64{0} ** 240,
     history_count: usize = 0,
+    snmp_previous: [13]f64 = [_]f64{0} ** 13,
+    packet_history: [3][240]f64 = [_][240]f64{[_]f64{0} ** 240} ** 3,
+    session_history: [240]f64 = [_]f64{0} ** 240,
+    connection_history: [240]f64 = [_]f64{0} ** 240,
     pub fn init(gpa: std.mem.Allocator, real: bool, seed: u32) !State {
         var result = State{ .parsed = try std.json.parseFromSlice(Value, gpa, @embedFile("sample.json"), .{}), .gpa = gpa, .real = real, .seed = seed };
         if (real) {

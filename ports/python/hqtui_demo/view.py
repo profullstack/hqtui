@@ -89,14 +89,15 @@ def dashboard(ui, s: State):
         p.label(f'Down {size(n["downRate"])}/s   Up {size(n["upRate"])}/s')
         graph(p, n["downHistory"], "down", n["upHistory"])
         pairs(p, [("Received", size(n["downTotal"])), ("Sent", size(n["upTotal"]))])
-    def sensors(p):
-        for t in data["temperatures"][:8]:
+    def temperatures(p):
+        for t in data["temperatures"][:12]:
             p.meter(w.MeterOptions(label=t["label"], value=t["value"], max=t.get("max") or 100, text=f'{t["value"]:.0f}°C'))
         if not data["temperatures"]: p.label("No thermal sensors available")
-        for sensor in data["sensors"][:6]: p.label(f'{sensor["label"]}: {sensor["value"]}')
-        if s.sensor_note: p.label(s.sensor_note)
+    def sensors(p):
+        for sensor in data["sensors"][:14]: p.label(f'{sensor["label"]}: {sensor["value"]}')
+        if not data["sensors"]: p.label("No sensor readings available")
     def logs(p): table(p,s,"dashboard.logs", data["logs"], [("time","Time"),("level","Level"),("message","Message")])
-    panels = [("CPU Overview",cpu),("Memory & Swap",memory),("Disks",disks),("System",system),("Processes",procs),("Network",network),("Temperatures & Sensors",sensors),("Logs",logs)]
+    panels = [("CPU Overview",cpu),("Memory & Swap",memory),("Disks",disks),("System",system),("Processes",procs),("Network",network),("Temperatures",temperatures),("Sensors",sensors),("Logs",logs)]
     # Preserve a useful compact dashboard rather than squeezing eight panels
     # into a terminal too small to show their contents.
     if ui.width < 90 or ui.height < 46: panels = [panels[0],panels[4],panels[1],panels[5]]
@@ -138,6 +139,8 @@ def telemetry(ui, s: State):
                 ("TCP Segments",lambda p:graph(p,t["netInHistory"],"in",t["netOutHistory"])),trace("Retransmits","retransHistory"),
                 ("HTTP",http),tab("Remote Hosts","remotes",[("host","Host"),("connections","Connections"),("protocols","Protocols")]),
                 tab("SSH Authentication","ssh",[("time","Time"),("action","Action"),("user","User"),("from","From")])]
+    if s.screen=="sessions": panels.append(tab("Failed Logins","failedLogins",[("user","User"),("tty","TTY"),("from","From"),("when","When"),("status","Status")]))
+    if s.screen=="traffic" and s.source=="real": ui.label("Protocol/direction: port-based estimates; HTTP rate: estimated from log growth")
     grid(ui,panels,3 if s.screen=="traffic" and ui.width>=120 else 2)
 
 

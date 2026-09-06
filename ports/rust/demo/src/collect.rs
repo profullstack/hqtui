@@ -92,6 +92,7 @@ pub fn rate(current: f64, previous: Option<f64>, dt: f64) -> f64 {
     }
 }
 pub struct Collector {
+    http: crate::traffic::HttpCollector,
     pub sample: Value,
     pub missing: Vec<String>,
     slow_missing: Vec<String>,
@@ -109,6 +110,7 @@ impl Collector {
         s["system"]["hostname"] = json!(read("/proc/sys/kernel/hostname").trim());
         s["system"]["shell"] = json!(std::env::var("SHELL").unwrap_or_default());
         Self {
+            http: Default::default(),
             sample: s,
             missing: vec![],
             slow_missing: vec![],
@@ -309,6 +311,17 @@ impl Collector {
         self.procs = current;
         self.sample["system"]["processCount"] = json!(rows.len());
         self.sample["system"]["threadCount"] = json!(threads);
+        let count = |states: &str| {
+            rows.iter()
+                .filter(|row| {
+                    text(&row["state"])
+                        .chars()
+                        .next()
+                        .is_some_and(|c| states.contains(c))
+                })
+                .count()
+        };
+        self.sample["telemetry"]["states"] = json!({"total":rows.len(),"running":count("R"),"sleeping":count("SD"),"stopped":count("Tt"),"zombie":count("Z")});
         self.sample["processes"] = json!(rows);
         if hz == 0. || pages == 0. {
             self.missing.push("process CPU clock/page size".into())
@@ -474,8 +487,8 @@ impl Collector {
                 String::new()
             })
         };
-        let sessions:Vec<Value>=run("sessions",&["who"]).lines().filter_map(|line|{let f:Vec<_>=line.split_whitespace().collect();if f.len()<4{return None}Some(json!({"user":f[0],"tty":f[1],"loginAt":f[2..4].join(" "),"from":f[4..].join(" "),"idle":"—","what":"—"}))}).collect();
-        let count = sessions.len() as f64;
+        let sessions = crate::traffic::sessions(&run("sessions", &["who", "-u"]));
+        let count = array(&sessions).len() as f64;
         self.sample["telemetry"]["sessions"] = json!(sessions);
         push(&mut self.sample["telemetry"], "sessionHistory", count);
         let services: Vec<Value> = run(
@@ -515,7 +528,7 @@ impl Collector {
             connections.push(
                 json!({"proto":f[0],"state":f[1],"local":f[4],"remote":f[5],"process":process}),
             );
-            if matches!(f[1], "LISTEN" | "UNCONN") {
+            if f[1] == "LISTEN" {
                 if let Some((address, port)) = f[4].rsplit_once(':') {
                     listeners.push(
                         json!({"proto":f[0],"address":address,"port":port,"process":process}),
@@ -542,15 +555,46 @@ impl Collector {
             }
         }
         self.sample["telemetry"]["filesystems"] = json!(filesystems);
-        missing.extend(
-            [
-                "connection direction/application protocols",
-                "login history",
-                "SSH authentication log",
-                "HTTP access log",
-            ]
-            .map(str::to_owned),
+        let t = &mut self.sample["telemetry"];
+        let split = crate::traffic::breakdown(&t["connections"], &t["listeners"]);
+        for key in [
+            "protocols",
+            "remotes",
+            "inboundConnections",
+            "outboundConnections",
+        ] {
+            t[key] = split[key].clone();
+        }
+        t["logins"] =
+            crate::traffic::logins(&run("login history", &["last", "-n", "20", "-w"]), "ok");
+        t["failedLogins"] = crate::traffic::logins(
+            &run("failed login history", &["lastb", "-n", "15", "-w"]),
+            "failed",
         );
+        let mut auth = command(&[
+            "journalctl",
+            "-u",
+            "ssh",
+            "-u",
+            "sshd",
+            "-n",
+            "80",
+            "--no-pager",
+            "--output=short-iso",
+        ]);
+        if array(&crate::traffic::ssh(auth.as_deref().unwrap_or(""))).is_empty() {
+            if let Some((raw, _)) = crate::traffic::tail(Path::new("/var/log/auth.log")) {
+                auth = Some(raw);
+            }
+        }
+        t["ssh"] = crate::traffic::ssh(auth.as_deref().unwrap_or(""));
+        if auth.is_none() {
+            missing.push("SSH authentication log".into());
+        }
+        t["http"] = self.http.sample(Path::new("/"), Instant::now());
+        if t["http"].is_null() {
+            missing.push("HTTP access log".into());
+        }
         self.slow_missing = missing;
     }
 }

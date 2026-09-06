@@ -177,6 +177,12 @@ fn real_collector_wires_available_sensors_into_dashboard() {
     }
     let mut collector = collect::Collector::new();
     collector.refresh();
+    assert_eq!(
+        collector.sample["telemetry"]["states"]["total"]
+            .as_u64()
+            .unwrap() as usize,
+        model::array(&collector.sample["processes"]).len()
+    );
     let mut state = State::new(true, 42);
     state.sample = collector.sample;
     let frame = render_to_screen(200, 60, "dark", |ui| dashboard::render(ui, &state));

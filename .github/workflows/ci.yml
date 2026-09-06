@@ -27,6 +27,7 @@ jobs:
       - run: mise run test:python
       - run: mise run test:zig
       - run: python apps/demo/scripts/check-native-commands.py
+      - run: python apps/demo/scripts/check-native-data.py
 
   python:
     name: Python examples and terminal cleanup

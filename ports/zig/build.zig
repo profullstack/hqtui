@@ -15,9 +15,10 @@ pub fn build(b: *std.Build) void {
     // option keeps them free of assumptions about the working directory.
     const options = b.addOptions();
     options.addOptionPath("fixtures", b.path("../conformance/fixtures"));
+    const fixture_options = options.createModule();
 
     const tests = b.addTest(.{ .root_module = hqtui });
-    tests.root_module.addOptions("build_options", options);
+    tests.root_module.addImport("build_options", fixture_options);
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run the conformance suite and dashboard regression tests");
     test_step.dependOn(&run_tests.step);
@@ -37,6 +38,7 @@ pub fn build(b: *std.Build) void {
     b.step("run-demo", "Run the native ten-screen reference demo").dependOn(&run_demo.step);
     b.step("run-dashboard", "Run the native ten-screen reference demo").dependOn(&run_demo.step);
     const demo_tests = b.addTest(.{ .root_module = demo.root_module });
+    demo_tests.root_module.addImport("build_options", fixture_options);
     const run_demo_tests = b.addRunArtifact(demo_tests);
     b.step("test-demo", "Run native demo acceptance tests").dependOn(&run_demo_tests.step);
     b.getInstallStep().dependOn(&demo.step);
