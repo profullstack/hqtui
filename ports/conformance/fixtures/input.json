@@ -1,0 +1,759 @@
+[
+  {
+    "name": "plain-letters",
+    "chunks": [
+      "abc"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "a",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "a",
+        "key": "a",
+        "raw": "a"
+      },
+      {
+        "type": "key",
+        "name": "b",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "b",
+        "key": "b",
+        "raw": "b"
+      },
+      {
+        "type": "key",
+        "name": "c",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "c",
+        "key": "c",
+        "raw": "c"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "enter-tab-space",
+    "chunks": [
+      "\r\n\t "
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "enter",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "enter",
+        "raw": "\r"
+      },
+      {
+        "type": "key",
+        "name": "enter",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "enter",
+        "raw": "\n"
+      },
+      {
+        "type": "key",
+        "name": "tab",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "tab",
+        "raw": "\t"
+      },
+      {
+        "type": "key",
+        "name": "space",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": " ",
+        "key": "space",
+        "raw": " "
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "backspace",
+    "chunks": [
+      "\b"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "backspace",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "backspace",
+        "raw": ""
+      },
+      {
+        "type": "key",
+        "name": "backspace",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "backspace",
+        "raw": "\b"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "ctrl-letters",
+    "chunks": [
+      "\u0003\u0001\u001a"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "c",
+        "ctrl": true,
+        "alt": false,
+        "shift": false,
+        "key": "ctrl+c",
+        "raw": "\u0003"
+      },
+      {
+        "type": "key",
+        "name": "a",
+        "ctrl": true,
+        "alt": false,
+        "shift": false,
+        "key": "ctrl+a",
+        "raw": "\u0001"
+      },
+      {
+        "type": "key",
+        "name": "z",
+        "ctrl": true,
+        "alt": false,
+        "shift": false,
+        "key": "ctrl+z",
+        "raw": "\u001a"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "arrows-csi",
+    "chunks": [
+      "\u001b[A\u001b[B\u001b[C\u001b[D"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "up",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "up",
+        "raw": "\u001b[A"
+      },
+      {
+        "type": "key",
+        "name": "down",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "down",
+        "raw": "\u001b[B"
+      },
+      {
+        "type": "key",
+        "name": "right",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "right",
+        "raw": "\u001b[C"
+      },
+      {
+        "type": "key",
+        "name": "left",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "left",
+        "raw": "\u001b[D"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "arrows-ss3",
+    "chunks": [
+      "\u001bOA\u001bOB"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "up",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "up",
+        "raw": "\u001bOA"
+      },
+      {
+        "type": "key",
+        "name": "down",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "down",
+        "raw": "\u001bOB"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "home-end",
+    "chunks": [
+      "\u001b[H\u001b[F\u001b[1~\u001b[4~"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "home",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "home",
+        "raw": "\u001b[H"
+      },
+      {
+        "type": "key",
+        "name": "end",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "end",
+        "raw": "\u001b[F"
+      },
+      {
+        "type": "key",
+        "name": "home",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "home",
+        "raw": "\u001b[1~"
+      },
+      {
+        "type": "key",
+        "name": "end",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "end",
+        "raw": "\u001b[4~"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "function-keys",
+    "chunks": [
+      "\u001bOP\u001b[15~\u001b[24~"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "f1",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "f1",
+        "raw": "\u001bOP"
+      },
+      {
+        "type": "key",
+        "name": "f5",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "f5",
+        "raw": "\u001b[15~"
+      },
+      {
+        "type": "key",
+        "name": "f12",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "f12",
+        "raw": "\u001b[24~"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "shift-tab",
+    "chunks": [
+      "\u001b[Z"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "tab",
+        "ctrl": false,
+        "alt": false,
+        "shift": true,
+        "key": "shift+tab",
+        "raw": "\u001b[Z"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "modified-arrows",
+    "chunks": [
+      "\u001b[1;5A\u001b[1;2C\u001b[1;3D"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "up",
+        "ctrl": true,
+        "alt": false,
+        "shift": false,
+        "key": "ctrl+up",
+        "raw": "\u001b[1;5A"
+      },
+      {
+        "type": "key",
+        "name": "right",
+        "ctrl": false,
+        "alt": false,
+        "shift": true,
+        "key": "shift+right",
+        "raw": "\u001b[1;2C"
+      },
+      {
+        "type": "key",
+        "name": "left",
+        "ctrl": false,
+        "alt": true,
+        "shift": false,
+        "key": "alt+left",
+        "raw": "\u001b[1;3D"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "modified-tilde",
+    "chunks": [
+      "\u001b[5;5~\u001b[3;2~"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "pageup",
+        "ctrl": true,
+        "alt": false,
+        "shift": false,
+        "key": "ctrl+pageup",
+        "raw": "\u001b[5;5~"
+      },
+      {
+        "type": "key",
+        "name": "delete",
+        "ctrl": false,
+        "alt": false,
+        "shift": true,
+        "key": "shift+delete",
+        "raw": "\u001b[3;2~"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "alt-key",
+    "chunks": [
+      "\u001ba"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "a",
+        "ctrl": false,
+        "alt": true,
+        "shift": false,
+        "char": "a",
+        "key": "alt+a",
+        "raw": "\u001ba"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "escape-then-flush",
+    "chunks": [
+      "\u001b"
+    ],
+    "flush": true,
+    "events": [
+      {
+        "type": "key",
+        "name": "escape",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "escape",
+        "raw": "\u001b"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "split-sequence",
+    "chunks": [
+      "\u001b[",
+      "A"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "up",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "up",
+        "raw": "\u001b[A"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "split-mouse",
+    "chunks": [
+      "\u001b[<0;10",
+      ";20M"
+    ],
+    "events": [
+      {
+        "type": "mouse",
+        "action": "press",
+        "button": "left",
+        "x": 9,
+        "y": 19,
+        "scroll": 0,
+        "ctrl": false,
+        "alt": false,
+        "shift": false
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "mouse-press-release",
+    "chunks": [
+      "\u001b[<0;5;7M\u001b[<0;5;7m"
+    ],
+    "events": [
+      {
+        "type": "mouse",
+        "action": "press",
+        "button": "left",
+        "x": 4,
+        "y": 6,
+        "scroll": 0,
+        "ctrl": false,
+        "alt": false,
+        "shift": false
+      },
+      {
+        "type": "mouse",
+        "action": "release",
+        "button": "left",
+        "x": 4,
+        "y": 6,
+        "scroll": 0,
+        "ctrl": false,
+        "alt": false,
+        "shift": false
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "mouse-scroll",
+    "chunks": [
+      "\u001b[<64;1;1M\u001b[<65;1;1M"
+    ],
+    "events": [
+      {
+        "type": "mouse",
+        "action": "scroll",
+        "button": "none",
+        "x": 0,
+        "y": 0,
+        "scroll": -1,
+        "ctrl": false,
+        "alt": false,
+        "shift": false
+      },
+      {
+        "type": "mouse",
+        "action": "scroll",
+        "button": "none",
+        "x": 0,
+        "y": 0,
+        "scroll": 1,
+        "ctrl": false,
+        "alt": false,
+        "shift": false
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "mouse-drag-move",
+    "chunks": [
+      "\u001b[<32;3;4M\u001b[<35;3;4M"
+    ],
+    "events": [
+      {
+        "type": "mouse",
+        "action": "drag",
+        "button": "left",
+        "x": 2,
+        "y": 3,
+        "scroll": 0,
+        "ctrl": false,
+        "alt": false,
+        "shift": false
+      },
+      {
+        "type": "mouse",
+        "action": "move",
+        "button": "none",
+        "x": 2,
+        "y": 3,
+        "scroll": 0,
+        "ctrl": false,
+        "alt": false,
+        "shift": false
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "mouse-modifiers",
+    "chunks": [
+      "\u001b[<20;2;2M"
+    ],
+    "events": [
+      {
+        "type": "mouse",
+        "action": "press",
+        "button": "left",
+        "x": 1,
+        "y": 1,
+        "scroll": 0,
+        "ctrl": true,
+        "alt": false,
+        "shift": true
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "focus-events",
+    "chunks": [
+      "\u001b[I\u001b[O"
+    ],
+    "events": [
+      {
+        "type": "focus",
+        "focused": true
+      },
+      {
+        "type": "focus",
+        "focused": false
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "bracketed-paste",
+    "chunks": [
+      "\u001b[200~hello world\u001b[201~"
+    ],
+    "events": [
+      {
+        "type": "paste",
+        "text": "hello world"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "paste-split-marker",
+    "chunks": [
+      "\u001b[200~abc\u001b[201",
+      "~def"
+    ],
+    "events": [
+      {
+        "type": "paste",
+        "text": "abc"
+      },
+      {
+        "type": "key",
+        "name": "d",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "d",
+        "key": "d",
+        "raw": "d"
+      },
+      {
+        "type": "key",
+        "name": "e",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "e",
+        "key": "e",
+        "raw": "e"
+      },
+      {
+        "type": "key",
+        "name": "f",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "f",
+        "key": "f",
+        "raw": "f"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "paste-with-escape",
+    "chunks": [
+      "\u001b[200~a\u001bb\u001b[201~"
+    ],
+    "events": [
+      {
+        "type": "paste",
+        "text": "a\u001bb"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "unicode-input",
+    "chunks": [
+      "日本"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "日",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "日",
+        "key": "日",
+        "raw": "日"
+      },
+      {
+        "type": "key",
+        "name": "本",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "本",
+        "key": "本",
+        "raw": "本"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "emoji-input",
+    "chunks": [
+      "🚀"
+    ],
+    "events": [
+      {
+        "type": "key",
+        "name": "🚀",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "🚀",
+        "key": "🚀",
+        "raw": "🚀"
+      }
+    ],
+    "pending": false
+  },
+  {
+    "name": "incomplete-then-flush",
+    "chunks": [
+      "\u001b[1;"
+    ],
+    "flush": true,
+    "events": [
+      {
+        "type": "key",
+        "name": "escape",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "key": "escape",
+        "raw": "\u001b"
+      },
+      {
+        "type": "key",
+        "name": "[",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "[",
+        "key": "[",
+        "raw": "["
+      },
+      {
+        "type": "key",
+        "name": "1",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": "1",
+        "key": "1",
+        "raw": "1"
+      },
+      {
+        "type": "key",
+        "name": ";",
+        "ctrl": false,
+        "alt": false,
+        "shift": false,
+        "char": ";",
+        "key": ";",
+        "raw": ";"
+      }
+    ],
+    "pending": false
+  }
+]

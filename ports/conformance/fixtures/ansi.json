@@ -1,0 +1,91 @@
+{
+  "stripAnsi": [
+    {
+      "s": "plain text",
+      "out": "plain text"
+    },
+    {
+      "s": "\u001b[31mred\u001b[0m",
+      "out": "red"
+    },
+    {
+      "s": "\u001b[38;2;255;0;0mtruecolor\u001b[39m",
+      "out": "truecolor"
+    },
+    {
+      "s": "\u001b[1;5;7mattrs\u001b[m",
+      "out": "attrs"
+    },
+    {
+      "s": "\u001b]0;title\u0007after",
+      "out": "after"
+    },
+    {
+      "s": "\u001b]0;title\u001b\\after",
+      "out": "after"
+    },
+    {
+      "s": "\u001bPsixel\u001b\\after",
+      "out": "after"
+    },
+    {
+      "s": "\u001b[0 qcursor",
+      "out": "cursor"
+    },
+    {
+      "s": "31mC1 CSI",
+      "out": "C1 CSI"
+    },
+    {
+      "s": "0;tC1 OSC",
+      "out": "C1 OSC"
+    },
+    {
+      "s": "\u001bAsingle",
+      "out": "single"
+    },
+    {
+      "s": "bidi‮override",
+      "out": "bidioverride"
+    },
+    {
+      "s": "null\u0000byte",
+      "out": "nullbyte"
+    },
+    {
+      "s": "keep\ttab\nand\rreturn",
+      "out": "keep\ttab\nand\rreturn"
+    }
+  ],
+  "moveTo": [
+    {
+      "x": 0,
+      "y": 0,
+      "out": "\u001b[1;1H"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "out": "\u001b[8;4H"
+    },
+    {
+      "x": 79,
+      "y": 23,
+      "out": "\u001b[24;80H"
+    }
+  ],
+  "setTitle": [
+    {
+      "title": "hqtui",
+      "out": "\u001b]0;hqtui\u0007"
+    },
+    {
+      "title": "a\u001b]b",
+      "out": "\u001b]0;a]b\u0007"
+    },
+    {
+      "title": "bidi‮title",
+      "out": "\u001b]0;bidititle\u0007"
+    }
+  ]
+}

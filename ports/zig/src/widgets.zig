@@ -1,0 +1,86 @@
+//! Widgets draw straight onto a `Surface`. The builder in `ui.zig` wraps every
+//! one of these with layout, so reach for these directly only when you are
+//! drawing inside a `draw` escape hatch.
+
+pub const controls = @import("widgets/controls.zig");
+pub const meters = @import("widgets/meters.zig");
+pub const table = @import("widgets/table.zig");
+pub const text = @import("widgets/text.zig");
+
+pub const BadgeOptions = text.BadgeOptions;
+pub const BadgeVariant = text.BadgeVariant;
+pub const DividerOptions = text.DividerOptions;
+pub const KeyStyle = text.KeyStyle;
+pub const KeyValueOptions = text.KeyValueOptions;
+pub const KeyValueRow = text.KeyValueRow;
+pub const StatusBarOptions = text.StatusBarOptions;
+pub const StatusItem = text.StatusItem;
+pub const TextStyle = text.TextStyle;
+pub const drawBadge = text.drawBadge;
+pub const drawDivider = text.drawDivider;
+pub const drawKeyValues = text.drawKeyValues;
+pub const drawStatusBar = text.drawStatusBar;
+pub const drawText = text.drawText;
+
+pub const ColumnsOptions = meters.ColumnsOptions;
+pub const DonutOptions = meters.DonutOptions;
+pub const DonutSegment = meters.DonutSegment;
+pub const GaugeOptions = meters.GaugeOptions;
+pub const GraphOptions = meters.GraphOptions;
+pub const HeatBarOptions = meters.HeatBarOptions;
+pub const MeterItem = meters.MeterItem;
+pub const MeterOptions = meters.MeterOptions;
+pub const MetersOptions = meters.MetersOptions;
+pub const ProgressOptions = meters.ProgressOptions;
+pub const SparklineWidgetOptions = meters.SparklineWidgetOptions;
+pub const clampRatio = meters.clampRatio;
+pub const drawColumns = meters.drawColumns;
+pub const drawDonut = meters.drawDonut;
+pub const drawGauge = meters.drawGauge;
+pub const drawGraph = meters.drawGraph;
+pub const drawHeatBar = meters.drawHeatBar;
+pub const drawMeter = meters.drawMeter;
+pub const drawMeters = meters.drawMeters;
+pub const drawProgress = meters.drawProgress;
+pub const drawSparkline = meters.drawSparkline;
+pub const niceLabel = meters.niceLabel;
+
+pub const ListItem = table.ListItem;
+pub const ListOptions = table.ListOptions;
+pub const LogEntry = table.LogEntry;
+pub const LogLevelColor = table.LogLevelColor;
+pub const LogOptions = table.LogOptions;
+pub const TableColumn = table.TableColumn;
+pub const TableOptions = table.TableOptions;
+pub const TableRow = table.TableRow;
+pub const TreeNode = table.TreeNode;
+pub const TreeOptions = table.TreeOptions;
+pub const TreeValue = table.TreeValue;
+pub const drawList = table.drawList;
+pub const drawLog = table.drawLog;
+pub const drawScrollbar = table.drawScrollbar;
+pub const drawTable = table.drawTable;
+pub const drawTree = table.drawTree;
+pub const resolveOffset = table.resolveOffset;
+
+pub const ButtonOptions = controls.ButtonOptions;
+pub const ButtonVariant = controls.ButtonVariant;
+pub const CheckboxOptions = controls.CheckboxOptions;
+pub const CheckboxVariant = controls.CheckboxVariant;
+pub const CommandPaletteOptions = controls.CommandPaletteOptions;
+pub const ModalButton = controls.ModalButton;
+pub const ModalOptions = controls.ModalOptions;
+pub const PaletteItem = controls.PaletteItem;
+pub const SelectOptions = controls.SelectOptions;
+pub const TabVariant = controls.TabVariant;
+pub const TabsOptions = controls.TabsOptions;
+pub const TextInputOptions = controls.TextInputOptions;
+pub const TooltipOptions = controls.TooltipOptions;
+pub const drawButton = controls.drawButton;
+pub const drawCheckbox = controls.drawCheckbox;
+pub const drawCommandPalette = controls.drawCommandPalette;
+pub const drawModal = controls.drawModal;
+pub const drawSelect = controls.drawSelect;
+pub const drawTabs = controls.drawTabs;
+pub const drawTextInput = controls.drawTextInput;
+pub const drawTooltip = controls.drawTooltip;
