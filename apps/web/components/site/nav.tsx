@@ -12,6 +12,7 @@ function GithubMark() {
 }
 
 const LINKS = [
+  { href: "/#languages", label: "Languages" },
   { href: "/#features", label: "Features" },
   { href: "/showcase", label: "Showcase" },
   { href: "/docs", label: "Docs" },
@@ -37,7 +38,7 @@ export function SiteNav() {
             className="h-8 w-8"
           />
         </Link>
-        <div className="hidden items-center gap-5 text-sm text-white/60 md:flex">
+        <div className="hidden items-center gap-5 text-sm text-white/60 lg:flex">
           {LINKS.map((link) => (
             <Link key={link.href} href={link.href} className="transition-colors hover:text-white">
               {link.label}
@@ -51,6 +52,7 @@ export function SiteNav() {
           </a>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <Link href="/#languages" className="text-sm text-white/70 hover:text-white lg:hidden">Languages</Link>
           <Button
             variant="ghost"
             size="sm"
@@ -90,6 +92,7 @@ export function SiteFooter({ views }: { views?: number }) {
           <span>MIT</span>
         </div>
         <div className="flex flex-wrap gap-4 sm:ml-auto">
+          <Link className="hover:text-white" href="/#languages">Languages</Link>
           <a className="hover:text-white" href="https://bbs.hqtui.com">Discussions</a>
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui">GitHub</a>
           <a className="hover:text-white" href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a>

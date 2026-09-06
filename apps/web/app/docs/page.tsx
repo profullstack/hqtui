@@ -5,12 +5,14 @@ import { Terminal } from "@/components/site/terminal";
 
 import { recordView } from "@/lib/db";
 import { Separator } from "@/components/ui/separator";
+import { LANGUAGES, PORTS } from "@/lib/languages";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Docs" };
 
 const SECTIONS = [
+  { id: "languages", label: "Choose a language" },
   { id: "install", label: "Install" },
   { id: "first-app", label: "Your first app" },
   { id: "layout", label: "Layout" },
@@ -60,13 +62,39 @@ export default async function Docs() {
         <main className="min-w-0 flex-1">
           <h1 className="text-4xl font-bold tracking-tight">Documentation</h1>
           <P>
-            HQTUI is a rendering library for building terminal applications in TypeScript. It
-            owns the terminal directly — ANSI sequences, a typed-array framebuffer, differential
-            rendering, Braille graphics and truecolor — with no ncurses, no browser DOM, no
-            React, and no native addon.
+            HQTUI builds terminal applications in TypeScript, Rust, Go, Python and Zig.
+            All five implementations provide differential rendering, Braille graphics,
+            truecolor, widgets and headless testing.
           </P>
 
-          <H2 id="install">Install</H2>
+          <H2 id="languages">Choose a language</H2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {LANGUAGES.map((language) => (
+              <Link key={language.id} href={language.href} className="rounded-lg border border-white/15 px-4 py-2 text-[#5fff87] hover:bg-white/5">{language.name}</Link>
+            ))}
+          </div>
+          <P>
+            Rust, Go, Python and Zig are native ports with no JavaScript runtime requirement.
+            Start from the source checkout below; each command renders a dashboard without a TTY.
+            Zig requires version 0.16. Each port&apos;s README covers its API, interactive examples
+            and platform-specific terminal behavior.
+          </P>
+          <Code className="mt-4" code="git clone https://github.com/profullstack/hqtui.git" />
+          <div className="mt-6 grid gap-6 xl:grid-cols-2">
+            {PORTS.map((port) => (
+              <section key={port.id} id={port.id} className="min-w-0 scroll-mt-20">
+                <h3 className="text-xl font-bold">{port.name}</h3>
+                <Code className="mt-3" code={`cd hqtui/ports/${port.id}\n${port.command}`} />
+                <a href={`https://github.com/profullstack/hqtui/tree/main/ports/${port.id}`} className="mt-3 inline-block text-sm text-[#5fff87] underline underline-offset-4">{port.name} API, examples and setup</a>
+              </section>
+            ))}
+          </div>
+          <P>
+            <Link href="/blog/native-rust-go-python-zig" className="text-[#5fff87] underline underline-offset-4">Read how the ports share a conformance corpus</Link>.
+            The API guide below describes the TypeScript reference implementation.
+          </P>
+
+          <H2 id="install">Install TypeScript</H2>
           <Code className="mt-4" code={`bun add @profullstack/hqtui   # Bun is the default runtime
 npm  add @profullstack/hqtui   # Node 22.6+ works unchanged`} />
           <P>

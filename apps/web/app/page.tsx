@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Boxes, Cpu, Gauge, Keyboard, Palette, TerminalSquare, TestTube2, Zap } from "lucide-react";
 
@@ -14,6 +13,7 @@ import { ThemeGallery, type ThemeCard } from "@/components/site/theme-gallery";
 
 import { recordView, themeVotes, totalViews } from "@/lib/db";
 import { themes } from "@profullstack/hqtui";
+import { LANGUAGES } from "@/lib/languages";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +65,7 @@ const FEATURES = [
   {
     icon: Cpu,
     title: "Zero dependencies",
-    body: "The library imports nothing. No ncurses, no native addon, no browser DOM, no React. It makes no network requests and spawns no subprocesses, ever.",
+    body: "The TypeScript library has zero runtime dependencies. The Rust, Go, Python and Zig ports use only their standard libraries. No ncurses, browser DOM or React.",
   },
   {
     icon: TerminalSquare,
@@ -131,18 +131,13 @@ export default async function Home() {
         <div className="dot-grid absolute inset-0 opacity-40" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24">
           <div className="mx-auto max-w-3xl text-center">
-            <Image
-              src="/logo.png"
-              alt="HQTUI — High Quality Terminal UI for TypeScript"
-              width={2172}
-              height={724}
-              priority
-              className="mx-auto mb-6 w-[22rem] max-w-full sm:w-[30rem]"
-            />
+            <h1 className="mb-3 font-mono text-7xl font-bold tracking-tight text-[#5fff87] sm:text-8xl">HQTUI</h1>
+            <p className="mb-6 text-balance text-lg text-white/70">
+              High Quality Terminal UI for TypeScript, Rust, Go, Python and Zig
+            </p>
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
-              v0.1.11 · MIT · zero runtime dependencies
+              v0.1.11 · 5 languages · MIT
             </Badge>
-            <h1 className="sr-only">HQTUI — High Quality Terminal UI for TypeScript</h1>
             <p className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
               Terminal dashboards that
               <span className="block bg-gradient-to-r from-[#5fff87] via-[#56d4dd] to-[#58a6ff] bg-clip-text text-transparent">
@@ -153,11 +148,14 @@ export default async function Home() {
               btop-grade dashboards with a one-import API. Own the terminal directly, render
               only what changed, and make beautiful graphics a first-class primitive.
             </p>
+            <Link href="/blog/native-rust-go-python-zig" className="mt-5 inline-flex items-center gap-2 text-sm text-[#5fff87] underline underline-offset-4">
+              New: native Rust, Go, Python and Zig ports <ArrowRight className="h-4 w-4 shrink-0" />
+            </Link>
             <div className="mx-auto mt-7 flex max-w-md flex-col gap-3">
               <InstallCommand command="bun add @profullstack/hqtui" />
               <div className="flex justify-center gap-3">
-                <Button size="lg" render={<Link href="/docs" />}>
-                  Get started <ArrowRight className="ml-1 h-4 w-4" />
+                <Button size="lg" render={<Link href="#languages" />}>
+                  Choose your language <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
                 <Button
                   size="lg"
@@ -187,7 +185,7 @@ export default async function Home() {
 
           <div className="mt-10 grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
             {[
-              ["0.29 ms", "10% changed frame"],
+              ["0.29 ms", "TypeScript: 10% changed frame"],
               ["0", "runtime dependencies"],
               ["30+", "widgets"],
               ["9", "built-in themes"],
@@ -201,11 +199,33 @@ export default async function Home() {
         </div>
       </section>
 
+      <section id="languages" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6">
+        <h2 className="text-3xl font-bold tracking-tight">One terminal UI, five languages</h2>
+        <p className="mt-3 max-w-3xl text-white/60">
+          Build in TypeScript or use a native Rust, Go, Python or Zig implementation.
+          Each port includes the app loop, widgets, themes, input handling and a headless renderer.
+          The four native ports need no JavaScript runtime and use only their standard libraries.
+        </p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {LANGUAGES.map((language) => (
+            <Link key={language.id} href={language.href} className="rounded-xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[#5fff87]/50 focus-visible:outline-2 focus-visible:outline-[#5fff87]">
+              <h3 className="font-mono text-lg font-bold text-[#5fff87]">{language.name}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-white/60">{language.description}</p>
+              <span className="mt-5 inline-flex items-center gap-1 text-sm">Get started <ArrowRight className="h-4 w-4" /></span>
+            </Link>
+          ))}
+        </div>
+        <p className="mt-5 text-sm text-white/60">
+          Shared conformance fixtures check cells, colors and escape bytes across implementations.{' '}
+          <Link href="/blog/native-rust-go-python-zig" className="text-[#5fff87] underline underline-offset-4">Read the launch article</Link>.
+        </p>
+      </section>
+
       {/* Quick start */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Ten lines to a real TUI</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Start with TypeScript</h2>
             <p className="mt-3 text-white/60">
               <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm">createApp()</code> already
               gives you a dark theme, truecolor with automatic fallback, mouse tracking, the
