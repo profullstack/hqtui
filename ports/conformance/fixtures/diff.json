@@ -1,0 +1,404 @@
+[
+  {
+    "name": "first-frame",
+    "width": 10,
+    "height": 2,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "hello",
+        "fg": 33488896
+      }
+    ],
+    "full": true,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[0m\u001b[1;1H\u001b[38;2;255;0;0mhello\u001b[39m     \u001b[2;1H          ",
+      "changedCells": 5,
+      "dirtyRows": 2
+    }
+  },
+  {
+    "name": "single-cell",
+    "width": 10,
+    "height": 2,
+    "before": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "hello"
+      }
+    ],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "hellp"
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;5Hp",
+      "changedCells": 1,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "gap-merge",
+    "width": 20,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "setCell",
+        "x": 0,
+        "y": 0,
+        "value": 65,
+        "fg": 33488896
+      },
+      {
+        "op": "setCell",
+        "x": 3,
+        "y": 0,
+        "value": 66,
+        "fg": 33488896
+      },
+      {
+        "op": "setCell",
+        "x": 12,
+        "y": 0,
+        "value": 67,
+        "fg": 33488896
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;1H\u001b[38;2;255;0;0mA\u001b[39m  \u001b[38;2;255;0;0mB\u001b[13GC",
+      "changedCells": 3,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "style-runs",
+    "width": 12,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "aaa",
+        "fg": 33488896
+      },
+      {
+        "op": "write",
+        "x": 3,
+        "y": 0,
+        "text": "bbb",
+        "fg": 16777471
+      },
+      {
+        "op": "write",
+        "x": 6,
+        "y": 0,
+        "text": "ccc",
+        "fg": 33488896,
+        "bg": 16842496
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;1H\u001b[38;2;255;0;0maaa\u001b[38;2;0;0;255mbbb\u001b[38;2;255;0;0m\u001b[48;2;0;255;0mccc",
+      "changedCells": 9,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "attr-removal",
+    "width": 10,
+    "height": 1,
+    "before": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "aaaa",
+        "attrs": 9
+      }
+    ],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "bbbb",
+        "attrs": 1
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;1H\u001b[1mbbbb",
+      "changedCells": 4,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "attr-addition",
+    "width": 10,
+    "height": 1,
+    "before": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "aaaa"
+      }
+    ],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "aaaa",
+        "attrs": 37
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;1H\u001b[1;3;7maaaa",
+      "changedCells": 4,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "wide-chars",
+    "width": 10,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 2,
+        "y": 0,
+        "text": "日本",
+        "fg": 33488896
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;3H\u001b[38;2;255;0;0m日本",
+      "changedCells": 2,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "multi-row",
+    "width": 8,
+    "height": 4,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "row0"
+      },
+      {
+        "op": "write",
+        "x": 2,
+        "y": 2,
+        "text": "row2"
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;1Hrow0\u001b[3;3Hrow2",
+      "changedCells": 8,
+      "dirtyRows": 2
+    }
+  },
+  {
+    "name": "short-hop",
+    "width": 20,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "setCell",
+        "x": 0,
+        "y": 0,
+        "value": 65
+      },
+      {
+        "op": "setCell",
+        "x": 2,
+        "y": 0,
+        "value": 66
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;1HA B",
+      "changedCells": 2,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "ansi256",
+    "width": 10,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "hi",
+        "fg": 16832511,
+        "bg": 23068551
+      }
+    ],
+    "full": true,
+    "colors": "ansi256",
+    "result": {
+      "output": "\u001b[0m\u001b[1;1H\u001b[38;5;45m\u001b[48;5;84mhi\u001b[39m\u001b[49m        ",
+      "changedCells": 2,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "ansi16",
+    "width": 10,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "hi",
+        "fg": 16832511,
+        "bg": 23068551
+      }
+    ],
+    "full": true,
+    "colors": "ansi16",
+    "result": {
+      "output": "\u001b[0m\u001b[1;1H\u001b[96m\u001b[102mhi\u001b[39m\u001b[49m        ",
+      "changedCells": 2,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "no-color",
+    "width": 10,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "hi",
+        "fg": 33488896,
+        "attrs": 1
+      }
+    ],
+    "full": true,
+    "colors": "none",
+    "result": {
+      "output": "\u001b[0m\u001b[1;1H\u001b[1mhi\u001b[0m        ",
+      "changedCells": 2,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "monochrome",
+    "width": 10,
+    "height": 1,
+    "before": [],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "hi",
+        "fg": 16832511
+      }
+    ],
+    "full": true,
+    "colors": "truecolor",
+    "monochrome": true,
+    "result": {
+      "output": "\u001b[0m\u001b[1;1H\u001b[38;2;155;155;155mhi\u001b[39m        ",
+      "changedCells": 2,
+      "dirtyRows": 1
+    }
+  },
+  {
+    "name": "unchanged",
+    "width": 10,
+    "height": 1,
+    "before": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "same"
+      }
+    ],
+    "after": [
+      {
+        "op": "write",
+        "x": 0,
+        "y": 0,
+        "text": "same"
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "",
+      "changedCells": 0,
+      "dirtyRows": 0
+    }
+  },
+  {
+    "name": "full-row-repaint",
+    "width": 6,
+    "height": 2,
+    "before": [
+      {
+        "op": "clear",
+        "bg": 33488896
+      }
+    ],
+    "after": [
+      {
+        "op": "clear",
+        "bg": 16777471
+      }
+    ],
+    "full": false,
+    "colors": "truecolor",
+    "result": {
+      "output": "\u001b[1;1H\u001b[48;2;0;0;255m      \u001b[2;1H      ",
+      "changedCells": 12,
+      "dirtyRows": 2
+    }
+  }
+]

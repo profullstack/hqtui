@@ -1,0 +1,1059 @@
+{
+  "themes": [
+    {
+      "key": "dark",
+      "theme": {
+        "name": "dark",
+        "dark": true,
+        "background": 17106698,
+        "surface": 17436180,
+        "foreground": 29806811,
+        "muted": 22702973,
+        "primary": 22587135,
+        "secondary": 29201401,
+        "accent": 22467805,
+        "success": 23068551,
+        "warning": 33544031,
+        "danger": 33516395,
+        "info": 22467805,
+        "border": 19148864,
+        "borderFocused": 22467805,
+        "title": 25092863,
+        "selection": 18692690,
+        "selectionText": 31912703,
+        "cursor": 22467805,
+        "graph": [
+          22587135,
+          23068551,
+          33520070,
+          33544031,
+          22467805,
+          33531479
+        ],
+        "heat": [
+          23068551,
+          27852640,
+          33544031,
+          33531479,
+          33516395
+        ]
+      }
+    },
+    {
+      "key": "dracula",
+      "theme": {
+        "name": "dracula",
+        "dark": true,
+        "background": 18422305,
+        "surface": 18948652,
+        "foreground": 33093874,
+        "muted": 23229092,
+        "primary": 29201401,
+        "secondary": 33520070,
+        "accent": 25946621,
+        "success": 22084219,
+        "warning": 32635532,
+        "danger": 33510741,
+        "info": 25946621,
+        "border": 21251930,
+        "borderFocused": 29201401,
+        "title": 33520070,
+        "selection": 21251930,
+        "selectionText": 33093874,
+        "cursor": 22467805,
+        "graph": [
+          29201401,
+          22084219,
+          33520070,
+          32635532,
+          25946621,
+          33536108
+        ],
+        "heat": [
+          22084219,
+          32635532,
+          33536108,
+          33510741
+        ]
+      }
+    },
+    {
+      "key": "nord",
+      "theme": {
+        "name": "nord",
+        "dark": true,
+        "background": 19805248,
+        "surface": 20134730,
+        "foreground": 31844848,
+        "muted": 24873121,
+        "primary": 25739472,
+        "secondary": 28610221,
+        "accent": 26197179,
+        "success": 27508364,
+        "warning": 32230283,
+        "danger": 29319530,
+        "info": 25272769,
+        "border": 21187678,
+        "borderFocused": 25739472,
+        "title": 26197179,
+        "selection": 21187678,
+        "selectionText": 32305140,
+        "cursor": 22467805,
+        "graph": [
+          25739472,
+          27508364,
+          28610221,
+          32230283,
+          25272769,
+          30443376
+        ],
+        "heat": [
+          27508364,
+          32230283,
+          30443376,
+          29319530
+        ]
+      }
+    },
+    {
+      "key": "tokyoNight",
+      "theme": {
+        "name": "tokyo-night",
+        "dark": true,
+        "background": 18488102,
+        "surface": 18817845,
+        "foreground": 29412085,
+        "muted": 22437769,
+        "primary": 24814327,
+        "secondary": 29072119,
+        "accent": 25022463,
+        "success": 27184746,
+        "warning": 31502184,
+        "danger": 32994958,
+        "info": 25022463,
+        "border": 19871049,
+        "borderFocused": 24814327,
+        "title": 25022463,
+        "selection": 19412055,
+        "selectionText": 29412085,
+        "cursor": 22467805,
+        "graph": [
+          24814327,
+          27184746,
+          29072119,
+          31502184,
+          25022463,
+          33529444
+        ],
+        "heat": [
+          27184746,
+          31502184,
+          33529444,
+          32994958
+        ]
+      }
+    },
+    {
+      "key": "gruvbox",
+      "theme": {
+        "name": "gruvbox",
+        "dark": true,
+        "background": 18685985,
+        "surface": 19408936,
+        "foreground": 32234418,
+        "muted": 26379124,
+        "primary": 25404824,
+        "secondary": 30639771,
+        "accent": 26132604,
+        "success": 28883750,
+        "warning": 33209647,
+        "danger": 33245492,
+        "info": 25404824,
+        "border": 20723766,
+        "borderFocused": 33209647,
+        "title": 33209647,
+        "selection": 20723766,
+        "selectionText": 33288647,
+        "cursor": 22467805,
+        "graph": [
+          25404824,
+          28883750,
+          30639771,
+          33209647,
+          26132604,
+          33456153
+        ],
+        "heat": [
+          28883750,
+          33209647,
+          33456153,
+          33245492
+        ]
+      }
+    },
+    {
+      "key": "matrix",
+      "theme": {
+        "name": "matrix",
+        "dark": true,
+        "background": 16777216,
+        "surface": 16910850,
+        "foreground": 27131805,
+        "muted": 19884847,
+        "primary": 16842561,
+        "secondary": 16828499,
+        "accent": 24969084,
+        "success": 16842561,
+        "warning": 30736128,
+        "danger": 33504048,
+        "info": 16836016,
+        "border": 17973279,
+        "borderFocused": 16842561,
+        "title": 16842561,
+        "selection": 17641236,
+        "selectionText": 30015433,
+        "cursor": 22467805,
+        "graph": [
+          16842561,
+          16828499,
+          24969084,
+          16836016,
+          30736128,
+          19897924
+        ],
+        "heat": [
+          17791534,
+          16828499,
+          16842561,
+          30736128
+        ]
+      }
+    },
+    {
+      "key": "monochrome",
+      "theme": {
+        "name": "monochrome",
+        "dark": true,
+        "background": 16777216,
+        "surface": 17500939,
+        "foreground": 30462160,
+        "muted": 24014446,
+        "primary": 33554431,
+        "secondary": 29409472,
+        "accent": 31514848,
+        "success": 32041192,
+        "warning": 28883128,
+        "danger": 33554431,
+        "info": 27304096,
+        "border": 20593210,
+        "borderFocused": 30462160,
+        "title": 33554431,
+        "selection": 19935280,
+        "selectionText": 33554431,
+        "cursor": 22467805,
+        "graph": [
+          33554431,
+          29935816,
+          26251408,
+          23619688,
+          28356784,
+          25198720
+        ],
+        "heat": [
+          22567000,
+          26251408,
+          29935816,
+          33554431
+        ]
+      }
+    },
+    {
+      "key": "highContrast",
+      "theme": {
+        "name": "high-contrast",
+        "dark": true,
+        "background": 16777216,
+        "surface": 16777216,
+        "foreground": 33554431,
+        "muted": 29409472,
+        "primary": 16842751,
+        "secondary": 33489151,
+        "accent": 33554176,
+        "success": 16842496,
+        "warning": 33554176,
+        "danger": 33488896,
+        "info": 16842751,
+        "border": 33554431,
+        "borderFocused": 33554176,
+        "title": 33554431,
+        "selection": 33554431,
+        "selectionText": 16777216,
+        "cursor": 22467805,
+        "graph": [
+          16842751,
+          16842496,
+          33489151,
+          33554176,
+          33554431,
+          33521664
+        ],
+        "heat": [
+          16842496,
+          33554176,
+          33521664,
+          33488896
+        ]
+      }
+    },
+    {
+      "key": "light",
+      "theme": {
+        "name": "light",
+        "dark": false,
+        "background": 33291517,
+        "surface": 33554431,
+        "foreground": 18621744,
+        "muted": 23820940,
+        "primary": 17523408,
+        "secondary": 24918765,
+        "accent": 17724560,
+        "success": 17992255,
+        "warning": 27814400,
+        "danger": 29763624,
+        "info": 17724560,
+        "border": 30661604,
+        "borderFocused": 17523408,
+        "title": 17513848,
+        "selection": 30861051,
+        "selectionText": 17507653,
+        "cursor": 17523408,
+        "graph": [
+          17523408,
+          17992255,
+          27473034,
+          27814400,
+          17724560,
+          29507852
+        ],
+        "heat": [
+          17992255,
+          24814336,
+          27814400,
+          29507852,
+          29763624
+        ]
+      }
+    }
+  ],
+  "resolve": [
+    {
+      "name": "dark",
+      "resolved": "dark"
+    },
+    {
+      "name": "dracula",
+      "resolved": "dracula"
+    },
+    {
+      "name": "nord",
+      "resolved": "nord"
+    },
+    {
+      "name": "tokyoNight",
+      "resolved": "tokyo-night"
+    },
+    {
+      "name": "tokyo-night",
+      "resolved": "tokyo-night"
+    },
+    {
+      "name": "nope",
+      "resolved": "dark"
+    },
+    {
+      "name": "",
+      "resolved": "dark"
+    }
+  ],
+  "elevate": [
+    {
+      "theme": "dark",
+      "amount": 0.04,
+      "out": 18094109
+    },
+    {
+      "theme": "dark",
+      "amount": 0.06,
+      "out": 18422818
+    },
+    {
+      "theme": "dark",
+      "amount": 0.08,
+      "out": 18751783
+    },
+    {
+      "theme": "dark",
+      "amount": 0.1,
+      "out": 19080748
+    },
+    {
+      "theme": "dracula",
+      "amount": 0.04,
+      "out": 19540788
+    },
+    {
+      "theme": "dracula",
+      "amount": 0.06,
+      "out": 19803961
+    },
+    {
+      "theme": "dracula",
+      "amount": 0.08,
+      "out": 20132925
+    },
+    {
+      "theme": "dracula",
+      "amount": 0.1,
+      "out": 20396097
+    },
+    {
+      "theme": "nord",
+      "amount": 0.04,
+      "out": 20661073
+    },
+    {
+      "theme": "nord",
+      "amount": 0.06,
+      "out": 20924245
+    },
+    {
+      "theme": "nord",
+      "amount": 0.08,
+      "out": 21187416
+    },
+    {
+      "theme": "nord",
+      "amount": 0.1,
+      "out": 21450588
+    },
+    {
+      "theme": "tokyoNight",
+      "amount": 0.04,
+      "out": 19409981
+    },
+    {
+      "theme": "tokyoNight",
+      "amount": 0.06,
+      "out": 19673153
+    },
+    {
+      "theme": "tokyoNight",
+      "amount": 0.08,
+      "out": 20002117
+    },
+    {
+      "theme": "tokyoNight",
+      "amount": 0.1,
+      "out": 20265289
+    },
+    {
+      "theme": "gruvbox",
+      "amount": 0.04,
+      "out": 20001073
+    },
+    {
+      "theme": "gruvbox",
+      "amount": 0.06,
+      "out": 20264245
+    },
+    {
+      "theme": "gruvbox",
+      "amount": 0.08,
+      "out": 20527417
+    },
+    {
+      "theme": "gruvbox",
+      "amount": 0.1,
+      "out": 20856382
+    },
+    {
+      "theme": "matrix",
+      "amount": 0.04,
+      "out": 17568780
+    },
+    {
+      "theme": "matrix",
+      "amount": 0.06,
+      "out": 17897745
+    },
+    {
+      "theme": "matrix",
+      "amount": 0.08,
+      "out": 18226710
+    },
+    {
+      "theme": "matrix",
+      "amount": 0.1,
+      "out": 18555675
+    },
+    {
+      "theme": "monochrome",
+      "amount": 0.04,
+      "out": 18158869
+    },
+    {
+      "theme": "monochrome",
+      "amount": 0.06,
+      "out": 18487834
+    },
+    {
+      "theme": "monochrome",
+      "amount": 0.08,
+      "out": 18816799
+    },
+    {
+      "theme": "monochrome",
+      "amount": 0.1,
+      "out": 19079971
+    },
+    {
+      "theme": "highContrast",
+      "amount": 0.04,
+      "out": 17435146
+    },
+    {
+      "theme": "highContrast",
+      "amount": 0.06,
+      "out": 17764111
+    },
+    {
+      "theme": "highContrast",
+      "amount": 0.08,
+      "out": 18093076
+    },
+    {
+      "theme": "highContrast",
+      "amount": 0.1,
+      "out": 18487834
+    },
+    {
+      "theme": "light",
+      "amount": 0.04,
+      "out": 32896501
+    },
+    {
+      "theme": "light",
+      "amount": 0.06,
+      "out": 32567536
+    },
+    {
+      "theme": "light",
+      "amount": 0.08,
+      "out": 32238571
+    },
+    {
+      "theme": "light",
+      "amount": 0.1,
+      "out": 31909606
+    }
+  ],
+  "heatColor": [
+    {
+      "theme": "dark",
+      "ratio": 0,
+      "out": 23068551
+    },
+    {
+      "theme": "dark",
+      "ratio": 0.25,
+      "out": 27852640
+    },
+    {
+      "theme": "dark",
+      "ratio": 0.5,
+      "out": 33544031
+    },
+    {
+      "theme": "dark",
+      "ratio": 0.75,
+      "out": 33531479
+    },
+    {
+      "theme": "dark",
+      "ratio": 1,
+      "out": 33516395
+    },
+    {
+      "theme": "dracula",
+      "ratio": 0,
+      "out": 22084219
+    },
+    {
+      "theme": "dracula",
+      "ratio": 0.25,
+      "out": 30014088
+    },
+    {
+      "theme": "dracula",
+      "ratio": 0.5,
+      "out": 33085820
+    },
+    {
+      "theme": "dracula",
+      "ratio": 0.75,
+      "out": 33529702
+    },
+    {
+      "theme": "dracula",
+      "ratio": 1,
+      "out": 33510741
+    },
+    {
+      "theme": "nord",
+      "ratio": 0,
+      "out": 27508364
+    },
+    {
+      "theme": "nord",
+      "ratio": 0.25,
+      "out": 31049867
+    },
+    {
+      "theme": "nord",
+      "ratio": 0.5,
+      "out": 31369598
+    },
+    {
+      "theme": "nord",
+      "ratio": 0.75,
+      "out": 30178927
+    },
+    {
+      "theme": "nord",
+      "ratio": 1,
+      "out": 29319530
+    },
+    {
+      "theme": "tokyoNight",
+      "ratio": 0,
+      "out": 27184746
+    },
+    {
+      "theme": "tokyoNight",
+      "ratio": 0.25,
+      "out": 30455657
+    },
+    {
+      "theme": "tokyoNight",
+      "ratio": 0.5,
+      "out": 32548710
+    },
+    {
+      "theme": "tokyoNight",
+      "ratio": 0.75,
+      "out": 33395823
+    },
+    {
+      "theme": "tokyoNight",
+      "ratio": 1,
+      "out": 32994958
+    },
+    {
+      "theme": "gruvbox",
+      "ratio": 0,
+      "out": 28883750
+    },
+    {
+      "theme": "gruvbox",
+      "ratio": 0.25,
+      "out": 32161069
+    },
+    {
+      "theme": "gruvbox",
+      "ratio": 0.5,
+      "out": 33333028
+    },
+    {
+      "theme": "gruvbox",
+      "ratio": 0.75,
+      "out": 33387040
+    },
+    {
+      "theme": "gruvbox",
+      "ratio": 1,
+      "out": 33245492
+    },
+    {
+      "theme": "matrix",
+      "ratio": 0,
+      "out": 17791534
+    },
+    {
+      "theme": "matrix",
+      "ratio": 0.25,
+      "out": 17085770
+    },
+    {
+      "theme": "matrix",
+      "ratio": 0.5,
+      "out": 16835658
+    },
+    {
+      "theme": "matrix",
+      "ratio": 0.75,
+      "out": 20315953
+    },
+    {
+      "theme": "matrix",
+      "ratio": 1,
+      "out": 30736128
+    },
+    {
+      "theme": "monochrome",
+      "ratio": 0,
+      "out": 22567000
+    },
+    {
+      "theme": "monochrome",
+      "ratio": 0.25,
+      "out": 25330306
+    },
+    {
+      "theme": "monochrome",
+      "ratio": 0.5,
+      "out": 28093612
+    },
+    {
+      "theme": "monochrome",
+      "ratio": 0.75,
+      "out": 30856918
+    },
+    {
+      "theme": "monochrome",
+      "ratio": 1,
+      "out": 33554431
+    },
+    {
+      "theme": "highContrast",
+      "ratio": 0,
+      "out": 16842496
+    },
+    {
+      "theme": "highContrast",
+      "ratio": 0.25,
+      "out": 29359872
+    },
+    {
+      "theme": "highContrast",
+      "ratio": 0.5,
+      "out": 33538048
+    },
+    {
+      "theme": "highContrast",
+      "ratio": 0.75,
+      "out": 33513472
+    },
+    {
+      "theme": "highContrast",
+      "ratio": 1,
+      "out": 33488896
+    },
+    {
+      "theme": "light",
+      "ratio": 0,
+      "out": 17992255
+    },
+    {
+      "theme": "light",
+      "ratio": 0.25,
+      "out": 24814336
+    },
+    {
+      "theme": "light",
+      "ratio": 0.5,
+      "out": 27814400
+    },
+    {
+      "theme": "light",
+      "ratio": 0.75,
+      "out": 29507852
+    },
+    {
+      "theme": "light",
+      "ratio": 1,
+      "out": 29763624
+    }
+  ],
+  "seriesColor": [
+    {
+      "theme": "dark",
+      "index": 0,
+      "out": 22587135
+    },
+    {
+      "theme": "dark",
+      "index": 1,
+      "out": 23068551
+    },
+    {
+      "theme": "dark",
+      "index": 5,
+      "out": 33531479
+    },
+    {
+      "theme": "dark",
+      "index": 6,
+      "out": 22587135
+    },
+    {
+      "theme": "dark",
+      "index": 12,
+      "out": 22587135
+    },
+    {
+      "theme": "dark",
+      "index": -1,
+      "out": 33531479
+    },
+    {
+      "theme": "dracula",
+      "index": 0,
+      "out": 29201401
+    },
+    {
+      "theme": "dracula",
+      "index": 1,
+      "out": 22084219
+    },
+    {
+      "theme": "dracula",
+      "index": 5,
+      "out": 33536108
+    },
+    {
+      "theme": "dracula",
+      "index": 6,
+      "out": 29201401
+    },
+    {
+      "theme": "dracula",
+      "index": 12,
+      "out": 29201401
+    },
+    {
+      "theme": "dracula",
+      "index": -1,
+      "out": 33536108
+    },
+    {
+      "theme": "nord",
+      "index": 0,
+      "out": 25739472
+    },
+    {
+      "theme": "nord",
+      "index": 1,
+      "out": 27508364
+    },
+    {
+      "theme": "nord",
+      "index": 5,
+      "out": 30443376
+    },
+    {
+      "theme": "nord",
+      "index": 6,
+      "out": 25739472
+    },
+    {
+      "theme": "nord",
+      "index": 12,
+      "out": 25739472
+    },
+    {
+      "theme": "nord",
+      "index": -1,
+      "out": 30443376
+    },
+    {
+      "theme": "tokyoNight",
+      "index": 0,
+      "out": 24814327
+    },
+    {
+      "theme": "tokyoNight",
+      "index": 1,
+      "out": 27184746
+    },
+    {
+      "theme": "tokyoNight",
+      "index": 5,
+      "out": 33529444
+    },
+    {
+      "theme": "tokyoNight",
+      "index": 6,
+      "out": 24814327
+    },
+    {
+      "theme": "tokyoNight",
+      "index": 12,
+      "out": 24814327
+    },
+    {
+      "theme": "tokyoNight",
+      "index": -1,
+      "out": 33529444
+    },
+    {
+      "theme": "gruvbox",
+      "index": 0,
+      "out": 25404824
+    },
+    {
+      "theme": "gruvbox",
+      "index": 1,
+      "out": 28883750
+    },
+    {
+      "theme": "gruvbox",
+      "index": 5,
+      "out": 33456153
+    },
+    {
+      "theme": "gruvbox",
+      "index": 6,
+      "out": 25404824
+    },
+    {
+      "theme": "gruvbox",
+      "index": 12,
+      "out": 25404824
+    },
+    {
+      "theme": "gruvbox",
+      "index": -1,
+      "out": 33456153
+    },
+    {
+      "theme": "matrix",
+      "index": 0,
+      "out": 16842561
+    },
+    {
+      "theme": "matrix",
+      "index": 1,
+      "out": 16828499
+    },
+    {
+      "theme": "matrix",
+      "index": 5,
+      "out": 19897924
+    },
+    {
+      "theme": "matrix",
+      "index": 6,
+      "out": 16842561
+    },
+    {
+      "theme": "matrix",
+      "index": 12,
+      "out": 16842561
+    },
+    {
+      "theme": "matrix",
+      "index": -1,
+      "out": 19897924
+    },
+    {
+      "theme": "monochrome",
+      "index": 0,
+      "out": 33554431
+    },
+    {
+      "theme": "monochrome",
+      "index": 1,
+      "out": 29935816
+    },
+    {
+      "theme": "monochrome",
+      "index": 5,
+      "out": 25198720
+    },
+    {
+      "theme": "monochrome",
+      "index": 6,
+      "out": 33554431
+    },
+    {
+      "theme": "monochrome",
+      "index": 12,
+      "out": 33554431
+    },
+    {
+      "theme": "monochrome",
+      "index": -1,
+      "out": 25198720
+    },
+    {
+      "theme": "highContrast",
+      "index": 0,
+      "out": 16842751
+    },
+    {
+      "theme": "highContrast",
+      "index": 1,
+      "out": 16842496
+    },
+    {
+      "theme": "highContrast",
+      "index": 5,
+      "out": 33521664
+    },
+    {
+      "theme": "highContrast",
+      "index": 6,
+      "out": 16842751
+    },
+    {
+      "theme": "highContrast",
+      "index": 12,
+      "out": 16842751
+    },
+    {
+      "theme": "highContrast",
+      "index": -1,
+      "out": 33521664
+    },
+    {
+      "theme": "light",
+      "index": 0,
+      "out": 17523408
+    },
+    {
+      "theme": "light",
+      "index": 1,
+      "out": 17992255
+    },
+    {
+      "theme": "light",
+      "index": 5,
+      "out": 29507852
+    },
+    {
+      "theme": "light",
+      "index": 6,
+      "out": 17523408
+    },
+    {
+      "theme": "light",
+      "index": 12,
+      "out": 17523408
+    },
+    {
+      "theme": "light",
+      "index": -1,
+      "out": 29507852
+    }
+  ]
+}

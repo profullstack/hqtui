@@ -1,0 +1,23 @@
+[package]
+name = "hqtui"
+version = "0.1.11"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT"
+description = "High Quality Terminal UI. btop-grade dashboards with a one-import API, dark by default, zero dependencies."
+homepage = "https://hqtui.com"
+repository = "https://github.com/profullstack/hqtui"
+readme = "README.md"
+keywords = ["tui", "terminal", "dashboard", "ansi", "braille"]
+categories = ["command-line-interface"]
+
+# Zero dependencies, including for tests. The conformance suite reads its
+# fixtures with the small JSON reader in `tests/support`, so `cargo test` needs
+# no network and no registry.
+[dependencies]
+
+[dev-dependencies]
+
+[lib]
+name = "hqtui"
+path = "src/lib.rs"
