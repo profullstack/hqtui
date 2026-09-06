@@ -8,8 +8,18 @@ This is a native port of [the TypeScript reference
 implementation](https://hqtui.com), not a binding. There is no Node in the
 picture at runtime or at build time.
 
+Not on crates.io yet — it ships in the monorepo. To run it now:
+
 ```bash
-cargo add hqtui
+git clone https://github.com/profullstack/hqtui
+cd hqtui/ports/rust && cargo run --example dashboard
+```
+
+To depend on it from your own crate, point at the checkout:
+
+```toml
+[dependencies]
+hqtui = { path = "../hqtui/ports/rust" }
 ```
 
 ## Hello, terminal

@@ -14,6 +14,18 @@ each port is idiomatic in its own language rather than a transliteration.
 Every one of them is standard-library only. A TUI library that drags in a
 dependency tree is a TUI library nobody reaches for from a small tool.
 
+None of them are on a package registry yet — crates.io, PyPI and the Zig
+package index have no `hqtui`, and publishing comes after this lands. Today you
+run them from a checkout, which is what every command below assumes:
+
+```bash
+git clone https://github.com/profullstack/hqtui && cd hqtui
+```
+
+The exception is Go, which needs no registry: the module path carries its
+subdirectory, so `go get github.com/profullstack/hqtui/ports/go` resolves once
+this is on `main`.
+
 [TARGETS.md](TARGETS.md) is the scored list of which language gets a port next,
 and why — speed and community, written down rather than argued each time. C is
 next, because it is the FFI floor for every language that can call C.

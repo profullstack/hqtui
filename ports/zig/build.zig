@@ -19,7 +19,8 @@ pub fn build(b: *std.Build) void {
     const tests = b.addTest(.{ .root_module = hqtui });
     tests.root_module.addOptions("build_options", options);
     const run_tests = b.addRunArtifact(tests);
-    b.step("test", "Run the conformance suite").dependOn(&run_tests.step);
+    const test_step = b.step("test", "Run the conformance suite and dashboard regression tests");
+    test_step.dependOn(&run_tests.step);
 
     const demo = b.addExecutable(.{
         .name = "hqtui-demo-zig",
@@ -54,6 +55,11 @@ pub fn build(b: *std.Build) void {
             }),
         });
         b.installArtifact(exe);
+        if (std.mem.eql(u8, name, "dashboard")) {
+            const dashboard_tests = b.addTest(.{ .root_module = exe.root_module });
+            const run_dashboard_tests = b.addRunArtifact(dashboard_tests);
+            test_step.dependOn(&run_dashboard_tests.step);
+        }
         const run = b.addRunArtifact(exe);
         run.step.dependOn(b.getInstallStep());
         if (b.args) |args| run.addArgs(args);

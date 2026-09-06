@@ -8,8 +8,17 @@ This is a native port of [the TypeScript reference
 implementation](https://hqtui.com), not a binding. There is no Node in the
 picture at runtime or at install time.
 
+Not on PyPI yet — it ships in the monorepo. To run it now:
+
 ```bash
-pip install hqtui
+git clone https://github.com/profullstack/hqtui
+cd hqtui/ports/python && python examples/dashboard.py
+```
+
+To use it from your own project, install the checkout in editable mode:
+
+```bash
+pip install -e /path/to/hqtui/ports/python
 ```
 
 ## Hello, terminal

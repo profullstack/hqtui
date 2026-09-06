@@ -1,7 +1,7 @@
 // The smallest real app: `go run ./examples/hello`. Press q to quit.
 package main
 
-import "github.com/profullstack/hqtui/ports/go"
+import hqtui "github.com/profullstack/hqtui/ports/go"
 
 func main() {
 	app := hqtui.NewApp(hqtui.AppOptions{})

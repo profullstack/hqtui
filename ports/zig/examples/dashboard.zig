@@ -73,7 +73,8 @@ const State = struct {
             .rows = &.{.{ .fr = 1 }},
             .layout = .{ .gap = 1 },
         }, GridBody.with(self, cells));
-        // These items must survive until the deferred frame is drawn.
+        // Drawing happens after view returns; a runtime array literal would
+        // leave the status bar pointing into this function's expired stack.
         const right = try ui.ctx.allocator.alloc(hqtui.widgets.StatusItem, 1);
         right[0] = .{ .label = self.size };
         try ui.statusBar(.{
@@ -145,6 +146,15 @@ const State = struct {
         }, "procs");
     }
 };
+
+test "dashboard retains dynamic status items until the frame is drawn" {
+    var state: State = .{ .size = "100x30" };
+    state.tick();
+    var screen = try hqtui.renderToScreen(std.testing.allocator, 100, 30, "dark", Body.with(&state, State.view));
+    defer screen.deinit();
+    try std.testing.expect(screen.contains("100x30"));
+    try std.testing.expect(screen.contains("Processes"));
+}
 
 pub fn main(init: std.process.Init) !void {
     var app = try hqtui.App.init(init.gpa, .{

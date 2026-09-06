@@ -8,13 +8,18 @@ This is a native port of [the TypeScript reference
 implementation](https://hqtui.com), not a binding. There is no Node in the
 picture at runtime or at build time.
 
-Requires Zig 0.16.
+Requires Zig 0.16. Not in any package index yet — it ships in the monorepo. To
+run it now:
 
-```zig
-// build.zig.zon
-.dependencies = .{
-    .hqtui = .{ .url = "https://github.com/profullstack/hqtui/archive/<ref>.tar.gz", .hash = "..." },
-},
+```bash
+git clone https://github.com/profullstack/hqtui
+cd hqtui/ports/zig && zig build run-dashboard
+```
+
+To depend on it from your own build, fetch the checkout:
+
+```bash
+zig fetch --save=hqtui /path/to/hqtui/ports/zig
 ```
 
 ## Hello, terminal
