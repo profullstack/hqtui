@@ -15,14 +15,19 @@
 //! the same cells, the same colors and the same escape bytes in both.
 
 pub const ansi = @import("ansi.zig");
+pub const app = @import("app.zig");
 pub const buffer = @import("buffer.zig");
 pub const capabilities = @import("capabilities.zig");
 pub const color = @import("color.zig");
 pub const diff = @import("diff.zig");
 pub const graphics = @import("graphics.zig");
+pub const input = @import("input.zig");
 pub const layout = @import("layout.zig");
 pub const surface = @import("surface.zig");
+pub const terminal = @import("terminal.zig");
+pub const testing = @import("testing.zig");
 pub const theme = @import("theme.zig");
+pub const ui = @import("ui.zig");
 pub const unicode = @import("unicode.zig");
 pub const widgets = @import("widgets.zig");
 
@@ -60,8 +65,36 @@ pub const resolveTheme = theme.resolve;
 pub const BrailleCanvas = graphics.BrailleCanvas;
 pub const FillMode = graphics.FillMode;
 
+pub const InputEvent = input.InputEvent;
+pub const InputParser = input.InputParser;
+pub const KeyEvent = input.KeyEvent;
+pub const MouseEvent = input.MouseEvent;
+pub const matchKey = input.matchKey;
+
+pub const Body = ui.Body;
+pub const Container = ui.Container;
+pub const Grid = ui.Grid;
+pub const GridBody = ui.GridBody;
+pub const HitRegion = ui.HitRegion;
+pub const Interaction = ui.Interaction;
+pub const PanelOptions = ui.PanelOptions;
+pub const Span = ui.Span;
+
+pub const App = app.App;
+pub const AppOptions = app.Options;
+pub const FrameStats = app.FrameStats;
+
+pub const Terminal = terminal.Terminal;
+pub const TerminalOptions = terminal.Options;
+pub const TerminalSize = terminal.TerminalSize;
+
+pub const RenderedScreen = testing.RenderedScreen;
+pub const renderToScreen = testing.renderToScreen;
+
 test {
     @import("std").testing.refAllDecls(@This());
     _ = @import("conformance.zig");
     _ = @import("conformance_widgets.zig");
+    _ = @import("conformance_screen.zig");
+    _ = @import("conformance_input.zig");
 }

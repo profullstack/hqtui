@@ -106,6 +106,21 @@ pub fn strOf(v: Json) []const u8 {
     };
 }
 
+pub fn i64Of(v: Json) i64 {
+    return int(v);
+}
+
+pub fn boolOf(v: Json) bool {
+    return boolean(v);
+}
+
+/// Whether a key is present at all — not the same as its value being falsy.
+/// `JSON.stringify` drops an undefined field entirely, so the input fixtures
+/// distinguish "no char" from "char is empty" only by presence.
+pub fn hasOf(v: Json, key: []const u8) bool {
+    return present(v, key);
+}
+
 fn boolean(v: Json) bool {
     return switch (v) {
         .bool => |b| b,

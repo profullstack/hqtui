@@ -211,8 +211,20 @@ packages/hqtui   the library
 apps/demo        the reference dashboard (real + simulated data)
 apps/web         hqtui.com
 examples/        small, focused programs
+ports/           native ports: Rust, Go, Python, Zig
 docs/            the original PRD
 ```
+
+## Other languages
+
+hqtui exists natively in [Rust](ports/rust/), [Go](ports/go/),
+[Python](ports/python/) and [Zig](ports/zig/) — real ports, not bindings, each
+with no dependencies beyond its standard library. They stay honest against this
+implementation through a shared corpus of golden fixtures: the same widget
+arguments must produce the same cells, the same colors and the same escape
+bytes. [ports/README.md](ports/README.md) has the details, and
+[ports/TARGETS.md](ports/TARGETS.md) is the scored list of which language is
+next.
 
 ## Discussions
 

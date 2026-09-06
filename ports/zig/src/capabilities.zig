@@ -79,16 +79,33 @@ pub const Env = struct {
         }.f,
     };
 
-    /// The real process environment, read through `std.posix.getenv`.
-    pub const process: Env = .{
-        .context = undefined,
-        .lookup = struct {
-            fn f(_: *const anyopaque, key: []const u8) ?[]const u8 {
-                if (builtin.os.tag == .windows or builtin.os.tag == .wasi) return null;
-                return std.posix.getenv(key);
-            }
-        }.f,
-    };
+    /// The real process environment.
+    ///
+    /// Zig 0.16 has no ambient `getenv`: the environment reaches a program
+    /// through `main`'s `std.process.Init` parameter and nowhere else. That is
+    /// why this takes a pointer rather than reading a global, and why
+    /// `Terminal` asks for one — a library that guessed here would silently
+    /// detect nothing and degrade every plot to ASCII.
+    ///
+    /// ```zig
+    /// pub fn main(init: std.process.Init) !void {
+    ///     var app = try App.init(gpa, .{
+    ///         .terminal = .{ .env = .fromEnviron(&init.minimal.environ) },
+    ///     });
+    /// }
+    /// ```
+    pub fn fromEnviron(environ: *const std.process.Environ) Env {
+        return .{
+            .context = @ptrCast(environ),
+            .lookup = struct {
+                fn f(context: *const anyopaque, key: []const u8) ?[]const u8 {
+                    if (builtin.os.tag == .windows) return null;
+                    const e: *const std.process.Environ = @ptrCast(@alignCast(context));
+                    return e.getPosix(key);
+                }
+            }.f,
+        };
+    }
 };
 
 const truecolor_programs = [_][]const u8{

@@ -293,7 +293,7 @@ pub const FrameBuffer = struct {
             if (y > 0) try out.append(allocator, '\n');
             const row = try self.rowTextAlloc(allocator, y);
             defer allocator.free(row);
-            try out.appendSlice(allocator, std.mem.trimRight(u8, row, " "));
+            try out.appendSlice(allocator, std.mem.trimEnd(u8, row, " "));
         }
         return out.toOwnedSlice(allocator);
     }
