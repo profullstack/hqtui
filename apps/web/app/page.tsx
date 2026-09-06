@@ -136,7 +136,7 @@ export default async function Home() {
               High Quality Terminal UI for TypeScript, Rust, Go, Python and Zig
             </p>
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
-              5 languages · MIT · zero runtime dependencies
+              v0.1.11 · 5 languages · MIT
             </Badge>
             <p className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
               Terminal dashboards that
