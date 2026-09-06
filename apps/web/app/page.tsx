@@ -260,8 +260,14 @@ export default async function Home() {
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-white/60">{language.description}</p>
               <CommandBlock className="mt-4" command={language.demo} label={language.name} />
+              {/* These commands launch the interactive demo, which refuses to
+                  start without a terminal — "An interactive terminal is
+                  required." The headless claim belonged to the older
+                  `screenshot` examples this replaced. */}
               <p className="mt-2 text-xs text-white/40">
-                {language.needsCheckout ? "Renders a dashboard — no TTY needed." : "No install, no clone."}
+                {language.needsCheckout
+                  ? "Interactive — press q to quit, or add --snapshot for headless output."
+                  : "No install, no clone."}
               </p>
               <Link
                 href={language.href}
