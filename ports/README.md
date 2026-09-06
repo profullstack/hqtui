@@ -1,5 +1,9 @@
 # hqtui, in other languages
 
+C and C++ are now being implemented with one shared native C rendering core and
+a thin C++17 ownership API. They are **not complete supported ports yet**. See
+[C](c/README.md), [C++](cpp/README.md), and the [acceptance checklist](c/STATUS.md).
+
 Native ports of [the TypeScript reference implementation](https://hqtui.com).
 Not bindings: there is no Node in the picture at runtime or at build time, and
 each port is idiomatic in its own language rather than a transliteration.

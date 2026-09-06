@@ -1,0 +1,11 @@
+prefix=${pcfiledir}/@HQTUI_PC_PREFIX_RELATIVE@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: hqtui
+Description: Native C terminal rendering core (experimental)
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lhqtui
+Libs.private: -lm
+Cflags: -I${includedir}
