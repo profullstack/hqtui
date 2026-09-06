@@ -1,4 +1,3 @@
-// The documented dashboard launches the full native demo, not the mini example.
 package main
 
 import (

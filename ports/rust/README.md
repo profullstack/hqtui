@@ -1,7 +1,8 @@
 # hqtui — Rust
 
 High Quality Terminal UI for Rust. btop-grade dashboards with a one-import API,
-dark by default, **zero dependencies** — not even for the tests.
+dark by default, **zero runtime dependencies**. The full dashboard example
+uses `serde_json` for telemetry and its TypeScript comparison fixtures.
 
 This is a native port of [the TypeScript reference
 implementation](https://hqtui.com), not a binding. There is no Node in the
@@ -74,8 +75,26 @@ Run the examples to see it working:
 
 ```bash
 cargo run --example hello        # the smallest app
-cargo run --example dashboard    # a live dashboard, mouse and keyboard
+cargo run --example dashboard    # full native ten-screen hqtui-demo
+cargo run --example dashboard -- --sim  # generated sample telemetry
+cargo run --example dashboard-mini     # the small library example
 cargo run --example screenshot   # renders to stdout, no TTY needed
+```
+
+The dashboard command runs the same Rust source as the standalone demo crate
+in `demo/`; it does not launch JavaScript. From the directory containing your
+checkout, mise users can run:
+
+```bash
+(cd hqtui/ports/rust && mise exec rust@1.97.1 -- cargo run --example dashboard)
+```
+
+Use `1`–`9` / `0` or Tab for screens, F2 for themes, F3 for the process filter,
+F6 for sorting, Ctrl+K for the palette, Space to pause, and q to quit.
+For a deterministic, non-interactive preview:
+
+```bash
+cargo run --example dashboard -- --snapshot --width 168 --height 50
 ```
 
 ## Testing without a terminal

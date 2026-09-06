@@ -9,7 +9,7 @@ implementation](https://hqtui.com), not a binding. There is no Node in the
 picture at runtime or at build time.
 
 ```bash
-go get github.com/profullstack/hqtui
+go get github.com/profullstack/hqtui/ports/go
 ```
 
 ## Hello, terminal
@@ -17,7 +17,7 @@ go get github.com/profullstack/hqtui
 ```go
 package main
 
-import "github.com/profullstack/hqtui"
+import "github.com/profullstack/hqtui/ports/go"
 
 func main() {
 	app := hqtui.NewApp(hqtui.AppOptions{})
@@ -68,7 +68,9 @@ Run the examples to see it working:
 
 ```bash
 go run ./examples/hello        # the smallest app
-go run ./examples/dashboard    # a live dashboard, mouse and keyboard
+go run ./examples/dashboard    # full native ten-screen demo
+go run ./examples/dashboard --sim  # generated sample telemetry
+go run ./examples/dashboard-mini   # small library example
 go run ./examples/screenshot   # renders to stdout, no TTY needed
 ```
 

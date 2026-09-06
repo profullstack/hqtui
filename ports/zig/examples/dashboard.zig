@@ -73,13 +73,16 @@ const State = struct {
             .rows = &.{.{ .fr = 1 }},
             .layout = .{ .gap = 1 },
         }, GridBody.with(self, cells));
+        // These items must survive until the deferred frame is drawn.
+        const right = try ui.ctx.allocator.alloc(hqtui.widgets.StatusItem, 1);
+        right[0] = .{ .label = self.size };
         try ui.statusBar(.{
             .items = &.{
                 .{ .key = "q", .label = "quit" },
                 .{ .key = "↑↓", .label = "select" },
                 .{ .key = "←→", .label = "tab" },
             },
-            .right = &.{.{ .label = self.size }},
+            .right = right,
         });
     }
 

@@ -11,12 +11,20 @@ readme = "README.md"
 keywords = ["tui", "terminal", "dashboard", "ansi", "braille"]
 categories = ["command-line-interface"]
 
-# Zero dependencies, including for tests. The conformance suite reads its
-# fixtures with the small JSON reader in `tests/support`, so `cargo test` needs
-# no network and no registry.
+# The library has no runtime dependencies. The full dashboard example uses
+# serde_json for telemetry and its shared TypeScript comparison fixtures.
 [dependencies]
 
 [dev-dependencies]
+serde_json = "1"
+
+[[example]]
+name = "dashboard"
+path = "demo/src/main.rs"
+
+[[example]]
+name = "dashboard-mini"
+path = "examples/dashboard.rs"
 
 [lib]
 name = "hqtui"
