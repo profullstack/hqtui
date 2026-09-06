@@ -15,11 +15,38 @@ reproducible.
 
 ## Run it
 
-```bash
-bunx @profullstack/hqtui-demo          # your real machine
-bunx @profullstack/hqtui-demo --sim    # deterministic simulation
+To automatically fetch **latest main**, build it and run it on every invocation:
 
-npx @profullstack/hqtui-demo           # Node 22.6+ works too
+```sh
+# Vanilla — uses your installed toolchain (Bun for TypeScript)
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system typescript
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system rust
+
+# Mise — installs/uses the selected pinned toolchain
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise typescript
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise rust
+```
+
+Replace the language with `go`, `python` or `zig` for the other native demos.
+Append `--sim` directly; native headless previews use `--snapshot`. Git and curl
+are required. Review the [launcher](https://hqtui.com/demo.sh) before executing it.
+
+The launcher prints the exact commit, fetches before every run, caches sources
+and optimized builds under `$XDG_CACHE_HOME/hqtui-demo` (default
+`~/.cache/hqtui-demo`), and never modifies your own checkout. A failed update
+does not silently run an old copy. Set `HQTUI_DEMO_CACHE` to a dedicated absolute
+directory to choose another cache. Old revisions are retained so running demos
+are not disrupted. `--check` before the language prints the fetched commit without
+building or entering a terminal. First builds are slower; unchanged revisions
+reuse completed builds. C/C++ demos are not available yet.
+
+For the latest **published npm release** instead of latest source:
+
+```bash
+bunx @profullstack/hqtui-demo@latest          # your real machine
+bunx @profullstack/hqtui-demo@latest --sim    # deterministic simulation
+
+npx --yes @profullstack/hqtui-demo@latest     # Node 22.6+ works too
 ```
 
 ## Options

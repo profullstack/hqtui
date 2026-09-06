@@ -9,24 +9,44 @@ zig = "0.16.0"
 
 [tasks."demo:typescript"]
 description = "TypeScript reference demo (Bun)"
-run = "bun apps/demo/src/main.ts"
+run = "sh apps/web/public/demo.sh --mise typescript"
 
 [tasks."demo:python"]
 description = "Native Python reference demo"
-dir = "{{config_root}}/ports/python"
-run = "python -m examples.dashboard"
+run = "sh apps/web/public/demo.sh --mise python"
 
 [tasks."demo:go"]
 description = "Native Go reference demo"
-dir = "{{config_root}}/ports/go"
-run = "go run ./examples/dashboard"
+run = "sh apps/web/public/demo.sh --mise go"
 
 [tasks."demo:rust"]
 description = "Native Rust reference demo"
-run = "cargo run --manifest-path ports/rust/Cargo.toml --example dashboard --"
+run = "sh apps/web/public/demo.sh --mise rust"
 
 [tasks."demo:zig"]
 description = "Native Zig reference demo"
+run = "sh apps/web/public/demo.sh --mise zig"
+
+[tasks."demo-local:typescript"]
+description = "Run this checkout's TypeScript demo without updating"
+run = "bun apps/demo/src/main.ts"
+
+[tasks."demo-local:rust"]
+description = "Run this checkout's Rust demo without updating"
+run = "cargo run --manifest-path ports/rust/Cargo.toml --example dashboard --"
+
+[tasks."demo-local:go"]
+description = "Run this checkout's Go demo without updating"
+dir = "{{config_root}}/ports/go"
+run = "go run ./examples/dashboard"
+
+[tasks."demo-local:python"]
+description = "Run this checkout's Python demo without updating"
+dir = "{{config_root}}/ports/python"
+run = "python -m examples.dashboard"
+
+[tasks."demo-local:zig"]
+description = "Run this checkout's Zig demo without updating"
 dir = "{{config_root}}/ports/zig"
 run = "zig build run-dashboard --"
 

@@ -14,7 +14,7 @@ import { ThemeGallery, type ThemeCard } from "@/components/site/theme-gallery";
 
 import { recordView, themeVotes, totalViews } from "@/lib/db";
 import { themes } from "@profullstack/hqtui";
-import { CLONE, LANGUAGES } from "@/lib/languages";
+import { LANGUAGES } from "@/lib/languages";
 import { CommandBlock } from "@/components/site/command";
 
 export const dynamic = "force-dynamic";
@@ -48,8 +48,8 @@ const DASHBOARD = `app.render(({ ui }) => {
   });
 });`;
 
-/** The reference dashboard, straight from npm. No clone, no build step. */
-const DEMO = "bunx @profullstack/hqtui-demo";
+/** Fetch current main into a private cache, build, then run. */
+const DEMO = LANGUAGES[0].demo;
 
 const TESTING = `import { renderToScreen } from "@profullstack/hqtui";
 
@@ -235,10 +235,10 @@ export default async function Home() {
         </p>
         <div className="mt-6 max-w-2xl">
           <p className="text-sm text-white/50">
-            The four native ports are not on a package registry yet, so they run from a checkout.
-            Clone once, then pick a language below.
+            Every command checks latest main, builds in a private cache, and runs it.
+            No manual clone or pull. Vanilla uses your installed toolchain; mise uses
+            the pinned toolchain. Git and curl are required; the first build takes longer.
           </p>
-          <CommandBlock className="mt-2" command={CLONE} label="git clone" />
         </div>
 
         {/* A card is no longer one big link: it now contains a copy button, and
@@ -260,14 +260,15 @@ export default async function Home() {
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-white/60">{language.description}</p>
               <CommandBlock className="mt-4" command={language.demo} label={language.name} />
+              <CommandBlock className="mt-3" command={language.miseDemo} label={`${language.name} · mise`} />
               {/* These commands launch the interactive demo, which refuses to
                   start without a terminal — "An interactive terminal is
                   required." The headless claim belonged to the older
                   `screenshot` examples this replaced. */}
               <p className="mt-2 text-xs text-white/40">
-                {language.needsCheckout
+                {language.native
                   ? "Interactive — press q to quit, or add --snapshot for headless output."
-                  : "No install, no clone."}
+                  : "Latest source, built with Bun. Interactive — press q to quit."}
               </p>
               <Link
                 href={language.href}

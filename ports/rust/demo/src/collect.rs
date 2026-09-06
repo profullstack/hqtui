@@ -233,7 +233,6 @@ impl Collector {
         self.processes(dt);
         self.network(dt);
         self.disks(dt);
-        self.sensors();
         if self
             .slow
             .map(|t| now.duration_since(t).as_secs() >= 5)
@@ -242,6 +241,7 @@ impl Collector {
             self.slow = Some(now);
             self.slow_collect()
         }
+        self.sensors();
         self.missing.extend(self.slow_missing.clone());
     }
     fn processes(&mut self, dt: f64) {
@@ -443,37 +443,31 @@ impl Collector {
         self.sample["disks"] = json!(disks)
     }
     fn sensors(&mut self) {
-        let mut temps = vec![];
-        if let Ok(dirs) = std::fs::read_dir("/sys/class/hwmon") {
-            for dir in dirs.flatten() {
-                if let Ok(entries) = std::fs::read_dir(dir.path()) {
-                    for entry in entries.flatten() {
-                        let name = entry.file_name().to_string_lossy().into_owned();
-                        if !name.starts_with("temp") || !name.ends_with("_input") {
-                            continue;
-                        }
-                        let raw = read(entry.path());
-                        if raw.trim().is_empty() {
-                            continue;
-                        }
-                        let value = number(raw.trim()) / 1000.;
-                        if !(-50. ..=200.).contains(&value) {
-                            continue;
-                        }
-                        let label = read(
-                            entry
-                                .path()
-                                .with_file_name(name.replace("_input", "_label")),
-                        );
-                        temps.push(json!({"label":if label.trim().is_empty(){&name}else{label.trim()},"value":value,"max":100}));
-                    }
-                }
-            }
+        let readings = crate::sensors::collect(
+            Path::new("/"),
+            &read("/proc/cpuinfo"),
+            &self.sample["telemetry"]["gpus"],
+            || command(&["sensors", "-j"]),
+        );
+        if readings.temperatures.is_empty() {
+            self.missing.push("temperatures".into());
         }
-        self.sample["temperatures"] = json!(temps)
+        if readings.hardware_count == 0 {
+            self.missing.push("fans/voltage/power".into());
+        }
+        self.sample["temperatures"] = json!(readings.temperatures);
+        self.sample["sensors"] = json!(readings.sensors);
+        self.sample["telemetry"]["power"] = readings.power;
     }
     fn slow_collect(&mut self) {
         let mut missing = vec![];
+        self.sample["telemetry"]["gpus"] = crate::sensors::parse_gpus(&command(&[
+            "nvidia-smi", "--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw",
+            "--format=csv,noheader,nounits",
+        ]).unwrap_or_default());
+        if array(&self.sample["telemetry"]["gpus"]).is_empty() {
+            missing.push("GPU telemetry".into());
+        }
         let mut run = |label: &str, args: &[&str]| {
             command(args).unwrap_or_else(|| {
                 missing.push(label.to_owned());
@@ -554,7 +548,6 @@ impl Collector {
                 "login history",
                 "SSH authentication log",
                 "HTTP access log",
-                "GPU/power",
             ]
             .map(str::to_owned),
         );

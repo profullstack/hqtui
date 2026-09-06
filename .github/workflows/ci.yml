@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4.3.0
+      - name: Verify update-and-run launcher isolation and fresh revisions
+        run: python apps/demo/scripts/test-updater.py
       - run: mise run test:rust
       - run: mise run test:go
       - run: mise run test:python

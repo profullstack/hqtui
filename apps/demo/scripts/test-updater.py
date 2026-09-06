@@ -1,0 +1,185 @@
+"""Hermetic update-and-run integration tests against real local Git revisions.
+
+Git's per-process URL rewrite maps the fixed official URL to a temporary fixture.
+No network, remote writes, installed packages, or caller checkouts are modified.
+"""
+import json
+import os
+from pathlib import Path
+import pty
+import select
+import signal
+import subprocess
+import tempfile
+import time
+import unittest
+
+ROOT = Path(__file__).resolve().parents[3]
+LAUNCHER = ROOT / "apps/web/public/demo.sh"
+
+class Updater(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="hqtui-updater-test-")
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.repo = self.root / "upstream"
+        self.repo.mkdir()
+        self.git("init", "-b", "main")
+        self.git("config", "user.name", "Updater Test")
+        self.git("config", "user.email", "test@example.invalid")
+        self.bin = self.root / "bin"
+        self.bin.mkdir()
+        self.env = {**os.environ, "HQTUI_DEMO_CACHE": str(self.root / "cache"),
+                    "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": f"url.{self.repo}.insteadOf",
+                    "GIT_CONFIG_VALUE_0": "https://github.com/profullstack/hqtui.git",
+                    "PATH": str(self.bin) + os.pathsep + os.environ["PATH"],
+                    "UPDATER_TEST_LOG": str(self.root / "tools.jsonl")}
+        self.first = self.commit("first")
+
+    def git(self, *args):
+        return subprocess.check_output(["git", *args], cwd=self.repo, stderr=subprocess.DEVNULL, text=True).strip()
+
+    def commit(self, label):
+        (self.repo / "mise.toml").write_text('[tools]\nbun = "1.4.0"\npython = "3.12.13"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\n')
+        (self.repo / ".gitignore").write_text('__pycache__/\n')
+        path = self.repo / "ports/python/examples"
+        path.mkdir(parents=True, exist_ok=True)
+        (path / "__init__.py").write_text("")
+        (path / "dashboard.py").write_text(
+            'import json, os, sys\n'
+            f'print(json.dumps({{"revision": {label!r}, "args": sys.argv[1:], "cwd": os.getcwd(), "tty": os.isatty(0)}}), flush=True)\n'
+            'if "--wait" in sys.argv: input()\n')
+        for language in ("rust", "go", "zig"):
+            (self.repo / "ports" / language).mkdir(exist_ok=True)
+            (self.repo / "ports" / language / "source").write_text(label)
+        self.git("add", ".")
+        self.git("commit", "-m", label)
+        return self.git("rev-parse", "HEAD")
+
+    def run_demo(self, *args, env=None, timeout=20):
+        return subprocess.run(["sh", str(LAUNCHER), *args], cwd=ROOT,
+                              env=env or self.env, capture_output=True, text=True, timeout=timeout)
+
+    def test_latest_revision_updates_without_touching_caller(self):
+        before = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT)
+        one = self.run_demo("--system", "python", "--snapshot", "literal argument", "$(not-a-command)")
+        self.assertEqual(one.returncode, 0, one.stderr)
+        self.assertEqual(json.loads(one.stdout)["revision"], "first")
+        self.assertEqual(json.loads(one.stdout)["args"][-2:], ["literal argument", "$(not-a-command)"])
+        second = self.commit("second")
+        two = self.run_demo("--system", "python", "--snapshot")
+        self.assertEqual(two.returncode, 0, two.stderr)
+        self.assertEqual(json.loads(two.stdout)["revision"], "second")
+        self.assertIn(second, two.stderr)
+        self.assertIn(second, json.loads(two.stdout)["cwd"])
+        self.assertNotEqual(self.first, second)
+        self.assertEqual(before, subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT))
+
+    def test_fetch_failure_never_launches_cached_source(self):
+        self.assertEqual(self.run_demo("--system", "python", "--snapshot").returncode, 0)
+        broken = {**self.env, "GIT_CONFIG_KEY_0": f"url.{self.root / 'missing'}.insteadOf"}
+        result = self.run_demo("--system", "python", "--snapshot", env=broken)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("no cached demo was launched", result.stderr)
+        self.assertEqual(result.stdout, "")
+
+    def test_modified_cache_is_preserved_and_rejected(self):
+        result = self.run_demo("--system", "python", "--snapshot")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        path = self.root / "cache/v1/revisions" / self.first / "ports/python/examples/dashboard.py"
+        path.write_text("# local edit\n")
+        result = self.run_demo("--system", "python", "--snapshot")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Cached source was modified", result.stderr)
+        self.assertEqual(path.read_text(), "# local edit\n")
+
+    def test_check_only_reports_fetched_commit(self):
+        result = self.run_demo("--system", "--check", "rust")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), self.first)
+        self.assertFalse((self.root / "cache/v1/revisions").exists())
+
+    def test_invalid_language_and_missing_terminal_fail_before_fetch(self):
+        for args in (("--system", "cpp"), ("--system", "python")):
+            result = self.run_demo(*args)
+            self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / "cache").exists())
+
+    def stub_compilers(self):
+        code = '''#!/usr/bin/env python3
+import json, os, pathlib, sys
+tool=pathlib.Path(sys.argv[0]).name
+args=sys.argv[1:]
+with open(os.environ["UPDATER_TEST_LOG"],"a") as log: log.write(json.dumps([tool,*args])+"\\n")
+if tool=="mise":
+    assert args[0:2]==["--no-config","exec"]
+    assert args[3]=="--"
+    os.execvp(args[4],args[4:])
+elif tool=="cargo":
+    assert args==["build","--release","--example","dashboard"]
+    output=pathlib.Path(os.environ["CARGO_TARGET_DIR"])/"release/examples/dashboard"
+elif tool=="go":
+    assert args[0:2]==["build","-o"] and args[3]=="./examples/dashboard"
+    output=pathlib.Path(args[2])
+elif tool=="zig":
+    assert args[0:3]==["build","-Doptimize=ReleaseFast","--prefix"]
+    output=pathlib.Path(args[3])/"bin/hqtui-demo-zig"
+else: raise AssertionError(tool)
+label=pathlib.Path("source").read_text()
+output.parent.mkdir(parents=True,exist_ok=True)
+output.write_text("#!/usr/bin/env python3\\nimport json,sys\\nprint(json.dumps(dict(revision="+repr(label)+",args=sys.argv[1:])))\\n")
+output.chmod(0o700)
+'''
+        for name in ("mise", "cargo", "go", "zig"):
+            path = self.bin / name
+            path.write_text(code)
+            path.chmod(0o700)
+
+    def test_vanilla_and_mise_build_latest_and_reuse_only_same_revision(self):
+        self.stub_compilers()
+        for manager in ("--system", "--mise"):
+            for language in ("rust", "go", "zig"):
+                result = self.run_demo(manager, language, "--snapshot", "argument with spaces")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads(result.stdout)["revision"], "first")
+                self.assertEqual(json.loads(result.stdout)["args"][-1], "argument with spaces")
+        log = [json.loads(line) for line in (self.root / "tools.jsonl").read_text().splitlines()]
+        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") for row in log), 6)
+        for language in ("rust", "go", "zig"):
+            self.assertEqual(self.run_demo("--mise", language, "--snapshot").returncode, 0)
+        self.commit("second")
+        for language in ("rust", "go", "zig"):
+            result = self.run_demo("--mise", language, "--snapshot")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["revision"], "second")
+        log = [json.loads(line) for line in (self.root / "tools.jsonl").read_text().splitlines()]
+        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") for row in log), 9)
+
+    @unittest.skipUnless(os.name == "posix", "requires a controlling PTY")
+    def test_pipe_launcher_reattaches_keyboard_and_releases_build_lock(self):
+        pid, master = pty.fork()
+        if pid == 0:
+            # Like curl | sh: the script arrives on a pipe, not stdin's TTY.
+            os.execvpe("sh", ["sh", "-c", 'cat "$1" | sh -s -- --system python --wait', "test", str(LAUNCHER)], self.env)
+        output = b""
+        done = False
+        deadline = time.monotonic() + 15
+        try:
+            while time.monotonic() < deadline:
+                if select.select([master], [], [], .1)[0]:
+                    try: output += os.read(master, 65536)
+                    except OSError: break
+                if b'"tty": true' in output:
+                    self.assertFalse((self.root / "cache/v1/update.lock").exists())
+                    os.write(master, b"q\n")
+                    done = True
+                    break
+            self.assertTrue(done, output.decode(errors="replace"))
+        finally:
+            if not done:
+                os.killpg(pid, signal.SIGTERM)
+            os.waitpid(pid, 0)
+            os.close(master)
+
+if __name__ == "__main__":
+    unittest.main()
