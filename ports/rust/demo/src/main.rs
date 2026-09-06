@@ -1,5 +1,6 @@
 mod collect;
 mod sensors;
+mod traffic;
 mod components;
 mod dashboard;
 mod model;

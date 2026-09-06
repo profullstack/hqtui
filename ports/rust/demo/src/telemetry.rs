@@ -387,6 +387,9 @@ pub fn services<'a>(ui: &mut Container<'a>, s: &'a State) {
     );
 }
 pub fn traffic<'a>(ui: &mut Container<'a>, s: &'a State) {
+    if s.real {
+        ui.label("Protocol/direction: port-based estimates; HTTP rate: estimated from log growth");
+    }
     let d = &s.sample["telemetry"];
     let net = &d["net"];
     let http = &d["http"];

@@ -56,6 +56,7 @@ func counterRate(now, previous, dt float64, known bool) float64 {
 }
 
 type collector struct {
+	http                 httpCollector
 	sample               object
 	previous             map[string]float64
 	cpu                  map[string][2]float64
@@ -183,11 +184,11 @@ func (c *collector) refresh() {
 	c.processes(dt)
 	c.network(dt)
 	c.disks(dt)
-	c.sensors()
 	if c.slow.IsZero() || now.Sub(c.slow) >= 5*time.Second {
 		c.slow = now
 		c.slowCollect()
 	}
+	c.sensors()
 	c.missing = append(c.missing, c.slowMissing...)
 }
 func (c *collector) processes(dt float64) {
@@ -257,6 +258,24 @@ func (c *collector) processes(dt float64) {
 	}
 	c.procs = current
 	c.sample["processes"] = rows
+	states := object{"total": float64(len(rows)), "running": 0., "sleeping": 0., "stopped": 0., "zombie": 0.}
+	for _, v := range rows {
+		key := ""
+		switch str(obj(v)["state"]) {
+		case "R":
+			key = "running"
+		case "S", "D":
+			key = "sleeping"
+		case "T", "t":
+			key = "stopped"
+		case "Z":
+			key = "zombie"
+		}
+		if key != "" {
+			states[key] = num(states[key]) + 1
+		}
+	}
+	obj(c.sample["telemetry"])["states"] = states
 	sys := obj(c.sample["system"])
 	sys["processCount"] = len(rows)
 	sys["threadCount"] = threads
@@ -326,7 +345,9 @@ func (c *collector) network(dt float64) {
 	net := obj(tele["net"])
 	for key := range net {
 		source := ""
-		if strings.HasPrefix(key, "tcp") || strings.HasPrefix(key, "udp") {
+		if key == "tcpEstablished" {
+			source = "TcpCurrEstab"
+		} else if strings.HasPrefix(key, "tcp") || strings.HasPrefix(key, "udp") {
 			source = strings.ToUpper(key[:1]) + key[1:]
 		} else if strings.HasPrefix(key, "icmp") {
 			source = "Icmp" + key[4:]
@@ -372,28 +393,26 @@ func (c *collector) disks(dt float64) {
 	c.sample["disks"] = disks
 }
 func (c *collector) sensors() {
-	temps := []any{}
-	paths, _ := filepath.Glob("/sys/class/hwmon/hwmon*/temp*_input")
-	for _, path := range paths {
-		raw := strings.TrimSpace(readFile(path))
-		if raw == "" {
-			continue
-		}
-		v := number(raw) / 1000
-		if v < -50 || v > 200 {
-			continue
-		}
-		label := strings.TrimSpace(readFile(strings.Replace(path, "_input", "_label", 1)))
-		if label == "" {
-			label = filepath.Base(path)
-		}
-		temps = append(temps, object{"label": label, "value": v, "max": 100.})
+	t := obj(c.sample["telemetry"])
+	r := collectSensors("/sys", readFile("/proc/cpuinfo"), arr(t["gpus"]), func() string { raw, _ := command("sensors", "-j"); return raw })
+	c.sample["temperatures"] = r.temperatures
+	c.sample["sensors"] = r.sensors
+	t["power"] = r.power
+	if len(r.temperatures) == 0 {
+		c.missing = append(c.missing, "temperatures")
 	}
-	c.sample["temperatures"] = temps
+	if r.hardwareCount == 0 {
+		c.missing = append(c.missing, "fans/voltage/power")
+	}
 }
 func (c *collector) slowCollect() {
 	t := obj(c.sample["telemetry"])
 	missing := []string{}
+	gpuRaw, _ := command("nvidia-smi", "--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw", "--format=csv,noheader,nounits")
+	t["gpus"] = parseGPUs(gpuRaw)
+	if len(arr(t["gpus"])) == 0 {
+		missing = append(missing, "GPU telemetry")
+	}
 	run := func(label string, args ...string) string {
 		out, ok := command(args...)
 		if !ok {
@@ -401,13 +420,7 @@ func (c *collector) slowCollect() {
 		}
 		return out
 	}
-	sessions := []any{}
-	for _, line := range strings.Split(run("sessions", "who"), "\n") {
-		f := strings.Fields(line)
-		if len(f) >= 4 {
-			sessions = append(sessions, object{"user": f[0], "tty": f[1], "loginAt": strings.Join(f[2:4], " "), "from": strings.Join(f[4:], " "), "idle": "—", "what": "—"})
-		}
-	}
+	sessions := trafficSessions(run("sessions", "who", "-u"))
 	t["sessions"] = sessions
 	push(t, "sessionHistory", float64(len(sessions)))
 	services := []any{}
@@ -429,7 +442,7 @@ func (c *collector) slowCollect() {
 		}
 		process := strings.Join(f[6:], " ")
 		connections = append(connections, object{"proto": f[0], "state": f[1], "local": f[4], "remote": f[5], "process": process})
-		if f[1] == "LISTEN" || f[1] == "UNCONN" {
+		if f[1] == "LISTEN" {
 			cut := strings.LastIndex(f[4], ":")
 			if cut >= 0 {
 				listeners = append(listeners, object{"proto": f[0], "address": f[4][:cut], "port": f[4][cut+1:], "process": process})
@@ -473,5 +486,6 @@ func (c *collector) slowCollect() {
 		}
 	}
 	t["filesystems"] = filesystems
-	c.slowMissing = append(missing, "connection direction/application protocols", "login history", "SSH authentication log", "HTTP access log", "GPU/power")
+	c.trafficCollect(&missing)
+	c.slowMissing = missing
 }

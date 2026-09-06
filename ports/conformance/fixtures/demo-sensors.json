@@ -1,0 +1,51 @@
+[
+  {
+    "name": "hwmon and legacy device paths",
+    "files": {
+      "sys/class/hwmon/hwmon0/name": "coretemp",
+      "sys/class/hwmon/hwmon0/temp1_input": "52000",
+      "sys/class/hwmon/hwmon0/temp1_label": "Package id 0",
+      "sys/class/hwmon/hwmon0/temp2_input": "900000",
+      "sys/class/hwmon/hwmon0/temp3_input": "NaN",
+      "sys/class/hwmon/hwmon1/name": "nct6775",
+      "sys/class/hwmon/hwmon1/fan1_input": "2140",
+      "sys/class/hwmon/hwmon1/fan1_label": "CPU Fan",
+      "sys/class/hwmon/hwmon1/fan2_input": "0",
+      "sys/class/hwmon/hwmon1/in0_input": "1104",
+      "sys/class/hwmon/hwmon1/in0_label": "Vcore",
+      "sys/class/hwmon/hwmon1/power1_average": "14300000",
+      "sys/class/hwmon/hwmon1/curr1_input": "2500",
+      "sys/class/hwmon/hwmon2/name": "legacy",
+      "sys/class/hwmon/hwmon2/device/temp1_input": "41000",
+      "sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "2900000"
+    },
+    "cpuinfo": "cpu MHz : 9000",
+    "temperatures": [52, 41],
+    "sensors": {"CPU Fan": "2140 RPM", "Vcore": "1.10 V", "nct6775 power1": "14.3 W", "nct6775 curr1": "2.50 A", "cpu0 clock": "2.90 GHz"},
+    "changes": {"sys/class/hwmon/hwmon1/fan1_input": "2500", "sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "3300000"},
+    "nextSensors": {"CPU Fan": "2500 RPM", "cpu0 clock": "3.30 GHz"}
+  },
+  {
+    "name": "VM clock fallback without fake hardware",
+    "files": {}, "cpuinfo": "cpu MHz : 2494.134\ncpu MHz : 2494.134\ncpu MHz : NaN",
+    "temperatures": [], "sensors": {"cpu0 clock": "2.49 GHz", "cpu1 clock": "2.49 GHz"},
+    "nextCpuinfo": "cpu MHz : 3200", "nextSensors": {"cpu0 clock": "3.20 GHz"}
+  },
+  {
+    "name": "thermal zone fallback",
+    "files": {"sys/class/thermal/thermal_zone0/temp": "44000", "sys/class/thermal/thermal_zone0/type": "x86_pkg_temp"},
+    "cpuinfo": "", "temperatures": [44], "sensors": {}
+  },
+  {
+    "name": "lm-sensors fallback",
+    "files": {}, "cpuinfo": "",
+    "lm": "{\"coretemp-isa-0000\":{\"Package id 0\":{\"temp1_input\":53},\"bad\":{\"temp2_input\":900}}}",
+    "temperatures": [53], "sensors": {}
+  },
+  {
+    "name": "battery and GPU, unknown values stay unavailable",
+    "files": {"sys/class/power_supply/BAT0/type": "Battery", "sys/class/power_supply/BAT0/capacity": "87", "sys/class/power_supply/BAT0/status": "Discharging", "sys/class/power_supply/BAT0/current_now": "2000000", "sys/class/power_supply/BAT0/voltage_now": "12000000", "sys/class/power_supply/AC/type": "Mains", "sys/class/power_supply/AC/online": "1"},
+    "cpuinfo": "", "gpus": "RTX, 25, 100, 1000, 55, 30\nOther, N/A, N/A, N/A, N/A, N/A",
+    "temperatures": [], "sensors": {"Battery": "87% (Discharging)", "Battery draw": "24.0 W", "RTX": "25% · 55°C", "Other": "unavailable · temperature unavailable"}
+  }
+]

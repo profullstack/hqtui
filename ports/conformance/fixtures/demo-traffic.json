@@ -1,0 +1,14 @@
+{
+  "who": "alice pts/0 2026-09-06 10:00 . 123 (203.0.113.4)\n",
+  "last": "alice pts/0 203.0.113.4 Sun Sep 6 10:00 still logged in\nreboot system boot 6.8 Sun Sep 6 09:00\nwtmp begins Sun Sep 6 09:00\n",
+  "lastb": "eve ssh:notty 203.0.113.8 Sun Sep 6 09:00 - 09:00 (00:00)\nbtmp begins Sun Sep 6 08:00\n",
+  "ssh": "2026-09-06T10:01:02+00:00 host sshd[1]: Accepted publickey for alice from 203.0.113.4 port 60000 ssh2\nSep 6 10:02:03 host sshd[2]: Failed password for invalid user eve from 203.0.113.8 port 60001 ssh2\nSep 6 10:03:04 host sshd[1]: Disconnected from authenticating user alice 203.0.113.4 port 60000\nSep 6 10:04:05 unrelated[1]: Accepted password for fake from nowhere\n",
+  "connections": [
+    {"proto":"tcp","state":"ESTAB","local":"10.0.0.1:22","remote":"203.0.113.4:60000"},
+    {"proto":"tcp","state":"ESTAB","local":"[::1]:50000","remote":"[2001:db8::1]:443"},
+    {"proto":"udp","state":"UNCONN","local":"10.0.0.1:50001","remote":"192.0.2.53:53"},
+    {"proto":"tcp","state":"LISTEN","local":"0.0.0.0:22","remote":"0.0.0.0:*"}
+  ],
+  "listeners": [{"port":"22","proto":"tcp","address":"0.0.0.0"}],
+  "http": "192.0.2.1 - - [06/Sep/2026:10:01:00 +0000] \"GET /health HTTP/1.1\" 200 12\n192.0.2.2 - - [06/Sep/2026:10:01:01 +0000] \"GET /missing?token=secret HTTP/1.1\" 404 4\n192.0.2.1 - - [06/Sep/2026:10:01:02 +0000] \"GET /chat HTTP/1.1\" 101 -\nmalformed line\n"
+}

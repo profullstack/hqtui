@@ -99,6 +99,11 @@ fn dashboard(ctx: *Context, p: *Container) !void {
             if (temps.len == 0) try p.label("No thermal sensors available");
             for (temps) |t| try p.meter(.{ .label = m.string(m.get(t, "label")), .value = m.num(m.get(t, "value")), .max = 100, .text = try p.fmt("{d:.0}°C", .{m.num(m.get(t, "value"))}) });
         },
+        8 => {
+            const readings = m.arr(val(s, "sensors"));
+            if (readings.len == 0) try p.label("No sensor readings available");
+            for (readings) |sensor| try p.label(try p.fmt("{s}: {s}", .{ m.string(m.get(sensor, "label")), m.string(m.get(sensor, "value")) }));
+        },
         else => try table(ctx, p, m.arr(val(s, "logs")), &.{ .{ "time", "Time" }, .{ "level", "Level" }, .{ "message", "Message" } }, 0),
     }
 }
@@ -123,6 +128,7 @@ fn telemetry(ctx: *Context, p: *Container) !void {
             0 => try table(ctx, p, m.arr(val(s, "telemetry.sessions")), &.{ .{ "user", "User" }, .{ "tty", "TTY" }, .{ "from", "From" }, .{ "idle", "Idle" }, .{ "what", "Command" } }, 0),
             1 => try table(ctx, p, m.arr(val(s, "telemetry.logins")), &.{ .{ "user", "User" }, .{ "tty", "TTY" }, .{ "from", "From" }, .{ "when", "When" }, .{ "status", "Status" } }, 0),
             2 => try table(ctx, p, m.arr(val(s, "telemetry.ssh")), &.{ .{ "time", "Time" }, .{ "action", "Action" }, .{ "user", "User" }, .{ "from", "From" } }, 0),
+            4 => try table(ctx, p, m.arr(val(s, "telemetry.failedLogins")), &.{ .{ "user", "User" }, .{ "tty", "TTY" }, .{ "from", "From" }, .{ "when", "When" }, .{ "status", "Status" } }, 0),
             else => try graph(p, val(s, "telemetry.sessionHistory"), "Sessions", null),
         },
         3 => switch (ctx.index) {
@@ -215,9 +221,9 @@ fn body(ctx: *Context, p: *Container) anyerror!void {
 }
 fn titles(s: *State, wide: bool) []const []const u8 {
     return switch (s.screen) {
-        0 => if (wide) &.{ "CPU Overview", "Processes", "Memory & Swap", "Network", "Disks", "System", "Temperatures & Sensors", "Logs" } else &.{ "CPU Overview", "Processes", "Memory & Swap", "Network" },
+        0 => if (wide) &.{ "CPU Overview", "Processes", "Memory & Swap", "Network", "Disks", "System", "Temperatures", "Logs", "Sensors" } else &.{ "CPU Overview", "Processes", "Memory & Swap", "Network" },
         1 => &.{ "Protocols", "TCP Segments", "Retransmits", "HTTP", "Remote Hosts", "SSH Authentication" },
-        2 => &.{ "Active Sessions", "Login History", "SSH Authentication", "Session History" },
+        2 => &.{ "Active Sessions", "Login History", "SSH Authentication", "Session History", "Failed Logins" },
         3 => &.{ "Interfaces", "Connections", "Listeners", "Connection History" },
         4 => &.{ "Services", "Filesystems", "Kernel", "Journal" },
         5 => &.{ "Controls", "Meters & Gauge", "Text & Badges" },
@@ -254,6 +260,7 @@ pub fn render(s: *State, ui: *Container) anyerror!void {
         try ui.label("Terminal too small; resize to 30×12");
         try ui.spacer(.fill);
     } else {
+        if (s.real and s.screen == 1) try ui.label("Protocol/direction: port-based estimates; HTTP rate: estimated from log growth");
         const names = titles(s, ui.width() >= 90 and ui.height() >= 50);
         const cols: usize = if (ui.width() < 45) 1 else if (s.screen == 9 and ui.width() >= 120) 4 else if (s.screen == 5 or s.screen == 9 or (s.screen == 1 and ui.width() >= 120) or (s.screen == 0 and ui.width() >= 160)) 3 else 2;
         const columns = try ui.ctx.allocator.alloc(h.layout.Size, cols);

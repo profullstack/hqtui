@@ -87,6 +87,15 @@ export default async function Docs() {
             Headless screenshots work without a TTY. Zig requires version 0.16.
           </P>
           <P>
+            Linux sensor panels now collect available hwmon temperatures, fans, voltage,
+            current and power, plus CPU clocks (including the /proc/cpuinfo fallback for VMs),
+            battery and NVIDIA readings. Traffic and Sessions read socket breakdowns,
+            login/failed-login history, SSH events and readable HTTP access logs.
+            Protocol/direction labels are port-based estimates; HTTP request rates are estimated
+            from log growth. No active sessions or unreadable logs can legitimately leave a
+            panel empty. These demos do not request elevated privileges or invent real-mode data.
+          </P>
+          <P>
             Vanilla commands require Git, curl and the language&apos;s installed toolchain
             (Bun for TypeScript). The <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>
             alternatives install/use only the selected pinned toolchain without loading project
