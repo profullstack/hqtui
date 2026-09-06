@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code, InstallCommand } from "@/components/site/code";
+import { Code } from "@/components/site/code";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
 import { ThemeGallery, type ThemeCard } from "@/components/site/theme-gallery";
 
 import { recordView, themeVotes, totalViews } from "@/lib/db";
 import { themes } from "@profullstack/hqtui";
-import { LANGUAGES } from "@/lib/languages";
+import { CLONE, LANGUAGES } from "@/lib/languages";
+import { CommandBlock } from "@/components/site/command";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,9 @@ const DASHBOARD = `app.render(({ ui }) => {
     });
   });
 });`;
+
+/** The reference dashboard, straight from npm. No clone, no build step. */
+const DEMO = "bunx @profullstack/hqtui-demo";
 
 const TESTING = `import { renderToScreen } from "@profullstack/hqtui";
 
@@ -160,9 +164,23 @@ export default async function Home() {
             <Link href="/blog/native-rust-go-python-zig" className="mt-5 inline-flex items-center gap-2 text-sm text-[#5fff87] underline underline-offset-4">
               New: native Rust, Go, Python and Zig ports <ArrowRight className="h-4 w-4 shrink-0" />
             </Link>
+            {/* The strongest thing this project can say is "run one command and
+                look at it", so that command leads — it used to sit in the last
+                section before the footer. */}
             <div className="mx-auto mt-7 flex max-w-md flex-col gap-3">
-              <InstallCommand command="bun add @profullstack/hqtui" />
-              <div className="flex justify-center gap-3">
+              <div className="text-left">
+                <p className="mb-1.5 text-center text-xs uppercase tracking-wide text-white/40">
+                  See it running, right now
+                </p>
+                <CommandBlock command={DEMO} label="demo" />
+              </div>
+              <div className="text-left">
+                <p className="mb-1.5 text-center text-xs uppercase tracking-wide text-white/40">
+                  Or add it to your project
+                </p>
+                <CommandBlock command="bun add @profullstack/hqtui" label="install" />
+              </div>
+              <div className="mt-1 flex justify-center gap-3">
                 <Button size="lg" render={<Link href="#languages" />}>
                   Choose your language <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
@@ -215,13 +233,43 @@ export default async function Home() {
           Each port includes the app loop, widgets, themes, input handling and a headless renderer.
           The four native ports need no JavaScript runtime and use only their standard libraries.
         </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-6 max-w-2xl">
+          <p className="text-sm text-white/50">
+            The four native ports are not on a package registry yet, so they run from a checkout.
+            Clone once, then pick a language below.
+          </p>
+          <CommandBlock className="mt-2" command={CLONE} label="git clone" />
+        </div>
+
+        {/* A card is no longer one big link: it now contains a copy button, and
+            a button nested inside an anchor is neither valid nor operable by
+            keyboard. The heading carries the link instead. */}
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {LANGUAGES.map((language) => (
-            <Link key={language.id} href={language.href} className="rounded-xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[#5fff87]/50 focus-visible:outline-2 focus-visible:outline-[#5fff87]">
-              <h3 className="font-mono text-lg font-bold text-[#5fff87]">{language.name}</h3>
+            <div
+              key={language.id}
+              className="flex flex-col rounded-xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[#5fff87]/50"
+            >
+              <h3 className="font-mono text-lg font-bold">
+                <Link
+                  href={language.href}
+                  className="text-[#5fff87] hover:underline focus-visible:outline-2 focus-visible:outline-[#5fff87]"
+                >
+                  {language.name}
+                </Link>
+              </h3>
               <p className="mt-3 text-sm leading-relaxed text-white/60">{language.description}</p>
-              <span className="mt-5 inline-flex items-center gap-1 text-sm">Get started <ArrowRight className="h-4 w-4" /></span>
-            </Link>
+              <CommandBlock className="mt-4" command={language.demo} label={language.name} />
+              <p className="mt-2 text-xs text-white/40">
+                {language.needsCheckout ? "Renders a dashboard — no TTY needed." : "No install, no clone."}
+              </p>
+              <Link
+                href={language.href}
+                className="mt-4 inline-flex items-center gap-1 text-sm text-white/70 hover:text-white"
+              >
+                Get started <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           ))}
         </div>
         <p className="mt-5 text-sm text-white/60">
@@ -411,8 +459,8 @@ export default async function Home() {
                 benchmarks are reproducible.
               </p>
               <div className="mt-6 space-y-3">
-                <InstallCommand command="bunx @profullstack/hqtui-demo" />
-                <InstallCommand command="bunx @profullstack/hqtui-demo --sim" />
+                <CommandBlock command={DEMO} label="demo" />
+                <CommandBlock command={`${DEMO} --sim`} label="simulated demo" />
               </div>
               <p className="mt-4 text-sm text-white/50">
                 Ten screens: dashboard, sessions, network, traffic, services, components,

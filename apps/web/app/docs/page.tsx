@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Code } from "@/components/site/code";
+import { CommandBlock } from "@/components/site/command";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
 
 import { recordView } from "@/lib/db";
 import { Separator } from "@/components/ui/separator";
-import { LANGUAGES, PORTS } from "@/lib/languages";
+import { CLONE, LANGUAGES, PORTS } from "@/lib/languages";
 
 export const dynamic = "force-dynamic";
 
@@ -79,12 +80,12 @@ export default async function Docs() {
             Zig requires version 0.16. Each port&apos;s README covers its API, interactive examples
             and platform-specific terminal behavior.
           </P>
-          <Code className="mt-4" code="git clone https://github.com/profullstack/hqtui.git" />
+          <CommandBlock className="mt-4" command={CLONE} label="git clone" />
           <div className="mt-6 grid gap-6 xl:grid-cols-2">
             {PORTS.map((port) => (
               <section key={port.id} id={port.id} className="min-w-0 scroll-mt-20">
                 <h3 className="text-xl font-bold">{port.name}</h3>
-                <Code className="mt-3" code={`cd hqtui/ports/${port.id}\n${port.command}`} />
+                <CommandBlock className="mt-3" command={port.demo} label={port.name} />
                 <a href={`https://github.com/profullstack/hqtui/tree/main/ports/${port.id}`} className="mt-3 inline-block text-sm text-[#5fff87] underline underline-offset-4">{port.name} API, examples and setup</a>
               </section>
             ))}
