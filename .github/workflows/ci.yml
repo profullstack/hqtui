@@ -14,6 +14,18 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  native:
+    name: Native demos and terminal cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4.3.0
+      - run: mise run test:rust
+      - run: mise run test:go
+      - run: mise run test:python
+      - run: mise run test:zig
+      - run: python apps/demo/scripts/check-native-commands.py
+
   python:
     name: Python examples and terminal cleanup
     runs-on: ubuntu-latest
