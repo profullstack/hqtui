@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Boxes, Cpu, Gauge, Keyboard, Palette, TerminalSquare, TestTube2, Zap } from "lucide-react";
 
@@ -131,7 +132,15 @@ export default async function Home() {
         <div className="dot-grid absolute inset-0 opacity-40" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="mb-3 font-mono text-7xl font-bold tracking-tight text-[#5fff87] sm:text-8xl">HQTUI</h1>
+            <Image
+              src="/logo.png"
+              alt="HQTUI — High Quality Terminal UI"
+              width={2172}
+              height={724}
+              priority
+              className="mx-auto mb-6 w-[22rem] max-w-full sm:w-[30rem]"
+            />
+            <h1 className="sr-only">HQTUI — High Quality Terminal UI for TypeScript, Rust, Go, Python and Zig</h1>
             <p className="mb-6 text-balance text-lg text-white/70">
               High Quality Terminal UI for TypeScript, Rust, Go, Python and Zig
             </p>
