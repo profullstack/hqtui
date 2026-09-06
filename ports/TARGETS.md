@@ -52,7 +52,8 @@ Community, 1-5, weighted toward *terminal* work rather than language size:
 | Python | 2 | 5 | textual, rich, urwid, blessed | **ported** |
 | TypeScript | 3 | 5 | ink, blessed, hqtui | reference |
 | Zig | 5 | 2 | libvaxis, and not much else | **ported** |
-| C | 5 | 4 | ncurses, notcurses, termbox2 | **next** |
+| C | 5 | 4 | ncurses, notcurses, termbox2 | **core in development** |
+| C++ | 5 | 4 | btop, FTXUI, ncurses | **C++ API over shared C core in development** |
 | C# / .NET | 4 | 4 | Spectre.Console, Terminal.Gui | candidate |
 | Swift | 4 | 3 | almost nothing serious | candidate |
 | Lua | 2 | 3 | via neovim, not standalone | candidate |

@@ -1,0 +1,58 @@
+name: C and C++ core
+on:
+  push:
+    branches: [main]
+    paths: ['ports/c/**', 'ports/cpp/**', 'ports/conformance/**', 'apps/benchmark/src/*native-core.ts', '.github/workflows/c-cpp.yml']
+  pull_request:
+    paths: ['ports/c/**', 'ports/cpp/**', 'ports/conformance/**', 'apps/benchmark/src/*native-core.ts', '.github/workflows/c-cpp.yml']
+permissions:
+  contents: read
+jobs:
+  core:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            shared: 'ON'
+          - os: macos-latest
+            shared: 'ON'
+          - os: windows-latest
+            shared: 'OFF'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Configure
+        run: cmake -S ports/cpp -B ports/cpp/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+      - run: cmake --build ports/cpp/build --config Release --parallel
+      - run: ctest --test-dir ports/cpp/build -C Release --output-on-failure
+      - name: Install without touching system directories
+        run: cmake --install ports/cpp/build --config Release --prefix "${{ runner.temp }}/hqtui-install"
+      - name: Build separate installed consumers
+        run: cmake -S ports/c/tests/consumer -B ports/c/build-consumer -DCMAKE_PREFIX_PATH="${{ runner.temp }}/hqtui-install"
+      - run: cmake --build ports/c/build-consumer --config Release --parallel
+      - run: ctest --test-dir ports/c/build-consumer -C Release --output-on-failure
+  safety-and-benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - name: Sanitizer build
+        run: cmake -S ports/cpp -B ports/cpp/build-sanitize -DCMAKE_BUILD_TYPE=Debug -DHQTUI_SANITIZE=ON
+      - run: cmake --build ports/cpp/build-sanitize --parallel
+      - run: ctest --test-dir ports/cpp/build-sanitize --output-on-failure
+      - name: Optimized build
+        run: cmake -S ports/cpp -B ports/cpp/build-release -DCMAKE_BUILD_TYPE=Release -DHQTUI_LTO=ON
+      - run: cmake --build ports/cpp/build-release --parallel
+      - name: Verify matched workload and capture timings
+        shell: bash
+        run: bun apps/benchmark/src/compare-native-core.ts 2000 3 | tee native-core-benchmark.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: native-core-benchmark
+          path: native-core-benchmark.json

@@ -52,3 +52,15 @@ run = "zig build test test-demo"
 [tasks."test:typescript"]
 description = "TypeScript reference and site tests"
 run = "bun test packages/hqtui/test apps/demo/test apps/web/test"
+
+[tasks."test:c"]
+description = "Experimental C core: build and conformance tests (requires CMake/C compiler)"
+run = ["cmake -S ports/c -B ports/c/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON", "cmake --build ports/c/build --parallel", "ctest --test-dir ports/c/build --output-on-failure"]
+
+[tasks."test:cpp"]
+description = "Experimental C++ API and shared C core tests (requires CMake/C++ compiler)"
+run = ["cmake -S ports/cpp -B ports/cpp/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON", "cmake --build ports/cpp/build --parallel", "ctest --test-dir ports/cpp/build --output-on-failure"]
+
+[tasks."bench:cpp"]
+description = "Matched C/C++/TypeScript core benchmarks; not full-demo FPS"
+run = ["cmake -S ports/cpp -B ports/cpp/build-release -DCMAKE_BUILD_TYPE=Release -DHQTUI_LTO=ON", "cmake --build ports/cpp/build-release --parallel", "bun apps/benchmark/src/compare-native-core.ts"]
