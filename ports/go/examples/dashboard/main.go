@@ -9,7 +9,7 @@ import (
 	"math"
 	"time"
 
-	ui "github.com/profullstack/hqtui"
+	ui "github.com/profullstack/hqtui/ports/go"
 )
 
 type process struct {
