@@ -7,24 +7,25 @@ const sans = Geist({ variable: "--font-sans", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
 
 const description =
-  "High Quality Terminal UI for TypeScript. btop-grade terminal dashboards with a one-import API, dark by default, zero runtime dependencies.";
+  "High Quality Terminal UI for TypeScript, Rust, Go, Python and Zig. Native implementations, dark themes, Braille graphics and zero runtime dependencies.";
+const title = "HQTUI — Terminal UI for TypeScript, Rust, Go, Python and Zig";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://hqtui.com"),
   title: {
-    default: "HQTUI — High Quality Terminal UI for TypeScript",
+    default: title,
     template: "%s — HQTUI",
   },
   description,
   keywords: [
     "tui", "terminal ui", "typescript", "bun", "node", "btop", "dashboard",
-    "ansi", "braille", "truecolor", "framebuffer", "cli",
+    "ansi", "braille", "truecolor", "framebuffer", "cli", "rust", "go", "python", "zig",
   ],
   authors: [{ name: "Profullstack, Inc.", url: "https://profullstack.com" }],
   openGraph: {
     type: "website",
     url: "https://hqtui.com",
-    title: "HQTUI — High Quality Terminal UI for TypeScript",
+    title,
     description,
     siteName: "HQTUI",
     images: [
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
   appleWebApp: { title: "HQTUI", statusBarStyle: "black-translucent" },
   twitter: {
     card: "summary_large_image",
-    title: "HQTUI — High Quality Terminal UI for TypeScript",
+    title,
     description,
     images: ["/shots/dashboard.png"],
   },
