@@ -1,5 +1,20 @@
 # hqtui — Go
 
+Fetch latest main and run the full demo (from any directory):
+
+```sh
+# Vanilla: installed toolchain
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system go
+# Mise: pinned toolchain
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise go
+```
+
+Both update a private cache before running, print the exact commit, and leave
+your checkout alone. Append `--sim` or `--snapshot` directly. Review the
+[launcher](https://hqtui.com/demo.sh) before executing it. In an updated checkout,
+`mise run demo:go` also updates; `mise run demo-local:go` and the
+direct example commands below run local source without updating.
+
 High Quality Terminal UI for Go. btop-grade dashboards with a one-import API,
 dark by default, **standard library only** — no `golang.org/x/...`, nothing in
 `go.sum`.

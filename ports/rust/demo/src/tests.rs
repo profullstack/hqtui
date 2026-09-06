@@ -171,6 +171,30 @@ fn real_is_never_seeded() {
     assert_eq!(s.sample["telemetry"]["sessions"], json!([]));
 }
 #[test]
+fn real_collector_wires_available_sensors_into_dashboard() {
+    if !cfg!(target_os = "linux") {
+        return;
+    }
+    let mut collector = collect::Collector::new();
+    collector.refresh();
+    let mut state = State::new(true, 42);
+    state.sample = collector.sample;
+    let frame = render_to_screen(200, 60, "dark", |ui| dashboard::render(ui, &state));
+    for sensor in model::array(&state.sample["sensors"]).iter().take(4) {
+        assert!(frame.contains(sensor["label"].as_str().unwrap()));
+        assert!(frame.contains(sensor["value"].as_str().unwrap()));
+    }
+    if collect::read("/proc/cpuinfo")
+        .lines()
+        .any(|l| l.starts_with("cpu MHz"))
+    {
+        assert!(
+            !model::array(&state.sample["sensors"]).is_empty(),
+            "CPU clocks are available but Sensors is empty"
+        );
+    }
+}
+#[test]
 fn counter_resets() {
     assert_eq!(collect::rate(100., Some(50.), 2.), 25.);
     assert_eq!(collect::rate(10., Some(50.), 1.), 0.);

@@ -77,7 +77,8 @@ export default async function Docs() {
           </div>
           <P>
             Rust, Go, Python and Zig are native ports with no JavaScript runtime requirement.
-            Clone once, then run the examples below from the directory containing the checkout.
+            Both the vanilla and mise commands below fetch latest main before running.
+            They work from any directory and never switch branches, reset, or pull in your checkout.
             All four dashboard commands now launch ten-screen native demos. Live metrics
             currently require Linux; use --sim for generated sample data on other platforms.
             Rust screen bodies pass 120 cell-by-cell TypeScript comparisons, but live-data
@@ -85,17 +86,18 @@ export default async function Docs() {
             need layout-parity work. Use 1–9 / 0 or Tab to change screens and q to quit.
             Headless screenshots work without a TTY. Zig requires version 0.16.
           </P>
-          <CommandBlock className="mt-4" command={CLONE} label="git clone" />
-          <P>Already cloned? Update main before running these commands; older checkouts launch the small examples.</P>
-          <CommandBlock className="mt-4" command="(cd hqtui && git switch main && git pull --ff-only)" label="Update checkout" />
           <P>
-            Already use <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>?
-            The alternatives below select pinned toolchains and install them if needed.
-            Trust this checkout&apos;s mise.toml when prompted. Choose either the regular
-            command or its mise alternative. From the repository root you can also run
-            mise trust, mise install, then mise run demo:rust -- --sim (or demo:go,
-            demo:python, demo:zig, demo:typescript). For direct commands below, append
-            --sim to the demo arguments; Cargo and Zig require a -- separator first.
+            Vanilla commands require Git, curl and the language&apos;s installed toolchain
+            (Bun for TypeScript). The <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>
+            alternatives install/use only the selected pinned toolchain without loading project
+            hooks. The launcher prints the full Git revision, reuses completed builds for that
+            revision, and fails rather than silently launching stale code if fetching fails.
+            First builds take longer. Append --sim or --snapshot directly; no extra Cargo/Zig separator is needed.
+          </P>
+          <P>
+            These commands execute our <a href="/demo.sh" className="text-[#5fff87] underline underline-offset-4">launcher script</a>;
+            review it first if needed. Sources/builds live under $XDG_CACHE_HOME/hqtui-demo
+            (or ~/.cache/hqtui-demo), not your project. Native interactive runs need Linux/macOS terminals.
           </P>
           <div className="mt-6 grid gap-6 xl:grid-cols-2">
             {PORTS.map((port) => (
@@ -111,6 +113,9 @@ export default async function Docs() {
               </section>
             ))}
           </div>
+          <P>For development only, you can still clone the monorepo and use its local commands; those do not auto-update:</P>
+          <CommandBlock className="mt-4" command={CLONE} label="Developer checkout (optional)" />
+          <P>In an updated checkout, mise run demo:rust also updates before running (likewise demo:go, demo:python, demo:zig and demo:typescript). Use demo-local:rust and the other demo-local tasks to work on your local edits without updating.</P>
           <P>
             <Link href="/blog/native-rust-go-python-zig" className="text-[#5fff87] underline underline-offset-4">Read how the ports share a conformance corpus</Link>.
             The API guide below describes the TypeScript reference implementation.

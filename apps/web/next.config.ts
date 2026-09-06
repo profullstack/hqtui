@@ -49,6 +49,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/demo.sh",
+        headers: [
+          { key: "Cache-Control", value: "no-store" },
+          { key: "Content-Type", value: "text/plain; charset=utf-8" },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },

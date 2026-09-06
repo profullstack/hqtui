@@ -1,5 +1,20 @@
 # hqtui — Python
 
+Fetch latest main and run the full demo (from any directory):
+
+```sh
+# Vanilla: installed toolchain
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system python
+# Mise: pinned toolchain
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise python
+```
+
+Both update a private cache before running, print the exact commit, and leave
+your checkout alone. Append `--sim` or `--snapshot` directly. Review the
+[launcher](https://hqtui.com/demo.sh) before executing it. In an updated checkout,
+`mise run demo:python` also updates; `mise run demo-local:python` and the
+direct example commands below run local source without updating.
+
 High Quality Terminal UI for Python. btop-grade dashboards with a one-import
 API, dark by default, **standard library only** — nothing in `dependencies`,
 nothing to pin.

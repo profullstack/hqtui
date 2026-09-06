@@ -8,14 +8,18 @@ export type Language = {
   /** Interactive ten-screen demo. Native demos default to live Linux metrics. */
   interactiveDemo: string;
   snapshotDemo?: string;
-  /** Same interactive example with a pinned mise-managed toolchain. */
+  /** Same latest-source demo with a pinned mise-managed toolchain. */
   miseDemo: string;
-  /** Whether `demo` assumes {@link CLONE} has been run first. */
-  needsCheckout: boolean;
+  native: boolean;
 };
 
-/** The four native ports run from a checkout; nothing is published yet. */
+/** Optional developer checkout; public demo commands do not require it. */
 export const CLONE = "git clone https://github.com/profullstack/hqtui";
+export const LAUNCHER = "https://hqtui.com/demo.sh";
+export function latestDemo(language: string, mise = false): string {
+  if (!["typescript", "rust", "go", "python", "zig"].includes(language)) throw new Error("Unsupported demo language");
+  return `curl -fsSL ${LAUNCHER} | sh -s -- --${mise ? "mise" : "system"} ${language}`;
+}
 
 export const LANGUAGES: readonly Language[] = [
   {
@@ -23,54 +27,54 @@ export const LANGUAGES: readonly Language[] = [
     id: "typescript",
     description: "The reference implementation. Runs on Bun, Node and Deno.",
     href: "/docs#install",
-    demo: "bunx @profullstack/hqtui-demo",
-    interactiveDemo: "bunx @profullstack/hqtui-demo --sim",
-    miseDemo: "mise exec bun@1.4.0 -- bunx @profullstack/hqtui-demo --sim",
-    needsCheckout: false,
+    demo: latestDemo("typescript"),
+    interactiveDemo: `${latestDemo("typescript")} --sim`,
+    miseDemo: `${latestDemo("typescript", true)} --sim`,
+    native: false,
   },
   {
     name: "Rust",
     id: "rust",
     description: "Native Rust with explicit ownership and interaction IDs.",
     href: "/docs#rust",
-    demo: "(cd hqtui/ports/rust && cargo run --example dashboard)",
-    snapshotDemo: "(cd hqtui/ports/rust && cargo run --example dashboard -- --snapshot)",
-    interactiveDemo: "(cd hqtui/ports/rust && cargo run --example dashboard)",
-    miseDemo: "(cd hqtui/ports/rust && mise exec rust@1.97.1 -- cargo run --example dashboard)",
-    needsCheckout: true,
+    demo: latestDemo("rust"),
+    snapshotDemo: `${latestDemo("rust")} --snapshot`,
+    interactiveDemo: latestDemo("rust"),
+    miseDemo: latestDemo("rust", true),
+    native: true,
   },
   {
     name: "Go",
     id: "go",
     description: "Native Go with callbacks that close over your application state.",
     href: "/docs#go",
-    demo: "(cd hqtui/ports/go && go run ./examples/dashboard)",
-    snapshotDemo: "(cd hqtui/ports/go && go run ./examples/dashboard --snapshot)",
-    interactiveDemo: "(cd hqtui/ports/go && go run ./examples/dashboard)",
-    miseDemo: "(cd hqtui/ports/go && mise exec go@1.26.0 -- go run ./examples/dashboard)",
-    needsCheckout: true,
+    demo: latestDemo("go"),
+    snapshotDemo: `${latestDemo("go")} --snapshot`,
+    interactiveDemo: latestDemo("go"),
+    miseDemo: latestDemo("go", true),
+    native: true,
   },
   {
     name: "Python",
     id: "python",
     description: "Native Python with callbacks and compact array-backed cell storage.",
     href: "/docs#python",
-    demo: "(cd hqtui/ports/python && python3 -m examples.dashboard)",
-    snapshotDemo: "(cd hqtui/ports/python && python3 -m examples.dashboard --snapshot)",
-    interactiveDemo: "(cd hqtui/ports/python && python3 -m examples.dashboard)",
-    miseDemo: "(cd hqtui/ports/python && mise exec python@3.12.13 -- python -m examples.dashboard)",
-    needsCheckout: true,
+    demo: latestDemo("python"),
+    snapshotDemo: `${latestDemo("python")} --snapshot`,
+    interactiveDemo: latestDemo("python"),
+    miseDemo: latestDemo("python", true),
+    native: true,
   },
   {
     name: "Zig",
     id: "zig",
     description: "Native Zig 0.16 with explicit context and arena-managed frames.",
     href: "/docs#zig",
-    demo: "(cd hqtui/ports/zig && zig build run-dashboard)",
-    snapshotDemo: "(cd hqtui/ports/zig && zig build run-dashboard -- --snapshot)",
-    interactiveDemo: "(cd hqtui/ports/zig && zig build run-dashboard)",
-    miseDemo: "(cd hqtui/ports/zig && mise exec zig@0.16.0 -- zig build run-dashboard)",
-    needsCheckout: true,
+    demo: latestDemo("zig"),
+    snapshotDemo: `${latestDemo("zig")} --snapshot`,
+    interactiveDemo: latestDemo("zig"),
+    miseDemo: latestDemo("zig", true),
+    native: true,
   },
 ];
 
@@ -79,4 +83,4 @@ export const LANGUAGES: readonly Language[] = [
  * showed the same commands from two arrays before this, which is one edit away
  * from telling visitors two different things.
  */
-export const PORTS: readonly Language[] = LANGUAGES.filter((language) => language.needsCheckout);
+export const PORTS: readonly Language[] = LANGUAGES.filter((language) => language.native);
