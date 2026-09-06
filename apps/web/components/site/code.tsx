@@ -75,12 +75,3 @@ export function Code({
     </div>
   );
 }
-
-export function InstallCommand({ command }: { command: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-[#0a0e14] px-4 py-3 font-mono text-sm">
-      <span className="select-none text-[#5fff87]">$</span>
-      <span className="text-[#c6d0db]">{command}</span>
-    </div>
-  );
-}
