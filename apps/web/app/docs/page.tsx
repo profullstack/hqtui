@@ -14,6 +14,7 @@ export const metadata = { title: "Docs" };
 
 const SECTIONS = [
   { id: "languages", label: "Choose a language" },
+  ...PORTS.map(({ id, name }) => ({ id, label: `${name} demos` })),
   { id: "install", label: "Install" },
   { id: "first-app", label: "Your first app" },
   { id: "layout", label: "Layout" },
@@ -76,16 +77,29 @@ export default async function Docs() {
           </div>
           <P>
             Rust, Go, Python and Zig are native ports with no JavaScript runtime requirement.
-            Start from the source checkout below; each command renders a dashboard without a TTY.
-            Zig requires version 0.16. Each port&apos;s README covers its API, interactive examples
-            and platform-specific terminal behavior.
+            Clone once, then run the examples below from the directory containing the checkout.
+            The interactive native dashboards use generated sample data to demonstrate graphs,
+            tables, mouse input and keyboard navigation; they are not the full ten-screen
+            TypeScript system monitor. Use a Linux or macOS terminal, arrow keys to navigate,
+            and q to quit. Headless examples also work without a TTY. Zig requires version 0.16.
           </P>
           <CommandBlock className="mt-4" command={CLONE} label="git clone" />
+          <P>
+            Already use <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>?
+            The alternatives below select pinned toolchains and install them if needed.
+            No global language install or mise configuration file is required. Choose either
+            the regular command or its mise alternative.
+          </P>
           <div className="mt-6 grid gap-6 xl:grid-cols-2">
             {PORTS.map((port) => (
               <section key={port.id} id={port.id} className="min-w-0 scroll-mt-20">
                 <h3 className="text-xl font-bold">{port.name}</h3>
-                <CommandBlock className="mt-3" command={port.demo} label={port.name} />
+                <p className="mt-3 text-sm text-white/60">Interactive dashboard</p>
+                <CommandBlock className="mt-2" command={port.interactiveDemo} label={`${port.name} demo`} />
+                <p className="mt-4 text-sm text-white/60">With mise</p>
+                <CommandBlock className="mt-2" command={port.miseDemo} label={`${port.name} · mise`} />
+                <p className="mt-4 text-sm text-white/60">Headless screenshot · no terminal required</p>
+                <CommandBlock className="mt-2" command={`(${port.demo.replace("\n", " && ")})`} label={`${port.name} screenshot`} />
                 <a href={`https://github.com/profullstack/hqtui/tree/main/ports/${port.id}`} className="mt-3 inline-block text-sm text-[#5fff87] underline underline-offset-4">{port.name} API, examples and setup</a>
               </section>
             ))}
@@ -96,6 +110,10 @@ export default async function Docs() {
           </P>
 
           <H2 id="install">Install TypeScript</H2>
+          <P>Try the full ten-screen demo with simulated data, without creating an app:</P>
+          <CommandBlock className="mt-3" command={LANGUAGES[0].interactiveDemo} label="TypeScript demo" />
+          <CommandBlock className="mt-3" command={LANGUAGES[0].miseDemo} label="TypeScript · mise" />
+          <P>Omit <code>--sim</code> to use real system metrics. To build your own app, install the library:</P>
           <Code className="mt-4" code={`bun add @profullstack/hqtui   # Bun is the default runtime
 npm  add @profullstack/hqtui   # Node 22.6+ works unchanged`} />
           <P>

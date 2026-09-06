@@ -100,6 +100,7 @@ class App:
 
         self._render_fn: Callable[[RenderArgs], None] = lambda args: None
         self._running = False
+        self._terminal_active = False
         self._dirty = True
         self._force_repaint = True
         self._started_at = 0.0
@@ -196,8 +197,9 @@ class App:
             return
         self._running = True
         self._started_at = time.monotonic()
-        self.terminal.enter()
+        self._terminal_active = True
         try:
+            self.terminal.enter()
             interval = max(0.008, 1 / self._target_fps())
             self.frame()
             while self._running:
@@ -220,10 +222,11 @@ class App:
 
     def stop(self) -> None:
         """Stop the loop and restore the terminal."""
-        if not self._running:
+        if not self._running and not self._terminal_active:
             return
         self._running = False
         self.terminal.restore()
+        self._terminal_active = False
         self._emit("exit")
 
     def quit(self) -> None:
