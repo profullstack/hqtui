@@ -8,8 +8,18 @@ This is a native port of [the TypeScript reference
 implementation](https://hqtui.com), not a binding. There is no Node in the
 picture at runtime or at build time.
 
+The module lives in a subdirectory of the monorepo, so the import path carries
+it. `go get` resolves this once the branch is on `main`:
+
 ```bash
-go get github.com/profullstack/hqtui
+go get github.com/profullstack/hqtui/ports/go
+```
+
+Or run it straight from a checkout:
+
+```bash
+git clone https://github.com/profullstack/hqtui
+cd hqtui/ports/go && go run ./examples/dashboard
 ```
 
 ## Hello, terminal
@@ -17,7 +27,7 @@ go get github.com/profullstack/hqtui
 ```go
 package main
 
-import "github.com/profullstack/hqtui"
+import hqtui "github.com/profullstack/hqtui/ports/go"
 
 func main() {
 	app := hqtui.NewApp(hqtui.AppOptions{})

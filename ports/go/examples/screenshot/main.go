@@ -9,7 +9,7 @@ import (
 	"math"
 	"os"
 
-	ui "github.com/profullstack/hqtui"
+	ui "github.com/profullstack/hqtui/ports/go"
 )
 
 func main() {
