@@ -78,17 +78,24 @@ export default async function Docs() {
           <P>
             Rust, Go, Python and Zig are native ports with no JavaScript runtime requirement.
             Clone once, then run the examples below from the directory containing the checkout.
-            The interactive native dashboards use generated sample data to demonstrate graphs,
-            tables, mouse input and keyboard navigation; they are not the full ten-screen
-            TypeScript system monitor. Use a Linux or macOS terminal, arrow keys to navigate,
-            and q to quit. Headless examples also work without a TTY. Zig requires version 0.16.
+            All four dashboard commands now launch ten-screen native demos. Live metrics
+            currently require Linux; use --sim for generated sample data on other platforms.
+            Rust screen bodies pass 120 cell-by-cell TypeScript comparisons, but live-data
+            collection and interaction parity are incomplete. Go, Python and Zig also still
+            need layout-parity work. Use 1–9 / 0 or Tab to change screens and q to quit.
+            Headless screenshots work without a TTY. Zig requires version 0.16.
           </P>
           <CommandBlock className="mt-4" command={CLONE} label="git clone" />
+          <P>Already cloned? Update main before running these commands; older checkouts launch the small examples.</P>
+          <CommandBlock className="mt-4" command="(cd hqtui && git switch main && git pull --ff-only)" label="Update checkout" />
           <P>
             Already use <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>?
             The alternatives below select pinned toolchains and install them if needed.
-            No global language install or mise configuration file is required. Choose either
-            the regular command or its mise alternative.
+            Trust this checkout&apos;s mise.toml when prompted. Choose either the regular
+            command or its mise alternative. From the repository root you can also run
+            mise trust, mise install, then mise run demo:rust -- --sim (or demo:go,
+            demo:python, demo:zig, demo:typescript). For direct commands below, append
+            --sim to the demo arguments; Cargo and Zig require a -- separator first.
           </P>
           <div className="mt-6 grid gap-6 xl:grid-cols-2">
             {PORTS.map((port) => (
@@ -99,7 +106,7 @@ export default async function Docs() {
                 <p className="mt-4 text-sm text-white/60">With mise</p>
                 <CommandBlock className="mt-2" command={port.miseDemo} label={`${port.name} · mise`} />
                 <p className="mt-4 text-sm text-white/60">Headless screenshot · no terminal required</p>
-                <CommandBlock className="mt-2" command={`(${port.demo.replace("\n", " && ")})`} label={`${port.name} screenshot`} />
+                <CommandBlock className="mt-2" command={port.snapshotDemo!} label={`${port.name} screenshot`} />
                 <a href={`https://github.com/profullstack/hqtui/tree/main/ports/${port.id}`} className="mt-3 inline-block text-sm text-[#5fff87] underline underline-offset-4">{port.name} API, examples and setup</a>
               </section>
             ))}

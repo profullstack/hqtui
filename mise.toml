@@ -1,0 +1,54 @@
+# Reproducible toolchains for the five native implementations in this monorepo.
+# Adding a tool here is not a claim that a native hqtui library exists for it.
+[tools]
+bun = "1.4.0"
+python = "3.12.13"
+go = "1.26.0"
+rust = "1.97.1"
+zig = "0.16.0"
+
+[tasks."demo:typescript"]
+description = "TypeScript reference demo (Bun)"
+run = "bun apps/demo/src/main.ts"
+
+[tasks."demo:python"]
+description = "Native Python reference demo"
+dir = "{{config_root}}/ports/python"
+run = "python -m examples.dashboard"
+
+[tasks."demo:go"]
+description = "Native Go reference demo"
+dir = "{{config_root}}/ports/go"
+run = "go run ./examples/dashboard"
+
+[tasks."demo:rust"]
+description = "Native Rust reference demo"
+run = "cargo run --manifest-path ports/rust/Cargo.toml --example dashboard --"
+
+[tasks."demo:zig"]
+description = "Native Zig reference demo"
+dir = "{{config_root}}/ports/zig"
+run = "zig build run-dashboard --"
+
+[tasks."test:python"]
+description = "Python conformance and demo acceptance tests"
+dir = "{{config_root}}/ports/python"
+run = "python -m unittest discover -s tests -t ."
+
+[tasks."test:go"]
+description = "Go conformance and demo tests, including the race detector"
+dir = "{{config_root}}/ports/go"
+run = "go test -race ./..."
+
+[tasks."test:rust"]
+description = "Rust library and demo tests"
+run = ["cargo test --manifest-path ports/rust/Cargo.toml --all-targets", "cargo test --manifest-path ports/rust/demo/Cargo.toml"]
+
+[tasks."test:zig"]
+description = "Zig conformance and demo tests"
+dir = "{{config_root}}/ports/zig"
+run = "zig build test test-demo"
+
+[tasks."test:typescript"]
+description = "TypeScript reference and site tests"
+run = "bun test packages/hqtui/test apps/demo/test apps/web/test"

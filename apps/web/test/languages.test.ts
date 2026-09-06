@@ -26,7 +26,8 @@ test("native demo commands point to dashboard and screenshot examples in the che
     assert.ok(port.interactiveDemo.startsWith(`(cd hqtui/ports/${port.id} && `));
     assert.ok(port.interactiveDemo.endsWith(")"), "subshell preserves the user's directory");
     assert.match(port.interactiveDemo, /dashboard/);
-    assert.match(port.demo, /screenshot/);
+    assert.equal(port.demo, port.interactiveDemo);
+    assert.match(port.snapshotDemo!, /dashboard.*--snapshot/);
     for (const file of files[port.id]) assert.ok(existsSync(resolve(root, "ports", port.id, file)), file);
   }
 });

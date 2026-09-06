@@ -71,9 +71,11 @@ app.start()
 Run the examples to see it working:
 
 ```bash
-python examples/hello.py        # the smallest app
-python examples/dashboard.py    # a live dashboard, mouse and keyboard
-python examples/screenshot.py   # renders to stdout, no TTY needed
+python -m examples.hello          # the smallest app
+python -m examples.dashboard      # full native ten-screen demo
+python -m examples.dashboard --sim # generated sample telemetry
+python -m examples.dashboard_mini # small library example
+python -m examples.screenshot     # renders to stdout, no TTY needed
 ```
 
 ## Testing without a terminal

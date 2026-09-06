@@ -78,7 +78,9 @@ Run the examples to see it working:
 
 ```bash
 go run ./examples/hello        # the smallest app
-go run ./examples/dashboard    # a live dashboard, mouse and keyboard
+go run ./examples/dashboard    # full native ten-screen demo
+go run ./examples/dashboard --sim  # generated sample telemetry
+go run ./examples/dashboard-mini   # small library example
 go run ./examples/screenshot   # renders to stdout, no TTY needed
 ```
 

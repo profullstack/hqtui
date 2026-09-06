@@ -3,14 +3,11 @@ export type Language = {
   id: string;
   description: string;
   href: string;
-  /**
-   * A runnable demo, exactly as it should be pasted. Every one of these renders
-   * the reference dashboard, and every one is checked by hand before it ships —
-   * a copy button makes a wrong command worse, not better.
-   */
+  /** Runnable full demo; see the docs for each port's parity status. */
   demo: string;
-  /** Interactive example; native examples use generated sample data. */
+  /** Interactive ten-screen demo. Native demos default to live Linux metrics. */
   interactiveDemo: string;
+  snapshotDemo?: string;
   /** Same interactive example with a pinned mise-managed toolchain. */
   miseDemo: string;
   /** Whether `demo` assumes {@link CLONE} has been run first. */
@@ -36,7 +33,8 @@ export const LANGUAGES: readonly Language[] = [
     id: "rust",
     description: "Native Rust with explicit ownership and interaction IDs.",
     href: "/docs#rust",
-    demo: "cd hqtui/ports/rust\ncargo run --example screenshot",
+    demo: "(cd hqtui/ports/rust && cargo run --example dashboard)",
+    snapshotDemo: "(cd hqtui/ports/rust && cargo run --example dashboard -- --snapshot)",
     interactiveDemo: "(cd hqtui/ports/rust && cargo run --example dashboard)",
     miseDemo: "(cd hqtui/ports/rust && mise exec rust@1.97.1 -- cargo run --example dashboard)",
     needsCheckout: true,
@@ -46,7 +44,8 @@ export const LANGUAGES: readonly Language[] = [
     id: "go",
     description: "Native Go with callbacks that close over your application state.",
     href: "/docs#go",
-    demo: "cd hqtui/ports/go\ngo run ./examples/screenshot",
+    demo: "(cd hqtui/ports/go && go run ./examples/dashboard)",
+    snapshotDemo: "(cd hqtui/ports/go && go run ./examples/dashboard --snapshot)",
     interactiveDemo: "(cd hqtui/ports/go && go run ./examples/dashboard)",
     miseDemo: "(cd hqtui/ports/go && mise exec go@1.26.0 -- go run ./examples/dashboard)",
     needsCheckout: true,
@@ -56,7 +55,8 @@ export const LANGUAGES: readonly Language[] = [
     id: "python",
     description: "Native Python with callbacks and compact array-backed cell storage.",
     href: "/docs#python",
-    demo: "cd hqtui/ports/python\npython3 -m examples.screenshot",
+    demo: "(cd hqtui/ports/python && python3 -m examples.dashboard)",
+    snapshotDemo: "(cd hqtui/ports/python && python3 -m examples.dashboard --snapshot)",
     interactiveDemo: "(cd hqtui/ports/python && python3 -m examples.dashboard)",
     miseDemo: "(cd hqtui/ports/python && mise exec python@3.12.13 -- python -m examples.dashboard)",
     needsCheckout: true,
@@ -66,7 +66,8 @@ export const LANGUAGES: readonly Language[] = [
     id: "zig",
     description: "Native Zig 0.16 with explicit context and arena-managed frames.",
     href: "/docs#zig",
-    demo: "cd hqtui/ports/zig\nzig build run-screenshot",
+    demo: "(cd hqtui/ports/zig && zig build run-dashboard)",
+    snapshotDemo: "(cd hqtui/ports/zig && zig build run-dashboard -- --snapshot)",
     interactiveDemo: "(cd hqtui/ports/zig && zig build run-dashboard)",
     miseDemo: "(cd hqtui/ports/zig && mise exec zig@0.16.0 -- zig build run-dashboard)",
     needsCheckout: true,

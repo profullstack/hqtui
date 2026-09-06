@@ -25,9 +25,12 @@ classifiers = [
 # fixtures with the standard library's json module and runs under unittest.
 dependencies = []
 
+[project.scripts]
+hqtui-demo-python = "hqtui_demo.__main__:main"
+
 [project.urls]
 Homepage = "https://hqtui.com"
 Repository = "https://github.com/profullstack/hqtui"
 
 [tool.hatch.build.targets.wheel]
-packages = ["hqtui"]
+packages = ["hqtui", "hqtui_demo"]

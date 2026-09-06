@@ -22,11 +22,31 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run the conformance suite and dashboard regression tests");
     test_step.dependOn(&run_tests.step);
 
+    const demo = b.addExecutable(.{
+        .name = "hqtui-demo-zig",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("demo/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{.{ .name = "hqtui", .module = hqtui }},
+        }),
+    });
+    b.installArtifact(demo);
+    const run_demo = b.addRunArtifact(demo);
+    if (b.args) |args| run_demo.addArgs(args);
+    b.step("run-demo", "Run the native ten-screen reference demo").dependOn(&run_demo.step);
+    b.step("run-dashboard", "Run the native ten-screen reference demo").dependOn(&run_demo.step);
+    const demo_tests = b.addTest(.{ .root_module = demo.root_module });
+    const run_demo_tests = b.addRunArtifact(demo_tests);
+    b.step("test-demo", "Run native demo acceptance tests").dependOn(&run_demo_tests.step);
+    b.getInstallStep().dependOn(&demo.step);
+
     // Examples are separate executables, so `zig build run-screenshot` works
     // without a TTY while `run-dashboard` takes one over.
     for ([_][]const u8{ "hello", "dashboard", "screenshot" }) |name| {
+        const command_name = if (std.mem.eql(u8, name, "dashboard")) "dashboard-mini" else name;
         const exe = b.addExecutable(.{
-            .name = name,
+            .name = command_name,
             .root_module = b.createModule(.{
                 .root_source_file = b.path(b.fmt("examples/{s}.zig", .{name})),
                 .target = target,
@@ -44,7 +64,7 @@ pub fn build(b: *std.Build) void {
         run.step.dependOn(b.getInstallStep());
         if (b.args) |args| run.addArgs(args);
         b.step(
-            b.fmt("run-{s}", .{name}),
+            b.fmt("run-{s}", .{command_name}),
             b.fmt("Run the {s} example", .{name}),
         ).dependOn(&run.step);
     }

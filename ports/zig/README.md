@@ -55,7 +55,9 @@ Run the examples:
 
 ```bash
 zig build run-hello        # the smallest app
-zig build run-dashboard    # a live dashboard, mouse and keyboard
+zig build run-dashboard    # full native ten-screen demo
+zig build run-dashboard -- --sim # generated sample telemetry
+zig build run-dashboard-mini     # small library example
 zig build run-screenshot   # renders to stdout, no TTY needed
 zig build run-screenshot -- --html   # a standalone HTML page
 ```
