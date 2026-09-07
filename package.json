@@ -6,7 +6,8 @@
   "workspaces": [
     "packages/*",
     "apps/*",
-    "examples"
+    "examples",
+    "ports/cobol/adapter"
   ],
   "engines": {
     "bun": ">=1.1",

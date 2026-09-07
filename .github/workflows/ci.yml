@@ -77,6 +77,9 @@ jobs:
       - name: Build
         run: bun run build
       - name: Widget galleries (TypeScript and vanilla JavaScript)
+        # bash explicitly: this job also runs on Windows, where the default
+        # shell is PowerShell and `>/dev/null` is a parse error.
+        shell: bash
         run: |
           bun examples/widgets/check.ts
           node examples/widgets/gallery.js >/dev/null
@@ -84,6 +87,7 @@ jobs:
       # then the site can show code that no longer compiles, which is the one
       # thing this whole arrangement exists to prevent.
       - name: The published widget catalog is current
+        shell: bash
         run: |
           bun examples/widgets/build-catalog.ts
           git diff --exit-code -- apps/web/content/widgets.json

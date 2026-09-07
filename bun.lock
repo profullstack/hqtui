@@ -68,6 +68,13 @@
         "hqtui": "./bin/hqtui.mjs",
       },
     },
+    "ports/cobol/adapter": {
+      "name": "@profullstack/hqtui-cobol-adapter",
+      "version": "0.2.0",
+      "dependencies": {
+        "@profullstack/hqtui": "workspace:*",
+      },
+    },
   },
   "trustedDependencies": [
     "sharp",
@@ -246,6 +253,8 @@
     "@profullstack/hqtui": ["@profullstack/hqtui@workspace:packages/hqtui"],
 
     "@profullstack/hqtui-benchmark": ["@profullstack/hqtui-benchmark@workspace:apps/benchmark"],
+
+    "@profullstack/hqtui-cobol-adapter": ["@profullstack/hqtui-cobol-adapter@workspace:ports/cobol/adapter"],
 
     "@profullstack/hqtui-demo": ["@profullstack/hqtui-demo@workspace:apps/demo"],
 
