@@ -1,0 +1,481 @@
+{
+  "generated": "by examples/widgets/build-catalog.ts — do not edit",
+  "languages": [
+    {
+      "id": "typescript",
+      "label": "TypeScript",
+      "file": "gallery.ts",
+      "syntax": "ts"
+    },
+    {
+      "id": "rust",
+      "label": "Rust",
+      "file": "gallery.rs",
+      "syntax": "rust"
+    },
+    {
+      "id": "go",
+      "label": "Go",
+      "file": "gallery.go",
+      "syntax": "go"
+    },
+    {
+      "id": "python",
+      "label": "Python",
+      "file": "gallery.py",
+      "syntax": "python"
+    },
+    {
+      "id": "zig",
+      "label": "Zig",
+      "file": "gallery.zig",
+      "syntax": "zig"
+    },
+    {
+      "id": "cpp",
+      "label": "C++",
+      "file": "gallery.cpp",
+      "syntax": "cpp"
+    },
+    {
+      "id": "ruby",
+      "label": "Ruby",
+      "file": "gallery.rb",
+      "syntax": "ruby"
+    },
+    {
+      "id": "php",
+      "label": "PHP",
+      "file": "gallery.php",
+      "syntax": "php"
+    },
+    {
+      "id": "perl",
+      "label": "Perl",
+      "file": "gallery.pl",
+      "syntax": "perl"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "text",
+      "title": "Text",
+      "category": "Text",
+      "width": 58,
+      "height": 5,
+      "blurb": "Aligned, styled, optionally wrapped copy. Every other widget is built on it.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">Plain text. It fills the width it is given.               </span>\n<span style=\"color:#58a6ff;background:#05070a;font-weight:700\">Bold, in the theme's primary color.                       </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                            Right aligned.</span>\n<span style=\"color:#c6d0db;background:#05070a\">Long copy wraps when you ask it to, instead of being cut  </span>\n<span style=\"color:#c6d0db;background:#05070a\">at the edge.                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function text(ui: Container, theme: Theme): void {\n  ui.text(\"Plain text. It fills the width it is given.\");\n  ui.text(\"Bold, in the theme's primary color.\", { bold: true, fg: theme.primary });\n  ui.text(\"Right aligned.\", { align: \"right\" });\n  ui.text(\"Long copy wraps when you ask it to, instead of being cut at the edge.\", { wrap: true });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "label",
+      "title": "Label",
+      "category": "Text",
+      "width": 58,
+      "height": 3,
+      "blurb": "Text in the theme's muted color: captions and the line under a number.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">cpu · 8 cores · 3.4 GHz                                   </span>\n<span style=\"color:#5fff87;background:#05070a;font-weight:700\">42.1%                                                     </span>\n<span style=\"color:#5a6b7d;background:#05070a\">15 minute average                                         </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function label(ui: Container, theme: Theme): void {\n  // `label` is `text` in the theme's muted color: secondary copy, captions,\n  // the line under a number that says what the number is.\n  ui.label(\"cpu · 8 cores · 3.4 GHz\");\n  ui.text(\"42.1%\", { bold: true, fg: theme.success });\n  ui.label(\"15 minute average\");\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "heading",
+      "title": "Heading",
+      "category": "Text",
+      "width": 58,
+      "height": 4,
+      "blurb": "Bold text in the theme's title color, for sectioning without a panel.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#7ee2ff;background:#05070a;font-weight:700\">Storage                                                   </span>\n<span style=\"color:#5a6b7d;background:#05070a\">Four volumes, one degraded                                </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                          </span>\n<span style=\"color:#56d4dd;background:#05070a;font-weight:700\">Network                                                   </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function heading(ui: Container, theme: Theme): void {\n  // `heading` is `text` in the theme's title color, bold.\n  ui.heading(\"Storage\");\n  ui.label(\"Four volumes, one degraded\");\n  ui.spacer(1);\n  ui.heading(\"Network\", { fg: theme.accent });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "badge",
+      "title": "Badge",
+      "category": "Text",
+      "width": 58,
+      "height": 1,
+      "blurb": "A status chip. Filled, subtle or outline.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#05070a;background:#5fff87;font-weight:700\"> active </span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#ffd75f;background:#363222\"> idle </span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#ff6b6b;background:#05070a;font-weight:700\"> failed </span><span style=\"color:#c6d0db;background:#05070a\">                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function badge(ui: Container, theme: Theme): void {\n  ui.row({ size: 1, gap: 1 }, (r) => {\n    r.badge({ text: \"active\", color: theme.success, size: 10 });\n    r.badge({ text: \"idle\", color: theme.warning, variant: \"subtle\", size: 8 });\n    r.badge({ text: \"failed\", color: theme.danger, variant: \"outline\", size: 10 });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "divider",
+      "title": "Divider",
+      "category": "Text",
+      "width": 58,
+      "height": 5,
+      "blurb": "A rule, optionally labelled, that titles a section cheaply.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">Above the line                                            </span>\n<span style=\"color:#243040;background:#05070a\">──────────────────────────────────────────────────────────</span>\n<span style=\"color:#c6d0db;background:#05070a\">Below it                                                  </span>\n<span style=\"color:#56d4dd;background:#05070a\">─────────────────────────</span><span style=\"color:#5a6b7d;background:#05070a\"> status </span><span style=\"color:#56d4dd;background:#05070a\">─────────────────────────</span>\n<span style=\"color:#c6d0db;background:#05070a\">A labelled divider titles a section without spending a pa…</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function divider(ui: Container, theme: Theme): void {\n  ui.text(\"Above the line\");\n  ui.divider();\n  ui.text(\"Below it\");\n  ui.divider({ label: \"status\", align: \"center\", color: theme.accent });\n  ui.text(\"A labelled divider titles a section without spending a panel on it\");\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "keyValues",
+      "title": "Key/values",
+      "category": "Text",
+      "width": 58,
+      "height": 4,
+      "blurb": "Aligned label and value pairs. The backbone of every system panel.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">Host        </span><span style=\"color:#c6d0db;background:#05070a\">                                    web-01.iad</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Uptime      </span><span style=\"color:#c6d0db;background:#05070a\">                                     18d 04:12</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Load        </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ffd75f;background:#05070a\">                             0.42  0.51  0.60</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Established </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5fff87;background:#05070a\">                                        1,284</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function keyValues(ui: Container, theme: Theme): void {\n  // The backbone of every \"System\" panel: labels left, values right.\n  ui.keyValues([\n    { label: \"Host\", value: \"web-01.iad\" },\n    { label: \"Uptime\", value: \"18d 04:12\" },\n    { label: \"Load\", value: \"0.42  0.51  0.60\", color: theme.warning },\n    { label: \"Established\", value: \"1,284\", color: theme.success },\n  ]);\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "statusBar",
+      "title": "Status bar",
+      "category": "Text",
+      "width": 62,
+      "height": 1,
+      "blurb": "The keybinding strip along the bottom, with a right-hand slot.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">F1</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Help</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">F2</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Theme</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">F3</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#c6d0db;background:#14181d;font-weight:700\">Filter</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">^K</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Palette</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">q</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Quit</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#5a6b7d;background:#14181d\">0.41ms  18…</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function statusBar(ui: Container, _theme: Theme): void {\n  // Usually the last thing drawn, pinned to the bottom row.\n  ui.statusBar({\n    items: [\n      { key: \"F1\", label: \"Help\" },\n      { key: \"F2\", label: \"Theme\" },\n      { key: \"F3\", label: \"Filter\", active: true },\n      { key: \"^K\", label: \"Palette\" },\n      { key: \"q\", label: \"Quit\" },\n    ],\n    right: [{ label: \"0.41ms  184 cells\" }],\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "table",
+      "title": "Table",
+      "category": "Data",
+      "width": 58,
+      "height": 6,
+      "blurb": "Columns with alignment, widths, zebra striping, selection and scroll.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">Name        </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">     Size</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">Type  </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">  Modified</span><span style=\"color:#c6d0db;background:#05070a\">                  </span>\n<span style=\"color:#58a6ff;background:#05070a\">src         </span><span style=\"color:#c6d0db;background:#05070a\">    4.2 KB dir    </span><span style=\"color:#5a6b7d;background:#05070a\">    2m ago</span><span style=\"color:#c6d0db;background:#05070a\">                  </span>\n<span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">test        </span><span style=\"color:#c6d0db;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">   1.1 KB</span><span style=\"color:#c6d0db;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">dir   </span><span style=\"color:#c6d0db;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">    5m ago</span><span style=\"color:#c6d0db;background:#1d3a52\">                  </span>\n<span style=\"color:#58a6ff;background:#05070a\">package.json</span><span style=\"color:#c6d0db;background:#05070a\">    1.2 KB file   </span><span style=\"color:#5a6b7d;background:#05070a\">   10m ago</span><span style=\"color:#c6d0db;background:#05070a\">                  </span>\n<span style=\"color:#58a6ff;background:#14181d\">README.md   </span><span style=\"color:#c6d0db;background:#14181d\">    3.4 KB file   </span><span style=\"color:#5a6b7d;background:#14181d\">    1h ago</span><span style=\"color:#c6d0db;background:#14181d\">                  </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                          </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function table(ui: Container, theme: Theme): void {\n  ui.table({\n    rows: [\n      { name: \"src\", size: \"4.2 KB\", type: \"dir\", modified: \"2m ago\" },\n      { name: \"test\", size: \"1.1 KB\", type: \"dir\", modified: \"5m ago\" },\n      { name: \"package.json\", size: \"1.2 KB\", type: \"file\", modified: \"10m ago\" },\n      { name: \"README.md\", size: \"3.4 KB\", type: \"file\", modified: \"1h ago\" },\n    ],\n    selected: 1,\n    zebra: true,\n    columns: [\n      { key: \"name\", title: \"Name\", min: 12, color: theme.primary },\n      { key: \"size\", title: \"Size\", width: 9, align: \"right\" },\n      { key: \"type\", title: \"Type\", width: 6 },\n      { key: \"modified\", title: \"Modified\", width: 10, align: \"right\", color: theme.muted },\n    ],\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "list",
+      "title": "List",
+      "category": "Data",
+      "width": 40,
+      "height": 5,
+      "blurb": "A selectable list with bullets and its own scrollbar.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">▸ apps/demo                            </span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#c6d0db;background:#05070a\">▸ packages/hqtui                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">▸ apps/web                              </span>\n<span style=\"color:#c6d0db;background:#05070a\">▸ docs                                  </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function list(ui: Container, theme: Theme): void {\n  ui.list({\n    items: [\n      { label: \"apps/demo\", color: theme.primary },\n      { label: \"packages/hqtui\" },\n      { label: \"apps/web\" },\n      { label: \"docs\" },\n    ],\n    selected: 0,\n    bullet: \"▸\",\n    scrollbar: true,\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "tree",
+      "title": "Tree",
+      "category": "Data",
+      "width": 46,
+      "height": 6,
+      "blurb": "Nested rows with expand state and per-node value columns.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#3c4857;background:#05070a\">└─ </span><span style=\"color:#c6d0db;background:#05070a\">systemd                                1.3 </span>\n<span style=\"color:#3c4857;background:#05070a\">   ├─ </span><span style=\"color:#c6d0db;background:#05070a\">bash                                0.1 </span>\n<span style=\"color:#3c4857;background:#1d3a52\">   ├─ </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">bun</span><span style=\"color:#c6d0db;background:#1d3a52\">                              </span><span style=\"color:#e6f2ff;background:#1d3a52\">  32.8</span><span style=\"color:#c6d0db;background:#1d3a52\"> </span>\n<span style=\"color:#3c4857;background:#05070a\">   │  └─ </span><span style=\"color:#c6d0db;background:#05070a\">bun:worker                      12.4 </span>\n<span style=\"color:#3c4857;background:#05070a\">   └─ </span><span style=\"color:#c6d0db;background:#05070a\">postgres                            6.7 </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function tree(ui: Container, _theme: Theme): void {\n  ui.tree({\n    nodes: [\n      {\n        label: \"systemd\",\n        expanded: true,\n        values: [{ text: \"1.3\", width: 6 }],\n        children: [\n          { label: \"bash\", values: [{ text: \"0.1\", width: 6 }] },\n          {\n            label: \"bun\",\n            expanded: true,\n            values: [{ text: \"32.8\", width: 6 }],\n            children: [{ label: \"bun:worker\", values: [{ text: \"12.4\", width: 6 }] }],\n          },\n          { label: \"postgres\", values: [{ text: \"6.7\", width: 6 }] },\n        ],\n      },\n    ],\n    selected: 2,\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "log",
+      "title": "Log",
+      "category": "Data",
+      "width": 62,
+      "height": 5,
+      "blurb": "Levelled log lines that tail by default and scroll back from the end.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">12:45:02 </span><span style=\"color:#5fff87;background:#05070a;font-weight:700\">INFO </span><span style=\"color:#c6d0db;background:#05070a\"> listening on :8080                             </span>\n<span style=\"color:#5a6b7d;background:#05070a\">12:45:09 </span><span style=\"color:#ffd75f;background:#05070a;font-weight:700\">WARN </span><span style=\"color:#c6d0db;background:#05070a\"> slow query 412ms                 </span><span style=\"color:#5a6b7d;background:#05070a\">{table=users}</span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#5a6b7d;background:#05070a\">12:45:11 </span><span style=\"color:#ff6b6b;background:#05070a;font-weight:700\">ERROR</span><span style=\"color:#c6d0db;background:#05070a\"> upstream timeout                               </span>\n<span style=\"color:#5a6b7d;background:#05070a\">12:45:14 </span><span style=\"color:#5fff87;background:#05070a;font-weight:700\">INFO </span><span style=\"color:#c6d0db;background:#05070a\"> retry succeeded                                </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function log(ui: Container, _theme: Theme): void {\n  ui.log({\n    entries: [\n      { time: \"12:45:02\", level: \"info\", message: \"listening on :8080\" },\n      { time: \"12:45:09\", level: \"warn\", message: \"slow query 412ms\", meta: \"{table=users}\" },\n      { time: \"12:45:11\", level: \"error\", message: \"upstream timeout\" },\n      { time: \"12:45:14\", level: \"info\", message: \"retry succeeded\" },\n    ],\n    // Lines scrolled back from the newest. 0 keeps it tailing.\n    fromEnd: 0,\n    scrollbar: true,\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "meter",
+      "title": "Meter",
+      "category": "Meters",
+      "width": 48,
+      "height": 3,
+      "blurb": "A labelled bar. Smooth or segmented, heat-colored by default.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">CPU </span><span style=\"color:#58a6ff;background:#05070a\">████████████████████████▊</span><span style=\"color:#1e2835;background:#05070a\">───────────────</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 62%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">MEM </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#66ff83;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#75ff7b;background:#05070a\">▮</span><span style=\"color:#7dff77;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8cff6f;background:#05070a\">▮</span><span style=\"color:#93ff6b;background:#05070a\">▮</span><span style=\"color:#9bff67;background:#05070a\">▮</span><span style=\"color:#a2ff63;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#b3fa60;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#bdf560;background:#05070a;font-weight:700\"> 31%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">SWP </span><span style=\"color:#5fff87;background:#05070a\">█</span><span style=\"color:#66ff83;background:#05070a\">█</span><span style=\"color:#6eff7f;background:#05070a\">█</span><span style=\"color:#75ff7b;background:#05070a\">█</span><span style=\"color:#7dff77;background:#05070a\">█</span><span style=\"color:#84ff73;background:#05070a\">█</span><span style=\"color:#8cff6f;background:#05070a\">█</span><span style=\"color:#93ff6b;background:#05070a\">█</span><span style=\"color:#9bff67;background:#05070a\">█</span><span style=\"color:#a2ff63;background:#05070a\">█</span><span style=\"color:#aafe60;background:#05070a\">█</span><span style=\"color:#b3fa60;background:#05070a\">█</span><span style=\"color:#bcf660;background:#05070a\">█</span><span style=\"color:#c5f260;background:#05070a\">█</span><span style=\"color:#ceee60;background:#05070a\">█</span><span style=\"color:#d7e95f;background:#05070a\">█</span><span style=\"color:#e0e55f;background:#05070a\">█</span><span style=\"color:#e9e15f;background:#05070a\">█</span><span style=\"color:#f2dd5f;background:#05070a\">█</span><span style=\"color:#fbd95f;background:#05070a\">█</span><span style=\"color:#ffd45f;background:#05070a\">█</span><span style=\"color:#ffcf5e;background:#05070a\">█</span><span style=\"color:#ffca5d;background:#05070a\">█</span><span style=\"color:#ffc55c;background:#05070a\">█</span><span style=\"color:#ffc05b;background:#05070a\">█</span><span style=\"color:#ffbb5a;background:#05070a\">█</span><span style=\"color:#ffb65a;background:#05070a\">█</span><span style=\"color:#ffb159;background:#05070a\">█</span><span style=\"color:#ffac58;background:#05070a\">█</span><span style=\"color:#ffa757;background:#05070a\">█</span><span style=\"color:#ffa159;background:#05070a\">█</span><span style=\"color:#ff9b5b;background:#05070a\">█</span><span style=\"color:#ff955d;background:#05070a\">█</span><span style=\"color:#ff8f5f;background:#05070a\">█</span><span style=\"color:#ff8a61;background:#05070a\">▊</span><span style=\"color:#1e2835;background:#05070a\">─────</span><span style=\"color:#ff8a61;background:#05070a;font-weight:700\"> 87%</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function meter(ui: Container, theme: Theme): void {\n  ui.meter({ label: \"CPU\", value: 0.62, style: \"smooth\", color: theme.primary });\n  ui.meter({ label: \"MEM\", value: 0.31, style: \"segmented\" });\n  ui.meter({ label: \"SWP\", value: 0.87, style: \"smooth\" });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "meters",
+      "title": "Meters",
+      "category": "Meters",
+      "width": 62,
+      "height": 4,
+      "blurb": "A whole bank of meters in one call, laid out in columns.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">P0  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#82ff74;background:#05070a;font-weight:700\">  12%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P4  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#d5ea5f;background:#05070a;font-weight:700\">  38%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">P1  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#eae15f;background:#05070a;font-weight:700\">  44%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P5  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#eedf5f;background:#05070a\">▮</span><span style=\"color:#ffd75f;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#ffcd5d;background:#05070a;font-weight:700\">  55%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">P2  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#eedf5f;background:#05070a\">▮</span><span style=\"color:#ffd75f;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc35c;background:#05070a\">▮</span><span style=\"color:#ffba5a;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮</span><span style=\"color:#ffae58;background:#05070a;font-weight:700\">  71%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P6  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#9fff65;background:#05070a;font-weight:700\">  22%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">P3  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#79ff79;background:#05070a;font-weight:700\">   9%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P7  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#eedf5f;background:#05070a\">▮</span><span style=\"color:#ffd75f;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc35c;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮</span><span style=\"color:#ffb85a;background:#05070a;font-weight:700\">  66%</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function meters(ui: Container, _theme: Theme): void {\n  // One call for a whole bank. `columns` lays them out side by side.\n  ui.meters(\n    [0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66].map((value, i) => ({ label: `P${i}`, value })),\n    { columns: 2, labelWidth: 4, valueWidth: 5, style: \"segmented\" },\n  );\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "progress",
+      "title": "Progress",
+      "category": "Meters",
+      "width": 48,
+      "height": 2,
+      "blurb": "A determinate bar that can show a count as well as a ratio.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">Indexing </span><span style=\"color:#58a6ff;background:#05070a\">█████████▉</span><span style=\"color:#1e2835;background:#05070a\">──────────────────────</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 37/120</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Upload </span><span style=\"color:#58a6ff;background:#05070a\">██████████████████████████████▍</span><span style=\"color:#1e2835;background:#05070a\">──────</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 82%</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function progress(ui: Container, _theme: Theme): void {\n  ui.progress({ label: \"Indexing\", value: 37, max: 120, showCount: true });\n  ui.progress({ label: \"Upload\", value: 0.82 });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "graph",
+      "title": "Graph",
+      "category": "Meters",
+      "width": 58,
+      "height": 9,
+      "blurb": "A Braille line chart, optionally filled under the curve.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">                                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span><span style=\"color:#5fff87;background:#05070a\">⢀⣀⠤⣀</span><span style=\"color:#c6d0db;background:#05070a\">              </span>\n<span style=\"color:#c6d0db;background:#05070a\">                      </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⢄⡀</span><span style=\"color:#389350;background:#05070a\">▄</span><span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#389350;background:#05070a\">▁</span><span style=\"color:#5fff87;background:#05070a\">⢀⠤⠒⠉⠁</span><span style=\"color:#2d7541;background:#05070a\">███</span><span style=\"color:#5fff87;background:#05070a\">⠉⠒⠤⡀</span><span style=\"color:#c6d0db;background:#05070a\">          </span>\n<span style=\"color:#c6d0db;background:#05070a\">                   </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⠊⠁</span><span style=\"color:#368e4e;background:#05070a\">▅</span><span style=\"color:#2b703f;background:#05070a\">█</span><span style=\"color:#5fff87;background:#05070a\">⠈⠒⠤⣀</span><span style=\"color:#c6d0db;background:#05070a\">     </span><span style=\"color:#5fff87;background:#05070a\">⡠⠒⠁</span><span style=\"color:#2b703f;background:#05070a\">██████████</span><span style=\"color:#5fff87;background:#05070a\">⠈⠑⠤⣀</span><span style=\"color:#c6d0db;background:#05070a\">       </span>\n<span style=\"color:#c6d0db;background:#05070a\">            </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⠒⠉⠒⠢⠔⠁</span><span style=\"color:#348a4c;background:#05070a\">▃</span><span style=\"color:#2a6c3d;background:#05070a\">████████</span><span style=\"color:#5fff87;background:#05070a\">⠉⠒⠒⠉⠉</span><span style=\"color:#348a4c;background:#05070a\">█</span><span style=\"color:#2a6c3d;background:#05070a\">███████████████</span><span style=\"color:#348a4c;background:#05070a\">▇</span><span style=\"color:#5fff87;background:#05070a\">⠉⠑⠒⠤⠤⠒⠒</span>\n<span style=\"color:#c6d0db;background:#05070a\">    </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⠤⢄⣀⡠⠔⠊⠁</span><span style=\"color:#338549;background:#05070a\">▆▆</span><span style=\"color:#28673a;background:#05070a\">███████████████████████████████████████████</span>\n<span style=\"color:#5fff87;background:#05070a\">⣀⠤⠔⠊⠁</span><span style=\"color:#318047;background:#05070a\">▅</span><span style=\"color:#266238;background:#05070a\">███</span><span style=\"color:#318047;background:#05070a\">███</span><span style=\"color:#266238;background:#05070a\">██████████████████████████████████████████████</span>\n<span style=\"color:#255e36;background:#05070a\">██████████████████████████████████████████████████████████</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function graph(ui: Container, theme: Theme): void {\n  // Braille line chart. `fill` shades the area under the curve.\n  ui.graph({ values: CPU_HISTORY, min: 0, max: 100, fill: true, color: theme.success, size: \"1fr\" });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "sparkline",
+      "title": "Sparkline",
+      "category": "Meters",
+      "width": 52,
+      "height": 3,
+      "blurb": "One row: label, inline chart and a value.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">CPU </span><span style=\"color:#c6d0db;background:#05070a\">                        </span><span style=\"color:#5fff87;background:#05070a\">▁▂▃▂▃▅▄▆▇▅▄▅▆▇█▇▆▅▄▅</span><span style=\"color:#5fff87;background:#05070a;font-weight:700\"> 44%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Mem </span><span style=\"color:#c6d0db;background:#05070a\">                            </span><span style=\"color:#ffd75f;background:#05070a\">▁▂▁▃▅▄█▇▅▃▂▄▆█▇▅</span><span style=\"color:#ffd75f;background:#05070a;font-weight:700\"> 31%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Net </span><span style=\"color:#c6d0db;background:#05070a\">                   </span><span style=\"color:#58a6ff;background:#05070a\">▁▂▃▂▃▅▄▆▇▅▄▅▆▇█▇▆▅▄▅</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 2.4 MB/s</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function sparkline(ui: Container, theme: Theme): void {\n  ui.sparkline({ label: \"CPU \", values: CPU_HISTORY, text: \"44%\", color: theme.success });\n  ui.sparkline({ label: \"Mem \", values: NET_HISTORY, text: \"31%\", color: theme.warning });\n  ui.sparkline({ label: \"Net \", values: CPU_HISTORY, text: \"2.4 MB/s\", color: theme.primary });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "histogram",
+      "title": "Histogram",
+      "category": "Meters",
+      "width": 58,
+      "height": 8,
+      "blurb": "Block columns. Cheaper than Braille and easier to read when short.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">             </span><span style=\"color:#56d4dd;background:#05070a\">▃█▁</span><span style=\"color:#c6d0db;background:#05070a\">                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#05070a\">▆</span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#56d4dd;background:#05070a\">▃███</span><span style=\"color:#c6d0db;background:#05070a\">                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">       </span><span style=\"color:#56d4dd;background:#05070a\">▆█▃</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#56d4dd;background:#05070a\">████▅</span><span style=\"color:#c6d0db;background:#05070a\">                                         </span>\n<span style=\"color:#c6d0db;background:#05070a\">     </span><span style=\"color:#56d4dd;background:#05070a\">▇▂███▃▇█████▆▁▄</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#c6d0db;background:#05070a\">    </span><span style=\"color:#56d4dd;background:#05070a\">▄███████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#56d4dd;background:#05070a\">▇▄████████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#56d4dd;background:#05070a\">▃███████████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#56d4dd;background:#05070a\">████████████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function histogram(ui: Container, theme: Theme): void {\n  // Block columns. Cheaper than Braille and easier to read when short.\n  ui.histogram({ values: CPU_HISTORY, color: theme.accent, size: \"1fr\" });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "heatBar",
+      "title": "Heat bar",
+      "category": "Meters",
+      "width": 48,
+      "height": 3,
+      "blurb": "A segmented bar colored along the theme's heat ramp.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#65ff84;background:#05070a\">▮</span><span style=\"color:#6bff80;background:#05070a\">▮</span><span style=\"color:#72ff7d;background:#05070a\">▮</span><span style=\"color:#78ff7a;background:#05070a\">▮</span><span style=\"color:#7eff76;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8aff70;background:#05070a\">▮</span><span style=\"color:#91ff6c;background:#05070a\">▮</span><span style=\"color:#97ff69;background:#05070a\">▮</span><span style=\"color:#9dff66;background:#05070a\">▮</span><span style=\"color:#a3ff62;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#1c2633;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span>\n<span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#65ff84;background:#05070a\">▮</span><span style=\"color:#6bff80;background:#05070a\">▮</span><span style=\"color:#72ff7d;background:#05070a\">▮</span><span style=\"color:#78ff7a;background:#05070a\">▮</span><span style=\"color:#7eff76;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8aff70;background:#05070a\">▮</span><span style=\"color:#91ff6c;background:#05070a\">▮</span><span style=\"color:#97ff69;background:#05070a\">▮</span><span style=\"color:#9dff66;background:#05070a\">▮</span><span style=\"color:#a3ff62;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#b1fb60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#c0f460;background:#05070a\">▮</span><span style=\"color:#c7f160;background:#05070a\">▮</span><span style=\"color:#cfed60;background:#05070a\">▮</span><span style=\"color:#d6ea5f;background:#05070a\">▮</span><span style=\"color:#dee65f;background:#05070a\">▮</span><span style=\"color:#e5e35f;background:#05070a\">▮</span><span style=\"color:#ece05f;background:#05070a\">▮</span><span style=\"color:#f4dc5f;background:#05070a\">▮</span><span style=\"color:#fbd95f;background:#05070a\">▮</span><span style=\"color:#ffd55f;background:#05070a\">▮</span><span style=\"color:#ffd15e;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc85d;background:#05070a\">▮</span><span style=\"color:#ffc45c;background:#05070a\">▮</span><span style=\"color:#ffc05b;background:#05070a\">▮</span><span style=\"color:#ffbc5b;background:#05070a\">▮</span><span style=\"color:#1c2633;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span>\n<span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#65ff84;background:#05070a\">▮</span><span style=\"color:#6bff80;background:#05070a\">▮</span><span style=\"color:#72ff7d;background:#05070a\">▮</span><span style=\"color:#78ff7a;background:#05070a\">▮</span><span style=\"color:#7eff76;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8aff70;background:#05070a\">▮</span><span style=\"color:#91ff6c;background:#05070a\">▮</span><span style=\"color:#97ff69;background:#05070a\">▮</span><span style=\"color:#9dff66;background:#05070a\">▮</span><span style=\"color:#a3ff62;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#b1fb60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#c0f460;background:#05070a\">▮</span><span style=\"color:#c7f160;background:#05070a\">▮</span><span style=\"color:#cfed60;background:#05070a\">▮</span><span style=\"color:#d6ea5f;background:#05070a\">▮</span><span style=\"color:#dee65f;background:#05070a\">▮</span><span style=\"color:#e5e35f;background:#05070a\">▮</span><span style=\"color:#ece05f;background:#05070a\">▮</span><span style=\"color:#f4dc5f;background:#05070a\">▮</span><span style=\"color:#fbd95f;background:#05070a\">▮</span><span style=\"color:#ffd55f;background:#05070a\">▮</span><span style=\"color:#ffd15e;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc85d;background:#05070a\">▮</span><span style=\"color:#ffc45c;background:#05070a\">▮</span><span style=\"color:#ffc05b;background:#05070a\">▮</span><span style=\"color:#ffbc5b;background:#05070a\">▮</span><span style=\"color:#ffb85a;background:#05070a\">▮</span><span style=\"color:#ffb459;background:#05070a\">▮</span><span style=\"color:#ffaf59;background:#05070a\">▮</span><span style=\"color:#ffab58;background:#05070a\">▮</span><span style=\"color:#ffa757;background:#05070a\">▮</span><span style=\"color:#ffa258;background:#05070a\">▮</span><span style=\"color:#ff9d5a;background:#05070a\">▮</span><span style=\"color:#ff985c;background:#05070a\">▮</span><span style=\"color:#ff935d;background:#05070a\">▮</span><span style=\"color:#ff8e5f;background:#05070a\">▮</span><span style=\"color:#ff8961;background:#05070a\">▮</span><span style=\"color:#ff8462;background:#05070a\">▮</span><span style=\"color:#ff7f64;background:#05070a\">▮</span><span style=\"color:#1c2633;background:#05070a\">▮▮▮▮</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function heatBar(ui: Container, _theme: Theme): void {\n  // Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n  ui.heatBar({ value: 0.28 });\n  ui.heatBar({ value: 0.64 });\n  ui.heatBar({ value: 0.91 });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "gauge",
+      "title": "Gauge",
+      "category": "Meters",
+      "width": 40,
+      "height": 12,
+      "blurb": "A semicircular dial. Wants at least nine columns by five rows.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⣠⣤⡶⠶⠞⠛⠛⠛⠛⠛⠛⠛⠶⠶⣦⣤⣀</span><span style=\"color:#c6d0db;background:#05070a\">           </span>\n<span style=\"color:#c6d0db;background:#05070a\">       </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⣠⡶⠟⠋⠉</span><span style=\"color:#c6d0db;background:#05070a\">              </span><span style=\"color:#ff6b6b;background:#05070a\">⠈⠉⠛⠷⣦⣀</span><span style=\"color:#c6d0db;background:#05070a\">       </span>\n<span style=\"color:#c6d0db;background:#05070a\">     </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⡴⠟⠁</span><span style=\"color:#c6d0db;background:#05070a\">                       </span><span style=\"color:#ff6b6b;background:#05070a\">⠙⠷⣄</span><span style=\"color:#c6d0db;background:#05070a\">     </span>\n<span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⡴⠋</span><span style=\"color:#c6d0db;background:#05070a\">                            </span><span style=\"color:#ff6b6b;background:#05070a\">⠈⠳⣄</span><span style=\"color:#c6d0db;background:#05070a\">   </span>\n<span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#ff6b6b;background:#05070a\">⣠⠟</span><span style=\"color:#c6d0db;background:#05070a\">                                </span><span style=\"color:#ff6b6b;background:#05070a\">⠘⢧⡀</span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ff6b6b;background:#05070a\">⢠⠏</span><span style=\"color:#c6d0db;background:#05070a\">                                  </span><span style=\"color:#ff6b6b;background:#05070a\">⠈⢧</span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ff6b6b;background:#05070a\">⡟</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span><span style=\"color:#ff6b6b;background:#05070a\">⠘⡇</span>\n<span style=\"color:#ff6b6b;background:#05070a\">⢸⠃</span><span style=\"color:#c6d0db;background:#05070a\">                                     </span><span style=\"color:#ff6b6b;background:#05070a\">⢻</span>\n<span style=\"color:#ff6b6b;background:#05070a;font-weight:700\">                  62%                   </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function gauge(ui: Container, _theme: Theme): void {\n  // A semicircular dial. Wants at least 9x5.\n  ui.gauge({ value: 62, label: \"62%\" });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "donut",
+      "title": "Donut",
+      "category": "Meters",
+      "width": 40,
+      "height": 12,
+      "blurb": "A ring split into labelled, colored segments.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">             </span><span style=\"color:#ffd75f;background:#05070a\">⢀⣤⣴⣶⣿⣿⣿⣿</span><span style=\"color:#58a6ff;background:#05070a\">⣿⣿⣷⣶⣤⣄</span><span style=\"color:#c6d0db;background:#05070a\">             </span>\n<span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#ffd75f;background:#05070a\">⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿</span><span style=\"color:#58a6ff;background:#05070a\">⣿⣿⣿⣿⣿⣿⣿⣦⡀</span><span style=\"color:#c6d0db;background:#05070a\">          </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⢀⣼⣿⣿⣿⣿⣿⣿⠿⠛⠛⠛</span><span style=\"color:#58a6ff;background:#05070a\">⠛⠻⢿⣿⣿⣿⣿⣿⣿⣄</span><span style=\"color:#c6d0db;background:#05070a\">         </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⣼⣿⣿⣿⣿⣿⠏</span><span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#58a6ff;background:#05070a\">⠈⢿⣿⣿⣿⣿⣿⡄</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#ffd75f;background:#05070a\">⢠⣿⣿⣿⣿⣿⠇</span><span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#58a6ff;background:#05070a\">⢿⣿⣿⣿⣿⣧</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#ffd75f;background:#05070a\">⠸⣿⣿⣿⣿⣿⡄</span><span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#ffd75f;background:#05070a\">⣼</span><span style=\"color:#58a6ff;background:#05070a\">⣿⣿⣿⣿⡿</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⢿⣿⣿⣿⣿⣷⡄</span><span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⣴⣿⣿⣿⣿⣿⠇</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⠘⢿⣿⣿⣿⣿⣿⣷⣤⣀⣀⣀⣀⣠⣴⣿⣿⣿⣿⣿⣿⠟</span><span style=\"color:#c6d0db;background:#05070a\">         </span>\n<span style=\"color:#c6d0db;background:#05070a\">          </span><span style=\"color:#ffd75f;background:#05070a\">⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋</span><span style=\"color:#c6d0db;background:#05070a\">          </span>\n<span style=\"color:#c6d0db;background:#05070a\">            </span><span style=\"color:#ffd75f;background:#05070a\">⠈⠙⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠉</span><span style=\"color:#c6d0db;background:#05070a\">            </span>\n<span style=\"color:#c6d0db;background:#05070a\">                 </span><span style=\"color:#ffd75f;background:#05070a\">⠉⠉⠉⠉⠉⠉⠁</span><span style=\"color:#c6d0db;background:#05070a\">                </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function donut(ui: Container, theme: Theme): void {\n  ui.donut({\n    segments: [\n      { value: 4.65, color: theme.primary, label: \"Used\" },\n      { value: 10.96, color: theme.warning, label: \"Free\" },\n    ],\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "button",
+      "title": "Button",
+      "category": "Inputs",
+      "width": 58,
+      "height": 1,
+      "blurb": "Variants for primary, success, warning, danger and ghost. Joins the Tab order.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#05070a;background:#58a6ff;font-weight:700\">  Primary  </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5fff87;background:#183526;font-weight:700\">  Success  </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ff6b6b;background:#311d22;font-weight:700\">  Danger  </span><span style=\"color:#c6d0db;background:#05070a\">                        </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function button(ui: Container, _theme: Theme): void {\n  // Pass `onPress` and the button joins the Tab order automatically.\n  ui.row({ size: 1, gap: 1 }, (r) => {\n    r.button({ label: \"Primary\", width: 11, size: 11, onPress: () => {} });\n    r.button({ label: \"Success\", width: 11, size: 11, variant: \"success\" });\n    r.button({ label: \"Danger\", width: 10, size: 10, variant: \"danger\" });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "checkbox",
+      "title": "Checkbox",
+      "category": "Inputs",
+      "width": 46,
+      "height": 1,
+      "blurb": "A checkbox or a toggle, depending on the variant.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5fff87;background:#05070a;font-weight:700\">[▮ ]</span><span style=\"color:#c6d0db;background:#05070a;font-weight:700\"> Toggle</span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#5a6b7d;background:#05070a\">[ ] Checkbox</span><span style=\"color:#c6d0db;background:#05070a\">                    </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function checkbox(ui: Container, _theme: Theme): void {\n  ui.row({ size: 1, gap: 2 }, (r) => {\n    r.checkbox({ label: \"Toggle\", checked: true, variant: \"toggle\", size: 12 });\n    r.checkbox({ label: \"Checkbox\", checked: false, size: 14 });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "select",
+      "title": "Select",
+      "category": "Inputs",
+      "width": 40,
+      "height": 6,
+      "blurb": "A closed value, or an open dropdown with the current option marked.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#161a20;font-weight:700\"> Dracula          </span><span style=\"color:#56d4dd;background:#161a20\"> ▴</span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#1e2127\"> Dark               </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#e6f2ff;background:#1d3a52\"> Dracula            </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#1e2127\"> Nord               </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#1e2127\"> Tokyo Night        </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function select(ui: Container, _theme: Theme): void {\n  ui.select({\n    value: \"Dracula\",\n    width: 20,\n    size: 20,\n    open: true,\n    options: [\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"],\n    selectedIndex: 1,\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "textInput",
+      "title": "Text input",
+      "category": "Inputs",
+      "width": 52,
+      "height": 3,
+      "blurb": "A labelled field with a placeholder and a cursor.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">Search</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#c6d0db;background:#23262c\"> postgres</span><span style=\"color:#05070a;background:#56d4dd\"> </span><span style=\"color:#c6d0db;background:#23262c\">                                   </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                    </span>\n<span style=\"color:#5a6b7d;background:#05070a\">Filter</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#c6d0db;background:#161a20\"> </span><span style=\"color:#5a6b7d;background:#161a20\">type to filter…</span><span style=\"color:#c6d0db;background:#161a20\">                             </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function textInput(ui: Container, _theme: Theme): void {\n  ui.textInput({ label: \"Search\", value: \"postgres\", size: 1 });\n  ui.spacer(1);\n  ui.textInput({ label: \"Filter\", value: \"\", placeholder: \"type to filter…\", size: 1 });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "tabs",
+      "title": "Tabs",
+      "category": "Inputs",
+      "width": 62,
+      "height": 1,
+      "blurb": "A single row of tabs with one active. Clickable.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">  1 dashboard  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">  2 traffic  </span><span style=\"color:#5a6b7d;background:#05070a\">  3 sessions    4 network  </span><span style=\"color:#c6d0db;background:#05070a\">       </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function tabs(ui: Container, _theme: Theme): void {\n  ui.tabs({\n    tabs: [\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"],\n    active: 1,\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "modal",
+      "title": "Modal",
+      "category": "Overlays",
+      "width": 62,
+      "height": 12,
+      "blurb": "A centered dialog drawn over everything, with buttons.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#3b3f45;background:#05070a\">                                                              </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">╭──────────────</span><span style=\"color:#7ee2ff;background:#1e2127;font-weight:700\"> Confirm Action </span><span style=\"color:#56d4dd;background:#1e2127\">──────────────╮</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">                                            </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#c6d0db;background:#1e2127\">    Terminate process 4821 (postgres)?    </span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#c6d0db;background:#1e2127\">                                          </span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#c6d0db;background:#1e2127\">          This cannot be undone.          </span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">                                            </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">              </span><span style=\"color:#05070a;background:#5fff87;font-weight:700\">  Yes  </span><span style=\"color:#3b3f45;background:#1e2127\">  </span><span style=\"color:#5a6b7d;background:#1e2127\">  No  </span><span style=\"color:#3b3f45;background:#1e2127\">               </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">                                            </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">╰────────────────────────────────────────────╯</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">                                                              </span>\n<span style=\"color:#3b3f45;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function modal(ui: Container, _theme: Theme): void {\n  // Overlays draw over everything already on the screen, centered.\n  ui.modal({\n    title: \"Confirm Action\",\n    width: 46,\n    height: 9,\n    message: \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n    buttons: [\n      { label: \"Yes\", variant: \"success\", focused: true },\n      { label: \"No\", variant: \"ghost\" },\n    ],\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "commandPalette",
+      "title": "Command palette",
+      "category": "Overlays",
+      "width": 62,
+      "height": 10,
+      "blurb": "A query line and filtered results, over the current screen.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#3f4349;background:#05070a\">                                                              </span>\n<span style=\"color:#3f4349;background:#05070a\">                                                              </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">╭─</span><span style=\"color:#7ee2ff;background:#23262c;font-weight:700\"> Command Palette </span><span style=\"color:#56d4dd;background:#23262c\">────────────────────────────────────────╮</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#56d4dd;background:#23262c;font-weight:700\">› </span><span style=\"color:#c6d0db;background:#23262c\">the</span><span style=\"color:#3f4349;background:#23262c\">                                                     </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#243040;background:#23262c\">──────────────────────────────────────────────────────────</span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">Toggle theme</span><span style=\"color:#3f4349;background:#1d3a52\">                                          </span><span style=\"color:#5a6b7d;background:#1d3a52\">F2</span><span style=\"color:#3f4349;background:#1d3a52\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#c6d0db;background:#23262c\">Filter processes</span><span style=\"color:#3f4349;background:#23262c\">                                      </span><span style=\"color:#5a6b7d;background:#23262c\">F3</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#c6d0db;background:#23262c\">Sort by memory</span><span style=\"color:#3f4349;background:#23262c\">                                        </span><span style=\"color:#5a6b7d;background:#23262c\">F6</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">╰──────────────────────────────────────────────────────────╯</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function commandPalette(ui: Container, _theme: Theme): void {\n  ui.commandPalette({\n    query: \"the\",\n    items: [\n      { label: \"Toggle theme\", hint: \"F2\" },\n      { label: \"Filter processes\", hint: \"F3\" },\n      { label: \"Sort by memory\", hint: \"F6\" },\n    ],\n    selected: 0,\n  });\n}",
+          "syntax": "ts"
+        }
+      }
+    },
+    {
+      "id": "tooltip",
+      "title": "Tooltip",
+      "category": "Overlays",
+      "width": 62,
+      "height": 7,
+      "blurb": "A small floating box anchored at a cell.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">Tooltips are overlays positioned at a cell, for hover and hin…</span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span>\n<span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#56d4dd;background:#272b30\">╭──────────────────╮</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#56d4dd;background:#272b30\">│</span><span style=\"color:#c6d0db;background:#272b30\">swap is 87% full  </span><span style=\"color:#56d4dd;background:#272b30\">│</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#56d4dd;background:#272b30\">╰──────────────────╯</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function tooltip(ui: Container, _theme: Theme): void {\n  ui.text(\"Tooltips are overlays positioned at a cell, for hover and hints.\");\n  ui.tooltip({ text: \"swap is 87% full\", x: 6, y: 3 });\n}",
+          "syntax": "ts"
+        }
+      }
+    }
+  ]
+}
