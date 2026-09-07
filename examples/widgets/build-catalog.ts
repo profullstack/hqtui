@@ -173,7 +173,12 @@ export function build() {
   const sources = new Map<string, string>();
   for (const language of LANGUAGES) {
     try {
-      sources.set(language.id, readFileSync(join(ROOT, language.file), "utf8"));
+      // Normalised, because Windows checks out CRLF and the published catalog
+      // must not depend on the line-ending policy of whoever generated it.
+      sources.set(
+        language.id,
+        readFileSync(join(ROOT, language.file), "utf8").replace(/\r\n/g, "\n"),
+      );
     } catch {
       // A language whose gallery is not written yet simply has no examples.
       sources.set(language.id, "");
