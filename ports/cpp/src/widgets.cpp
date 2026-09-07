@@ -14,43 +14,91 @@ static uint32_t vertical(double v, const std::string &mode = "block") {
   }
   return n ? 0x2580 + n : ' ';
 }
-/// Splits on newlines, then wraps each line on `columns` when asked. Matches
-/// the reference's wrap: break on the last space that fits, and hard-break a
-/// word longer than the line.
+/// The reference's word wrap: break before a word that would overflow, and
+/// hard-split a single word longer than the line. Trailing space is trimmed
+/// from each produced line.
+static std::vector<std::string> wrap_text(std::string_view content, int columns) {
+  std::vector<std::string> lines;
+  if (columns <= 0)
+    return lines;
+
+  std::size_t para_start = 0;
+  while (para_start <= content.size()) {
+    std::size_t brk = content.find('\n', para_start);
+    std::string_view paragraph = content.substr(
+        para_start, brk == std::string_view::npos ? std::string_view::npos : brk - para_start);
+
+    std::string line;
+    int line_w = 0;
+    // Split on runs of whitespace, keeping them as their own tokens, exactly as
+    // the reference's /(\s+)/ split does.
+    std::size_t i = 0;
+    while (i <= paragraph.size()) {
+      bool space = i < paragraph.size() && std::isspace((unsigned char)paragraph[i]);
+      std::size_t j = i;
+      while (j < paragraph.size() &&
+             bool(std::isspace((unsigned char)paragraph[j])) == space)
+        j++;
+      if (j == i)
+        break;
+      std::string_view word = paragraph.substr(i, j - i);
+      i = j;
+
+      int w = int(width(word));
+      if (line_w + w > columns && line_w > 0) {
+        while (!line.empty() && line.back() == ' ')
+          line.pop_back();
+        lines.push_back(line);
+        line.clear();
+        line_w = 0;
+        if (space)
+          continue;
+      }
+      if (w > columns) {
+        // A single word longer than the line: hard-split it by grapheme.
+        std::size_t k = 0;
+        while (k < word.size()) {
+          unsigned char lead = word[k];
+          std::size_t len = lead < 128 ? 1 : lead < 224 ? 2 : lead < 240 ? 3 : 4;
+          len = std::min(len, word.size() - k);
+          std::string_view g = word.substr(k, len);
+          int gw = int(width(g));
+          if (line_w + gw > columns) {
+            lines.push_back(line);
+            line.clear();
+            line_w = 0;
+          }
+          line += g;
+          line_w += gw;
+          k += len;
+        }
+        continue;
+      }
+      line += word;
+      line_w += w;
+    }
+    while (!line.empty() && line.back() == ' ')
+      line.pop_back();
+    lines.push_back(line);
+
+    if (brk == std::string_view::npos)
+      break;
+    para_start = brk + 1;
+  }
+  return lines;
+}
+
+/// Splits on newlines, or wraps, depending on what the caller asked for.
 static std::vector<std::string> lines_of(std::string_view content, int columns,
                                          bool wrap) {
+  if (wrap)
+    return wrap_text(content, columns);
   std::vector<std::string> out;
   std::size_t start = 0;
   while (start <= content.size()) {
     std::size_t brk = content.find('\n', start);
-    std::string_view line = content.substr(
-        start, brk == std::string_view::npos ? std::string_view::npos : brk - start);
-    if (!wrap || columns <= 0 || int(width(line)) <= columns) {
-      out.emplace_back(line);
-    } else {
-      std::string rest(line);
-      while (int(width(rest)) > columns) {
-        // The longest prefix that fits, then back up to a space if there is one.
-        std::size_t i = 0, end = 0;
-        int used = 0;
-        while (i < rest.size()) {
-          unsigned char ch = rest[i];
-          std::size_t len = ch < 128 ? 1 : ch < 224 ? 2 : ch < 240 ? 3 : 4;
-          len = std::min(len, rest.size() - i);
-          int w = int(width(std::string_view(rest).substr(i, len)));
-          if (used + w > columns)
-            break;
-          used += w;
-          i += len;
-          end = i;
-        }
-        std::size_t space = rest.rfind(' ', end);
-        std::size_t cut = (space != std::string::npos && space > 0) ? space : end;
-        out.push_back(rest.substr(0, cut));
-        rest = rest.substr(cut == space ? cut + 1 : cut);
-      }
-      out.push_back(rest);
-    }
+    out.emplace_back(content.substr(
+        start, brk == std::string_view::npos ? std::string_view::npos : brk - start));
     if (brk == std::string_view::npos)
       break;
     start = brk + 1;
@@ -884,6 +932,137 @@ void draw_status_bar(Surface s, const StatusBar &o) {
       right_width += int(width(item.label)) + (item.key.empty() ? 0 : int(width(item.key)) + 1) + 2;
     draw_items(o.right, std::max(x, w - right_width - 1));
   }
+}
+
+/// Restyles a rectangle in place, for the backdrop dim and the caret.
+static void restyle(Surface s, hq_rect local, hq_style style) {
+  auto native = s.native();
+  hq_rect absolute{native.rect.x + local.x, native.rect.y + local.y, local.width,
+                   local.height};
+  hq_buffer_style(native.buffer, hq_intersect(absolute, native.clip), style);
+}
+
+Surface draw_modal(Surface root, const Modal &o) {
+  auto &t = theme(root);
+  int rw = root.rect().width, rh = root.rect().height;
+  if (o.backdrop)
+    // Dim rather than blank: the dashboard stays legible behind the dialog.
+    restyle(root, {0, 0, rw, rh},
+            hq_style{hq_mix(t.foreground, t.background, .72), 0, 0, HQ_STYLE_FG});
+
+  int w = std::min(o.width < 0 ? 48 : o.width, rw - 2);
+  int message_lines = o.message.empty() ? 0 : int(wrap_text(o.message, w - 4).size());
+  int h = std::min(o.height < 0 ? message_lines + (o.buttons.empty() ? 4 : 5) : o.height,
+                   rh - 2);
+  int x = std::max(0, (rw - w) / 2), y = std::max(0, (rh - h) / 2);
+
+  Surface surface = root.sub({x, y, w, h});
+  hq_box_options box{};
+  box.title = o.title.empty() ? nullptr : o.title.c_str();
+  box.title_align = o.align;
+  box.border = HQ_ROUNDED;
+  box.border_style = Style().foreground(o.color ? o.color : t.border_focused);
+  box.has_background = 1;
+  box.background = elevate(t, .08);
+  Surface inner = surface.box(box);
+
+  if (!o.message.empty()) {
+    auto lines = wrap_text(o.message, inner.rect().width - 2);
+    for (std::size_t i = 0; i < lines.size(); i++) {
+      if (int(i) + 1 >= inner.rect().height)
+        break;
+      text(inner, 1, int(i) + 1, fit(lines[i], inner.rect().width - 2, o.align),
+           t.foreground, 0, {});
+    }
+  }
+
+  if (!o.buttons.empty()) {
+    std::vector<int> widths;
+    int total = -2;
+    for (const auto &b : o.buttons) {
+      widths.push_back(int(width(b.label)) + 4);
+      total += widths.back() + 2;
+    }
+    int bx = std::max(0, (inner.rect().width - total) / 2);
+    int by = inner.rect().height - 2;
+    for (std::size_t i = 0; i < o.buttons.size(); i++) {
+      Button button;
+      button.label = o.buttons[i].label;
+      button.variant = o.buttons[i].variant;
+      button.focused = o.buttons[i].focused;
+      button.width = widths[i];
+      draw_button(inner.sub({bx, by, widths[i], 1}), button);
+      bx += widths[i] + 2;
+    }
+  }
+  return inner;
+}
+
+void draw_command_palette(Surface root, const CommandPalette &o) {
+  auto &t = theme(root);
+  int rw = root.rect().width, rh = root.rect().height;
+  int w = std::min(o.width < 0 ? 60 : o.width, rw - 2);
+  int h = std::min(o.height < 0 ? std::min(int(o.items.size()) + 4, 14) : o.height, rh - 2);
+  int x = std::max(0, (rw - w) / 2), y = std::max(1, rh / 5);
+
+  restyle(root, {0, 0, rw, rh},
+          hq_style{hq_mix(t.foreground, t.background, .7), 0, 0, HQ_STYLE_FG});
+
+  Surface surface = root.sub({x, y, w, h});
+  hq_box_options box{};
+  box.border = HQ_ROUNDED;
+  box.border_style = Style().foreground(t.border_focused);
+  box.has_background = 1;
+  box.background = elevate(t, .1);
+  box.title = "Command Palette";
+  Surface inner = surface.box(box);
+
+  int iw = inner.rect().width, ih = inner.rect().height;
+  text(inner, 0, 0, "› ", t.accent, HQ_BOLD, {});
+  std::string prompt = !o.query.empty() ? o.query
+                       : !o.placeholder.empty() ? o.placeholder
+                                                : "Type a command…";
+  text(inner, 2, 0, prompt, o.query.empty() ? t.muted : t.foreground, 0, {});
+  for (int i = 0; i < iw; i++)
+    inner.set(i, 1, 0x2500, Style().foreground(t.border));
+
+  int rows = ih - 2;
+  for (int i = 0; i < rows; i++) {
+    if (i >= int(o.items.size()))
+      break;
+    const auto &item = o.items[std::size_t(i)];
+    bool selected = i == o.selected;
+    int yy = i + 2;
+    std::optional<Color> bg;
+    if (selected) {
+      inner.sub({0, yy, iw, 1}).fill(' ', Style().background(t.selection));
+      bg = t.selection;
+    }
+    text(inner, 1, yy, fit(item.label, iw - 2, HQ_LEFT, false),
+         selected ? t.selection_text : t.foreground, selected ? HQ_BOLD : 0, bg);
+    if (!item.hint.empty()) {
+      int hw = int(width(item.hint));
+      if (hw + 3 < iw)
+        text(inner, iw - hw - 1, yy, item.hint, t.muted, 0, bg);
+    }
+  }
+}
+
+void draw_tooltip(Surface root, const Tooltip &o) {
+  auto &t = theme(root);
+  int rw = root.rect().width, rh = root.rect().height;
+  int w = std::min(int(width(o.text)) + 4, rw);
+  int x = std::clamp(o.x, 0, std::max(0, rw - w));
+  int y = std::clamp(o.y, 0, std::max(0, rh - 3));
+
+  Surface surface = root.sub({x, y, w, 3});
+  hq_box_options box{};
+  box.border = HQ_ROUNDED;
+  box.border_style = Style().foreground(o.color ? o.color : t.border_focused);
+  box.has_background = 1;
+  box.background = elevate(t, .12);
+  Surface inner = surface.box(box);
+  text(inner, 0, 0, fit(o.text, inner.rect().width, HQ_LEFT, false), t.foreground, 0, {});
 }
 
 void draw_list(Surface s, const List &o) {

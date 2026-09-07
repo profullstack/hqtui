@@ -144,6 +144,25 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_table(s, table);
     return true;
   }
+  if (name == "modal") {
+    Modal modal;
+    modal.title = "Confirm";
+    modal.message = "Restart the service?";
+    modal.buttons = {{.label = "Yes", .focused = true}, {.label = "No"}};
+    draw_modal(s, modal);
+    return true;
+  }
+  if (name == "command-palette") {
+    CommandPalette palette;
+    palette.query = "th";
+    palette.items = {{"theme: dark", "T"}, {"theme: nord", ""}};
+    draw_command_palette(s, palette);
+    return true;
+  }
+  if (name == "tooltip") {
+    draw_tooltip(s, Tooltip{.text = "hint", .x = 4, .y = 2});
+    return true;
+  }
   if (name == "button") {
     draw_button(s, Button{.label = "OK"});
     return true;

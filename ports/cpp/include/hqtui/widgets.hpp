@@ -400,6 +400,44 @@ struct StatusBar {
 };
 void draw_status_bar(Surface, const StatusBar &);
 
+/// A centred dialog drawn over everything. Returns its interior, so a caller
+/// can draw its own content instead of `message`.
+struct ModalButton {
+  std::string label;
+  int variant = HQ_BUTTON_PRIMARY;
+  bool focused = false;
+};
+struct Modal {
+  std::string title, message;
+  int width = -1, height = -1;
+  /// Dim the screen behind the dialog.
+  bool backdrop = true;
+  std::vector<ModalButton> buttons;
+  Color color = 0;
+  int align = HQ_CENTER;
+};
+Surface draw_modal(Surface root, const Modal &);
+
+/// Ctrl+K style palette: a query line above a filtered list.
+struct PaletteItem {
+  std::string label, hint;
+};
+struct CommandPalette {
+  std::string query, placeholder;
+  std::vector<PaletteItem> items;
+  int selected = 0;
+  int width = -1, height = -1;
+};
+void draw_command_palette(Surface root, const CommandPalette &);
+
+/// A small floating box anchored at a cell, clamped to stay on screen.
+struct Tooltip {
+  std::string text;
+  int x = 0, y = 0;
+  Color color = 0;
+};
+void draw_tooltip(Surface root, const Tooltip &);
+
 struct Column {
   std::string title;
   int width = -1, min = 1;
