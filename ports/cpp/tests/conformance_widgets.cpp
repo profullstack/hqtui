@@ -144,6 +144,27 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_table(s, table);
     return true;
   }
+  if (name == "list") {
+    List list;
+    list.items = {{"alpha"}, {"beta"}, {"gamma"}, {"delta"}};
+    list.selected = 2;
+    list.bullet = "•";
+    draw_list(s, list);
+    return true;
+  }
+  if (name == "tree") {
+    Tree tree;
+    TreeNode root{.label = "root"};
+    TreeNode a{.label = "child-a"};
+    a.children.push_back(TreeNode{.label = "leaf"});
+    root.children.push_back(a);
+    root.children.push_back(TreeNode{.label = "child-b"});
+    tree.nodes.push_back(root);
+    tree.nodes.push_back(TreeNode{.label = "second"});
+    tree.selected = 1;
+    draw_tree(s, tree);
+    return true;
+  }
   if (name == "log") {
     std::vector<LogEntry> entries{
         {"10:00:00", "INFO", "started", ""},

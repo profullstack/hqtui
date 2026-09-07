@@ -347,6 +347,51 @@ struct Table {
   bool zebra = false, header = true, scrollbar = true;
 };
 void draw_table(Surface, const Table &);
+/// A selectable list. One column, less ceremony than a table.
+struct ListItem {
+  std::string label;
+  Color color = 0;
+};
+struct List {
+  std::vector<ListItem> items;
+  /// -1 for no selection.
+  int selected = -1;
+  int offset = 0;
+  /// Scroll so `selected` stays visible.
+  bool follow_selection = false;
+  std::string bullet;
+  bool scrollbar = false;
+  std::optional<Color> background;
+};
+void draw_list(Surface, const List &);
+
+/// An indented tree with box-drawing connectors, like `pstree`.
+struct TreeValue {
+  std::string text;
+  int width = 0;
+  Color color = 0;
+  int align = HQ_RIGHT;
+};
+struct TreeNode {
+  std::string label;
+  Color color = 0;
+  std::vector<TreeValue> values;
+  std::vector<TreeNode> children;
+  /// Children are shown unless this is explicitly false.
+  bool expanded = true;
+};
+struct Tree {
+  std::vector<TreeNode> nodes;
+  int selected = -1;
+  int offset = 0;
+  bool follow_selection = false;
+  /// Draw the ├─ └─ connectors.
+  bool guides = true;
+  Color guide_color = 0;
+  std::optional<Color> background;
+};
+void draw_tree(Surface, const Tree &);
+
 struct LogEntry {
   std::string time, level, message, meta;
 };

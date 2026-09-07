@@ -693,6 +693,117 @@ void draw_table(Surface s, const Table &o) {
   if (o.scrollbar)
     draw_scrollbar(s, w - 1, int(o.header), capacity, p.total, p.offset);
 }
+/// Where the visible window starts, given an explicit offset, a selection to
+/// follow, and how much fits.
+static int resolve_offset(int offset, int selected, int capacity, int total, bool follow) {
+  int max_offset = std::max(0, total - capacity);
+  int start = std::clamp(offset, 0, max_offset);
+  if (follow && selected >= 0 && capacity > 0) {
+    if (selected < start)
+      start = selected;
+    else if (selected >= start + capacity)
+      start = selected - capacity + 1;
+  }
+  return std::clamp(start, 0, max_offset);
+}
+
+void draw_list(Surface s, const List &o) {
+  auto &t = theme(s);
+  int h = s.rect().height;
+  if (s.rect().width <= 0 || h <= 0)
+    return;
+  int w = s.rect().width - (o.scrollbar ? 1 : 0);
+  int offset = resolve_offset(o.offset, o.selected, h, int(o.items.size()), o.follow_selection);
+
+  for (int i = 0; i < h; i++) {
+    int index = offset + i;
+    if (index >= int(o.items.size()))
+      break;
+    const auto &item = o.items[std::size_t(index)];
+    bool selected = o.selected == index;
+    std::string label = (o.bullet.empty() ? "" : o.bullet + " ") + item.label;
+    std::optional<Color> bg = selected ? std::optional<Color>(t.selection) : o.background;
+    if (selected)
+      s.sub({0, i, w, 1}).fill(' ', Style().background(t.selection));
+    text(s, 0, i, fit(label, w), selected ? t.selection_text : (item.color ? item.color : t.foreground),
+         selected ? HQ_BOLD : 0, bg);
+  }
+
+  if (o.scrollbar && int(o.items.size()) > h)
+    draw_scrollbar(s, s.rect().width - 1, 0, h, int(o.items.size()), offset);
+}
+
+namespace {
+struct FlatNode {
+  const TreeNode *node;
+  int depth;
+  std::vector<bool> last;
+};
+
+void flatten(const std::vector<TreeNode> &nodes, int depth, std::vector<bool> trail,
+             std::vector<FlatNode> &out) {
+  for (std::size_t i = 0; i < nodes.size(); i++) {
+    bool last = i + 1 == nodes.size();
+    std::vector<bool> here = trail;
+    here.push_back(last);
+    out.push_back({&nodes[i], depth, here});
+    if (!nodes[i].children.empty() && nodes[i].expanded)
+      flatten(nodes[i].children, depth + 1, here, out);
+  }
+}
+} // namespace
+
+void draw_tree(Surface s, const Tree &o) {
+  auto &t = theme(s);
+  int w = s.rect().width, h = s.rect().height;
+  if (w <= 0 || h <= 0)
+    return;
+  std::vector<FlatNode> flat;
+  flatten(o.nodes, 0, {}, flat);
+
+  int offset = resolve_offset(o.offset, o.selected, h, int(flat.size()), o.follow_selection);
+  Color guide_color = o.guide_color ? o.guide_color : hq_mix(t.border, t.foreground, .15);
+
+  for (int i = 0; i < h; i++) {
+    int index = offset + i;
+    if (index >= int(flat.size()))
+      break;
+    const auto &entry = flat[std::size_t(index)];
+    bool selected = o.selected == index;
+    std::optional<Color> bg = selected ? std::optional<Color>(t.selection) : o.background;
+    if (selected)
+      s.sub({0, i, w, 1}).fill(' ', Style().background(t.selection));
+
+    std::string prefix;
+    if (o.guides) {
+      for (int d = 0; d < entry.depth; d++)
+        prefix += entry.last[std::size_t(d)] ? "   " : "│  ";
+      prefix += entry.last[std::size_t(entry.depth)] ? "└─ " : "├─ ";
+    } else {
+      for (int d = 0; d < entry.depth; d++)
+        prefix += "  ";
+    }
+
+    int values_width = 0;
+    for (const auto &v : entry.node->values)
+      values_width += v.width + 1;
+    int label_width = std::max(0, w - values_width);
+
+    text(s, 0, i, fit(prefix, label_width, HQ_LEFT, false), guide_color, 0, bg);
+    int px = std::min(int(width(prefix)), label_width);
+    text(s, px, i, fit(entry.node->label, std::max(0, label_width - px), HQ_LEFT, false),
+         selected ? t.selection_text : (entry.node->color ? entry.node->color : t.foreground),
+         selected ? HQ_BOLD : 0, bg);
+
+    int vx = label_width;
+    for (const auto &v : entry.node->values) {
+      text(s, vx, i, fit(v.text, v.width, v.align),
+           selected ? t.selection_text : (v.color ? v.color : t.foreground), 0, bg);
+      vx += v.width + 1;
+    }
+  }
+}
+
 void draw_log(Surface s, const std::vector<LogEntry> &entries, Pane *pane,
               bool scrollbar) {
   auto &t = theme(s);
