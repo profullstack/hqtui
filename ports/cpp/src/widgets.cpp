@@ -340,9 +340,11 @@ void draw_table(Surface s, const Table &o) {
   if (o.scrollbar)
     draw_scrollbar(s, w - 1, int(o.header), capacity, p.total, p.offset);
 }
-void draw_log(Surface s, const std::vector<LogEntry> &entries, Pane *pane) {
+void draw_log(Surface s, const std::vector<LogEntry> &entries, Pane *pane,
+              bool scrollbar) {
   auto &t = theme(s);
-  int h = s.rect().height, w = s.rect().width - 1, total = int(entries.size()),
+  int h = s.rect().height, w = s.rect().width - (scrollbar ? 1 : 0),
+      total = int(entries.size()),
       offset = pane ? pane->offset : 0,
       start = std::clamp(total - h - offset, 0, std::max(0, total - h));
   if (pane) {
@@ -375,6 +377,7 @@ void draw_log(Surface s, const std::vector<LogEntry> &entries, Pane *pane) {
     if (mw && mw < w)
       text(s, w - mw + 1, i, e.meta, t.muted);
   }
-  // Match the reference log: reserve its scrollbar column without painting it.
+  // With `scrollbar`, the rightmost column is reserved and left unpainted, as
+  // the reference does.
 }
 } // namespace hqtui

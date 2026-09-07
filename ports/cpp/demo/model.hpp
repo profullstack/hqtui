@@ -82,6 +82,9 @@ inline Meter meter(double value, Color color = 0) {
   m.value = value;
   m.color = color;
   m.show_value = false;
+  // The demo's bars are segmented, like btop's. The library default is smooth,
+  // matching every other port, so this asks rather than assuming.
+  m.segmented = true;
   return m;
 }
 struct State {

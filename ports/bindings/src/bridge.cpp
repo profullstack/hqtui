@@ -158,7 +158,7 @@ void node(UI &ui, const Json &n) {
         [entries, offset](Surface s) {
           Pane p;
           p.offset = offset;
-          draw_log(s, entries, &p);
+          draw_log(s, entries, &p, true);
         },
         size(n));
   }

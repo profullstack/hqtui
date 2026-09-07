@@ -97,6 +97,15 @@ if(BUILD_TESTING)
             set_tests_properties(cpp_demo_real_data PROPERTIES TIMEOUT 120)
         endif()
     endif()
+    # The widget fixtures every other native port is checked against. C++ was
+    # never wired to them, which is how it drifted to seven widgets.
+    add_executable(hqtui_cpp_conformance_widgets tests/conformance_widgets.cpp)
+    target_include_directories(hqtui_cpp_conformance_widgets PRIVATE demo)
+    target_link_libraries(hqtui_cpp_conformance_widgets PRIVATE hqtui::cpp)
+    add_test(NAME cpp_conformance_widgets
+             COMMAND hqtui_cpp_conformance_widgets
+                     ${CMAKE_CURRENT_SOURCE_DIR}/../conformance/fixtures/widgets.json)
+
     add_executable(hqtui_cpp_test tests/core.cpp)
     target_link_libraries(hqtui_cpp_test PRIVATE hqtui::cpp)
     add_test(NAME cpp_core COMMAND hqtui_cpp_test)

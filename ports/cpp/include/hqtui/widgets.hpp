@@ -188,7 +188,14 @@ struct Meter {
   std::string label, readout;
   Color color = 0;
   int label_width = -1, value_width = -1;
-  bool show_value = true, segmented = true;
+  bool show_value = true;
+  /// Discrete ticks rather than partial blocks. Smooth is the default in every
+  /// port; this one defaulted the other way and quietly drew a different meter
+  /// from the rest of the library.
+  /// Discrete ticks rather than partial blocks. Smooth is the default in every
+  /// port; this one defaulted the other way and quietly drew a different meter
+  /// from the rest of the library.
+  bool segmented = false;
   std::optional<Color> background;
 };
 void draw_meter(Surface, const Meter &);
@@ -231,7 +238,10 @@ void draw_table(Surface, const Table &);
 struct LogEntry {
   std::string time, level, message, meta;
 };
-void draw_log(Surface, const std::vector<LogEntry> &, Pane *);
+/// `scrollbar` reserves the rightmost column, as the reference does when a log
+/// is asked for one. It changes where the meta field lands, so it is a
+/// parameter rather than an assumption.
+void draw_log(Surface, const std::vector<LogEntry> &, Pane *, bool scrollbar = false);
 
 // A deferred builder: callbacks receive their final viewport, so tables follow
 // selection using the space actually rendered. All rendering stays in C/C++.
@@ -375,7 +385,7 @@ public:
   void log(std::vector<LogEntry> entries, Pane *pane, std::string id) {
     auto regions_ = regions;
     draw([=](Surface s) {
-      draw_log(s, entries, pane);
+      draw_log(s, entries, pane, true);
       if (regions_)
         regions_->push_back({s.rect(), id, 0});
     });
