@@ -107,8 +107,22 @@ typedef struct { hq_buffer *buffer; const hq_theme *theme; hq_rect rect, clip; }
 typedef struct { hq_style style; int align, no_ellipsis, max_columns, has_max_columns; } hq_text_options;
 enum { HQ_LEFT, HQ_CENTER, HQ_RIGHT };
 enum { HQ_ROUNDED, HQ_SINGLE, HQ_DOUBLE, HQ_THICK, HQ_DASHED, HQ_ASCII, HQ_NO_BORDER };
+/* Edge bits for a border glyph: 1 up, 2 right, 4 down, 8 left.
+ *
+ * Collapsing two panel borders is the union of their edges. A panel's
+ * top-right corner (down + left) landing on its neighbour's top-left
+ * (down + right) is down + left + right, which is the T that makes the two
+ * read as one frame. */
+enum { HQ_EDGE_UP = 1, HQ_EDGE_RIGHT = 2, HQ_EDGE_DOWN = 4, HQ_EDGE_LEFT = 8 };
+/* The edges of a border glyph, or -1 when it is not one. */
+int hq_border_bits(uint32_t cp);
+/* The glyph in `border` with exactly these edges, or 0 if there is none. */
+uint32_t hq_border_glyph(int border,int bits);
 typedef struct {
     int border, title_align, no_fill;
+    /* Merge this border with one already in the same cell rather than
+     * overwriting it. Zero unless the caller asks for collapsed borders. */
+    int collapse;
     hq_style border_style, title_style, subtitle_style, footer_style;
     hq_color background;
     int has_background;

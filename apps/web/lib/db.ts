@@ -125,6 +125,16 @@ export async function migrate(): Promise<void> {
          views INTEGER NOT NULL DEFAULT 0,
          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
        )`,
+      // Cookbook PDF sales. The row exists from the moment checkout starts, so
+      // an abandoned payment is distinguishable from one that never happened.
+      `CREATE TABLE IF NOT EXISTS book_purchases (
+         payment_id TEXT PRIMARY KEY,
+         chain TEXT NOT NULL,
+         status TEXT NOT NULL DEFAULT 'pending',
+         downloads INTEGER NOT NULL DEFAULT 0,
+         created_at TEXT NOT NULL DEFAULT (datetime('now')),
+         paid_at TEXT
+       )`,
     ]).then(() => undefined).catch((error) => {
       // An unreachable database must never take the marketing site down.
       console.error("hqtui: migration failed", error);
@@ -200,4 +210,57 @@ export async function totalViews(): Promise<number> {
   } catch {
     return 0;
   }
+}
+
+// --- Cookbook sales ---------------------------------------------------------
+
+export async function recordCheckout(paymentId: string, chain: string): Promise<void> {
+  if (!configured()) return;
+  try {
+    await migrate();
+    await execute([
+      {
+        sql: `INSERT INTO book_purchases (payment_id, chain) VALUES (?, ?)
+              ON CONFLICT(payment_id) DO NOTHING`,
+        args: [paymentId, chain],
+      },
+    ]);
+  } catch (error) {
+    // A sale that cannot be recorded must still be completable: the webhook
+    // will insert the row when it confirms.
+    console.error("hqtui: could not record checkout", error);
+  }
+}
+
+export async function markPaid(paymentId: string): Promise<void> {
+  if (!configured()) return;
+  await migrate();
+  await execute([
+    {
+      sql: `INSERT INTO book_purchases (payment_id, chain, status, paid_at)
+            VALUES (?, 'unknown', 'paid', datetime('now'))
+            ON CONFLICT(payment_id) DO UPDATE SET status = 'paid', paid_at = datetime('now')`,
+      args: [paymentId],
+    },
+  ]);
+}
+
+/** True when the payment confirmed. Counts the download on the way past. */
+export async function claimDownload(paymentId: string): Promise<boolean> {
+  if (!configured()) return false;
+  await migrate();
+  const [rows] = await execute([
+    {
+      sql: `SELECT status FROM book_purchases WHERE payment_id = ?`,
+      args: [paymentId],
+    },
+  ]);
+  if (rows?.[0]?.status !== "paid") return false;
+  await execute([
+    {
+      sql: `UPDATE book_purchases SET downloads = downloads + 1 WHERE payment_id = ?`,
+      args: [paymentId],
+    },
+  ]);
+  return true;
 }

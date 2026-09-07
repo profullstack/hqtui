@@ -110,6 +110,28 @@ pub fn render_to_screen<'v>(
     render_with(width, height, theme, 0, CapabilityOverrides::default(), view)
 }
 
+thread_local! {
+    /// Set for the duration of `render_collapsed`. A thread local rather than
+    /// another argument on five render functions, because collapsing is a
+    /// property of a whole screen and tests are the only caller that needs to
+    /// change it per render.
+    static COLLAPSE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Render with adjacent panel borders merged, as `AppOptions::collapse_borders`
+/// does for a running app.
+pub fn render_collapsed_to_text<'v>(
+    width: usize,
+    height: usize,
+    theme: &str,
+    view: impl FnOnce(&mut Container<'v>),
+) -> String {
+    COLLAPSE.with(|flag| flag.set(true));
+    let out = render_to_screen(width, height, theme, view).text();
+    COLLAPSE.with(|flag| flag.set(false));
+    out
+}
+
 /// The full form: pick the frame number and override capabilities.
 pub fn render_with<'v>(
     width: usize,
@@ -127,6 +149,7 @@ pub fn render_with<'v>(
 
     let mut ctx = Ctx::new(theme.clone(), capabilities, width, height);
     ctx.frame = frame;
+    ctx.collapse_borders = COLLAPSE.with(|flag| flag.get());
     let ctx = Rc::new(ctx);
 
     let root = Surface::root(buffer.clone(), theme.clone());

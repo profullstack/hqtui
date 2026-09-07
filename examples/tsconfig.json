@@ -8,8 +8,9 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["*.ts"]
+  "include": ["*.ts", "widgets/*.ts"]
 }

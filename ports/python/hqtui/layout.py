@@ -160,13 +160,21 @@ def _clamp(v: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, v))
 
 
-def solve(total: int, items: Sequence[Constraint], gap: int = 0) -> list[int]:
+def solve(
+    total: int, items: Sequence[Constraint], gap: "int | Sequence[int]" = 0
+) -> list[int]:
     """Distribute ``total`` across ``items``, honouring gaps, fractions and
-    min/max. Always returns non-negative sizes that sum to at most ``total``."""
+    min/max. Always returns non-negative sizes that sum to at most ``total``.
+
+    ``gap`` may be one number for every seam, or one per seam. The per-seam form
+    exists so collapsed borders can be a gap of minus one between two panels and
+    the ordinary gap everywhere else on the same row.
+    """
     n = len(items)
     if n == 0:
         return []
-    available = max(0, total - gap * (n - 1))
+    gaps = list(gap) if isinstance(gap, (list, tuple)) else [gap] * (n - 1)
+    available = max(0, total - sum(gaps[: n - 1]))
     parsed = [_parse(c, available) for c in items]
 
     used = 0
@@ -236,17 +244,18 @@ def stack(
     rect: Rect,
     items: Sequence[Constraint],
     direction: "Direction | str" = Direction.COLUMN,
-    gap: int = 0,
+    gap: "int | Sequence[int]" = 0,
 ) -> list[Rect]:
     """Lay children out along one axis inside ``rect``."""
     horizontal = direction == Direction.ROW
     sizes = solve(rect.width if horizontal else rect.height, items, gap)
+    gaps = list(gap) if isinstance(gap, (list, tuple)) else [gap] * max(0, len(sizes) - 1)
     out: list[Rect] = []
     offset = rect.x if horizontal else rect.y
-    for size in sizes:
+    for i, size in enumerate(sizes):
         if horizontal:
             out.append(Rect(offset, rect.y, size, rect.height))
         else:
             out.append(Rect(rect.x, offset, rect.width, size))
-        offset += size + gap
+        offset += size + (gaps[i] if i < len(gaps) else 0)
     return out

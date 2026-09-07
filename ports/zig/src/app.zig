@@ -74,6 +74,10 @@ pub const Options = struct {
     focus_navigation: bool = true,
     /// Paint the theme background across the whole screen.
     paint_background: bool = true,
+    /// Merge the borders of adjacent panels into shared lines, the way CSS
+    /// collapses table borders. Off by default, because it changes every layout
+    /// with two panels side by side; turn it on once, for the whole screen.
+    collapse_borders: bool = false,
     /// Drain color, for accessibility or `NO_COLOR`.
     monochrome: ?bool = null,
 };
@@ -360,6 +364,7 @@ pub const App = struct {
         ctx.frame = self.frame_count;
         ctx.elapsed = (monotonicNs() - self.started_at_ns) / std.time.ns_per_ms;
         ctx.focus_index = self.focus_index;
+        ctx.collapse_borders = self.options.collapse_borders;
 
         const root = Surface.root(&self.current, &self.theme);
         var container = ui.Container.init(root, &ctx, .column, .{});

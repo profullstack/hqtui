@@ -133,6 +133,6 @@ zend_module_entry hqtui_native_module_entry = {STANDARD_MODULE_HEADER,
                                                NULL,
                                                NULL,
                                                NULL,
-                                               "0.1.12",
+                                               "0.2.0",
                                                STANDARD_MODULE_PROPERTIES};
 ZEND_GET_MODULE(hqtui_native)

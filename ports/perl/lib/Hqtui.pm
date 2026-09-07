@@ -5,7 +5,7 @@ use JSON::PP ();
 use FFI::Platypus 2.11;
 use File::Basename qw(dirname);
 use File::Spec;
-our $VERSION = '0.1.12';
+our $VERSION = '0.2.0';
 my $ffi;
 sub native {
     return $ffi if $ffi;

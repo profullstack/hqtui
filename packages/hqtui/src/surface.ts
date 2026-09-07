@@ -21,6 +21,61 @@ export const BORDERS: Record<Exclude<BorderStyle, "none">, BorderChars> = {
   ascii: { tl: "+", tr: "+", bl: "+", br: "+", h: "-", v: "|", ml: "+", mr: "+", mt: "+", mb: "+", cross: "+" },
 };
 
+/**
+ * Edge bits for a border glyph: 1 up, 2 right, 4 down, 8 left.
+ *
+ * Collapsing two panel borders is the union of their edges. A panel's top-right
+ * corner (down + left) landing on its neighbour's top-left (down + right) is
+ * down + left + right, which is the T that makes the two read as one frame.
+ */
+export const EDGE_UP = 1;
+export const EDGE_RIGHT = 2;
+export const EDGE_DOWN = 4;
+export const EDGE_LEFT = 8;
+
+const PART_BITS: Record<keyof BorderChars, number> = {
+  tl: EDGE_RIGHT | EDGE_DOWN,
+  tr: EDGE_LEFT | EDGE_DOWN,
+  bl: EDGE_UP | EDGE_RIGHT,
+  br: EDGE_UP | EDGE_LEFT,
+  h: EDGE_LEFT | EDGE_RIGHT,
+  v: EDGE_UP | EDGE_DOWN,
+  ml: EDGE_UP | EDGE_DOWN | EDGE_RIGHT,
+  mr: EDGE_UP | EDGE_DOWN | EDGE_LEFT,
+  mt: EDGE_LEFT | EDGE_RIGHT | EDGE_DOWN,
+  mb: EDGE_LEFT | EDGE_RIGHT | EDGE_UP,
+  cross: EDGE_UP | EDGE_RIGHT | EDGE_DOWN | EDGE_LEFT,
+};
+
+/**
+ * Every border glyph in every style, to its edges. Built once. ASCII borders
+ * collide (every corner is `+`), and the first entry wins, which is right: the
+ * union of anything with a `+` is a `+`.
+ */
+const BITS_BY_CODEPOINT = new Map<number, number>();
+for (const chars of Object.values(BORDERS)) {
+  for (const [part, ch] of Object.entries(chars) as [keyof BorderChars, string][]) {
+    const code = ch.codePointAt(0);
+    if (code !== undefined && !BITS_BY_CODEPOINT.has(code)) {
+      BITS_BY_CODEPOINT.set(code, PART_BITS[part]);
+    }
+  }
+}
+
+/** The glyph in `style` with exactly these edges, or null if there is none. */
+export function borderGlyph(style: Exclude<BorderStyle, "none">, bits: number): string | null {
+  const chars = BORDERS[style];
+  for (const [part, value] of Object.entries(PART_BITS) as [keyof BorderChars, number][]) {
+    if (value === bits) return chars[part];
+  }
+  return null;
+}
+
+/** The edges of a border glyph, or null when it is not one. */
+export function borderBits(codepoint: number): number | null {
+  return BITS_BY_CODEPOINT.get(codepoint) ?? null;
+}
+
 export type Align = "left" | "center" | "right";
 
 export interface TextOptions extends Style {
@@ -41,6 +96,12 @@ export interface BoxOptions extends Style {
   subtitleColor?: Color;
   /** Paint the interior with `bg` before drawing. */
   fill?: boolean;
+  /**
+   * Merge this border with one already drawn in the same cell, rather than
+   * overwriting it. Set for you by the container when the app asks for
+   * collapsed borders; there is no reason to pass it by hand.
+   */
+  collapse?: boolean;
   footer?: string;
   footerColor?: Color;
 }
@@ -98,6 +159,39 @@ export class Surface {
     if (!this.visible(ax, ay)) return;
     const v = typeof value === "string" ? (value.codePointAt(0) ?? 32) : value;
     this.buffer.setCell(ax, ay, v, style);
+  }
+
+  /**
+   * Writes a border glyph, merging it with whatever border is already there.
+   *
+   * Only border glyphs merge. Anything else in the cell is overwritten, which
+   * keeps a panel drawn over a chart looking like a panel rather than growing
+   * junctions out of the data.
+   */
+  private mergeBorder(
+    x: number,
+    y: number,
+    ch: string,
+    style: Exclude<BorderStyle, "none">,
+    cellStyle: Style,
+  ): void {
+    const ax = this.rect.x + x;
+    const ay = this.rect.y + y;
+    if (!this.visible(ax, ay)) return;
+
+    const incoming = ch.codePointAt(0);
+    if (incoming === undefined) return;
+
+    const existing = this.buffer.chars[this.buffer.index(ax, ay)] ?? 0;
+    const before = borderBits(existing);
+    const after = borderBits(incoming);
+    if (before === null || after === null || before === after) {
+      this.buffer.setCell(ax, ay, incoming, cellStyle);
+      return;
+    }
+
+    const merged = borderGlyph(style, before | after);
+    this.buffer.setCell(ax, ay, merged?.codePointAt(0) ?? incoming, cellStyle);
   }
 
   /** Draw text at local (x, y). Returns columns written. */
@@ -187,15 +281,28 @@ export class Surface {
     const h = this.height;
     const borderStyle: Style = { fg, bg };
 
-    this.char(0, 0, b.tl, borderStyle);
-    this.char(w - 1, 0, b.tr, borderStyle);
-    this.hline(1, 0, w - 2, b.h, borderStyle);
+    // With collapsing on, a border glyph landing on another one becomes the
+    // union of the two. Without it this is a plain write, so a screen that
+    // never asks for collapsing renders byte for byte as it always did.
+    const put = options.collapse
+      ? (x: number, y: number, ch: string) => this.mergeBorder(x, y, ch, style, borderStyle)
+      : (x: number, y: number, ch: string) => this.char(x, y, ch, borderStyle);
+    const putH = (x: number, y: number, length: number, ch: string) => {
+      for (let i = 0; i < length; i++) put(x + i, y, ch);
+    };
+    const putV = (x: number, y: number, length: number, ch: string) => {
+      for (let i = 0; i < length; i++) put(x, y + i, ch);
+    };
+
+    put(0, 0, b.tl);
+    put(w - 1, 0, b.tr);
+    putH(1, 0, w - 2, b.h);
     if (h > 1) {
-      this.char(0, h - 1, b.bl, borderStyle);
-      this.char(w - 1, h - 1, b.br, borderStyle);
-      this.hline(1, h - 1, w - 2, b.h, borderStyle);
-      this.vline(0, 1, h - 2, b.v, borderStyle);
-      this.vline(w - 1, 1, h - 2, b.v, borderStyle);
+      put(0, h - 1, b.bl);
+      put(w - 1, h - 1, b.br);
+      putH(1, h - 1, w - 2, b.h);
+      putV(0, 1, h - 2, b.v);
+      putV(w - 1, 1, h - 2, b.v);
     }
 
     // Measured before the title is drawn: both share the top border row, and

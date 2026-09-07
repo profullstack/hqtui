@@ -24,6 +24,12 @@ export interface AppOptions extends TerminalOptions {
   focusNavigation?: boolean;
   /** Paint the theme background across the whole screen. Default true. */
   paintBackground?: boolean;
+  /**
+   * Merge the borders of adjacent panels into shared lines, the way CSS
+   * collapses table borders. Default false, because it changes every layout
+   * with two panels side by side; turn it on once, for the whole screen.
+   */
+  collapseBorders?: boolean;
   /** Drain color, for accessibility or NO_COLOR. */
   monochrome?: boolean;
   /** Skip animation-driven redraws. */
@@ -311,6 +317,7 @@ export class App {
       frame: this.frameCount,
       elapsed: Date.now() - this.startedAt,
       focusIndex: this.focusIndex,
+      collapseBorders: this.options.collapseBorders ?? false,
       registerFocus: (action?: () => void): FocusRegistration => {
         const index = focusCursor++;
         if (action) this.focusActions[index] = action;

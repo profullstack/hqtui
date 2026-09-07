@@ -82,22 +82,36 @@ func RenderToScreen(width, height int, theme string, view func(*Container)) *Ren
 	return RenderWith(width, height, theme, 0, CapabilityOverrides{}, view)
 }
 
+// RenderCollapsedToText renders with adjacent panel borders merged, as
+// Options.CollapseBorders does for a running app.
+func RenderCollapsedToText(width, height int, theme string, view func(*Container)) string {
+	return renderWithCollapse(width, height, theme, 0, CapabilityOverrides{}, true, view).Text()
+}
+
 // RenderWith is the full form: pick the frame number and override capabilities.
 func RenderWith(
 	width, height int, themeName string, frame int,
 	overrides CapabilityOverrides, view func(*Container),
+) *RenderedScreen {
+	return renderWithCollapse(width, height, themeName, frame, overrides, false, view)
+}
+
+func renderWithCollapse(
+	width, height int, themeName string, frame int,
+	overrides CapabilityOverrides, collapse bool, view func(*Container),
 ) *RenderedScreen {
 	theme := ResolveTheme(themeName)
 	buffer := NewFrameBuffer(width, height)
 	buffer.Clear(theme.Background, theme.Foreground)
 
 	ctx := &frameCtx{
-		theme:        theme,
-		capabilities: headlessCapabilities(overrides),
-		width:        width,
-		height:       height,
-		frame:        frame,
-		invalidate:   func() {},
+		theme:           theme,
+		capabilities:    headlessCapabilities(overrides),
+		width:           width,
+		height:          height,
+		frame:           frame,
+		collapseBorders: collapse,
+		invalidate:      func() {},
 	}
 
 	root := RootSurface(buffer, theme)

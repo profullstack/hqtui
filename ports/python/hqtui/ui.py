@@ -77,6 +77,10 @@ class RenderContext:
     elapsed: float = 0.0
     """Seconds since the app started."""
     focus_index: int = 0
+    collapse_borders: bool = False
+    """Merge the borders of adjacent panels into shared lines, the way CSS
+    collapses table borders. Off unless the app asks for it, because it changes
+    every layout that has two panels side by side."""
 
     focus_cursor: int = 0
     focus_actions: list = field(default_factory=list)
@@ -190,9 +194,34 @@ class Container:
         """Width available to a child laid out along the main axis."""
         return self._inner.width if self.direction == Direction.COLUMN else self._inner.height
 
-    def _add(self, constraint: Constraint, draw: Callable[[Surface], None]) -> "Container":
-        self._children.append((constraint, draw))
+    def _add(
+        self,
+        constraint: Constraint,
+        draw: Callable[[Surface], None],
+        bordered: bool = False,
+    ) -> "Container":
+        """Queue a child.
+
+        ``bordered`` says whether it draws a border of its own. Only bordered
+        siblings collapse into each other: a table pressed against a panel edge
+        should not grow junctions out of its rows.
+        """
+        self._children.append((constraint, draw, bordered))
         return self
+
+    def _seams(self) -> "int | list[int]":
+        """The gap at each seam.
+
+        Ordinarily one number repeated, but where collapsing is on and two
+        bordered siblings meet with no gap between them, the seam is minus one
+        so their borders land in the same column and merge.
+        """
+        if not self.ctx.collapse_borders or self._gap != 0 or len(self._children) < 2:
+            return self._gap
+        return [
+            -1 if self._children[i][2] and self._children[i + 1][2] else self._gap
+            for i in range(len(self._children) - 1)
+        ]
 
     def _constraint(
         self, l: Layout, fallback: "int | str", intrinsic: int | None = None
@@ -221,10 +250,13 @@ class Container:
         if not self._children or self._inner.rect.is_empty:
             return
         rects = stack(
-            self._inner.rect, [c for c, _ in self._children], self.direction, self._gap
+            self._inner.rect,
+            [c for c, _, _ in self._children],
+            self.direction,
+            self._seams(),
         )
         children, self._children = self._children, []
-        for (_, draw), rect in zip(children, rects):
+        for (_, draw, _), rect in zip(children, rects):
             if rect.is_empty:
                 continue
             draw(self._inner.region(rect))
@@ -271,6 +303,7 @@ class Container:
                     title=o.title, title_align=o.title_align, title_color=o.title_color,
                     subtitle=o.subtitle, subtitle_color=o.subtitle_color, footer=o.footer,
                     border=o.border, border_color=border_color, bg=o.background,
+                    collapse=self.ctx.collapse_borders,
                 )
             )
             padding = o.inner_padding if o.inner_padding is not None else (0, 1)
@@ -281,7 +314,8 @@ class Container:
                 build(container)
             container.flush()
 
-        return self._add(self._constraint(o, "fill"), draw)
+        bordered = str(getattr(o.border, "value", o.border)) != "none"
+        return self._add(self._constraint(o, "fill"), draw, bordered)
 
     def box(self, options: Panel | None = None, build: Callable[["Container"], None] | None = None):
         """A panel without a border — a grouping box that costs no rows."""

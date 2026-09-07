@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hqtui_cpp VERSION 0.1.12 LANGUAGES C CXX)
+project(hqtui_cpp VERSION 0.2.0 LANGUAGES C CXX)
 include(CTest)
 include(GNUInstallDirs)
 if(NOT TARGET hqtui::c)
@@ -66,6 +66,11 @@ if(UNIX)
     target_compile_definitions(hqtui-demo-cpp PRIVATE HQTUI_DEMO_VERSION="${PROJECT_VERSION}")
     target_link_libraries(hqtui-demo-cpp PRIVATE hqtui::cpp Threads::Threads)
     install(TARGETS hqtui-demo-cpp RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    # The widget gallery behind hqtui.com/widgets. It renders headlessly and
+    # exits non-zero on a blank screen, so building and running it is what
+    # keeps the published C++ snippets true.
+    add_executable(hqtui-widgets examples/widgets.cpp)
+    target_link_libraries(hqtui-widgets PRIVATE hqtui::cpp)
 endif()
 if(BUILD_TESTING)
     find_package(Python3 COMPONENTS Interpreter)

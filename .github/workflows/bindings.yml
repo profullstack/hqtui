@@ -38,6 +38,19 @@ jobs:
           export HQTUI_NATIVE_LIB="$PWD/ports/cpp/build-bindings/libhqtui_bindings.$extension"
           export PERL5LIB="${{ runner.temp }}/hqtui-perl/lib/perl5"
           mise exec -- python ports/bindings/tests/check.py
+      - name: Widget galleries (C++, Ruby, PHP, Perl)
+        shell: bash
+        run: |
+          extension=so
+          if [ "$(uname -s)" = Darwin ]; then extension=dylib; fi
+          export HQTUI_NATIVE_LIB="$PWD/ports/cpp/build-bindings/libhqtui_bindings.$extension"
+          export PERL5LIB="${{ runner.temp }}/hqtui-perl/lib/perl5"
+          mise exec -- cmake --build ports/cpp/build-bindings --target hqtui-widgets --parallel 3
+          ./ports/cpp/build-bindings/hqtui-widgets >/dev/null
+          (cd ports/ruby && mise exec ruby@4.0.6 -- ruby examples/widgets.rb >/dev/null)
+          php_adapter="$PWD/ports/cpp/build-bindings/hqtui_php.so"
+          (cd ports/php && mise exec conda:php@8.5.9 -- php -d "extension=$php_adapter" examples/widgets.php >/dev/null)
+          (cd ports/perl && mise exec perl@5.44.0.0 -- perl examples/widgets.pl >/dev/null)
       - name: Verify vanilla PHP FFI fallback without the native PHP adapter
         if: runner.os == 'Linux'
         shell: bash

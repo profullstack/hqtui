@@ -34,11 +34,11 @@ type Size struct {
 	value float64
 }
 
-func Cells(n int) Size        { return Size{kind: sizeCells, value: float64(n)} }
-func Percent(n float64) Size  { return Size{kind: sizePercent, value: n} }
-func Fr(n float64) Size       { return Size{kind: sizeFr, value: n} }
-func Auto() Size              { return Size{kind: sizeAuto} }
-func Fill() Size              { return Size{kind: sizeFill} }
+func Cells(n int) Size       { return Size{kind: sizeCells, value: float64(n)} }
+func Percent(n float64) Size { return Size{kind: sizePercent, value: n} }
+func Fr(n float64) Size      { return Size{kind: sizeFr, value: n} }
+func Auto() Size             { return Size{kind: sizeAuto} }
+func Fill() Size             { return Size{kind: sizeFill} }
 
 // ParseSize reads the string spelling the reference API uses. Anything
 // unrecognisable becomes zero cells, matching Number.parseFloat's NaN fallback.
@@ -129,8 +129,8 @@ func (r Rect) Intersect(o Rect) Rect {
 // Padding in the CSS shorthand orders, clockwise from the top.
 type Padding struct{ Top, Right, Bottom, Left int }
 
-func PadAll(v int) Padding      { return Padding{v, v, v, v} }
-func PadAxes(v, h int) Padding  { return Padding{v, h, v, h} }
+func PadAll(v int) Padding     { return Padding{v, v, v, v} }
+func PadAxes(v, h int) Padding { return Padding{v, h, v, h} }
 
 // Inset shrinks a rect by padding, never past zero.
 func (r Rect) Inset(p Padding) Rect {
@@ -200,11 +200,28 @@ func clampF(v, lo, hi float64) float64 { return math.Max(lo, math.Min(hi, v)) }
 // Solve distributes total across items, honouring gaps, fractions and min/max.
 // It always returns non-negative sizes that sum to at most total.
 func Solve(total int, items []Constraint, gap int) []int {
+	seams := make([]int, max(0, len(items)-1))
+	for i := range seams {
+		seams[i] = gap
+	}
+	return SolveWithGaps(total, items, seams)
+}
+
+// SolveWithGaps is Solve with a gap per seam, which may be negative.
+//
+// A negative seam is how collapsed borders work: two panels overlap by the
+// column their borders share, so the pair occupies one column less than the
+// sum of their widths.
+func SolveWithGaps(total int, items []Constraint, gaps []int) []int {
 	n := len(items)
 	if n == 0 {
 		return nil
 	}
-	available := max(0, total-gap*(n-1))
+	gapTotal := 0
+	for i := 0; i < n-1 && i < len(gaps); i++ {
+		gapTotal += gaps[i]
+	}
+	available := max(0, total-gapTotal)
 	parsed := make([]resolved, n)
 	for i, c := range items {
 		parsed[i] = parseConstraint(c, available)
@@ -315,24 +332,37 @@ func remove(s []int, v int) []int {
 
 // Stack lays children out along one axis inside rect.
 func Stack(rect Rect, items []Constraint, direction Direction, gap int) []Rect {
+	seams := make([]int, max(0, len(items)-1))
+	for i := range seams {
+		seams[i] = gap
+	}
+	return StackWithGaps(rect, items, direction, seams)
+}
+
+// StackWithGaps is Stack with a gap per seam, which may be negative.
+func StackWithGaps(rect Rect, items []Constraint, direction Direction, gaps []int) []Rect {
 	horizontal := direction == DirRow
 	total := rect.Height
 	if horizontal {
 		total = rect.Width
 	}
-	sizes := Solve(total, items, gap)
+	sizes := SolveWithGaps(total, items, gaps)
 	out := make([]Rect, 0, len(sizes))
 	offset := rect.Y
 	if horizontal {
 		offset = rect.X
 	}
-	for _, size := range sizes {
+	for i, size := range sizes {
 		if horizontal {
 			out = append(out, Rect{X: offset, Y: rect.Y, Width: size, Height: rect.Height})
 		} else {
 			out = append(out, Rect{X: rect.X, Y: offset, Width: rect.Width, Height: size})
 		}
-		offset += size + gap
+		seam := 0
+		if i < len(gaps) {
+			seam = gaps[i]
+		}
+		offset += size + seam
 	}
 	return out
 }

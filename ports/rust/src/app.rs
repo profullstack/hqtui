@@ -67,6 +67,10 @@ pub struct AppOptions {
     pub paint_background: bool,
     /// Drain color, for accessibility or `NO_COLOR`.
     pub monochrome: Option<bool>,
+    /// Merge the borders of adjacent panels into shared lines, the way CSS
+    /// collapses table borders. Default false, because it changes every layout
+    /// with two panels side by side; turn it on once, for the whole screen.
+    pub collapse_borders: bool,
 }
 
 impl Default for AppOptions {
@@ -78,6 +82,7 @@ impl Default for AppOptions {
             remote_fps: 15,
             quit_keys: vec!["ctrl+c".into(), "q".into()],
             focus_navigation: true,
+            collapse_borders: false,
             paint_background: true,
             monochrome: None,
         }
@@ -368,6 +373,7 @@ impl App {
         ctx.frame = self.frame_count;
         ctx.elapsed = self.started_at.elapsed().as_millis() as u64;
         ctx.focus_index = self.focus_index;
+        ctx.collapse_borders = self.options.collapse_borders;
         let ctx = Rc::new(ctx);
 
         let root = Surface::root(self.current.clone(), self.theme.clone());

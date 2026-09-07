@@ -54,6 +54,10 @@ class AppOptions:
     """Tab/Shift+Tab move focus."""
     paint_background: bool = True
     """Paint the theme background across the whole screen."""
+    collapse_borders: bool = False
+    """Merge the borders of adjacent panels into shared lines, the way CSS
+    collapses table borders. Off by default, because it changes every layout
+    with two panels side by side; turn it on once, for the whole screen."""
     monochrome: bool | None = None
     """Drain color, for accessibility or NO_COLOR."""
 
@@ -292,6 +296,7 @@ class App:
             frame=self._frame_count,
             elapsed=time.monotonic() - self._started_at,
             focus_index=self._focus_index,
+            collapse_borders=self.options.collapse_borders,
             invalidate=self.invalidate,
         )
 

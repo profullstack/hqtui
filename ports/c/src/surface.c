@@ -92,6 +92,63 @@ static void label(char out[4096],const char *s) {
     /* Labels are bounded; UTF-8 clipping is sanitized by the text writer. */
     snprintf(out,4096," %.*s ",4092,s);
 }
+/* Every style's glyphs, in the order hq_part_bits describes them: the six a
+ * lone panel draws, then the five junctions collapsing needs. */
+static const uint32_t hq_borders[6][11]={
+    {0x256d,0x256e,0x2570,0x256f,0x2500,0x2502,0x251c,0x2524,0x252c,0x2534,0x253c},
+    {0x250c,0x2510,0x2514,0x2518,0x2500,0x2502,0x251c,0x2524,0x252c,0x2534,0x253c},
+    {0x2554,0x2557,0x255a,0x255d,0x2550,0x2551,0x2560,0x2563,0x2566,0x2569,0x256c},
+    {0x250f,0x2513,0x2517,0x251b,0x2501,0x2503,0x2523,0x252b,0x2533,0x253b,0x254b},
+    {0x256d,0x256e,0x2570,0x256f,0x254c,0x254e,0x251c,0x2524,0x252c,0x2534,0x253c},
+    {'+','+','+','+','-','|','+','+','+','+','+'}
+};
+
+static const int hq_part_bits[11]={
+    HQ_EDGE_RIGHT|HQ_EDGE_DOWN,                          /* tl */
+    HQ_EDGE_LEFT|HQ_EDGE_DOWN,                           /* tr */
+    HQ_EDGE_UP|HQ_EDGE_RIGHT,                            /* bl */
+    HQ_EDGE_UP|HQ_EDGE_LEFT,                             /* br */
+    HQ_EDGE_LEFT|HQ_EDGE_RIGHT,                          /* h */
+    HQ_EDGE_UP|HQ_EDGE_DOWN,                             /* v */
+    HQ_EDGE_UP|HQ_EDGE_DOWN|HQ_EDGE_RIGHT,               /* ml */
+    HQ_EDGE_UP|HQ_EDGE_DOWN|HQ_EDGE_LEFT,                /* mr */
+    HQ_EDGE_LEFT|HQ_EDGE_RIGHT|HQ_EDGE_DOWN,             /* mt */
+    HQ_EDGE_LEFT|HQ_EDGE_RIGHT|HQ_EDGE_UP,               /* mb */
+    HQ_EDGE_UP|HQ_EDGE_RIGHT|HQ_EDGE_DOWN|HQ_EDGE_LEFT   /* cross */
+};
+
+int hq_border_bits(uint32_t cp) {
+    /* ASCII borders collide (every corner is '+') and the first match wins,
+     * which is right: the union of anything with a '+' is a '+'. */
+    for(int b=0;b<6;++b) for(int i=0;i<11;++i) if(hq_borders[b][i]==cp) return hq_part_bits[i];
+    return -1;
+}
+
+uint32_t hq_border_glyph(int border,int bits) {
+    if(border<0 || border>=6) return 0;
+    for(int i=0;i<11;++i) if(hq_part_bits[i]==bits) return hq_borders[border][i];
+    return 0;
+}
+
+/* Writes a border glyph, merging it with whatever border is already there.
+ *
+ * Only border glyphs merge. Anything else in the cell is overwritten, which
+ * keeps a panel drawn over a chart looking like a panel rather than growing
+ * junctions out of the data. */
+static void hq_put_border(hq_surface s,int border,int collapse,int x,int y,uint32_t cp,hq_style st) {
+    if(collapse) {
+        hq_cell cell;
+        if(hq_buffer_cell(s.buffer,s.rect.x+x,s.rect.y+y,&cell)) {
+            int before=hq_border_bits(cell.value),after=hq_border_bits(cp);
+            if(before>=0 && after>=0 && before!=after) {
+                uint32_t merged=hq_border_glyph(border,before|after);
+                if(merged) cp=merged;
+            }
+        }
+    }
+    hq_surface_set(s,x,y,cp,st);
+}
+
 hq_surface hq_surface_box(hq_surface s,hq_box_options o) {
     const hq_theme *theme=s.theme ? s.theme:hq_theme_at(0);
     if(o.has_background && !o.no_fill) {
@@ -100,23 +157,24 @@ hq_surface hq_surface_box(hq_surface s,hq_box_options o) {
     if(o.border==HQ_NO_BORDER) return s;
     hq_surface inner=hq_surface_region(s,hq_inset(s.rect,1,1,1,1));
     if(s.rect.width<2 || s.rect.height<1) return inner;
-    static const uint32_t borders[6][6]={
-        {0x256d,0x256e,0x2570,0x256f,0x2500,0x2502},
-        {0x250c,0x2510,0x2514,0x2518,0x2500,0x2502},
-        {0x2554,0x2557,0x255a,0x255d,0x2550,0x2551},
-        {0x250f,0x2513,0x2517,0x251b,0x2501,0x2503},
-        {0x256d,0x256e,0x2570,0x256f,0x254c,0x254e},
-        {'+','+','+','+','-','|'}
-    };
-    const uint32_t *c=borders[o.border>=0 && o.border<6 ? o.border:0];
+    int border=o.border>=0 && o.border<6 ? o.border:0;
+    const uint32_t *c=hq_borders[border];
     int w=s.rect.width,h=s.rect.height;
     hq_style bs=default_style(o.border_style,theme->border,o);
-    hq_surface_set(s,0,0,c[0],bs); hq_surface_set(s,w-1,0,c[1],bs);
-    for(int x=1;x<w-1;++x) hq_surface_set(s,x,0,c[4],bs);
+    /* With collapsing on a border glyph landing on another becomes the union
+     * of the two; without it this is the plain write it always was, so a
+     * screen that never asks for collapsing renders byte for byte as before. */
+    hq_put_border(s,border,o.collapse,0,0,c[0],bs);
+    hq_put_border(s,border,o.collapse,w-1,0,c[1],bs);
+    for(int x=1;x<w-1;++x) hq_put_border(s,border,o.collapse,x,0,c[4],bs);
     if(h>1) {
-        hq_surface_set(s,0,h-1,c[2],bs); hq_surface_set(s,w-1,h-1,c[3],bs);
-        for(int x=1;x<w-1;++x) hq_surface_set(s,x,h-1,c[4],bs);
-        for(int y=1;y<h-1;++y) { hq_surface_set(s,0,y,c[5],bs); hq_surface_set(s,w-1,y,c[5],bs); }
+        hq_put_border(s,border,o.collapse,0,h-1,c[2],bs);
+        hq_put_border(s,border,o.collapse,w-1,h-1,c[3],bs);
+        for(int x=1;x<w-1;++x) hq_put_border(s,border,o.collapse,x,h-1,c[4],bs);
+        for(int y=1;y<h-1;++y) {
+            hq_put_border(s,border,o.collapse,0,y,c[5],bs);
+            hq_put_border(s,border,o.collapse,w-1,y,c[5],bs);
+        }
     }
     char sub[4096]="",title[4096],foot[4096]; size_t sw=0;
     if(o.subtitle) { label(sub,o.subtitle); sw=hq_text_width(sub); if(sw+4>=(size_t)w) sw=0; }

@@ -108,6 +108,7 @@ def render_to_screen(
     *,
     frame: int = 0,
     capabilities: CapabilityOverrides | None = None,
+    collapse_borders: bool = False,
 ) -> RenderedScreen:
     """Render a view to an in-memory screen."""
     resolved = resolve_theme(theme)
@@ -120,6 +121,7 @@ def render_to_screen(
         width=width,
         height=height,
         frame=frame,
+        collapse_borders=collapse_borders,
     )
 
     root = Surface.root(buffer, resolved)
@@ -154,9 +156,13 @@ def _headless_capabilities(overrides: CapabilityOverrides | None) -> Capabilitie
 def render_to_text(
     width: int = 80, height: int = 24, theme: "Theme | str | None" = None,
     view: Callable[[Container], None] | None = None,
+    *,
+    collapse_borders: bool = False,
 ) -> str:
     """Shorthand: render and return plain text. Ideal for snapshot tests."""
-    return render_to_screen(width, height, theme, view).text()
+    return render_to_screen(
+        width, height, theme, view, collapse_borders=collapse_borders
+    ).text()
 
 
 def render_to_ansi(

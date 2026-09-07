@@ -37,6 +37,11 @@ type AppOptions struct {
 	NoFocusNavigation bool
 	// NoBackground stops painting the theme background across the screen.
 	NoBackground bool
+	// CollapseBorders merges the borders of adjacent panels into shared lines,
+	// the way CSS collapses table borders. Off by default, because it changes
+	// every layout with two panels side by side; turn it on once, for the whole
+	// screen.
+	CollapseBorders bool
 	// Monochrome drains color, for accessibility or NO_COLOR.
 	Monochrome *bool
 }
@@ -128,10 +133,10 @@ func NewApp(o AppOptions) *App {
 	}
 }
 
-func (a *App) Width() int         { return a.current.Width }
-func (a *App) Height() int        { return a.current.Height }
-func (a *App) Stats() FrameStats  { return a.lastStats }
-func (a *App) Running() bool      { return a.running }
+func (a *App) Width() int        { return a.current.Width }
+func (a *App) Height() int       { return a.current.Height }
+func (a *App) Stats() FrameStats { return a.lastStats }
+func (a *App) Running() bool     { return a.running }
 
 // Render registers the view. It is called on every frame; keep it cheap.
 func (a *App) Render(fn func(RenderArgs)) *App {
@@ -157,12 +162,24 @@ func (a *App) SetTheme(name string) *App {
 	return a
 }
 
-func (a *App) OnKey(fn func(InputEvent)) *App    { a.keyHandlers = append(a.keyHandlers, fn); return a }
-func (a *App) OnMouse(fn func(InputEvent)) *App  { a.mouseHandlers = append(a.mouseHandlers, fn); return a }
-func (a *App) OnPaste(fn func(InputEvent)) *App  { a.pasteHandlers = append(a.pasteHandlers, fn); return a }
-func (a *App) OnFocus(fn func(InputEvent)) *App  { a.focusHandlers = append(a.focusHandlers, fn); return a }
-func (a *App) OnFrame(fn func(FrameStats)) *App  { a.frameHandlers = append(a.frameHandlers, fn); return a }
-func (a *App) OnExit(fn func()) *App             { a.exitHandlers = append(a.exitHandlers, fn); return a }
+func (a *App) OnKey(fn func(InputEvent)) *App { a.keyHandlers = append(a.keyHandlers, fn); return a }
+func (a *App) OnMouse(fn func(InputEvent)) *App {
+	a.mouseHandlers = append(a.mouseHandlers, fn)
+	return a
+}
+func (a *App) OnPaste(fn func(InputEvent)) *App {
+	a.pasteHandlers = append(a.pasteHandlers, fn)
+	return a
+}
+func (a *App) OnFocus(fn func(InputEvent)) *App {
+	a.focusHandlers = append(a.focusHandlers, fn)
+	return a
+}
+func (a *App) OnFrame(fn func(FrameStats)) *App {
+	a.frameHandlers = append(a.frameHandlers, fn)
+	return a
+}
+func (a *App) OnExit(fn func()) *App { a.exitHandlers = append(a.exitHandlers, fn); return a }
 
 func (a *App) OnResize(fn func(TerminalSize)) *App {
 	a.resizeHandlers = append(a.resizeHandlers, fn)
@@ -360,14 +377,15 @@ func (a *App) Frame() FrameStats {
 	a.current.Clear(background, a.Theme.Foreground)
 
 	ctx := &frameCtx{
-		theme:        a.Theme,
-		capabilities: a.Capabilities,
-		width:        a.current.Width,
-		height:       a.current.Height,
-		frame:        a.frameCount,
-		elapsed:      time.Since(a.startedAt),
-		focusIndex:   a.focusIndex,
-		invalidate:   a.Invalidate,
+		theme:           a.Theme,
+		capabilities:    a.Capabilities,
+		width:           a.current.Width,
+		height:          a.current.Height,
+		frame:           a.frameCount,
+		elapsed:         time.Since(a.startedAt),
+		focusIndex:      a.focusIndex,
+		collapseBorders: a.options.CollapseBorders,
+		invalidate:      a.Invalidate,
 	}
 
 	root := RootSurface(a.current, a.Theme)

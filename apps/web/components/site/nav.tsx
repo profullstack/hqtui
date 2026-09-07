@@ -14,6 +14,7 @@ function GithubMark() {
 const LINKS = [
   { href: "/#languages", label: "Languages" },
   { href: "/#features", label: "Features" },
+  { href: "/widgets", label: "Widgets" },
   { href: "/showcase", label: "Showcase" },
   { href: "/docs", label: "Docs" },
   { href: "/blog", label: "Blog" },

@@ -68,10 +68,17 @@ function clamp(v: number, min: number, max: number): number {
  * Distribute `total` across `items`, honouring gaps, fractions, and min/max.
  * Always returns non-negative integers that sum to at most `total`.
  */
-export function solve(total: number, items: Constraint[], gap = 0): number[] {
+/**
+ * `gap` may be one number for every seam, or one per seam. The per-seam form
+ * exists so collapsed borders can be a gap of minus one between two panels and
+ * the ordinary gap everywhere else on the same row.
+ */
+export function solve(total: number, items: Constraint[], gap: number | number[] = 0): number[] {
   const n = items.length;
   if (n === 0) return [];
-  const gapTotal = gap * (n - 1);
+  const gapTotal = Array.isArray(gap)
+    ? gap.slice(0, n - 1).reduce((sum, value) => sum + value, 0)
+    : gap * (n - 1);
   const available = Math.max(0, total - gapTotal);
   const parsed = items.map((c) => parse(c, available));
 
@@ -153,20 +160,21 @@ export function stack(
   rect: Rect,
   items: Constraint[],
   direction: "row" | "column",
-  gap = 0,
+  gap: number | number[] = 0,
 ): Rect[] {
   const horizontal = direction === "row";
   const sizes = solve(horizontal ? rect.width : rect.height, items, gap);
+  const seam = (i: number) => (Array.isArray(gap) ? (gap[i] ?? 0) : gap);
   const out: Rect[] = [];
   let offset = horizontal ? rect.x : rect.y;
-  for (const size of sizes) {
+  sizes.forEach((size, i) => {
     out.push(
       horizontal
         ? { x: offset, y: rect.y, width: size, height: rect.height }
         : { x: rect.x, y: offset, width: rect.width, height: size },
     );
-    offset += size + gap;
-  }
+    offset += size + seam(i);
+  });
   return out;
 }
 

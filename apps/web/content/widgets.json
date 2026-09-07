@@ -1,0 +1,1209 @@
+{
+  "generated": "by examples/widgets/build-catalog.ts — do not edit",
+  "languages": [
+    {
+      "id": "typescript",
+      "label": "TypeScript",
+      "file": "examples/widgets/gallery.ts",
+      "syntax": "ts"
+    },
+    {
+      "id": "javascript",
+      "label": "JavaScript",
+      "file": "examples/widgets/gallery.js",
+      "syntax": "js"
+    },
+    {
+      "id": "rust",
+      "label": "Rust",
+      "file": "ports/rust/examples/widgets.rs",
+      "syntax": "rust"
+    },
+    {
+      "id": "go",
+      "label": "Go",
+      "file": "ports/go/examples/widgets/main.go",
+      "syntax": "go"
+    },
+    {
+      "id": "python",
+      "label": "Python",
+      "file": "ports/python/examples/widgets.py",
+      "syntax": "python"
+    },
+    {
+      "id": "zig",
+      "label": "Zig",
+      "file": "ports/zig/examples/widgets.zig",
+      "syntax": "zig"
+    },
+    {
+      "id": "cpp",
+      "label": "C++",
+      "file": "ports/cpp/examples/widgets.cpp",
+      "syntax": "cpp"
+    },
+    {
+      "id": "ruby",
+      "label": "Ruby",
+      "file": "ports/ruby/examples/widgets.rb",
+      "syntax": "ruby"
+    },
+    {
+      "id": "php",
+      "label": "PHP",
+      "file": "ports/php/examples/widgets.php",
+      "syntax": "php"
+    },
+    {
+      "id": "perl",
+      "label": "Perl",
+      "file": "ports/perl/examples/widgets.pl",
+      "syntax": "perl"
+    },
+    {
+      "id": "cobol",
+      "label": "COBOL",
+      "file": "ports/cobol/examples/widgets.cbl",
+      "syntax": "cobol"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "text",
+      "title": "Text",
+      "category": "Text",
+      "width": 58,
+      "height": 5,
+      "blurb": "Aligned, styled, optionally wrapped copy. Every other widget is built on it.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">Plain text. It fills the width it is given.               </span>\n<span style=\"color:#58a6ff;background:#05070a;font-weight:700\">Bold, in the theme's primary color.                       </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                            Right aligned.</span>\n<span style=\"color:#c6d0db;background:#05070a\">Long copy wraps when you ask it to, instead of being cut  </span>\n<span style=\"color:#c6d0db;background:#05070a\">at the edge.                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function text(ui: Container, theme: Theme): void {\n  ui.text(\"Plain text. It fills the width it is given.\");\n  ui.text(\"Bold, in the theme's primary color.\", { bold: true, fg: theme.primary });\n  ui.text(\"Right aligned.\", { align: \"right\" });\n  ui.text(\"Long copy wraps when you ask it to, instead of being cut at the edge.\", { wrap: true });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function text(ui, theme) {\n  ui.text(\"Plain text. It fills the width it is given.\");\n  ui.text(\"Bold, in the theme's primary color.\", { bold: true, fg: theme.primary });\n  ui.text(\"Right aligned.\", { align: \"right\" });\n  ui.text(\"Long copy wraps when you ask it to, instead of being cut at the edge.\", { wrap: true });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn text(ui: &mut Container) {\n    ui.text(\"Plain text. It fills the width it is given.\");\n    ui.styled_text(\"Bold, in the theme's primary color.\", TextStyle::new().bold());\n    ui.styled_text(\"Right aligned.\", TextStyle::new().align(Align::Right));\n    ui.styled_text(\n        \"Long copy wraps when you ask it to, instead of being cut at the edge.\",\n        TextStyle::new().wrapped(),\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Text(ui *hqtui.Container) {\n\tui.Text(\"Plain text. It fills the width it is given.\")\n\tui.StyledText(\"Bold, in the theme's primary color.\", hqtui.TextStyle{Bold: true})\n\tui.StyledText(\"Right aligned.\", hqtui.TextStyle{Align: hqtui.AlignRight})\n\tui.StyledText(\n\t\t\"Long copy wraps when you ask it to, instead of being cut at the edge.\",\n\t\thqtui.TextStyle{Wrap: true},\n\t)\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def text(ui: Container) -> None:\n    ui.text(\"Plain text. It fills the width it is given.\")\n    ui.text(\"Bold, in the theme's primary color.\", w.TextStyle(bold=True))\n    ui.text(\"Right aligned.\", w.TextStyle(align=\"right\"))\n    ui.text(\n        \"Long copy wraps when you ask it to, instead of being cut at the edge.\",\n        w.TextStyle(wrap=True),\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn text(ui: *Container) anyerror!void {\n    try ui.text(\"Plain text. It fills the width it is given.\", .{});\n    try ui.text(\"Bold, in the theme's primary color.\", .{ .bold = true });\n    try ui.text(\"Right aligned.\", .{ .alignment = .right });\n    try ui.text(\n        \"Long copy wraps when you ask it to, instead of being cut at the edge.\",\n        .{ .wrap = true },\n    );\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_text(Surface s) {\n  // `text` places a string at a cell; `aligned` centres or right-aligns it on\n  // a row. Both take the colour explicitly.\n  const auto &t = theme(s);\n  text(s, 0, 0, \"Plain text. It fills the width it is given.\", t.foreground);\n  aligned(s, 1, \"Centered.\", t.foreground, HQ_CENTER);\n  aligned(s, 2, \"Right aligned.\", t.muted, HQ_RIGHT);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def text(ui)\n  # align is 0 left, 1 center, 2 right.\n  ui.text('Plain text. It fills the width it is given.')\n  ui.text('Centered.', align: 1)\n  ui.text('Right aligned.', align: 2)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_text(UI $ui): void\n{\n    // align is 0 left, 1 center, 2 right.\n    $ui->text('Plain text. It fills the width it is given.');\n    $ui->text('Centered.', ['align' => 1]);\n    $ui->text('Right aligned.', ['align' => 2]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_text {\n    my ($ui) = @_;\n    # align is 0 left, 1 center, 2 right.\n    $ui->text('Plain text. It fills the width it is given.');\n    $ui->text('Centered.', align => 1);\n    $ui->text('Right aligned.', align => 2);\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "TEXT-WIDGET.\n    MOVE \"text\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"LEFT\" TO SR-KEY\n    MOVE \"Plain text. It fills the width it is given.\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"CENTER\" TO SR-KEY\n    MOVE \"Centered.\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"RIGHT\" TO SR-KEY\n    MOVE \"Right aligned.\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "label",
+      "title": "Label",
+      "category": "Text",
+      "width": 58,
+      "height": 3,
+      "blurb": "Text in the theme's muted color: captions and the line under a number.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">cpu · 8 cores · 3.4 GHz                                   </span>\n<span style=\"color:#5fff87;background:#05070a;font-weight:700\">42.1%                                                     </span>\n<span style=\"color:#5a6b7d;background:#05070a\">15 minute average                                         </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function label(ui: Container, theme: Theme): void {\n  // `label` is `text` in the theme's muted color: secondary copy, captions,\n  // the line under a number that says what the number is.\n  ui.label(\"cpu · 8 cores · 3.4 GHz\");\n  ui.text(\"42.1%\", { bold: true, fg: theme.success });\n  ui.label(\"15 minute average\");\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function label(ui, theme) {\n  // `label` is `text` in the theme's muted color: secondary copy, captions,\n  // the line under a number that says what the number is.\n  ui.label(\"cpu · 8 cores · 3.4 GHz\");\n  ui.text(\"42.1%\", { bold: true, fg: theme.success });\n  ui.label(\"15 minute average\");\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn label(ui: &mut Container) {\n    // `label` is `text` in the theme's muted color: secondary copy, captions,\n    // the line under a number that says what the number is.\n    ui.label(\"cpu · 8 cores · 3.4 GHz\");\n    ui.styled_text(\"42.1%\", TextStyle::new().bold());\n    ui.label(\"15 minute average\");\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Label(ui *hqtui.Container) {\n\t// Label is Text in the theme's muted color: secondary copy, captions,\n\t// the line under a number that says what the number is.\n\tui.Label(\"cpu · 8 cores · 3.4 GHz\")\n\tui.StyledText(\"42.1%\", hqtui.TextStyle{Bold: true})\n\tui.Label(\"15 minute average\")\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def label(ui: Container) -> None:\n    # `label` is `text` in the theme's muted color: secondary copy, captions,\n    # the line under a number that says what the number is.\n    ui.label(\"cpu · 8 cores · 3.4 GHz\")\n    ui.text(\"42.1%\", w.TextStyle(bold=True))\n    ui.label(\"15 minute average\")",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn label(ui: *Container) anyerror!void {\n    // `label` is `text` in the theme's muted color: secondary copy, captions,\n    // the line under a number that says what the number is.\n    try ui.label(\"cpu · 8 cores · 3.4 GHz\");\n    try ui.text(\"42.1%\", .{ .bold = true });\n    try ui.label(\"15 minute average\");\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "heading",
+      "title": "Heading",
+      "category": "Text",
+      "width": 58,
+      "height": 4,
+      "blurb": "Bold text in the theme's title color, for sectioning without a panel.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#7ee2ff;background:#05070a;font-weight:700\">Storage                                                   </span>\n<span style=\"color:#5a6b7d;background:#05070a\">Four volumes, one degraded                                </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                          </span>\n<span style=\"color:#56d4dd;background:#05070a;font-weight:700\">Network                                                   </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function heading(ui: Container, theme: Theme): void {\n  // `heading` is `text` in the theme's title color, bold.\n  ui.heading(\"Storage\");\n  ui.label(\"Four volumes, one degraded\");\n  ui.spacer(1);\n  ui.heading(\"Network\", { fg: theme.accent });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function heading(ui, theme) {\n  // `heading` is `text` in the theme's title color, bold.\n  ui.heading(\"Storage\");\n  ui.label(\"Four volumes, one degraded\");\n  ui.spacer(1);\n  ui.heading(\"Network\", { fg: theme.accent });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn heading(ui: &mut Container) {\n    // `heading` is `text` in the theme's title color, bold.\n    ui.heading(\"Storage\");\n    ui.label(\"Four volumes, one degraded\");\n    ui.spacer(1);\n    ui.heading(\"Network\");\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Heading(ui *hqtui.Container) {\n\t// Heading is Text in the theme's title color, bold.\n\tui.Heading(\"Storage\")\n\tui.Label(\"Four volumes, one degraded\")\n\tui.Spacer(hqtui.Cells(1))\n\tui.Heading(\"Network\")\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def heading(ui: Container) -> None:\n    # `heading` is `text` in the theme's title color, bold.\n    ui.heading(\"Storage\")\n    ui.label(\"Four volumes, one degraded\")\n    ui.spacer(1)\n    ui.heading(\"Network\")",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn heading(ui: *Container) anyerror!void {\n    // `heading` is `text` in the theme's title color, bold.\n    try ui.heading(\"Storage\");\n    try ui.label(\"Four volumes, one degraded\");\n    try ui.spacer(.{ .cells = 1 });\n    try ui.heading(\"Network\");\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "badge",
+      "title": "Badge",
+      "category": "Text",
+      "width": 58,
+      "height": 1,
+      "blurb": "A status chip. Filled, subtle or outline.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#05070a;background:#5fff87;font-weight:700\"> active </span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#ffd75f;background:#363222\"> idle </span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#ff6b6b;background:#05070a;font-weight:700\"> failed </span><span style=\"color:#c6d0db;background:#05070a\">                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function badge(ui: Container, theme: Theme): void {\n  ui.row({ size: 1, gap: 1 }, (r) => {\n    r.badge({ text: \"active\", color: theme.success, size: 10 });\n    r.badge({ text: \"idle\", color: theme.warning, variant: \"subtle\", size: 8 });\n    r.badge({ text: \"failed\", color: theme.danger, variant: \"outline\", size: 10 });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function badge(ui, theme) {\n  ui.row({ size: 1, gap: 1 }, (r) => {\n    r.badge({ text: \"active\", color: theme.success, size: 10 });\n    r.badge({ text: \"idle\", color: theme.warning, variant: \"subtle\", size: 8 });\n    r.badge({ text: \"failed\", color: theme.danger, variant: \"outline\", size: 10 });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn badge(ui: &mut Container) {\n    ui.row(Row::new().size(1).gap(1), |r| {\n        r.badge(BadgeOptions::new(\"active\"));\n        r.badge(BadgeOptions::new(\"idle\").variant(BadgeVariant::Subtle));\n        r.badge(BadgeOptions::new(\"failed\").variant(BadgeVariant::Outline));\n        r.spacer(\"fill\");\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Badge(ui *hqtui.Container) {\n\tui.Row(hqtui.RowOptions{Layout: hqtui.Layout{Size: size(hqtui.Cells(1)), Gap: 1}}, func(r *hqtui.Container) {\n\t\tr.Badge(hqtui.BadgeOptions{Text: \"active\"})\n\t\tr.Badge(hqtui.BadgeOptions{Text: \"idle\", Variant: hqtui.BadgeSubtle})\n\t\tr.Badge(hqtui.BadgeOptions{Text: \"failed\", Variant: hqtui.BadgeOutline})\n\t\tr.Spacer(hqtui.Fill())\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def badge(ui: Container) -> None:\n    def row(r: Container) -> None:\n        r.badge(w.BadgeOptions(text=\"active\"))\n        r.badge(w.BadgeOptions(text=\"idle\", variant=\"subtle\"))\n        r.badge(w.BadgeOptions(text=\"failed\", variant=\"outline\"))\n        r.spacer(\"fill\")\n\n    ui.row(Layout(size=1, gap=1), row)",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn badge(ui: *Container) anyerror!void {\n    try ui.row(.{ .layout = .{ .size = .{ .cells = 1 }, .gap = 1 } }, hqtui.Body.plain(badgeRow));\n}\n\nfn badgeRow(r: *Container) anyerror!void {\n    _ = try r.badge(.{ .text = \"active\" });\n    _ = try r.badge(.{ .text = \"idle\", .variant = .subtle });\n    _ = try r.badge(.{ .text = \"failed\", .variant = .outline });\n    try r.spacer(.fill);\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "divider",
+      "title": "Divider",
+      "category": "Text",
+      "width": 58,
+      "height": 5,
+      "blurb": "A rule, optionally labelled, that titles a section cheaply.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">Above the line                                            </span>\n<span style=\"color:#243040;background:#05070a\">──────────────────────────────────────────────────────────</span>\n<span style=\"color:#c6d0db;background:#05070a\">Below it                                                  </span>\n<span style=\"color:#56d4dd;background:#05070a\">─────────────────────────</span><span style=\"color:#5a6b7d;background:#05070a\"> status </span><span style=\"color:#56d4dd;background:#05070a\">─────────────────────────</span>\n<span style=\"color:#c6d0db;background:#05070a\">A labelled divider titles a section without spending a pa…</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function divider(ui: Container, theme: Theme): void {\n  ui.text(\"Above the line\");\n  ui.divider();\n  ui.text(\"Below it\");\n  ui.divider({ label: \"status\", align: \"center\", color: theme.accent });\n  ui.text(\"A labelled divider titles a section without spending a panel on it\");\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function divider(ui, theme) {\n  ui.text(\"Above the line\");\n  ui.divider();\n  ui.text(\"Below it\");\n  ui.divider({ label: \"status\", align: \"center\", color: theme.accent });\n  ui.text(\"A labelled divider titles a section without spending a panel on it\");\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn divider(ui: &mut Container) {\n    ui.text(\"Above the line\");\n    ui.divider(DividerOptions::default());\n    ui.text(\"Below it\");\n    ui.divider(DividerOptions {\n        label: Some(\"status\".into()),\n        align: Some(Align::Center),\n        ..Default::default()\n    });\n    ui.text(\"A labelled divider titles a section without spending a panel on it\");\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Divider(ui *hqtui.Container) {\n\tui.Text(\"Above the line\")\n\tui.Divider(hqtui.DividerOptions{})\n\tui.Text(\"Below it\")\n\tui.Divider(hqtui.DividerOptions{Label: \"status\", Align: hqtui.AlignCenter})\n\tui.Text(\"A labelled divider titles a section without spending a panel on it\")\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def divider(ui: Container) -> None:\n    ui.text(\"Above the line\")\n    ui.divider()\n    ui.text(\"Below it\")\n    ui.divider(w.DividerOptions(label=\"status\", align=\"center\"))\n    ui.text(\"A labelled divider titles a section without spending a panel on it\")",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn divider(ui: *Container) anyerror!void {\n    try ui.text(\"Above the line\", .{});\n    try ui.divider(.{});\n    try ui.text(\"Below it\", .{});\n    try ui.divider(.{ .label = \"status\", .alignment = .center });\n    try ui.text(\"A labelled divider titles a section without a panel\", .{});\n}",
+          "syntax": "zig"
+        },
+        "ruby": {
+          "code": "def divider(ui)\n  ui.text('Above the line')\n  ui.divider\n  ui.text('Below it')\n  ui.divider('status')\n  ui.text('A labelled divider titles a section without spending a panel on it')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_divider(UI $ui): void\n{\n    $ui->text('Above the line');\n    $ui->divider();\n    $ui->text('Below it');\n    $ui->divider('status');\n    $ui->text('A labelled divider titles a section without spending a panel on it');\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_divider {\n    my ($ui) = @_;\n    $ui->text('Above the line');\n    $ui->divider;\n    $ui->text('Below it');\n    $ui->divider('status');\n    $ui->text('A labelled divider titles a section without spending a panel on it');\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "DIVIDER-WIDGET.\n    MOVE \"divider\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"Above the line\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"DIVIDER\" TO SR-VERB\n    PERFORM EMIT-RECORD\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"Below it\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"DIVIDER\" TO SR-VERB\n    MOVE \"status\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "keyValues",
+      "title": "Key/values",
+      "category": "Text",
+      "width": 58,
+      "height": 4,
+      "blurb": "Aligned label and value pairs. The backbone of every system panel.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">Host        </span><span style=\"color:#c6d0db;background:#05070a\">                                    web-01.iad</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Uptime      </span><span style=\"color:#c6d0db;background:#05070a\">                                     18d 04:12</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Load        </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ffd75f;background:#05070a\">                             0.42  0.51  0.60</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Established </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5fff87;background:#05070a\">                                        1,284</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function keyValues(ui: Container, theme: Theme): void {\n  // The backbone of every \"System\" panel: labels left, values right.\n  ui.keyValues([\n    { label: \"Host\", value: \"web-01.iad\" },\n    { label: \"Uptime\", value: \"18d 04:12\" },\n    { label: \"Load\", value: \"0.42  0.51  0.60\", color: theme.warning },\n    { label: \"Established\", value: \"1,284\", color: theme.success },\n  ]);\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function keyValues(ui, theme) {\n  // The backbone of every \"System\" panel: labels left, values right.\n  ui.keyValues([\n    { label: \"Host\", value: \"web-01.iad\" },\n    { label: \"Uptime\", value: \"18d 04:12\" },\n    { label: \"Load\", value: \"0.42  0.51  0.60\", color: theme.warning },\n    { label: \"Established\", value: \"1,284\", color: theme.success },\n  ]);\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn key_values(ui: &mut Container) {\n    // The backbone of every \"System\" panel: labels left, values right.\n    ui.key_values(KeyValueOptions {\n        rows: vec![\n            KeyValueRow::new(\"Host\", \"web-01.iad\"),\n            KeyValueRow::new(\"Uptime\", \"18d 04:12\"),\n            KeyValueRow::new(\"Load\", \"0.42  0.51  0.60\"),\n            KeyValueRow::new(\"Established\", \"1,284\"),\n        ],\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func KeyValues(ui *hqtui.Container) {\n\t// The backbone of every \"System\" panel: labels left, values right.\n\tui.KeyValues(hqtui.KeyValueOptions{Rows: []hqtui.KeyValueRow{\n\t\thqtui.KV(\"Host\", \"web-01.iad\"),\n\t\thqtui.KV(\"Uptime\", \"18d 04:12\"),\n\t\thqtui.KV(\"Load\", \"0.42  0.51  0.60\"),\n\t\thqtui.KV(\"Established\", \"1,284\"),\n\t}})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def key_values(ui: Container) -> None:\n    # The backbone of every \"System\" panel: labels left, values right.\n    ui.key_values(\n        w.KeyValueOptions(\n            rows=[\n                w.KeyValueRow(\"Host\", \"web-01.iad\"),\n                w.KeyValueRow(\"Uptime\", \"18d 04:12\"),\n                w.KeyValueRow(\"Load\", \"0.42  0.51  0.60\"),\n                w.KeyValueRow(\"Established\", \"1,284\"),\n            ]\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn keyValues(ui: *Container) anyerror!void {\n    // The backbone of every \"System\" panel: labels left, values right.\n    try ui.keyValues(.{ .rows = &.{\n        .{ .label = \"Host\", .value = \"web-01.iad\" },\n        .{ .label = \"Uptime\", .value = \"18d 04:12\" },\n        .{ .label = \"Load\", .value = \"0.42  0.51  0.60\" },\n        .{ .label = \"Established\", .value = \"1,284\" },\n    } });\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_key_values(Surface s) {\n  // The backbone of every \"System\" panel: labels left, values right.\n  std::vector<KeyValue> rows{\n      {\"Host\", \"web-01.iad\"},\n      {\"Uptime\", \"18d 04:12\"},\n      {\"Load\", \"0.42  0.51  0.60\"},\n      {\"Established\", \"1,284\"},\n  };\n  draw_keys(s, rows);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def key_values(ui)\n  # The backbone of every \"System\" panel: labels left, values right.\n  ui.keys([\n            ['Host', 'web-01.iad'],\n            ['Uptime', '18d 04:12'],\n            ['Load', '0.42  0.51  0.60'],\n            ['Established', '1,284']\n          ])\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_key_values(UI $ui): void\n{\n    // The backbone of every \"System\" panel: labels left, values right.\n    $ui->keys([\n        ['Host', 'web-01.iad'],\n        ['Uptime', '18d 04:12'],\n        ['Load', '0.42  0.51  0.60'],\n        ['Established', '1,284'],\n    ]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_key_values {\n    my ($ui) = @_;\n    # The backbone of every \"System\" panel: labels left, values right.\n    $ui->keys([\n        ['Host',        'web-01.iad'],\n        ['Uptime',      '18d 04:12'],\n        ['Load',        '0.42  0.51  0.60'],\n        ['Established', '1,284'],\n    ]);\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "KEYVALUES-WIDGET.\n    MOVE \"keyValues\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Host\" TO SR-KEY\n    MOVE \"web-01.iad\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Uptime\" TO SR-KEY\n    MOVE \"18d 04:12\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Load\" TO SR-KEY\n    MOVE \"0.42  0.51  0.60\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Established\" TO SR-KEY\n    MOVE \"1,284\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "statusBar",
+      "title": "Status bar",
+      "category": "Text",
+      "width": 62,
+      "height": 1,
+      "blurb": "The keybinding strip along the bottom, with a right-hand slot.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">F1</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Help</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">F2</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Theme</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">F3</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#c6d0db;background:#14181d;font-weight:700\">Filter</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">^K</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Palette</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">q</span><span style=\"color:#c6d0db;background:#14181d\"> </span><span style=\"color:#5a6b7d;background:#14181d\">Quit</span><span style=\"color:#c6d0db;background:#14181d\">  </span><span style=\"color:#5a6b7d;background:#14181d\">0.41ms  18…</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function statusBar(ui: Container, _theme: Theme): void {\n  // Usually the last thing drawn, pinned to the bottom row.\n  ui.statusBar({\n    items: [\n      { key: \"F1\", label: \"Help\" },\n      { key: \"F2\", label: \"Theme\" },\n      { key: \"F3\", label: \"Filter\", active: true },\n      { key: \"^K\", label: \"Palette\" },\n      { key: \"q\", label: \"Quit\" },\n    ],\n    right: [{ label: \"0.41ms  184 cells\" }],\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function statusBar(ui) {\n  // Usually the last thing drawn, pinned to the bottom row.\n  ui.statusBar({\n    items: [\n      { key: \"F1\", label: \"Help\" },\n      { key: \"F2\", label: \"Theme\" },\n      { key: \"F3\", label: \"Filter\", active: true },\n      { key: \"^K\", label: \"Palette\" },\n      { key: \"q\", label: \"Quit\" },\n    ],\n    right: [{ label: \"0.41ms  184 cells\" }],\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn status_bar(ui: &mut Container) {\n    // Usually the last thing drawn, pinned to the bottom row.\n    ui.status_bar(StatusBarOptions {\n        items: vec![\n            StatusItem::new(\"Help\").key(\"F1\"),\n            StatusItem::new(\"Theme\").key(\"F2\"),\n            StatusItem::new(\"Filter\").key(\"F3\").active(),\n            StatusItem::new(\"Palette\").key(\"^K\"),\n            StatusItem::new(\"Quit\").key(\"q\"),\n        ],\n        right: vec![StatusItem::new(\"0.41ms  184 cells\")],\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func StatusBar(ui *hqtui.Container) {\n\t// Usually the last thing drawn, pinned to the bottom row.\n\tui.StatusBar(hqtui.StatusBarOptions{\n\t\tItems: []hqtui.StatusItem{\n\t\t\thqtui.StatusKey(\"F1\", \"Help\"),\n\t\t\thqtui.StatusKey(\"F2\", \"Theme\"),\n\t\t\thqtui.StatusKey(\"F3\", \"Filter\"),\n\t\t\thqtui.StatusKey(\"^K\", \"Palette\"),\n\t\t\thqtui.StatusKey(\"q\", \"Quit\"),\n\t\t},\n\t\tRight: []hqtui.StatusItem{hqtui.Status(\"0.41ms  184 cells\")},\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def status_bar(ui: Container) -> None:\n    # Usually the last thing drawn, pinned to the bottom row.\n    ui.status_bar(\n        w.StatusBarOptions(\n            items=[\n                w.StatusItem(label=\"Help\", key=\"F1\"),\n                w.StatusItem(label=\"Theme\", key=\"F2\"),\n                w.StatusItem(label=\"Filter\", key=\"F3\", active=True),\n                w.StatusItem(label=\"Palette\", key=\"^K\"),\n                w.StatusItem(label=\"Quit\", key=\"q\"),\n            ],\n            right=[w.StatusItem(label=\"0.41ms  184 cells\")],\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn statusBar(ui: *Container) anyerror!void {\n    // Usually the last thing drawn, pinned to the bottom row.\n    try ui.statusBar(.{\n        .items = &.{\n            .{ .key = \"F1\", .label = \"Help\" },\n            .{ .key = \"F2\", .label = \"Theme\" },\n            .{ .key = \"F3\", .label = \"Filter\", .active = true },\n            .{ .key = \"^K\", .label = \"Palette\" },\n            .{ .key = \"q\", .label = \"Quit\" },\n        },\n        .right = &.{.{ .label = \"0.41ms  184 cells\" }},\n    });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "table",
+      "title": "Table",
+      "category": "Data",
+      "width": 58,
+      "height": 6,
+      "blurb": "Columns with alignment, widths, zebra striping, selection and scroll.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">Name        </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">     Size</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">Type  </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a;font-weight:700\">  Modified</span><span style=\"color:#c6d0db;background:#05070a\">                  </span>\n<span style=\"color:#58a6ff;background:#05070a\">src         </span><span style=\"color:#c6d0db;background:#05070a\">    4.2 KB dir    </span><span style=\"color:#5a6b7d;background:#05070a\">    2m ago</span><span style=\"color:#c6d0db;background:#05070a\">                  </span>\n<span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">test        </span><span style=\"color:#c6d0db;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">   1.1 KB</span><span style=\"color:#c6d0db;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">dir   </span><span style=\"color:#c6d0db;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">    5m ago</span><span style=\"color:#c6d0db;background:#1d3a52\">                  </span>\n<span style=\"color:#58a6ff;background:#05070a\">package.json</span><span style=\"color:#c6d0db;background:#05070a\">    1.2 KB file   </span><span style=\"color:#5a6b7d;background:#05070a\">   10m ago</span><span style=\"color:#c6d0db;background:#05070a\">                  </span>\n<span style=\"color:#58a6ff;background:#14181d\">README.md   </span><span style=\"color:#c6d0db;background:#14181d\">    3.4 KB file   </span><span style=\"color:#5a6b7d;background:#14181d\">    1h ago</span><span style=\"color:#c6d0db;background:#14181d\">                  </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                          </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function table(ui: Container, theme: Theme): void {\n  ui.table({\n    rows: [\n      { name: \"src\", size: \"4.2 KB\", type: \"dir\", modified: \"2m ago\" },\n      { name: \"test\", size: \"1.1 KB\", type: \"dir\", modified: \"5m ago\" },\n      { name: \"package.json\", size: \"1.2 KB\", type: \"file\", modified: \"10m ago\" },\n      { name: \"README.md\", size: \"3.4 KB\", type: \"file\", modified: \"1h ago\" },\n    ],\n    selected: 1,\n    zebra: true,\n    columns: [\n      { key: \"name\", title: \"Name\", min: 12, color: theme.primary },\n      { key: \"size\", title: \"Size\", width: 9, align: \"right\" },\n      { key: \"type\", title: \"Type\", width: 6 },\n      { key: \"modified\", title: \"Modified\", width: 10, align: \"right\", color: theme.muted },\n    ],\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function table(ui, theme) {\n  ui.table({\n    rows: [\n      { name: \"src\", size: \"4.2 KB\", type: \"dir\", modified: \"2m ago\" },\n      { name: \"test\", size: \"1.1 KB\", type: \"dir\", modified: \"5m ago\" },\n      { name: \"package.json\", size: \"1.2 KB\", type: \"file\", modified: \"10m ago\" },\n      { name: \"README.md\", size: \"3.4 KB\", type: \"file\", modified: \"1h ago\" },\n    ],\n    selected: 1,\n    zebra: true,\n    columns: [\n      { key: \"name\", title: \"Name\", min: 12, color: theme.primary },\n      { key: \"size\", title: \"Size\", width: 9, align: \"right\" },\n      { key: \"type\", title: \"Type\", width: 6 },\n      { key: \"modified\", title: \"Modified\", width: 10, align: \"right\", color: theme.muted },\n    ],\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn table(ui: &mut Container) {\n    ui.table(\n        TableOptions {\n            rows: vec![\n                TableRow::new([\"src\", \"4.2 KB\", \"dir\", \"2m ago\"]),\n                TableRow::new([\"test\", \"1.1 KB\", \"dir\", \"5m ago\"]),\n                TableRow::new([\"package.json\", \"1.2 KB\", \"file\", \"10m ago\"]),\n                TableRow::new([\"README.md\", \"3.4 KB\", \"file\", \"1h ago\"]),\n            ],\n            columns: vec![\n                TableColumn::new(\"Name\"),\n                TableColumn::new(\"Size\").width(9).align(Align::Right),\n                TableColumn::new(\"Type\").width(6),\n                TableColumn::new(\"Modified\").width(10).align(Align::Right),\n            ],\n            selected: Some(1),\n            zebra: true,\n            ..Default::default()\n        },\n        \"files\",\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Table(ui *hqtui.Container) {\n\tui.Table(hqtui.TableOptions{\n\t\tRows: []hqtui.TableRow{\n\t\t\thqtui.Row(\"src\", \"4.2 KB\", \"dir\", \"2m ago\"),\n\t\t\thqtui.Row(\"test\", \"1.1 KB\", \"dir\", \"5m ago\"),\n\t\t\thqtui.Row(\"package.json\", \"1.2 KB\", \"file\", \"10m ago\"),\n\t\t\thqtui.Row(\"README.md\", \"3.4 KB\", \"file\", \"1h ago\"),\n\t\t},\n\t\tColumns: []hqtui.TableColumn{\n\t\t\thqtui.Col(\"Name\"),\n\t\t\thqtui.Col(\"Size\").Right(),\n\t\t\thqtui.Col(\"Type\"),\n\t\t\thqtui.Col(\"Modified\").Right(),\n\t\t},\n\t\tSelected: at(1),\n\t\tZebra:    true,\n\t}, hqtui.ScrollHandlers{})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def table(ui: Container) -> None:\n    ui.table(\n        w.TableOptions(\n            rows=[\n                w.TableRow((\"src\", \"4.2 KB\", \"dir\", \"2m ago\")),\n                w.TableRow((\"test\", \"1.1 KB\", \"dir\", \"5m ago\")),\n                w.TableRow((\"package.json\", \"1.2 KB\", \"file\", \"10m ago\")),\n                w.TableRow((\"README.md\", \"3.4 KB\", \"file\", \"1h ago\")),\n            ],\n            columns=[\n                w.TableColumn(\"Name\"),\n                w.TableColumn(\"Size\", align=\"right\"),\n                w.TableColumn(\"Type\"),\n                w.TableColumn(\"Modified\", align=\"right\"),\n            ],\n            selected=1,\n            zebra=True,\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn table(ui: *Container) anyerror!void {\n    try ui.table(.{\n        .rows = &.{\n            .{ .cells = &.{ \"src\", \"4.2 KB\", \"dir\", \"2m ago\" } },\n            .{ .cells = &.{ \"test\", \"1.1 KB\", \"dir\", \"5m ago\" } },\n            .{ .cells = &.{ \"package.json\", \"1.2 KB\", \"file\", \"10m ago\" } },\n            .{ .cells = &.{ \"README.md\", \"3.4 KB\", \"file\", \"1h ago\" } },\n        },\n        .columns = &.{\n            .{ .title = \"Name\" },\n            .{ .title = \"Size\", .alignment = .right },\n            .{ .title = \"Type\" },\n            .{ .title = \"Modified\", .alignment = .right },\n        },\n        .selected = 1,\n        .zebra = true,\n    }, \"files\");\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_table(Surface s) {\n  Table t;\n  t.columns = {{\"Name\"}, {\"Size\", 9, 1, 0, HQ_RIGHT}, {\"Type\", 6}, {\"Modified\", 10, 1, 0, HQ_RIGHT}};\n  t.rows = {\n      {{\"src\", \"4.2 KB\", \"dir\", \"2m ago\"}},\n      {{\"test\", \"1.1 KB\", \"dir\", \"5m ago\"}},\n      {{\"package.json\", \"1.2 KB\", \"file\", \"10m ago\"}},\n      {{\"README.md\", \"3.4 KB\", \"file\", \"1h ago\"}},\n  };\n  t.zebra = true;\n  // The pane carries selection and scroll, and stays yours between frames.\n  Pane pane;\n  pane.selected = 1;\n  pane.total = static_cast<int>(t.rows.size());\n  t.pane = &pane;\n  draw_table(s, t);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def table(ui)\n  ui.table(\n    %w[Name Size Type Modified],\n    [\n      ['src', '4.2 KB', 'dir', '2m ago'],\n      ['test', '1.1 KB', 'dir', '5m ago'],\n      ['package.json', '1.2 KB', 'file', '10m ago'],\n      ['README.md', '3.4 KB', 'file', '1h ago']\n    ],\n    selected: 1\n  )\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_table(UI $ui): void\n{\n    $ui->table(\n        ['Name', 'Size', 'Type', 'Modified'],\n        [\n            ['src', '4.2 KB', 'dir', '2m ago'],\n            ['test', '1.1 KB', 'dir', '5m ago'],\n            ['package.json', '1.2 KB', 'file', '10m ago'],\n            ['README.md', '3.4 KB', 'file', '1h ago'],\n        ],\n        ['selected' => 1],\n    );\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_table {\n    my ($ui) = @_;\n    $ui->table(\n        ['Name', 'Size', 'Type', 'Modified'],\n        [\n            ['src',          '4.2 KB', 'dir',  '2m ago'],\n            ['test',         '1.1 KB', 'dir',  '5m ago'],\n            ['package.json', '1.2 KB', 'file', '10m ago'],\n            ['README.md',    '3.4 KB', 'file', '1h ago'],\n        ],\n        selected => 1,\n    );\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "TABLE-WIDGET.\n    MOVE \"table\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> One COLUMN record per column; SR-KEY carries the alignment.\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"LEFT\" TO SR-KEY\n    MOVE \"Name\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"RIGHT\" TO SR-KEY\n    MOVE \"Size\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"LEFT\" TO SR-KEY\n    MOVE \"Type\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"RIGHT\" TO SR-KEY\n    MOVE \"Modified\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    *> Cells are separated by \"|\", the one character no filename here uses.\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"src|4.2 KB|dir|2m ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"test|1.1 KB|dir|5m ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"package.json|1.2 KB|file|10m ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"README.md|3.4 KB|file|1h ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"SELECT\" TO SR-VERB\n    MOVE \"1\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "list",
+      "title": "List",
+      "category": "Data",
+      "width": 40,
+      "height": 5,
+      "blurb": "A selectable list with bullets and its own scrollbar.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">▸ apps/demo                            </span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#c6d0db;background:#05070a\">▸ packages/hqtui                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">▸ apps/web                              </span>\n<span style=\"color:#c6d0db;background:#05070a\">▸ docs                                  </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function list(ui: Container, theme: Theme): void {\n  ui.list({\n    items: [\n      { label: \"apps/demo\", color: theme.primary },\n      { label: \"packages/hqtui\" },\n      { label: \"apps/web\" },\n      { label: \"docs\" },\n    ],\n    selected: 0,\n    bullet: \"▸\",\n    scrollbar: true,\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function list(ui, theme) {\n  ui.list({\n    items: [\n      { label: \"apps/demo\", color: theme.primary },\n      { label: \"packages/hqtui\" },\n      { label: \"apps/web\" },\n      { label: \"docs\" },\n    ],\n    selected: 0,\n    bullet: \"▸\",\n    scrollbar: true,\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn list(ui: &mut Container) {\n    ui.list(\n        ListOptions {\n            items: [\"apps/demo\", \"packages/hqtui\", \"apps/web\", \"docs\"]\n                .map(ListItem::from)\n                .to_vec(),\n            selected: Some(0),\n            bullet: Some(\"▸\".into()),\n            scrollbar: true,\n            ..Default::default()\n        },\n        \"paths\",\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func List(ui *hqtui.Container) {\n\tui.List(hqtui.ListOptions{\n\t\tItems:     hqtui.Items(\"apps/demo\", \"packages/hqtui\", \"apps/web\", \"docs\"),\n\t\tSelected:  at(0),\n\t\tBullet:    \"▸\",\n\t\tScrollbar: true,\n\t}, hqtui.ScrollHandlers{})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def list_(ui: Container) -> None:\n    ui.list(\n        w.ListOptions(\n            items=[\"apps/demo\", \"packages/hqtui\", \"apps/web\", \"docs\"],\n            selected=0,\n            bullet=\"▸\",\n            scrollbar=True,\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn list(ui: *Container) anyerror!void {\n    try ui.list(.{\n        .items = &.{\n            .{ .label = \"apps/demo\" },\n            .{ .label = \"packages/hqtui\" },\n            .{ .label = \"apps/web\" },\n            .{ .label = \"docs\" },\n        },\n        .selected = 0,\n        .bullet = \"▸\",\n        .scrollbar = true,\n    }, \"paths\");\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "tree",
+      "title": "Tree",
+      "category": "Data",
+      "width": 46,
+      "height": 6,
+      "blurb": "Nested rows with expand state and per-node value columns.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#3c4857;background:#05070a\">└─ </span><span style=\"color:#c6d0db;background:#05070a\">systemd                                1.3 </span>\n<span style=\"color:#3c4857;background:#05070a\">   ├─ </span><span style=\"color:#c6d0db;background:#05070a\">bash                                0.1 </span>\n<span style=\"color:#3c4857;background:#1d3a52\">   ├─ </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">bun</span><span style=\"color:#c6d0db;background:#1d3a52\">                              </span><span style=\"color:#e6f2ff;background:#1d3a52\">  32.8</span><span style=\"color:#c6d0db;background:#1d3a52\"> </span>\n<span style=\"color:#3c4857;background:#05070a\">   │  └─ </span><span style=\"color:#c6d0db;background:#05070a\">bun:worker                      12.4 </span>\n<span style=\"color:#3c4857;background:#05070a\">   └─ </span><span style=\"color:#c6d0db;background:#05070a\">postgres                            6.7 </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function tree(ui: Container, _theme: Theme): void {\n  ui.tree({\n    nodes: [\n      {\n        label: \"systemd\",\n        expanded: true,\n        values: [{ text: \"1.3\", width: 6 }],\n        children: [\n          { label: \"bash\", values: [{ text: \"0.1\", width: 6 }] },\n          {\n            label: \"bun\",\n            expanded: true,\n            values: [{ text: \"32.8\", width: 6 }],\n            children: [{ label: \"bun:worker\", values: [{ text: \"12.4\", width: 6 }] }],\n          },\n          { label: \"postgres\", values: [{ text: \"6.7\", width: 6 }] },\n        ],\n      },\n    ],\n    selected: 2,\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function tree(ui) {\n  ui.tree({\n    nodes: [\n      {\n        label: \"systemd\",\n        expanded: true,\n        values: [{ text: \"1.3\", width: 6 }],\n        children: [\n          { label: \"bash\", values: [{ text: \"0.1\", width: 6 }] },\n          {\n            label: \"bun\",\n            expanded: true,\n            values: [{ text: \"32.8\", width: 6 }],\n            children: [{ label: \"bun:worker\", values: [{ text: \"12.4\", width: 6 }] }],\n          },\n          { label: \"postgres\", values: [{ text: \"6.7\", width: 6 }] },\n        ],\n      },\n    ],\n    selected: 2,\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn tree(ui: &mut Container) {\n    ui.tree(\n        TreeOptions {\n            nodes: vec![TreeNode::new(\"systemd\")\n                .child(TreeNode::new(\"bash\"))\n                .child(TreeNode::new(\"bun\").child(TreeNode::new(\"bun:worker\")))\n                .child(TreeNode::new(\"postgres\"))],\n            selected: Some(2),\n            ..Default::default()\n        },\n        \"procs\",\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Tree(ui *hqtui.Container) {\n\tui.Tree(hqtui.TreeOptions{\n\t\tNodes: []hqtui.TreeNode{\n\t\t\thqtui.Node(\"systemd\",\n\t\t\t\thqtui.Node(\"bash\"),\n\t\t\t\thqtui.Node(\"bun\", hqtui.Node(\"bun:worker\")),\n\t\t\t\thqtui.Node(\"postgres\"),\n\t\t\t),\n\t\t},\n\t\tSelected: at(2),\n\t}, hqtui.ScrollHandlers{})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def tree(ui: Container) -> None:\n    ui.tree(\n        w.TreeOptions(\n            nodes=[\n                w.TreeNode(\n                    label=\"systemd\",\n                    children=[\n                        w.TreeNode(label=\"bash\"),\n                        w.TreeNode(label=\"bun\", children=[w.TreeNode(label=\"bun:worker\")]),\n                        w.TreeNode(label=\"postgres\"),\n                    ],\n                )\n            ],\n            selected=2,\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn tree(ui: *Container) anyerror!void {\n    try ui.tree(.{\n        .nodes = &.{\n            .{ .label = \"systemd\", .expanded = true, .children = &.{\n                .{ .label = \"bash\" },\n                .{ .label = \"bun\", .expanded = true, .children = &.{.{ .label = \"bun:worker\" }} },\n                .{ .label = \"postgres\" },\n            } },\n        },\n        .selected = 2,\n    }, \"procs\");\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "log",
+      "title": "Log",
+      "category": "Data",
+      "width": 62,
+      "height": 5,
+      "blurb": "Levelled log lines that tail by default and scroll back from the end.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">12:45:02 </span><span style=\"color:#5fff87;background:#05070a;font-weight:700\">INFO </span><span style=\"color:#c6d0db;background:#05070a\"> listening on :8080                             </span>\n<span style=\"color:#5a6b7d;background:#05070a\">12:45:09 </span><span style=\"color:#ffd75f;background:#05070a;font-weight:700\">WARN </span><span style=\"color:#c6d0db;background:#05070a\"> slow query 412ms                 </span><span style=\"color:#5a6b7d;background:#05070a\">{table=users}</span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#5a6b7d;background:#05070a\">12:45:11 </span><span style=\"color:#ff6b6b;background:#05070a;font-weight:700\">ERROR</span><span style=\"color:#c6d0db;background:#05070a\"> upstream timeout                               </span>\n<span style=\"color:#5a6b7d;background:#05070a\">12:45:14 </span><span style=\"color:#5fff87;background:#05070a;font-weight:700\">INFO </span><span style=\"color:#c6d0db;background:#05070a\"> retry succeeded                                </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function log(ui: Container, _theme: Theme): void {\n  ui.log({\n    entries: [\n      { time: \"12:45:02\", level: \"info\", message: \"listening on :8080\" },\n      { time: \"12:45:09\", level: \"warn\", message: \"slow query 412ms\", meta: \"{table=users}\" },\n      { time: \"12:45:11\", level: \"error\", message: \"upstream timeout\" },\n      { time: \"12:45:14\", level: \"info\", message: \"retry succeeded\" },\n    ],\n    // Lines scrolled back from the newest. 0 keeps it tailing.\n    fromEnd: 0,\n    scrollbar: true,\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function log(ui) {\n  ui.log({\n    entries: [\n      { time: \"12:45:02\", level: \"info\", message: \"listening on :8080\" },\n      { time: \"12:45:09\", level: \"warn\", message: \"slow query 412ms\", meta: \"{table=users}\" },\n      { time: \"12:45:11\", level: \"error\", message: \"upstream timeout\" },\n      { time: \"12:45:14\", level: \"info\", message: \"retry succeeded\" },\n    ],\n    // Lines scrolled back from the newest. 0 keeps it tailing.\n    fromEnd: 0,\n    scrollbar: true,\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn log(ui: &mut Container) {\n    ui.log(\n        LogOptions {\n            entries: vec![\n                LogEntry::new(\"listening on :8080\").at(\"12:45:02\").level(\"INFO\"),\n                LogEntry {\n                    meta: Some(\"table=users\".into()),\n                    ..LogEntry::new(\"slow query 412ms\").at(\"12:45:09\").level(\"WARN\")\n                },\n                LogEntry::new(\"upstream timeout\").at(\"12:45:11\").level(\"ERROR\"),\n                LogEntry::new(\"retry succeeded\").at(\"12:45:14\").level(\"INFO\"),\n            ],\n            scrollbar: true,\n            ..Default::default()\n        },\n        \"logs\",\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Log(ui *hqtui.Container) {\n\tui.Log(hqtui.LogOptions{\n\t\tEntries: []hqtui.LogEntry{\n\t\t\thqtui.Log(\"listening on :8080\").At(\"12:45:02\").Levelled(\"INFO\"),\n\t\t\thqtui.Log(\"slow query 412ms\").At(\"12:45:09\").Levelled(\"WARN\").WithMeta(\"table=users\"),\n\t\t\thqtui.Log(\"upstream timeout\").At(\"12:45:11\").Levelled(\"ERROR\"),\n\t\t\thqtui.Log(\"retry succeeded\").At(\"12:45:14\").Levelled(\"INFO\"),\n\t\t},\n\t\tScrollbar: true,\n\t}, hqtui.ScrollHandlers{})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def log(ui: Container) -> None:\n    ui.log(\n        w.LogOptions(\n            entries=[\n                w.LogEntry(message=\"listening on :8080\", time=\"12:45:02\", level=\"INFO\"),\n                w.LogEntry(\n                    message=\"slow query 412ms\", time=\"12:45:09\", level=\"WARN\", meta=\"table=users\"\n                ),\n                w.LogEntry(message=\"upstream timeout\", time=\"12:45:11\", level=\"ERROR\"),\n                w.LogEntry(message=\"retry succeeded\", time=\"12:45:14\", level=\"INFO\"),\n            ],\n            scrollbar=True,\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn log(ui: *Container) anyerror!void {\n    try ui.log(.{\n        .entries = &.{\n            .{ .time = \"12:45:02\", .level = \"INFO\", .message = \"listening on :8080\" },\n            .{ .time = \"12:45:09\", .level = \"WARN\", .message = \"slow query 412ms\", .meta = \"table=users\" },\n            .{ .time = \"12:45:11\", .level = \"ERROR\", .message = \"upstream timeout\" },\n            .{ .time = \"12:45:14\", .level = \"INFO\", .message = \"retry succeeded\" },\n        },\n        .scrollbar = true,\n    }, \"logs\");\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_log(Surface s) {\n  std::vector<LogEntry> entries{\n      {\"12:45:02\", \"INFO\", \"listening on :8080\", \"\"},\n      {\"12:45:09\", \"WARN\", \"slow query 412ms\", \"table=users\"},\n      {\"12:45:11\", \"ERROR\", \"upstream timeout\", \"\"},\n      {\"12:45:14\", \"INFO\", \"retry succeeded\", \"\"},\n  };\n  Pane pane;\n  pane.log = true;\n  pane.total = static_cast<int>(entries.size());\n  draw_log(s, entries, &pane);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def log(ui)\n  ui.log([\n           { time: '12:45:02', level: 'INFO', message: 'listening on :8080' },\n           { time: '12:45:09', level: 'WARN', message: 'slow query 412ms', meta: 'table=users' },\n           { time: '12:45:11', level: 'ERROR', message: 'upstream timeout' },\n           { time: '12:45:14', level: 'INFO', message: 'retry succeeded' }\n         ])\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_log(UI $ui): void\n{\n    $ui->log([\n        ['time' => '12:45:02', 'level' => 'INFO', 'message' => 'listening on :8080'],\n        ['time' => '12:45:09', 'level' => 'WARN', 'message' => 'slow query 412ms', 'meta' => 'table=users'],\n        ['time' => '12:45:11', 'level' => 'ERROR', 'message' => 'upstream timeout'],\n        ['time' => '12:45:14', 'level' => 'INFO', 'message' => 'retry succeeded'],\n    ]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_log {\n    my ($ui) = @_;\n    $ui->log([\n        { time => '12:45:02', level => 'INFO',  message => 'listening on :8080' },\n        { time => '12:45:09', level => 'WARN',  message => 'slow query 412ms', meta => 'table=users' },\n        { time => '12:45:11', level => 'ERROR', message => 'upstream timeout' },\n        { time => '12:45:14', level => 'INFO',  message => 'retry succeeded' },\n    ]);\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "LOG-WIDGET.\n    MOVE \"log\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"INFO\" TO SR-KEY\n    MOVE \"12:45:02|listening on :8080\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"WARN\" TO SR-KEY\n    MOVE \"12:45:09|slow query 412ms|table=users\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"ERROR\" TO SR-KEY\n    MOVE \"12:45:11|upstream timeout\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"INFO\" TO SR-KEY\n    MOVE \"12:45:14|retry succeeded\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "meter",
+      "title": "Meter",
+      "category": "Meters",
+      "width": 48,
+      "height": 3,
+      "blurb": "A labelled bar. Smooth or segmented, heat-colored by default.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">CPU </span><span style=\"color:#58a6ff;background:#05070a\">████████████████████████▊</span><span style=\"color:#1e2835;background:#05070a\">───────────────</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 62%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">MEM </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#66ff83;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#75ff7b;background:#05070a\">▮</span><span style=\"color:#7dff77;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8cff6f;background:#05070a\">▮</span><span style=\"color:#93ff6b;background:#05070a\">▮</span><span style=\"color:#9bff67;background:#05070a\">▮</span><span style=\"color:#a2ff63;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#b3fa60;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#bdf560;background:#05070a;font-weight:700\"> 31%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">SWP </span><span style=\"color:#5fff87;background:#05070a\">█</span><span style=\"color:#66ff83;background:#05070a\">█</span><span style=\"color:#6eff7f;background:#05070a\">█</span><span style=\"color:#75ff7b;background:#05070a\">█</span><span style=\"color:#7dff77;background:#05070a\">█</span><span style=\"color:#84ff73;background:#05070a\">█</span><span style=\"color:#8cff6f;background:#05070a\">█</span><span style=\"color:#93ff6b;background:#05070a\">█</span><span style=\"color:#9bff67;background:#05070a\">█</span><span style=\"color:#a2ff63;background:#05070a\">█</span><span style=\"color:#aafe60;background:#05070a\">█</span><span style=\"color:#b3fa60;background:#05070a\">█</span><span style=\"color:#bcf660;background:#05070a\">█</span><span style=\"color:#c5f260;background:#05070a\">█</span><span style=\"color:#ceee60;background:#05070a\">█</span><span style=\"color:#d7e95f;background:#05070a\">█</span><span style=\"color:#e0e55f;background:#05070a\">█</span><span style=\"color:#e9e15f;background:#05070a\">█</span><span style=\"color:#f2dd5f;background:#05070a\">█</span><span style=\"color:#fbd95f;background:#05070a\">█</span><span style=\"color:#ffd45f;background:#05070a\">█</span><span style=\"color:#ffcf5e;background:#05070a\">█</span><span style=\"color:#ffca5d;background:#05070a\">█</span><span style=\"color:#ffc55c;background:#05070a\">█</span><span style=\"color:#ffc05b;background:#05070a\">█</span><span style=\"color:#ffbb5a;background:#05070a\">█</span><span style=\"color:#ffb65a;background:#05070a\">█</span><span style=\"color:#ffb159;background:#05070a\">█</span><span style=\"color:#ffac58;background:#05070a\">█</span><span style=\"color:#ffa757;background:#05070a\">█</span><span style=\"color:#ffa159;background:#05070a\">█</span><span style=\"color:#ff9b5b;background:#05070a\">█</span><span style=\"color:#ff955d;background:#05070a\">█</span><span style=\"color:#ff8f5f;background:#05070a\">█</span><span style=\"color:#ff8a61;background:#05070a\">▊</span><span style=\"color:#1e2835;background:#05070a\">─────</span><span style=\"color:#ff8a61;background:#05070a;font-weight:700\"> 87%</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function meter(ui: Container, theme: Theme): void {\n  ui.meter({ label: \"CPU\", value: 0.62, style: \"smooth\", color: theme.primary });\n  ui.meter({ label: \"MEM\", value: 0.31, style: \"segmented\" });\n  ui.meter({ label: \"SWP\", value: 0.87, style: \"smooth\" });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function meter(ui, theme) {\n  ui.meter({ label: \"CPU\", value: 0.62, style: \"smooth\", color: theme.primary });\n  ui.meter({ label: \"MEM\", value: 0.31, style: \"segmented\" });\n  ui.meter({ label: \"SWP\", value: 0.87, style: \"smooth\" });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn meter(ui: &mut Container) {\n    ui.meter(MeterOptions::new(0.62).label(\"CPU\"));\n    ui.meter(MeterOptions::new(0.31).label(\"MEM\").style(BarStyle::Segmented));\n    ui.meter(MeterOptions::new(0.87).label(\"SWP\"));\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Meter(ui *hqtui.Container) {\n\tui.Meter(hqtui.MeterOptions{Value: 0.62, Label: \"CPU\"})\n\tui.Meter(hqtui.MeterOptions{Value: 0.31, Label: \"MEM\", Style: hqtui.BarSegmented})\n\tui.Meter(hqtui.MeterOptions{Value: 0.87, Label: \"SWP\"})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def meter(ui: Container) -> None:\n    ui.meter(w.MeterOptions(value=0.62, label=\"CPU\"))\n    ui.meter(w.MeterOptions(value=0.31, label=\"MEM\", style=BarStyle.SEGMENTED))\n    ui.meter(w.MeterOptions(value=0.87, label=\"SWP\"))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn meter(ui: *Container) anyerror!void {\n    try ui.meter(.{ .value = 0.62, .label = \"CPU\" });\n    try ui.meter(.{ .value = 0.31, .label = \"MEM\", .style = .segmented });\n    try ui.meter(.{ .value = 0.87, .label = \"SWP\" });\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_meter(Surface s) {\n  const int width = s.rect().width;\n  draw_meter(s.sub(Rect{0, 0, width, 1}), Meter{.value = 0.62, .label = \"CPU\"});\n  draw_meter(s.sub(Rect{0, 1, width, 1}), Meter{.value = 0.31, .label = \"MEM\"});\n  draw_meter(s.sub(Rect{0, 2, width, 1}), Meter{.value = 0.87, .label = \"SWP\"});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def meter(ui)\n  ui.meter(0.62, label: 'CPU')\n  ui.meter(0.31, label: 'MEM')\n  ui.meter(0.87, label: 'SWP')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_meter(UI $ui): void\n{\n    $ui->meter(0.62, ['label' => 'CPU']);\n    $ui->meter(0.31, ['label' => 'MEM']);\n    $ui->meter(0.87, ['label' => 'SWP']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_meter {\n    my ($ui) = @_;\n    $ui->meter(0.62, label => 'CPU');\n    $ui->meter(0.31, label => 'MEM');\n    $ui->meter(0.87, label => 'SWP');\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "METER-WIDGET.\n    MOVE \"meter\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"METER\" TO SR-VERB\n    MOVE \"CPU\" TO SR-KEY\n    MOVE \"0.62\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"METER\" TO SR-VERB\n    MOVE \"MEM\" TO SR-KEY\n    MOVE \"0.31\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"METER\" TO SR-VERB\n    MOVE \"SWP\" TO SR-KEY\n    MOVE \"0.87\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "meters",
+      "title": "Meters",
+      "category": "Meters",
+      "width": 62,
+      "height": 4,
+      "blurb": "A whole bank of meters in one call, laid out in columns.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">P0  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#82ff74;background:#05070a;font-weight:700\">  12%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P4  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#d5ea5f;background:#05070a;font-weight:700\">  38%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">P1  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#eae15f;background:#05070a;font-weight:700\">  44%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P5  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#eedf5f;background:#05070a\">▮</span><span style=\"color:#ffd75f;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#ffcd5d;background:#05070a;font-weight:700\">  55%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">P2  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#eedf5f;background:#05070a\">▮</span><span style=\"color:#ffd75f;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc35c;background:#05070a\">▮</span><span style=\"color:#ffba5a;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮</span><span style=\"color:#ffae58;background:#05070a;font-weight:700\">  71%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P6  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#9fff65;background:#05070a;font-weight:700\">  22%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">P3  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span><span style=\"color:#79ff79;background:#05070a;font-weight:700\">   9%</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">P7  </span><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#6eff7f;background:#05070a\">▮</span><span style=\"color:#7cff77;background:#05070a\">▮</span><span style=\"color:#8bff70;background:#05070a\">▮</span><span style=\"color:#99ff68;background:#05070a\">▮</span><span style=\"color:#a8ff60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#cbef60;background:#05070a\">▮</span><span style=\"color:#dce75f;background:#05070a\">▮</span><span style=\"color:#eedf5f;background:#05070a\">▮</span><span style=\"color:#ffd75f;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc35c;background:#05070a\">▮</span><span style=\"color:#1e2835;background:#05070a\">▮▮▮▮▮▮▮▮</span><span style=\"color:#ffb85a;background:#05070a;font-weight:700\">  66%</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function meters(ui: Container, _theme: Theme): void {\n  // One call for a whole bank. `columns` lays them out side by side.\n  ui.meters(\n    [0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66].map((value, i) => ({ label: `P${i}`, value })),\n    { columns: 2, labelWidth: 4, valueWidth: 5, style: \"segmented\" },\n  );\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function meters(ui) {\n  // One call for a whole bank. `columns` lays them out side by side.\n  ui.meters(\n    [0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66].map((value, i) => ({ label: `P${i}`, value })),\n    { columns: 2, labelWidth: 4, valueWidth: 5, style: \"segmented\" },\n  );\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn meters(ui: &mut Container) {\n    // One call for a whole bank. `columns` lays them out side by side.\n    ui.meters(MetersOptions {\n        items: vec![\n            MeterItem::new(\"P0\", 0.12),\n            MeterItem::new(\"P1\", 0.44),\n            MeterItem::new(\"P2\", 0.71),\n            MeterItem::new(\"P3\", 0.09),\n            MeterItem::new(\"P4\", 0.38),\n            MeterItem::new(\"P5\", 0.55),\n            MeterItem::new(\"P6\", 0.22),\n            MeterItem::new(\"P7\", 0.66),\n        ],\n        columns: Some(2),\n        style: Some(BarStyle::Segmented),\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Meters(ui *hqtui.Container) {\n\t// One call for a whole bank. Columns lays them out side by side.\n\tui.Meters(hqtui.MetersOptions{\n\t\tItems: []hqtui.MeterItem{\n\t\t\thqtui.Meter(\"P0\", 0.12), hqtui.Meter(\"P1\", 0.44),\n\t\t\thqtui.Meter(\"P2\", 0.71), hqtui.Meter(\"P3\", 0.09),\n\t\t\thqtui.Meter(\"P4\", 0.38), hqtui.Meter(\"P5\", 0.55),\n\t\t\thqtui.Meter(\"P6\", 0.22), hqtui.Meter(\"P7\", 0.66),\n\t\t},\n\t\tColumns: 2,\n\t\tStyle:   hqtui.BarSegmented,\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def meters(ui: Container) -> None:\n    # One call for a whole bank. `columns` lays them out side by side.\n    ui.meters(\n        w.MetersOptions(\n            items=[\n                w.MeterItem(\"P0\", 0.12), w.MeterItem(\"P1\", 0.44),\n                w.MeterItem(\"P2\", 0.71), w.MeterItem(\"P3\", 0.09),\n                w.MeterItem(\"P4\", 0.38), w.MeterItem(\"P5\", 0.55),\n                w.MeterItem(\"P6\", 0.22), w.MeterItem(\"P7\", 0.66),\n            ],\n            columns=2,\n            style=BarStyle.SEGMENTED,\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn meters(ui: *Container) anyerror!void {\n    // One call for a whole bank. `columns` lays them out side by side.\n    try ui.meters(.{\n        .items = &.{\n            .{ .label = \"P0\", .value = 0.12 }, .{ .label = \"P1\", .value = 0.44 },\n            .{ .label = \"P2\", .value = 0.71 }, .{ .label = \"P3\", .value = 0.09 },\n            .{ .label = \"P4\", .value = 0.38 }, .{ .label = \"P5\", .value = 0.55 },\n            .{ .label = \"P6\", .value = 0.22 }, .{ .label = \"P7\", .value = 0.66 },\n        },\n        .columns = 2,\n        .style = .segmented,\n    });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "progress",
+      "title": "Progress",
+      "category": "Meters",
+      "width": 48,
+      "height": 2,
+      "blurb": "A determinate bar that can show a count as well as a ratio.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">Indexing </span><span style=\"color:#58a6ff;background:#05070a\">█████████▉</span><span style=\"color:#1e2835;background:#05070a\">──────────────────────</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 37/120</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Upload </span><span style=\"color:#58a6ff;background:#05070a\">██████████████████████████████▍</span><span style=\"color:#1e2835;background:#05070a\">──────</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 82%</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function progress(ui: Container, _theme: Theme): void {\n  ui.progress({ label: \"Indexing\", value: 37, max: 120, showCount: true });\n  ui.progress({ label: \"Upload\", value: 0.82 });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function progress(ui) {\n  ui.progress({ label: \"Indexing\", value: 37, max: 120, showCount: true });\n  ui.progress({ label: \"Upload\", value: 0.82 });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn progress(ui: &mut Container) {\n    ui.progress(ProgressOptions {\n        value: 37.0,\n        max: Some(120.0),\n        label: Some(\"Indexing\".into()),\n        show_count: true,\n        ..Default::default()\n    });\n    ui.progress(ProgressOptions {\n        value: 0.82,\n        label: Some(\"Upload\".into()),\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Progress(ui *hqtui.Container) {\n\tui.Progress(hqtui.ProgressOptions{\n\t\tValue: 37, Max: f64(120), Label: \"Indexing\", ShowCount: true,\n\t})\n\tui.Progress(hqtui.ProgressOptions{Value: 0.82, Label: \"Upload\"})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def progress(ui: Container) -> None:\n    ui.progress(w.ProgressOptions(value=37, max=120, label=\"Indexing\", show_count=True))\n    ui.progress(w.ProgressOptions(value=0.82, label=\"Upload\"))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn progress(ui: *Container) anyerror!void {\n    try ui.progress(.{ .value = 37, .max = 120, .label = \"Indexing\", .show_count = true });\n    try ui.progress(.{ .value = 0.82, .label = \"Upload\" });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "graph",
+      "title": "Graph",
+      "category": "Meters",
+      "width": 58,
+      "height": 9,
+      "blurb": "A Braille line chart, optionally filled under the curve.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">                                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span><span style=\"color:#5fff87;background:#05070a\">⢀⣀⠤⣀</span><span style=\"color:#c6d0db;background:#05070a\">              </span>\n<span style=\"color:#c6d0db;background:#05070a\">                      </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⢄⡀</span><span style=\"color:#389350;background:#05070a\">▄</span><span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#389350;background:#05070a\">▁</span><span style=\"color:#5fff87;background:#05070a\">⢀⠤⠒⠉⠁</span><span style=\"color:#2d7541;background:#05070a\">███</span><span style=\"color:#5fff87;background:#05070a\">⠉⠒⠤⡀</span><span style=\"color:#c6d0db;background:#05070a\">          </span>\n<span style=\"color:#c6d0db;background:#05070a\">                   </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⠊⠁</span><span style=\"color:#368e4e;background:#05070a\">▅</span><span style=\"color:#2b703f;background:#05070a\">█</span><span style=\"color:#5fff87;background:#05070a\">⠈⠒⠤⣀</span><span style=\"color:#c6d0db;background:#05070a\">     </span><span style=\"color:#5fff87;background:#05070a\">⡠⠒⠁</span><span style=\"color:#2b703f;background:#05070a\">██████████</span><span style=\"color:#5fff87;background:#05070a\">⠈⠑⠤⣀</span><span style=\"color:#c6d0db;background:#05070a\">       </span>\n<span style=\"color:#c6d0db;background:#05070a\">            </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⠒⠉⠒⠢⠔⠁</span><span style=\"color:#348a4c;background:#05070a\">▃</span><span style=\"color:#2a6c3d;background:#05070a\">████████</span><span style=\"color:#5fff87;background:#05070a\">⠉⠒⠒⠉⠉</span><span style=\"color:#348a4c;background:#05070a\">█</span><span style=\"color:#2a6c3d;background:#05070a\">███████████████</span><span style=\"color:#348a4c;background:#05070a\">▇</span><span style=\"color:#5fff87;background:#05070a\">⠉⠑⠒⠤⠤⠒⠒</span>\n<span style=\"color:#c6d0db;background:#05070a\">    </span><span style=\"color:#5fff87;background:#05070a\">⢀⡠⠤⢄⣀⡠⠔⠊⠁</span><span style=\"color:#338549;background:#05070a\">▆▆</span><span style=\"color:#28673a;background:#05070a\">███████████████████████████████████████████</span>\n<span style=\"color:#5fff87;background:#05070a\">⣀⠤⠔⠊⠁</span><span style=\"color:#318047;background:#05070a\">▅</span><span style=\"color:#266238;background:#05070a\">███</span><span style=\"color:#318047;background:#05070a\">███</span><span style=\"color:#266238;background:#05070a\">██████████████████████████████████████████████</span>\n<span style=\"color:#255e36;background:#05070a\">██████████████████████████████████████████████████████████</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function graph(ui: Container, theme: Theme): void {\n  // Braille line chart. `fill` shades the area under the curve.\n  ui.graph({ values: CPU_HISTORY, min: 0, max: 100, fill: true, color: theme.success, size: \"1fr\" });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function graph(ui, theme) {\n  // Braille line chart. `fill` shades the area under the curve.\n  ui.graph({ values: CPU_HISTORY, min: 0, max: 100, fill: true, color: theme.success, size: \"1fr\" });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn graph(ui: &mut Container) {\n    // Braille line chart. `filled` shades the area under the curve.\n    ui.graph(GraphOptions {\n        plot: PlotOptions { min: Some(0.0), max: Some(100.0), ..Default::default() },\n        ..GraphOptions::series(vec![Series::new(cpu_history()).label(\"cpu\").filled()])\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Graph(ui *hqtui.Container) {\n\t// Braille line chart. Fill shades the area under the curve.\n\tui.Graph(hqtui.GraphOptions{\n\t\tSeries: []hqtui.Series{{Values: cpuHistory(), Label: \"cpu\", Fill: ptrBool(true)}},\n\t\tPlot:   hqtui.PlotOptions{Min: f64(0), Max: f64(100)},\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def graph(ui: Container) -> None:\n    # Braille line chart. `fill` shades the area under the curve.\n    ui.graph(\n        w.GraphOptions(\n            series=[Series(values=CPU_HISTORY, label=\"cpu\", fill=True)],\n            plot=PlotOptions(min=0, max=100),\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn graph(ui: *Container) anyerror!void {\n    // Braille line chart. `fill` shades the area under the curve.\n    try ui.graph(.{\n        .series = &.{.{ .values = &cpu_history, .label = \"cpu\", .fill = true }},\n        .plot = .{ .min = 0, .max = 100 },\n    });\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_graph(Surface s) {\n  // Braille line chart, filled under the curve.\n  Graph g;\n  g.series.push_back({cpu_history(), 0, \"cpu\", true});\n  g.min = 0;\n  g.max = 100;\n  draw_graph(s, g);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def graph(ui)\n  # Braille line chart, filled under the curve.\n  ui.graph(CPU_HISTORY, min: 0, max: 100)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_graph(UI $ui): void\n{\n    // Braille line chart, filled under the curve.\n    $ui->graph(CPU_HISTORY, ['min' => 0, 'max' => 100]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_graph {\n    my ($ui) = @_;\n    # Braille line chart, filled under the curve.\n    $ui->graph(\\@cpu_history, min => 0, max => 100);\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "GRAPH-WIDGET.\n    MOVE \"graph\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> One point per record, straight out of a table. This is the shape a\n    *> nightly batch job already has.\n    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 20\n        MOVE \"GRAPHPT\" TO SR-VERB\n        MOVE CPU-POINT(I) TO SR-NUM\n        PERFORM EMIT-RECORD\n    END-PERFORM.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "sparkline",
+      "title": "Sparkline",
+      "category": "Meters",
+      "width": 52,
+      "height": 3,
+      "blurb": "One row: label, inline chart and a value.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">CPU </span><span style=\"color:#c6d0db;background:#05070a\">                        </span><span style=\"color:#5fff87;background:#05070a\">▁▂▃▂▃▅▄▆▇▅▄▅▆▇█▇▆▅▄▅</span><span style=\"color:#5fff87;background:#05070a;font-weight:700\"> 44%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Mem </span><span style=\"color:#c6d0db;background:#05070a\">                            </span><span style=\"color:#ffd75f;background:#05070a\">▁▂▁▃▅▄█▇▅▃▂▄▆█▇▅</span><span style=\"color:#ffd75f;background:#05070a;font-weight:700\"> 31%</span>\n<span style=\"color:#5a6b7d;background:#05070a\">Net </span><span style=\"color:#c6d0db;background:#05070a\">                   </span><span style=\"color:#58a6ff;background:#05070a\">▁▂▃▂▃▅▄▆▇▅▄▅▆▇█▇▆▅▄▅</span><span style=\"color:#58a6ff;background:#05070a;font-weight:700\"> 2.4 MB/s</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function sparkline(ui: Container, theme: Theme): void {\n  ui.sparkline({ label: \"CPU \", values: CPU_HISTORY, text: \"44%\", color: theme.success });\n  ui.sparkline({ label: \"Mem \", values: NET_HISTORY, text: \"31%\", color: theme.warning });\n  ui.sparkline({ label: \"Net \", values: CPU_HISTORY, text: \"2.4 MB/s\", color: theme.primary });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function sparkline(ui, theme) {\n  ui.sparkline({ label: \"CPU \", values: CPU_HISTORY, text: \"44%\", color: theme.success });\n  ui.sparkline({ label: \"Mem \", values: NET_HISTORY, text: \"31%\", color: theme.warning });\n  ui.sparkline({ label: \"Net \", values: CPU_HISTORY, text: \"2.4 MB/s\", color: theme.primary });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn sparkline(ui: &mut Container) {\n    ui.sparkline(SparklineWidgetOptions {\n        values: cpu_history(),\n        label: Some(\"CPU \".into()),\n        text: Some(\"44%\".into()),\n        ..Default::default()\n    });\n    ui.sparkline(SparklineWidgetOptions {\n        values: net_history(),\n        label: Some(\"Net \".into()),\n        text: Some(\"2.4 MB/s\".into()),\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Sparkline(ui *hqtui.Container) {\n\tui.Sparkline(hqtui.SparklineWidgetOptions{Values: cpuHistory(), Label: \"CPU \", Text: \"44%\"})\n\tui.Sparkline(hqtui.SparklineWidgetOptions{Values: netHistory(), Label: \"Net \", Text: \"2.4 MB/s\"})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def sparkline(ui: Container) -> None:\n    ui.sparkline(w.SparklineWidgetOptions(values=CPU_HISTORY, label=\"CPU \", text=\"44%\"))\n    ui.sparkline(w.SparklineWidgetOptions(values=NET_HISTORY, label=\"Net \", text=\"2.4 MB/s\"))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn sparkline(ui: *Container) anyerror!void {\n    try ui.sparkline(.{ .values = &cpu_history, .label = \"CPU \", .text = \"44%\" });\n    try ui.sparkline(.{ .values = &net_history, .label = \"Net \", .text = \"2.4 MB/s\" });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "histogram",
+      "title": "Histogram",
+      "category": "Meters",
+      "width": 58,
+      "height": 8,
+      "blurb": "Block columns. Cheaper than Braille and easier to read when short.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">             </span><span style=\"color:#56d4dd;background:#05070a\">▃█▁</span><span style=\"color:#c6d0db;background:#05070a\">                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#05070a\">▆</span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#56d4dd;background:#05070a\">▃███</span><span style=\"color:#c6d0db;background:#05070a\">                                          </span>\n<span style=\"color:#c6d0db;background:#05070a\">       </span><span style=\"color:#56d4dd;background:#05070a\">▆█▃</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#56d4dd;background:#05070a\">████▅</span><span style=\"color:#c6d0db;background:#05070a\">                                         </span>\n<span style=\"color:#c6d0db;background:#05070a\">     </span><span style=\"color:#56d4dd;background:#05070a\">▇▂███▃▇█████▆▁▄</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#c6d0db;background:#05070a\">    </span><span style=\"color:#56d4dd;background:#05070a\">▄███████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#56d4dd;background:#05070a\">▇▄████████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#56d4dd;background:#05070a\">▃███████████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span>\n<span style=\"color:#56d4dd;background:#05070a\">████████████████████</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function histogram(ui: Container, theme: Theme): void {\n  // Block columns. Cheaper than Braille and easier to read when short.\n  ui.histogram({ values: CPU_HISTORY, color: theme.accent, size: \"1fr\" });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function histogram(ui, theme) {\n  // Block columns. Cheaper than Braille and easier to read when short.\n  ui.histogram({ values: CPU_HISTORY, color: theme.accent, size: \"1fr\" });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn histogram(ui: &mut Container) {\n    // Block columns. Cheaper than Braille and easier to read when short.\n    ui.histogram(ColumnsOptions { values: cpu_history(), ..Default::default() });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Histogram(ui *hqtui.Container) {\n\t// Block columns. Cheaper than Braille and easier to read when short.\n\tui.Histogram(hqtui.ColumnsOptions{Values: cpuHistory()})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def histogram(ui: Container) -> None:\n    # Block columns. Cheaper than Braille and easier to read when short.\n    ui.histogram(w.ColumnsOptions(values=CPU_HISTORY))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn histogram(ui: *Container) anyerror!void {\n    // Block columns. Cheaper than Braille and easier to read when short.\n    try ui.histogram(.{ .values = &cpu_history });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "heatBar",
+      "title": "Heat bar",
+      "category": "Meters",
+      "width": 48,
+      "height": 3,
+      "blurb": "A segmented bar colored along the theme's heat ramp.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#65ff84;background:#05070a\">▮</span><span style=\"color:#6bff80;background:#05070a\">▮</span><span style=\"color:#72ff7d;background:#05070a\">▮</span><span style=\"color:#78ff7a;background:#05070a\">▮</span><span style=\"color:#7eff76;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8aff70;background:#05070a\">▮</span><span style=\"color:#91ff6c;background:#05070a\">▮</span><span style=\"color:#97ff69;background:#05070a\">▮</span><span style=\"color:#9dff66;background:#05070a\">▮</span><span style=\"color:#a3ff62;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#1c2633;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span>\n<span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#65ff84;background:#05070a\">▮</span><span style=\"color:#6bff80;background:#05070a\">▮</span><span style=\"color:#72ff7d;background:#05070a\">▮</span><span style=\"color:#78ff7a;background:#05070a\">▮</span><span style=\"color:#7eff76;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8aff70;background:#05070a\">▮</span><span style=\"color:#91ff6c;background:#05070a\">▮</span><span style=\"color:#97ff69;background:#05070a\">▮</span><span style=\"color:#9dff66;background:#05070a\">▮</span><span style=\"color:#a3ff62;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#b1fb60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#c0f460;background:#05070a\">▮</span><span style=\"color:#c7f160;background:#05070a\">▮</span><span style=\"color:#cfed60;background:#05070a\">▮</span><span style=\"color:#d6ea5f;background:#05070a\">▮</span><span style=\"color:#dee65f;background:#05070a\">▮</span><span style=\"color:#e5e35f;background:#05070a\">▮</span><span style=\"color:#ece05f;background:#05070a\">▮</span><span style=\"color:#f4dc5f;background:#05070a\">▮</span><span style=\"color:#fbd95f;background:#05070a\">▮</span><span style=\"color:#ffd55f;background:#05070a\">▮</span><span style=\"color:#ffd15e;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc85d;background:#05070a\">▮</span><span style=\"color:#ffc45c;background:#05070a\">▮</span><span style=\"color:#ffc05b;background:#05070a\">▮</span><span style=\"color:#ffbc5b;background:#05070a\">▮</span><span style=\"color:#1c2633;background:#05070a\">▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮</span>\n<span style=\"color:#5fff87;background:#05070a\">▮</span><span style=\"color:#65ff84;background:#05070a\">▮</span><span style=\"color:#6bff80;background:#05070a\">▮</span><span style=\"color:#72ff7d;background:#05070a\">▮</span><span style=\"color:#78ff7a;background:#05070a\">▮</span><span style=\"color:#7eff76;background:#05070a\">▮</span><span style=\"color:#84ff73;background:#05070a\">▮</span><span style=\"color:#8aff70;background:#05070a\">▮</span><span style=\"color:#91ff6c;background:#05070a\">▮</span><span style=\"color:#97ff69;background:#05070a\">▮</span><span style=\"color:#9dff66;background:#05070a\">▮</span><span style=\"color:#a3ff62;background:#05070a\">▮</span><span style=\"color:#aafe60;background:#05070a\">▮</span><span style=\"color:#b1fb60;background:#05070a\">▮</span><span style=\"color:#b9f760;background:#05070a\">▮</span><span style=\"color:#c0f460;background:#05070a\">▮</span><span style=\"color:#c7f160;background:#05070a\">▮</span><span style=\"color:#cfed60;background:#05070a\">▮</span><span style=\"color:#d6ea5f;background:#05070a\">▮</span><span style=\"color:#dee65f;background:#05070a\">▮</span><span style=\"color:#e5e35f;background:#05070a\">▮</span><span style=\"color:#ece05f;background:#05070a\">▮</span><span style=\"color:#f4dc5f;background:#05070a\">▮</span><span style=\"color:#fbd95f;background:#05070a\">▮</span><span style=\"color:#ffd55f;background:#05070a\">▮</span><span style=\"color:#ffd15e;background:#05070a\">▮</span><span style=\"color:#ffcd5d;background:#05070a\">▮</span><span style=\"color:#ffc85d;background:#05070a\">▮</span><span style=\"color:#ffc45c;background:#05070a\">▮</span><span style=\"color:#ffc05b;background:#05070a\">▮</span><span style=\"color:#ffbc5b;background:#05070a\">▮</span><span style=\"color:#ffb85a;background:#05070a\">▮</span><span style=\"color:#ffb459;background:#05070a\">▮</span><span style=\"color:#ffaf59;background:#05070a\">▮</span><span style=\"color:#ffab58;background:#05070a\">▮</span><span style=\"color:#ffa757;background:#05070a\">▮</span><span style=\"color:#ffa258;background:#05070a\">▮</span><span style=\"color:#ff9d5a;background:#05070a\">▮</span><span style=\"color:#ff985c;background:#05070a\">▮</span><span style=\"color:#ff935d;background:#05070a\">▮</span><span style=\"color:#ff8e5f;background:#05070a\">▮</span><span style=\"color:#ff8961;background:#05070a\">▮</span><span style=\"color:#ff8462;background:#05070a\">▮</span><span style=\"color:#ff7f64;background:#05070a\">▮</span><span style=\"color:#1c2633;background:#05070a\">▮▮▮▮</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function heatBar(ui: Container, _theme: Theme): void {\n  // Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n  ui.heatBar({ value: 0.28 });\n  ui.heatBar({ value: 0.64 });\n  ui.heatBar({ value: 0.91 });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function heatBar(ui) {\n  // Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n  ui.heatBar({ value: 0.28 });\n  ui.heatBar({ value: 0.64 });\n  ui.heatBar({ value: 0.91 });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn heat_bar(ui: &mut Container) {\n    // Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n    ui.heat_bar(HeatBarOptions { value: 0.28, ..Default::default() });\n    ui.heat_bar(HeatBarOptions { value: 0.64, ..Default::default() });\n    ui.heat_bar(HeatBarOptions { value: 0.91, ..Default::default() });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func HeatBar(ui *hqtui.Container) {\n\t// Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n\tui.HeatBar(hqtui.HeatBarOptions{Value: 0.28})\n\tui.HeatBar(hqtui.HeatBarOptions{Value: 0.64})\n\tui.HeatBar(hqtui.HeatBarOptions{Value: 0.91})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def heat_bar(ui: Container) -> None:\n    # Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n    ui.heat_bar(w.HeatBarOptions(value=0.28))\n    ui.heat_bar(w.HeatBarOptions(value=0.64))\n    ui.heat_bar(w.HeatBarOptions(value=0.91))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn heatBar(ui: *Container) anyerror!void {\n    // Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n    try ui.heatBar(.{ .value = 0.28 });\n    try ui.heatBar(.{ .value = 0.64 });\n    try ui.heatBar(.{ .value = 0.91 });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "gauge",
+      "title": "Gauge",
+      "category": "Meters",
+      "width": 40,
+      "height": 12,
+      "blurb": "A semicircular dial. Wants at least nine columns by five rows.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⣠⣤⡶⠶⠞⠛⠛⠛⠛⠛⠛⠛⠶⠶⣦⣤⣀</span><span style=\"color:#c6d0db;background:#05070a\">           </span>\n<span style=\"color:#c6d0db;background:#05070a\">       </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⣠⡶⠟⠋⠉</span><span style=\"color:#c6d0db;background:#05070a\">              </span><span style=\"color:#ff6b6b;background:#05070a\">⠈⠉⠛⠷⣦⣀</span><span style=\"color:#c6d0db;background:#05070a\">       </span>\n<span style=\"color:#c6d0db;background:#05070a\">     </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⡴⠟⠁</span><span style=\"color:#c6d0db;background:#05070a\">                       </span><span style=\"color:#ff6b6b;background:#05070a\">⠙⠷⣄</span><span style=\"color:#c6d0db;background:#05070a\">     </span>\n<span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#ff6b6b;background:#05070a\">⢀⡴⠋</span><span style=\"color:#c6d0db;background:#05070a\">                            </span><span style=\"color:#ff6b6b;background:#05070a\">⠈⠳⣄</span><span style=\"color:#c6d0db;background:#05070a\">   </span>\n<span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#ff6b6b;background:#05070a\">⣠⠟</span><span style=\"color:#c6d0db;background:#05070a\">                                </span><span style=\"color:#ff6b6b;background:#05070a\">⠘⢧⡀</span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ff6b6b;background:#05070a\">⢠⠏</span><span style=\"color:#c6d0db;background:#05070a\">                                  </span><span style=\"color:#ff6b6b;background:#05070a\">⠈⢧</span><span style=\"color:#c6d0db;background:#05070a\"> </span>\n<span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ff6b6b;background:#05070a\">⡟</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span><span style=\"color:#ff6b6b;background:#05070a\">⠘⡇</span>\n<span style=\"color:#ff6b6b;background:#05070a\">⢸⠃</span><span style=\"color:#c6d0db;background:#05070a\">                                     </span><span style=\"color:#ff6b6b;background:#05070a\">⢻</span>\n<span style=\"color:#ff6b6b;background:#05070a;font-weight:700\">                  62%                   </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function gauge(ui: Container, _theme: Theme): void {\n  // A semicircular dial. Wants at least 9x5.\n  ui.gauge({ value: 62, label: \"62%\" });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function gauge(ui) {\n  // A semicircular dial. Wants at least 9x5.\n  ui.gauge({ value: 62, label: \"62%\" });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn gauge(ui: &mut Container) {\n    // A semicircular dial. Wants at least nine columns by five rows.\n    ui.gauge(GaugeOptions { value: 62.0, label: Some(\"62%\".into()), ..Default::default() });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Gauge(ui *hqtui.Container) {\n\t// A semicircular dial. Wants at least nine columns by five rows.\n\tui.Gauge(hqtui.GaugeOptions{Value: 0.62, Label: \"62%\"})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def gauge(ui: Container) -> None:\n    # A semicircular dial. Wants at least nine columns by five rows.\n    ui.gauge(GaugeOptions(value=0.62, label=\"62%\"))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn gauge(ui: *Container) anyerror!void {\n    // A semicircular dial. Wants at least nine columns by five rows.\n    try ui.gauge(.{ .value = 0.62, .label = \"62%\" });\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_gauge(Surface s) {\n  // A semicircular dial. Wants at least nine columns by five rows.\n  draw_gauge(s, 0.62, \"62%\");\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def gauge(ui)\n  # A semicircular dial. Wants at least nine columns by five rows.\n  ui.gauge(0.62, label: '62%')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_gauge(UI $ui): void\n{\n    // A semicircular dial. Wants at least nine columns by five rows.\n    $ui->gauge(0.62, ['label' => '62%']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_gauge {\n    my ($ui) = @_;\n    # A semicircular dial. Wants at least nine columns by five rows.\n    $ui->gauge(0.62, label => '62%');\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "GAUGE-WIDGET.\n    MOVE \"gauge\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"GAUGE\" TO SR-VERB\n    MOVE \"62%\" TO SR-TEXT\n    MOVE \"0.62\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
+      "id": "donut",
+      "title": "Donut",
+      "category": "Meters",
+      "width": 40,
+      "height": 12,
+      "blurb": "A ring split into labelled, colored segments.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">                                        </span>\n<span style=\"color:#c6d0db;background:#05070a\">             </span><span style=\"color:#ffd75f;background:#05070a\">⢀⣤⣴⣶⣿⣿⣿⣿</span><span style=\"color:#58a6ff;background:#05070a\">⣿⣿⣷⣶⣤⣄</span><span style=\"color:#c6d0db;background:#05070a\">             </span>\n<span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#ffd75f;background:#05070a\">⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿</span><span style=\"color:#58a6ff;background:#05070a\">⣿⣿⣿⣿⣿⣿⣿⣦⡀</span><span style=\"color:#c6d0db;background:#05070a\">          </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⢀⣼⣿⣿⣿⣿⣿⣿⠿⠛⠛⠛</span><span style=\"color:#58a6ff;background:#05070a\">⠛⠻⢿⣿⣿⣿⣿⣿⣿⣄</span><span style=\"color:#c6d0db;background:#05070a\">         </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⣼⣿⣿⣿⣿⣿⠏</span><span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#58a6ff;background:#05070a\">⠈⢿⣿⣿⣿⣿⣿⡄</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#ffd75f;background:#05070a\">⢠⣿⣿⣿⣿⣿⠇</span><span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#58a6ff;background:#05070a\">⢿⣿⣿⣿⣿⣧</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#ffd75f;background:#05070a\">⠸⣿⣿⣿⣿⣿⡄</span><span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#ffd75f;background:#05070a\">⣼</span><span style=\"color:#58a6ff;background:#05070a\">⣿⣿⣿⣿⡿</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⢿⣿⣿⣿⣿⣷⡄</span><span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⣴⣿⣿⣿⣿⣿⠇</span><span style=\"color:#c6d0db;background:#05070a\">        </span>\n<span style=\"color:#c6d0db;background:#05070a\">         </span><span style=\"color:#ffd75f;background:#05070a\">⠘⢿⣿⣿⣿⣿⣿⣷⣤⣀⣀⣀⣀⣠⣴⣿⣿⣿⣿⣿⣿⠟</span><span style=\"color:#c6d0db;background:#05070a\">         </span>\n<span style=\"color:#c6d0db;background:#05070a\">          </span><span style=\"color:#ffd75f;background:#05070a\">⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋</span><span style=\"color:#c6d0db;background:#05070a\">          </span>\n<span style=\"color:#c6d0db;background:#05070a\">            </span><span style=\"color:#ffd75f;background:#05070a\">⠈⠙⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠉</span><span style=\"color:#c6d0db;background:#05070a\">            </span>\n<span style=\"color:#c6d0db;background:#05070a\">                 </span><span style=\"color:#ffd75f;background:#05070a\">⠉⠉⠉⠉⠉⠉⠁</span><span style=\"color:#c6d0db;background:#05070a\">                </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function donut(ui: Container, theme: Theme): void {\n  ui.donut({\n    segments: [\n      { value: 4.65, color: theme.primary, label: \"Used\" },\n      { value: 10.96, color: theme.warning, label: \"Free\" },\n    ],\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function donut(ui, theme) {\n  ui.donut({\n    segments: [\n      { value: 4.65, color: theme.primary, label: \"Used\" },\n      { value: 10.96, color: theme.warning, label: \"Free\" },\n    ],\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn donut(ui: &mut Container) {\n    ui.donut(DonutOptions {\n        segments: vec![\n            DonutSegment { value: 4.65, label: Some(\"Used\".into()), color: None },\n            DonutSegment { value: 10.96, label: Some(\"Free\".into()), color: None },\n        ],\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Donut(ui *hqtui.Container) {\n\tui.Donut(hqtui.DonutOptions{Segments: []hqtui.DonutSegment{\n\t\t{Value: 4.65, Label: \"Used\"},\n\t\t{Value: 10.96, Label: \"Free\"},\n\t}})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def donut(ui: Container) -> None:\n    ui.donut(\n        DonutOptions(\n            segments=[\n                DonutSegment(value=4.65, label=\"Used\"),\n                DonutSegment(value=10.96, label=\"Free\"),\n            ]\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn donut(ui: *Container) anyerror!void {\n    try ui.donut(.{ .segments = &.{\n        .{ .value = 4.65, .label = \"Used\" },\n        .{ .value = 10.96, .label = \"Free\" },\n    } });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "button",
+      "title": "Button",
+      "category": "Inputs",
+      "width": 58,
+      "height": 1,
+      "blurb": "Variants for primary, success, warning, danger and ghost. Joins the Tab order.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#05070a;background:#58a6ff;font-weight:700\">  Primary  </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5fff87;background:#183526;font-weight:700\">  Success  </span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#ff6b6b;background:#311d22;font-weight:700\">  Danger  </span><span style=\"color:#c6d0db;background:#05070a\">                        </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function button(ui: Container, _theme: Theme): void {\n  // Pass `onPress` and the button joins the Tab order automatically.\n  ui.row({ size: 1, gap: 1 }, (r) => {\n    r.button({ label: \"Primary\", width: 11, size: 11, onPress: () => {} });\n    r.button({ label: \"Success\", width: 11, size: 11, variant: \"success\" });\n    r.button({ label: \"Danger\", width: 10, size: 10, variant: \"danger\" });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function button(ui) {\n  // Pass `onPress` and the button joins the Tab order automatically.\n  ui.row({ size: 1, gap: 1 }, (r) => {\n    r.button({ label: \"Primary\", width: 11, size: 11, onPress: () => {} });\n    r.button({ label: \"Success\", width: 11, size: 11, variant: \"success\" });\n    r.button({ label: \"Danger\", width: 10, size: 10, variant: \"danger\" });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn button(ui: &mut Container) {\n    // The id is how you ask whether it was pressed: `app.pressed(\"run\")`.\n    ui.row(Row::new().size(1).gap(1), |r| {\n        r.button(ButtonOptions::new(\"Primary\"), \"primary\");\n        r.button(ButtonOptions::new(\"Success\").variant(ButtonVariant::Success), \"ok\");\n        r.button(ButtonOptions::new(\"Danger\").variant(ButtonVariant::Danger), \"stop\");\n        r.spacer(\"fill\");\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Button(ui *hqtui.Container) {\n\t// Pass an onPress func and the button joins the Tab order automatically.\n\tui.Row(hqtui.RowOptions{Layout: hqtui.Layout{Size: size(hqtui.Cells(1)), Gap: 1}}, func(r *hqtui.Container) {\n\t\tr.Button(hqtui.ButtonOptions{Label: \"Primary\"}, func() {})\n\t\tr.Button(hqtui.ButtonOptions{Label: \"Success\", Variant: hqtui.ButtonSuccess}, nil)\n\t\tr.Button(hqtui.ButtonOptions{Label: \"Danger\", Variant: hqtui.ButtonDanger}, nil)\n\t\tr.Spacer(hqtui.Fill())\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def button(ui: Container) -> None:\n    # Pass on_press and the button joins the Tab order automatically.\n    def row(r: Container) -> None:\n        r.button(w.ButtonOptions(label=\"Primary\"), lambda: None)\n        r.button(w.ButtonOptions(label=\"Success\", variant=\"success\"))\n        r.button(w.ButtonOptions(label=\"Danger\", variant=\"danger\"))\n        r.spacer(\"fill\")\n\n    ui.row(Layout(size=1, gap=1), row)",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn button(ui: *Container) anyerror!void {\n    // The id is how you ask whether it was pressed: `app.pressed(\"run\")`.\n    try ui.row(.{ .layout = .{ .size = .{ .cells = 1 }, .gap = 1 } }, hqtui.Body.plain(buttonRow));\n}\n\nfn buttonRow(r: *Container) anyerror!void {\n    try r.button(.{ .label = \"Primary\" }, \"primary\");\n    try r.button(.{ .label = \"Success\", .variant = .success }, \"ok\");\n    try r.button(.{ .label = \"Danger\", .variant = .danger }, \"stop\");\n    try r.spacer(.fill);\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "checkbox",
+      "title": "Checkbox",
+      "category": "Inputs",
+      "width": 46,
+      "height": 1,
+      "blurb": "A checkbox or a toggle, depending on the variant.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5fff87;background:#05070a;font-weight:700\">[▮ ]</span><span style=\"color:#c6d0db;background:#05070a;font-weight:700\"> Toggle</span><span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#5a6b7d;background:#05070a\">[ ] Checkbox</span><span style=\"color:#c6d0db;background:#05070a\">                    </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function checkbox(ui: Container, _theme: Theme): void {\n  ui.row({ size: 1, gap: 2 }, (r) => {\n    r.checkbox({ label: \"Toggle\", checked: true, variant: \"toggle\", size: 12 });\n    r.checkbox({ label: \"Checkbox\", checked: false, size: 14 });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function checkbox(ui) {\n  ui.row({ size: 1, gap: 2 }, (r) => {\n    r.checkbox({ label: \"Toggle\", checked: true, variant: \"toggle\", size: 12 });\n    r.checkbox({ label: \"Checkbox\", checked: false, size: 14 });\n    r.spacer(\"fill\");\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn checkbox(ui: &mut Container) {\n    ui.row(Row::new().size(1).gap(2), |r| {\n        r.checkbox(\n            CheckboxOptions::new(\"Toggle\", true).variant(CheckboxVariant::Toggle),\n            \"toggle\",\n        );\n        r.checkbox(CheckboxOptions::new(\"Checkbox\", false), \"checkbox\");\n        r.spacer(\"fill\");\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Checkbox(ui *hqtui.Container) {\n\tui.Row(hqtui.RowOptions{Layout: hqtui.Layout{Size: size(hqtui.Cells(1)), Gap: 2}}, func(r *hqtui.Container) {\n\t\tr.Checkbox(hqtui.CheckboxOptions{\n\t\t\tLabel: \"Toggle\", Checked: true, Variant: hqtui.CheckboxToggle,\n\t\t}, nil)\n\t\tr.Checkbox(hqtui.CheckboxOptions{Label: \"Checkbox\"}, nil)\n\t\tr.Spacer(hqtui.Fill())\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def checkbox(ui: Container) -> None:\n    def row(r: Container) -> None:\n        r.checkbox(w.CheckboxOptions(label=\"Toggle\", checked=True, variant=\"toggle\"))\n        r.checkbox(w.CheckboxOptions(label=\"Checkbox\", checked=False))\n        r.spacer(\"fill\")\n\n    ui.row(Layout(size=1, gap=2), row)",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn checkbox(ui: *Container) anyerror!void {\n    try ui.row(.{ .layout = .{ .size = .{ .cells = 1 }, .gap = 2 } }, hqtui.Body.plain(checkboxRow));\n}\n\nfn checkboxRow(r: *Container) anyerror!void {\n    try r.checkbox(.{ .label = \"Toggle\", .checked = true, .variant = .toggle }, \"toggle\");\n    try r.checkbox(.{ .label = \"Checkbox\", .checked = false }, \"checkbox\");\n    try r.spacer(.fill);\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "select",
+      "title": "Select",
+      "category": "Inputs",
+      "width": 40,
+      "height": 6,
+      "blurb": "A closed value, or an open dropdown with the current option marked.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#161a20;font-weight:700\"> Dracula          </span><span style=\"color:#56d4dd;background:#161a20\"> ▴</span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#1e2127\"> Dark               </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#e6f2ff;background:#1d3a52\"> Dracula            </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#1e2127\"> Nord               </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#1e2127\"> Tokyo Night        </span><span style=\"color:#c6d0db;background:#05070a\">                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                        </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function select(ui: Container, _theme: Theme): void {\n  ui.select({\n    value: \"Dracula\",\n    width: 20,\n    size: 20,\n    open: true,\n    options: [\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"],\n    selectedIndex: 1,\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function select(ui) {\n  ui.select({\n    value: \"Dracula\",\n    width: 20,\n    size: 20,\n    open: true,\n    options: [\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"],\n    selectedIndex: 1,\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn select(ui: &mut Container) {\n    ui.select(\n        SelectOptions {\n            open: true,\n            options: vec![\"Dark\".into(), \"Dracula\".into(), \"Nord\".into(), \"Tokyo Night\".into()],\n            selected_index: Some(1),\n            ..SelectOptions::new(\"Dracula\")\n        },\n        \"theme\",\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Select(ui *hqtui.Container) {\n\tui.Select(hqtui.SelectOptions{\n\t\tValue:         \"Dracula\",\n\t\tOpen:          true,\n\t\tOptions:       []string{\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"},\n\t\tSelectedIndex: 1,\n\t}, nil)\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def select(ui: Container) -> None:\n    ui.select(\n        w.SelectOptions(\n            value=\"Dracula\",\n            open=True,\n            options=[\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"],\n            selected_index=1,\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn select(ui: *Container) anyerror!void {\n    try ui.select(.{\n        .value = \"Dracula\",\n        .open = true,\n        .options = &.{ \"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\" },\n        .selected_index = 1,\n    }, \"theme\");\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "textInput",
+      "title": "Text input",
+      "category": "Inputs",
+      "width": 52,
+      "height": 3,
+      "blurb": "A labelled field with a placeholder and a cursor.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">Search</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#c6d0db;background:#23262c\"> postgres</span><span style=\"color:#05070a;background:#56d4dd\"> </span><span style=\"color:#c6d0db;background:#23262c\">                                   </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                    </span>\n<span style=\"color:#5a6b7d;background:#05070a\">Filter</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#c6d0db;background:#161a20\"> </span><span style=\"color:#5a6b7d;background:#161a20\">type to filter…</span><span style=\"color:#c6d0db;background:#161a20\">                             </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function textInput(ui: Container, _theme: Theme): void {\n  ui.textInput({ label: \"Search\", value: \"postgres\", size: 1 });\n  ui.spacer(1);\n  ui.textInput({ label: \"Filter\", value: \"\", placeholder: \"type to filter…\", size: 1 });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function textInput(ui) {\n  ui.textInput({ label: \"Search\", value: \"postgres\", size: 1 });\n  ui.spacer(1);\n  ui.textInput({ label: \"Filter\", value: \"\", placeholder: \"type to filter…\", size: 1 });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn text_input(ui: &mut Container) {\n    ui.text_input(\n        TextInputOptions { label: Some(\"Search\".into()), ..TextInputOptions::new(\"postgres\") },\n        \"search\",\n    );\n    ui.spacer(1);\n    ui.text_input(\n        TextInputOptions {\n            label: Some(\"Filter\".into()),\n            placeholder: Some(\"type to filter…\".into()),\n            ..TextInputOptions::new(\"\")\n        },\n        \"filter\",\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func TextInput(ui *hqtui.Container) {\n\tui.TextInput(hqtui.TextInputOptions{Label: \"Search\", Value: \"postgres\"})\n\tui.Spacer(hqtui.Cells(1))\n\tui.TextInput(hqtui.TextInputOptions{Label: \"Filter\", Placeholder: \"type to filter…\"})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def text_input(ui: Container) -> None:\n    ui.text_input(w.TextInputOptions(value=\"postgres\", label=\"Search\"))\n    ui.spacer(1)\n    ui.text_input(w.TextInputOptions(value=\"\", label=\"Filter\", placeholder=\"type to filter…\"))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn textInput(ui: *Container) anyerror!void {\n    try ui.textInput(.{ .value = \"postgres\", .label = \"Search\" }, \"search\");\n    try ui.spacer(.{ .cells = 1 });\n    try ui.textInput(.{ .value = \"\", .label = \"Filter\", .placeholder = \"type to filter…\" }, \"filter\");\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "tabs",
+      "title": "Tabs",
+      "category": "Inputs",
+      "width": 62,
+      "height": 1,
+      "blurb": "A single row of tabs with one active. Clickable.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\">  1 dashboard  </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\">  2 traffic  </span><span style=\"color:#5a6b7d;background:#05070a\">  3 sessions    4 network  </span><span style=\"color:#c6d0db;background:#05070a\">       </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function tabs(ui: Container, _theme: Theme): void {\n  ui.tabs({\n    tabs: [\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"],\n    active: 1,\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function tabs(ui) {\n  ui.tabs({ tabs: [\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"], active: 1 });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn tabs(ui: &mut Container) {\n    ui.tabs(\n        TabsOptions::new([\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"], 1),\n        \"screens\",\n    );\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Tabs(ui *hqtui.Container) {\n\tui.Tabs(hqtui.TabsOptions{\n\t\tTabs:   []string{\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"},\n\t\tActive: 1,\n\t}, nil)\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def tabs(ui: Container) -> None:\n    ui.tabs(w.TabsOptions(tabs=[\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"], active=1))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn tabs(ui: *Container) anyerror!void {\n    try ui.tabs(.{\n        .tabs = &.{ \"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\" },\n        .active = 1,\n    }, \"screens\");\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "modal",
+      "title": "Modal",
+      "category": "Overlays",
+      "width": 62,
+      "height": 12,
+      "blurb": "A centered dialog drawn over everything, with buttons.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#3b3f45;background:#05070a\">                                                              </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">╭──────────────</span><span style=\"color:#7ee2ff;background:#1e2127;font-weight:700\"> Confirm Action </span><span style=\"color:#56d4dd;background:#1e2127\">──────────────╮</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">                                            </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#c6d0db;background:#1e2127\">    Terminate process 4821 (postgres)?    </span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#c6d0db;background:#1e2127\">                                          </span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#c6d0db;background:#1e2127\">          This cannot be undone.          </span><span style=\"color:#3b3f45;background:#1e2127\"> </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">                                            </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">              </span><span style=\"color:#05070a;background:#5fff87;font-weight:700\">  Yes  </span><span style=\"color:#3b3f45;background:#1e2127\">  </span><span style=\"color:#5a6b7d;background:#1e2127\">  No  </span><span style=\"color:#3b3f45;background:#1e2127\">               </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#1e2127\">                                            </span><span style=\"color:#56d4dd;background:#1e2127\">│</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">        </span><span style=\"color:#56d4dd;background:#1e2127\">╰────────────────────────────────────────────╯</span><span style=\"color:#3b3f45;background:#05070a\">        </span>\n<span style=\"color:#3b3f45;background:#05070a\">                                                              </span>\n<span style=\"color:#3b3f45;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function modal(ui: Container, _theme: Theme): void {\n  // Overlays draw over everything already on the screen, centered.\n  ui.modal({\n    title: \"Confirm Action\",\n    width: 46,\n    height: 9,\n    message: \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n    buttons: [\n      { label: \"Yes\", variant: \"success\", focused: true },\n      { label: \"No\", variant: \"ghost\" },\n    ],\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function modal(ui) {\n  // Overlays draw over everything already on the screen, centered.\n  ui.modal({\n    title: \"Confirm Action\",\n    width: 46,\n    height: 9,\n    message: \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n    buttons: [\n      { label: \"Yes\", variant: \"success\", focused: true },\n      { label: \"No\", variant: \"ghost\" },\n    ],\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn modal(ui: &mut Container) {\n    // Overlays draw over everything already on the screen, centered.\n    ui.modal(ModalOptions {\n        buttons: vec![\n            ModalButton::new(\"Yes\").focused(),\n            ModalButton::new(\"No\"),\n        ],\n        ..ModalOptions::new()\n            .title(\"Confirm Action\")\n            .message(\"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\")\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Modal(ui *hqtui.Container) {\n\t// Overlays draw over everything already on the screen, centered.\n\tui.Modal(hqtui.ModalOptions{\n\t\tTitle:   \"Confirm Action\",\n\t\tMessage: \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n\t\tButtons: []hqtui.ModalButton{\n\t\t\t{Label: \"Yes\", Focused: true},\n\t\t\t{Label: \"No\", Variant: hqtui.ButtonGhost},\n\t\t},\n\t}, nil)\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def modal(ui: Container) -> None:\n    # Overlays draw over everything already on the screen, centered.\n    ui.modal(\n        w.ModalOptions(\n            title=\"Confirm Action\",\n            message=\"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n            buttons=[\n                w.ModalButton(label=\"Yes\", focused=True),\n                w.ModalButton(label=\"No\", variant=\"ghost\"),\n            ],\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn modal(ui: *Container) anyerror!void {\n    // Overlays draw over everything already on the screen, centered.\n    ui.modal(.{\n        .title = \"Confirm Action\",\n        .message = \"Terminate process 4821 (postgres)?\",\n        .buttons = &.{\n            .{ .label = \"Yes\", .focused = true },\n            .{ .label = \"No\", .variant = .ghost },\n        },\n    });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "commandPalette",
+      "title": "Command palette",
+      "category": "Overlays",
+      "width": 62,
+      "height": 10,
+      "blurb": "A query line and filtered results, over the current screen.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#3f4349;background:#05070a\">                                                              </span>\n<span style=\"color:#3f4349;background:#05070a\">                                                              </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">╭─</span><span style=\"color:#7ee2ff;background:#23262c;font-weight:700\"> Command Palette </span><span style=\"color:#56d4dd;background:#23262c\">────────────────────────────────────────╮</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#56d4dd;background:#23262c;font-weight:700\">› </span><span style=\"color:#c6d0db;background:#23262c\">the</span><span style=\"color:#3f4349;background:#23262c\">                                                     </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#243040;background:#23262c\">──────────────────────────────────────────────────────────</span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#1d3a52\"> </span><span style=\"color:#e6f2ff;background:#1d3a52;font-weight:700\">Toggle theme</span><span style=\"color:#3f4349;background:#1d3a52\">                                          </span><span style=\"color:#5a6b7d;background:#1d3a52\">F2</span><span style=\"color:#3f4349;background:#1d3a52\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#c6d0db;background:#23262c\">Filter processes</span><span style=\"color:#3f4349;background:#23262c\">                                      </span><span style=\"color:#5a6b7d;background:#23262c\">F3</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#c6d0db;background:#23262c\">Sort by memory</span><span style=\"color:#3f4349;background:#23262c\">                                        </span><span style=\"color:#5a6b7d;background:#23262c\">F6</span><span style=\"color:#3f4349;background:#23262c\"> </span><span style=\"color:#56d4dd;background:#23262c\">│</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\"> </span><span style=\"color:#56d4dd;background:#23262c\">╰──────────────────────────────────────────────────────────╯</span><span style=\"color:#3f4349;background:#05070a\"> </span>\n<span style=\"color:#3f4349;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function commandPalette(ui: Container, _theme: Theme): void {\n  ui.commandPalette({\n    query: \"the\",\n    items: [\n      { label: \"Toggle theme\", hint: \"F2\" },\n      { label: \"Filter processes\", hint: \"F3\" },\n      { label: \"Sort by memory\", hint: \"F6\" },\n    ],\n    selected: 0,\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function commandPalette(ui) {\n  ui.commandPalette({\n    query: \"the\",\n    items: [\n      { label: \"Toggle theme\", hint: \"F2\" },\n      { label: \"Filter processes\", hint: \"F3\" },\n      { label: \"Sort by memory\", hint: \"F6\" },\n    ],\n    selected: 0,\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn command_palette(ui: &mut Container) {\n    ui.command_palette(CommandPaletteOptions {\n        query: \"the\".into(),\n        items: vec![\n            PaletteItem::new(\"Toggle theme\").hint(\"F2\"),\n            PaletteItem::new(\"Filter processes\").hint(\"F3\"),\n            PaletteItem::new(\"Sort by memory\").hint(\"F6\"),\n        ],\n        selected: Some(0),\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func CommandPalette(ui *hqtui.Container) {\n\tui.CommandPalette(hqtui.CommandPaletteOptions{\n\t\tQuery: \"the\",\n\t\tItems: []hqtui.PaletteItem{\n\t\t\t{Label: \"Toggle theme\", Hint: \"F2\"},\n\t\t\t{Label: \"Filter processes\", Hint: \"F3\"},\n\t\t\t{Label: \"Sort by memory\", Hint: \"F6\"},\n\t\t},\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def command_palette(ui: Container) -> None:\n    ui.command_palette(\n        w.CommandPaletteOptions(\n            query=\"the\",\n            items=[\n                w.PaletteItem(label=\"Toggle theme\", hint=\"F2\"),\n                w.PaletteItem(label=\"Filter processes\", hint=\"F3\"),\n                w.PaletteItem(label=\"Sort by memory\", hint=\"F6\"),\n            ],\n            selected=0,\n        )\n    )",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn commandPalette(ui: *Container) anyerror!void {\n    ui.commandPalette(.{\n        .query = \"the\",\n        .items = &.{\n            .{ .label = \"Toggle theme\", .hint = \"F2\" },\n            .{ .label = \"Filter processes\", .hint = \"F3\" },\n            .{ .label = \"Sort by memory\", .hint = \"F6\" },\n        },\n        .selected = 0,\n    });\n}",
+          "syntax": "zig"
+        }
+      }
+    },
+    {
+      "id": "tooltip",
+      "title": "Tooltip",
+      "category": "Overlays",
+      "width": 62,
+      "height": 7,
+      "blurb": "A small floating box anchored at a cell.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">Tooltips are overlays positioned at a cell, for hover and hin…</span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span>\n<span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#56d4dd;background:#272b30\">╭──────────────────╮</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#56d4dd;background:#272b30\">│</span><span style=\"color:#c6d0db;background:#272b30\">swap is 87% full  </span><span style=\"color:#56d4dd;background:#272b30\">│</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#56d4dd;background:#272b30\">╰──────────────────╯</span><span style=\"color:#c6d0db;background:#05070a\">                                    </span>\n<span style=\"color:#c6d0db;background:#05070a\">                                                              </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function tooltip(ui: Container, _theme: Theme): void {\n  ui.text(\"Tooltips are overlays positioned at a cell, for hover and hints.\");\n  ui.tooltip({ text: \"swap is 87% full\", x: 6, y: 3 });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function tooltip(ui) {\n  ui.text(\"Tooltips are overlays positioned at a cell, for hover and hints.\");\n  ui.tooltip({ text: \"swap is 87% full\", x: 6, y: 3 });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn tooltip(ui: &mut Container) {\n    ui.text(\"Tooltips are overlays positioned at a cell, for hover and hints.\");\n    ui.tooltip(TooltipOptions { text: \"swap is 87% full\".into(), x: 6, y: 3, ..Default::default() });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Tooltip(ui *hqtui.Container) {\n\tui.Text(\"Tooltips are overlays positioned at a cell, for hover and hints.\")\n\tui.Tooltip(hqtui.TooltipOptions{Text: \"swap is 87% full\", X: 6, Y: 3})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def tooltip(ui: Container) -> None:\n    ui.text(\"Tooltips are overlays positioned at a cell, for hover and hints.\")\n    ui.tooltip(w.TooltipOptions(text=\"swap is 87% full\", x=6, y=3))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn tooltip(ui: *Container) anyerror!void {\n    try ui.text(\"Tooltips are overlays positioned at a cell.\", .{});\n    ui.tooltip(.{ .text = \"swap is 87% full\", .x = 6, .y = 3 });\n}",
+          "syntax": "zig"
+        }
+      }
+    }
+  ]
+}

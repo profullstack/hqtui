@@ -35,7 +35,7 @@ use crate::buffer::Style;
 use crate::capabilities::Capabilities;
 use crate::color::Color;
 use crate::graphics::BrailleCanvas;
-use crate::layout::{stack, Constraint, Direction, Padding, Rect, Size};
+use crate::layout::{stack_with_gaps, Constraint, Direction, Padding, Rect, Size};
 use crate::surface::{BorderStyle, BoxOptions, Surface};
 use crate::theme::Theme;
 use crate::unicode::{string_width, wrap, Align};
@@ -111,6 +111,10 @@ pub struct Ctx {
     pub elapsed: u64,
     /// Which focusable control currently has focus.
     pub focus_index: usize,
+    /// Merge the borders of adjacent panels into shared lines, the way CSS
+    /// collapses table borders. Off unless the app asks for it, because it
+    /// changes every layout that has two panels side by side.
+    pub collapse_borders: bool,
     state: RefCell<FrameState>,
 }
 
@@ -132,6 +136,7 @@ impl Ctx {
             frame: 0,
             elapsed: 0,
             focus_index: 0,
+            collapse_borders: false,
             state: RefCell::new(FrameState::default()),
         }
     }
@@ -363,6 +368,10 @@ type DrawFn<'a> = Box<dyn FnOnce(Surface) + 'a>;
 struct Child<'a> {
     constraint: Constraint,
     draw: DrawFn<'a>,
+    /// True when this child draws a border of its own. Only bordered siblings
+    /// collapse into each other: a table pressed against a panel edge should
+    /// not grow junctions out of its rows.
+    bordered: bool,
 }
 
 pub struct Container<'a> {
@@ -408,8 +417,39 @@ impl<'a> Container<'a> {
     }
 
     fn add(&mut self, constraint: Constraint, draw: impl FnOnce(Surface) + 'a) -> &mut Self {
-        self.children.push(Child { constraint, draw: Box::new(draw) });
+        self.children.push(Child { constraint, draw: Box::new(draw), bordered: false });
         self
+    }
+
+    /// As `add`, for a child that draws its own border.
+    fn add_bordered(
+        &mut self,
+        constraint: Constraint,
+        bordered: bool,
+        draw: impl FnOnce(Surface) + 'a,
+    ) -> &mut Self {
+        self.children.push(Child { constraint, draw: Box::new(draw), bordered });
+        self
+    }
+
+    /// The gap at each seam. Ordinarily one number repeated, but where
+    /// collapsing is on and two bordered siblings meet with no gap between
+    /// them, the seam is minus one so their borders land in the same column
+    /// and merge.
+    fn seams(&self) -> Vec<isize> {
+        let plain = vec![self.gap as isize; self.children.len().saturating_sub(1)];
+        if !self.ctx.collapse_borders || self.gap != 0 || self.children.len() < 2 {
+            return plain;
+        }
+        (0..self.children.len() - 1)
+            .map(|i| {
+                if self.children[i].bordered && self.children[i + 1].bordered {
+                    -1
+                } else {
+                    self.gap as isize
+                }
+            })
+            .collect()
     }
 
     /// The constraint for a child that declared a `Layout`.
@@ -447,7 +487,8 @@ impl<'a> Container<'a> {
             return;
         }
         let constraints: Vec<Constraint> = self.children.iter().map(|c| c.constraint).collect();
-        let rects = stack(self.inner.rect, &constraints, self.direction, self.gap);
+        let seams = self.seams();
+        let rects = stack_with_gaps(self.inner.rect, &constraints, self.direction, &seams);
         for (child, rect) in std::mem::take(&mut self.children).into_iter().zip(rects) {
             if rect.is_empty() {
                 continue;
@@ -489,7 +530,9 @@ impl<'a> Container<'a> {
             (None, None) => false,
         };
         let constraint = self.constraint_of(&options.layout, Size::Fill, None);
-        self.add(constraint, move |surface| {
+        let bordered = options.border.unwrap_or(BorderStyle::Rounded) != BorderStyle::None;
+        let collapse = self.ctx.collapse_borders;
+        self.add_bordered(constraint, bordered, move |surface| {
             let theme = surface.theme.clone();
             let interior = surface.draw_box(&BoxOptions {
                 title: options.title.clone(),
@@ -505,6 +548,7 @@ impl<'a> Container<'a> {
                     theme.border
                 })),
                 bg: options.layout.background,
+                collapse,
                 ..Default::default()
             });
             let inner_layout = Layout {
