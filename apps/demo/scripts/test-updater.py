@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import pty
+import re
 import select
 import signal
 import subprocess
@@ -234,18 +235,18 @@ output.chmod(0o700)
         self.assertEqual(json.loads(result.stdout)["revision"], "second")
         self.assertEqual(installs(), 3)
 
-    def test_system_tool_older_than_the_pin_fails_before_any_build(self):
+    def test_system_tool_below_the_floor_fails_before_any_build(self):
         self.stub_compilers()
         # Each entry is a different probe shape: `bun --version`, `go version`,
         # and Perl's own $^V. Bun 1.3 is the real case: it cannot read this
         # repository's lockfile and would otherwise report frozen-lockfile drift.
-        for language, tool, old, pinned in (("typescript", "BUN", "1.3.14", "bun 1.4.0"),
-                                            ("go", "GO", "1.20.0", "go 1.26.0"),
-                                            ("perl", "PERL", "5.40.0.0", "perl 5.44.0.0")):
+        for language, tool, old, need in (("typescript", "BUN", "1.3.14", "bun 1.4.0"),
+                                          ("go", "GO", "1.20.0", "go 1.22"),
+                                          ("perl", "PERL", "5.18.0.0", "perl 5.20")):
             result = self.run_demo("--system", language, "--snapshot",
                                    env={**self.env, f"UPDATER_{tool}_VERSION": old})
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn(f"pins {pinned}", result.stderr)
+            self.assertIn(f"needs {need} or newer", result.stderr)
             self.assertIn(f"is {old.rsplit('.', 1)[0] if tool == 'PERL' else old}", result.stderr)
             self.assertIn("--mise", result.stderr)
             self.assertEqual(result.stdout, "")
@@ -259,6 +260,53 @@ output.chmod(0o700)
         pinned = self.run_demo("--mise", "typescript", "--snapshot",
                                env={**self.env, "UPDATER_BUN_VERSION": "1.3.14"})
         self.assertEqual(pinned.returncode, 0, pinned.stderr)
+
+    def test_system_tool_between_the_floor_and_the_pin_builds_with_a_note(self):
+        # The regression this guards: treating the mise pin as a requirement
+        # refused every stock Mac, where Perl is 5.34 and Ruby 3.3 against pins
+        # of 5.44 and 4.0. Those build the bindings perfectly well.
+        self.stub_compilers()
+        for language, tool, have, pin in (("perl", "PERL", "5.34.0.0", "perl 5.44.0.0"),
+                                          ("ruby", "RUBY", "3.3.8", "ruby 4.0.6"),
+                                          ("go", "GO", "1.23.0", "go 1.26.0")):
+            result = self.run_demo("--system", language, "--snapshot",
+                                   env={**self.env, f"UPDATER_{tool}_VERSION": have})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(f"pins {pin}", result.stderr)
+            self.assertIn("Rerun with --mise if the build fails", result.stderr)
+
+    def test_declared_floors_match_the_ports_own_manifests(self):
+        """The floors in demo.sh are copies. This is what stops them drifting.
+
+        Each one is stated by the port itself; if a port raises its requirement
+        and nobody updates the launcher, the launcher will happily start a build
+        that cannot succeed.
+        """
+        launcher = LAUNCHER.read_text()
+        declared = dict(re.findall(r"^\s+(\w+)\) minimum=([0-9.]+) ;;", launcher, re.M))
+        manifests = {
+            "go": (ROOT / "ports/go/go.mod", r"^go\s+([0-9.]+)"),
+            "rust": (ROOT / "ports/rust/Cargo.toml", r'rust-version\s*=\s*"([0-9.]+)"'),
+            "python": (ROOT / "ports/python/pyproject.toml", r'requires-python\s*=\s*">=\s*([0-9.]+)"'),
+            "ruby": (ROOT / "ports/ruby/hqtui.gemspec", r"required_ruby_version\s*=\s*'>=\s*([0-9.]+)'"),
+            "php": (ROOT / "ports/php/composer.json", r'"php":\s*">=\s*([0-9.]+)"'),
+            "cpp": (ROOT / "ports/cpp/CMakeLists.txt", r"cmake_minimum_required\(VERSION ([0-9.]+)"),
+        }
+        for language, (path, pattern) in manifests.items():
+            match = re.search(pattern, path.read_text(), re.M)
+            self.assertIsNotNone(match, f"no version found in {path}")
+            self.assertEqual(declared.get(language), match.group(1),
+                             f"demo.sh says {language} needs {declared.get(language)}, "
+                             f"but {path.name} says {match.group(1)}")
+        # Perl's manifest writes 5.020, which is 5.20.
+        perl = re.search(r"MIN_PERL_VERSION\s*=>\s*'([0-9.]+)'",
+                         (ROOT / "ports/perl/Makefile.PL").read_text())
+        self.assertIsNotNone(perl)
+        self.assertEqual(declared.get("perl"),
+                         re.sub(r"\.0*(\d)", r".\1", perl.group(1)))
+        # Bun's floor is not a preference; it is what can read a v2 lockfile.
+        self.assertEqual(declared.get("typescript"), "1.4.0")
+        self.assertIn('"lockfileVersion": 2', (ROOT / "bun.lock").read_text())
 
     def test_bindings_update_both_managers_and_keep_builds_outside_source(self):
         self.stub_compilers()
