@@ -28,6 +28,15 @@ jobs:
       - run: mise run test:zig
       - run: python apps/demo/scripts/check-native-commands.py
       - run: python apps/demo/scripts/check-native-data.py
+      # The widget galleries behind hqtui.com/widgets. Each renders every
+      # widget headlessly and exits non-zero on a blank screen, which is what
+      # a renamed option looks like from the outside.
+      - name: Widget galleries (Rust, Go, Python, Zig)
+        run: |
+          mise exec -- cargo run --quiet --example widgets --manifest-path ports/rust/Cargo.toml >/dev/null
+          (cd ports/go && mise exec -- go run ./examples/widgets >/dev/null)
+          (cd ports/python && mise exec -- python -m examples.widgets >/dev/null)
+          (cd ports/zig && mise exec -- zig build run-widgets >/dev/null)
 
   python:
     name: Python examples and terminal cleanup
@@ -67,6 +76,17 @@ jobs:
         run: bun test packages/hqtui/test apps/demo/test apps/web/test
       - name: Build
         run: bun run build
+      - name: Widget galleries (TypeScript and vanilla JavaScript)
+        run: |
+          bun examples/widgets/check.ts
+          node examples/widgets/gallery.js >/dev/null
+      # The committed catalog is generated. If it can drift from the galleries
+      # then the site can show code that no longer compiles, which is the one
+      # thing this whole arrangement exists to prevent.
+      - name: The published widget catalog is current
+        run: |
+          bun examples/widgets/build-catalog.ts
+          git diff --exit-code -- apps/web/content/widgets.json
 
   node:
     name: node ${{ matrix.node }}
@@ -114,3 +134,26 @@ jobs:
         with:
           name: benchmark
           path: benchmark.txt
+
+  cobol:
+    name: COBOL bridges to TypeScript and Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4.3.0
+      - name: Compile the COBOL program
+        run: |
+          printf 'FROM ubuntu:24.04\nRUN apt-get update -qq && apt-get install -y -qq gnucobol4 && rm -rf /var/lib/apt/lists/*\n' > /tmp/Dockerfile.cobol
+          docker build -q -f /tmp/Dockerfile.cobol -t hqtui-cobol /tmp
+          mkdir -p ports/cobol/build
+          docker run --rm -v "$PWD/ports/cobol":/w -w /w hqtui-cobol cobc -x -free examples/widgets.cbl -o build/widgets
+          docker run --rm -v "$PWD/ports/cobol":/w -w /w hqtui-cobol ./build/widgets > /tmp/records.txt
+      # Both adapters read the same 80-column records. If they ever disagree,
+      # the record layout has stopped being the interface.
+      - name: Render the records through both bridges and compare
+        run: |
+          bun install --frozen-lockfile
+          bun run build
+          bun ports/cobol/adapter/render.ts < /tmp/records.txt > /tmp/typescript.txt
+          mise exec -- cargo run --quiet --example cobol-bridge --manifest-path ports/rust/Cargo.toml < /tmp/records.txt > /tmp/rust.txt
+          diff /tmp/typescript.txt /tmp/rust.txt
