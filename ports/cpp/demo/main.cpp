@@ -61,7 +61,12 @@ public:
       return;
     write_all("\x1b[0m\x1b[?1000l\x1b[?1002l\x1b[?1006l\x1b[?2004l\x1b[?"
               "1004l\x1b[?25h\x1b[?1049l");
-    tcsetattr(0, TCSANOW, &before_);
+    int restored;
+    do {
+      restored = tcsetattr(0, TCSANOW, &before_);
+    } while (restored < 0 && errno == EINTR);
+    if (restored < 0)
+      std::cerr << "Cannot restore terminal: " << std::strerror(errno) << "\n";
     std::signal(SIGINT, old_int_);
     std::signal(SIGTERM, old_term_);
     std::signal(SIGHUP, old_hup_);

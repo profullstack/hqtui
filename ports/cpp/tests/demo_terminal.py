@@ -74,7 +74,8 @@ def run(args, kill=False):
                     pass
         proc.wait(timeout=.1)
         assert proc.returncode == (143 if kill else 0), proc.returncode
-        assert termios.tcgetattr(slave) == before, 'terminal state was not restored'
+        after = termios.tcgetattr(slave)
+        assert after == before, ('terminal state was not restored', before, after)
     finally:
         if proc.poll() is None:
             os.killpg(proc.pid, signal.SIGKILL)
