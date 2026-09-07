@@ -70,6 +70,61 @@ class TextOptions:
         return Style(self.fg, self.bg, self.attrs)
 
 
+# Edge bits for a border glyph: 1 up, 2 right, 4 down, 8 left.
+#
+# Collapsing two panel borders is the union of their edges. A panel's top-right
+# corner (down + left) landing on its neighbour's top-left (down + right) is
+# down + left + right, which is the T that makes the two read as one frame.
+EDGE_UP = 1
+EDGE_RIGHT = 2
+EDGE_DOWN = 4
+EDGE_LEFT = 8
+
+# The edges each part of a border carries, in field order.
+_PART_BITS = (
+    EDGE_RIGHT | EDGE_DOWN,                     # tl
+    EDGE_LEFT | EDGE_DOWN,                      # tr
+    EDGE_UP | EDGE_RIGHT,                       # bl
+    EDGE_UP | EDGE_LEFT,                        # br
+    EDGE_LEFT | EDGE_RIGHT,                     # h
+    EDGE_UP | EDGE_DOWN,                        # v
+    EDGE_UP | EDGE_DOWN | EDGE_RIGHT,           # ml
+    EDGE_UP | EDGE_DOWN | EDGE_LEFT,            # mr
+    EDGE_LEFT | EDGE_RIGHT | EDGE_DOWN,         # mt
+    EDGE_LEFT | EDGE_RIGHT | EDGE_UP,           # mb
+    EDGE_UP | EDGE_RIGHT | EDGE_DOWN | EDGE_LEFT,  # cross
+)
+
+# Every border glyph in every style, to its edges. ASCII borders collide (every
+# corner is "+") and the first entry wins, which is right: the union of anything
+# with a "+" is a "+".
+_BITS_BY_CHAR: dict[str, int] = {}
+for _chars in BORDERS.values():
+    for _i, _part in enumerate(
+        (_chars.tl, _chars.tr, _chars.bl, _chars.br, _chars.h, _chars.v,
+         _chars.ml, _chars.mr, _chars.mt, _chars.mb, _chars.cross)
+    ):
+        _BITS_BY_CHAR.setdefault(_part, _PART_BITS[_i])
+
+
+def border_bits(ch: str) -> int | None:
+    """The edges of a border glyph, or None when it is not one."""
+    return _BITS_BY_CHAR.get(ch)
+
+
+def border_glyph(style: str, bits: int) -> str | None:
+    """The glyph in ``style`` with exactly these edges, or None."""
+    chars = BORDERS.get(style)
+    if chars is None:
+        return None
+    parts = (chars.tl, chars.tr, chars.bl, chars.br, chars.h, chars.v,
+             chars.ml, chars.mr, chars.mt, chars.mb, chars.cross)
+    for i, value in enumerate(_PART_BITS):
+        if value == bits:
+            return parts[i]
+    return None
+
+
 @dataclass(frozen=True, slots=True)
 class BoxOptions:
     """A bordered box: the workhorse behind every panel in the library."""
@@ -87,6 +142,10 @@ class BoxOptions:
     """Paint the interior with ``bg`` before drawing."""
     footer: str = ""
     footer_color: Color | None = None
+    collapse: bool = False
+    """Merge this border with one already in the same cell rather than
+    overwriting it. Set for you by the container when the app asks for
+    collapsed borders; there is no reason to pass it by hand."""
 
 
 class Surface:
@@ -202,6 +261,23 @@ class Surface:
         for i in range(length):
             self.char(x, y + i, ch, style)
 
+    def _merge_border(self, x: int, y: int, ch: str, style: str, cell_style: Style) -> None:
+        """Write a border glyph, merging it with whatever border is already there.
+
+        Only border glyphs merge. Anything else in the cell is overwritten,
+        which keeps a panel drawn over a chart looking like a panel rather than
+        growing junctions out of the data.
+        """
+        ax, ay = self.rect.x + x, self.rect.y + y
+        if not self._visible(ax, ay):
+            return
+        existing = chr(self.buffer.chars[self.buffer.index(ax, ay)])
+        before = border_bits(existing)
+        after = border_bits(ch)
+        if before is not None and after is not None and before != after:
+            ch = border_glyph(style, before | after) or ch
+        self.char(x, y, ch, cell_style)
+
     def box(self, options: BoxOptions = BoxOptions()) -> "Surface":
         """Draw a bordered box with an optional title, and return the interior.
 
@@ -223,15 +299,32 @@ class Surface:
         w, h = self.width, self.height
         border_style = Style(fg=fg, bg=bg)
 
-        self.char(0, 0, b.tl, border_style)
-        self.char(w - 1, 0, b.tr, border_style)
-        self.hline(1, 0, w - 2, b.h, border_style)
+        # With collapsing on, a border glyph landing on another one becomes the
+        # union of the two. Without it this is a plain write, so a screen that
+        # never asks for collapsing renders byte for byte as it did.
+        def put(x: int, y: int, ch: str) -> None:
+            if options.collapse:
+                self._merge_border(x, y, ch, border, border_style)
+            else:
+                self.char(x, y, ch, border_style)
+
+        def put_h(x: int, y: int, length: int, ch: str) -> None:
+            for i in range(length):
+                put(x + i, y, ch)
+
+        def put_v(x: int, y: int, length: int, ch: str) -> None:
+            for i in range(length):
+                put(x, y + i, ch)
+
+        put(0, 0, b.tl)
+        put(w - 1, 0, b.tr)
+        put_h(1, 0, w - 2, b.h)
         if h > 1:
-            self.char(0, h - 1, b.bl, border_style)
-            self.char(w - 1, h - 1, b.br, border_style)
-            self.hline(1, h - 1, w - 2, b.h, border_style)
-            self.vline(0, 1, h - 2, b.v, border_style)
-            self.vline(w - 1, 1, h - 2, b.v, border_style)
+            put(0, h - 1, b.bl)
+            put(w - 1, h - 1, b.br)
+            put_h(1, h - 1, w - 2, b.h)
+            put_v(0, 1, h - 2, b.v)
+            put_v(w - 1, 1, h - 2, b.v)
 
         # Measured before the title is drawn: both share the top border row, and
         # the title used to be truncated against the full width and then painted
