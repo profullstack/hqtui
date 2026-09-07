@@ -1,5 +1,6 @@
 """Isolated PTY tests: cold launch, switching tabs, overlays, resize and cleanup."""
 import fcntl
+import faulthandler
 import os
 from pathlib import Path
 import pty
@@ -12,22 +13,29 @@ import termios
 import time
 
 executable = str(Path(sys.argv[1]).resolve())
+faulthandler.enable()
+faulthandler.dump_traceback_later(20, repeat=True)
 
 def run(args, kill=False):
     master, slave = pty.openpty()
     fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', 60, 200, 0, 0))
     before = termios.tcgetattr(slave)
-    def controlling():
-        os.setsid()
-        fcntl.ioctl(0, termios.TIOCSCTTY, 0)
+    # The direct executable needs PTY descriptors, not /dev/tty. Avoid Python
+    # preexec_fn after fork: that can deadlock on macOS. The updater's separate
+    # tests exercise acquiring a controlling terminal for curl-pipe launches.
+    print(f'PTY launch: {args}, signal={kill}', flush=True)
     proc = subprocess.Popen([executable, *args], stdin=slave, stdout=slave, stderr=slave,
-                            cwd='/tmp', preexec_fn=controlling)
+                            cwd='/tmp', start_new_session=True)
+    os.set_blocking(master, False)
     output = bytearray()
     def wait_for(label, timeout=8):
         deadline = time.monotonic() + timeout
         while label not in output and time.monotonic() < deadline:
             if select.select([master], [], [], .05)[0]:
-                output.extend(os.read(master, 65536))
+                try:
+                    output.extend(os.read(master, 65536))
+                except BlockingIOError:
+                    pass
             assert proc.poll() is None, ('early exit', proc.returncode, bytes(output[-1000:]))
         assert label in output, ('missing frame', label, bytes(output[-1000:]))
     try:
@@ -69,3 +77,4 @@ run(['--sim'], kill=True)
 if sys.platform.startswith('linux'):
     run(['--real'])
 print('C++: all ten tabs, overlay, resize, q/SIGTERM and terminal restoration passed.')
+faulthandler.cancel_dump_traceback_later()
