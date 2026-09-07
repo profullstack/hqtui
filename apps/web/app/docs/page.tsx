@@ -68,6 +68,7 @@ export default async function Docs() {
             HQTUI builds terminal applications in TypeScript, Rust, Go, Python and Zig,
             with a new native C++ ten-screen demo over the shared C rendering core.
             The C++ library API remains experimental.
+            Ruby, PHP and Perl now have experimental bindings to the same native engine.
           </P>
 
           <H2 id="languages">Choose a language</H2>
@@ -80,9 +81,9 @@ export default async function Docs() {
             Rust, Go, Python, Zig and C++ demos need no JavaScript runtime.
             Both the vanilla and mise commands below fetch latest main before running.
             They work from any directory and never switch branches, reset, or pull in your checkout.
-            All five native dashboard commands launch ten-screen demos. Live metrics
+            All dashboard commands launch ten-screen demos. Live metrics in the native demos
             currently require Linux; use --sim for generated sample data on other platforms.
-            All five native demos use the TypeScript reference&apos;s ten screen layouts,
+            The native demos and bindings use the TypeScript reference&apos;s ten screen layouts,
             including its responsive dashboard, detailed telemetry tabs and widget showcases.
             Each port is checked against 120 shared TypeScript reference frames across four
             terminal sizes and three themes. Live-data availability still depends on the host
@@ -95,7 +96,17 @@ export default async function Docs() {
             Its mise command supplies pinned CMake; you still need your platform&apos;s
             C/C++ build tools. The interactive C++ terminal supports Linux/macOS;
             live collection and exact 120-frame parity are currently tested on Linux.
-            The C-only demo and other mise language integrations are not ready yet.
+            The C-only demo and languages beyond those listed here are not ready yet.
+          </P>
+          <P>
+            Ruby, PHP and Perl are bindings, not independent renderer ports. Their widget
+            APIs submit batched scene updates; the shared ten-screen demo, collectors and
+            terminal loop execute inside the calling runtime. They need GCC/Clang and CMake.
+            Ruby needs Fiddle; Perl needs FFI::Platypus (the launcher installs it into its
+            private cache using cpanm if missing). PHP uses a small native adapter built
+            with matching php-config/development headers, or FFI when available.
+            Mise supplies pinned Ruby/Perl, prebuilt PHP via its Conda backend, and CMake.
+            No system packages or global gems/CPAN modules are installed by the launcher.
           </P>
           <P>
             Linux sensor panels now collect available hwmon temperatures, fans, voltage,
@@ -109,7 +120,7 @@ export default async function Docs() {
           <P>
             Vanilla commands require Git, curl and the language&apos;s installed toolchain
             (Bun for TypeScript). The <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>
-            alternatives install/use only the selected pinned toolchain without loading project
+            alternatives install/use the selected pinned runtime and required build tools without loading project
             hooks. The launcher prints the full Git revision, reuses completed builds for that
             revision, and fails rather than silently launching stale code if fetching fails.
             First builds take longer. Append --sim or --snapshot directly; no extra Cargo/Zig separator is needed.
@@ -123,6 +134,7 @@ export default async function Docs() {
             {PORTS.map((port) => (
               <section key={port.id} id={port.id} className="min-w-0 scroll-mt-20">
                 <h3 className="text-xl font-bold">{port.name}</h3>
+                <p className="mt-2 text-sm text-white/60">{port.description}</p>
                 <p className="mt-3 text-sm text-white/60">Interactive dashboard</p>
                 <CommandBlock className="mt-2" command={port.interactiveDemo} label={`${port.name} demo`} />
                 <p className="mt-4 text-sm text-white/60">With mise</p>

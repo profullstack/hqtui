@@ -1,5 +1,10 @@
 # Which language gets a port next
 
+Current implementation status is in [the port index](README.md). Ruby, PHP and
+Perl now use [shared native bindings](bindings/README.md); they do not duplicate
+the renderer in each interpreter. The scoring below describes potential
+independent implementations, not the speed of those shared-engine bindings.
+
 A port is a real commitment — it has to track the reference implementation
 forever, or it rots and becomes a liability. So the decision is made on two
 axes and written down, rather than on whoever shouted loudest.

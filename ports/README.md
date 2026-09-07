@@ -6,7 +6,11 @@ a C++17 ownership/widget API. The C++ ten-screen demo is now runnable and has
 The C-only demo is **not complete**. See
 [C](c/README.md), [C++](cpp/README.md), and the [acceptance checklist](c/STATUS.md).
 
-Native ports of [the TypeScript reference implementation](https://hqtui.com).
+Ruby, PHP and Perl now have experimental [shared-engine bindings](bindings/README.md)
+with custom widget APIs and the ten-screen demo running inside each language VM.
+These are bindings, not independent ports. Their native dependency is intentional.
+
+The following four are independent native ports of [the TypeScript reference implementation](https://hqtui.com).
 Not bindings: there is no Node in the picture at runtime or at build time, and
 each port is idiomatic in its own language rather than a transliteration.
 

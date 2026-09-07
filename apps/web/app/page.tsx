@@ -149,7 +149,7 @@ export default async function Home() {
               High Quality Terminal UI for TypeScript, Rust, Go, Python, Zig and C++
             </p>
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
-              v0.1.12 · 6 language demos · MIT
+              v0.1.12 · 9 language demos · MIT
             </Badge>
             <p className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
               Terminal dashboards that
@@ -227,10 +227,11 @@ export default async function Home() {
       </section>
 
       <section id="languages" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6">
-        <h2 className="text-3xl font-bold tracking-tight">One terminal UI, six language demos</h2>
+        <h2 className="text-3xl font-bold tracking-tight">One terminal UI, nine language demos</h2>
         <p className="mt-3 max-w-3xl text-white/60">
           Build in TypeScript or use a native Rust, Go, Python or Zig implementation.
           C++ now has a native ten-screen demo over the shared C rendering core, with an experimental library API.
+          Ruby, PHP and Perl add experimental bindings to that same engine, with APIs for your own CLI applications.
           The native demos need no JavaScript runtime.
         </p>
         <div className="mt-6 max-w-2xl">

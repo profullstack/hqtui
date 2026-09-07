@@ -7,6 +7,21 @@ go = "1.26.0"
 rust = "1.97.1"
 zig = "0.16.0"
 cmake = "4.4.3"
+ruby = "4.0.6"
+"conda:php" = "8.5.9"
+perl = "5.44.0.0"
+
+[tasks."demo:ruby"]
+description = "Update and run Ruby binding demo"
+run = "sh apps/web/public/demo.sh --mise ruby"
+
+[tasks."demo:php"]
+description = "Update and run PHP binding demo"
+run = "sh apps/web/public/demo.sh --mise php"
+
+[tasks."demo:perl"]
+description = "Update and run Perl binding demo"
+run = "sh apps/web/public/demo.sh --mise perl"
 
 [tasks."demo:cpp"]
 description = "Update and run the native C++ ten-screen demo (requires C/C++ compiler)"

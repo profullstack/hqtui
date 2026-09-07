@@ -1,0 +1,9 @@
+{
+  "name": "profullstack/hqtui",
+  "description": "PHP bindings to the shared HQTUI native terminal renderer",
+  "type": "library",
+  "license": "MIT",
+  "require": { "php": ">=8.1", "ext-json": "*" },
+  "suggest": { "ext-ffi": "Use FFI if the compiled hqtui_native adapter is not installed" },
+  "autoload": { "files": ["src/Hqtui.php"] }
+}
