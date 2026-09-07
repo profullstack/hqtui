@@ -60,6 +60,78 @@ func (b BorderStyle) Chars() (BorderChars, bool) {
 	return BorderChars{}, false
 }
 
+// Edge bits for a border glyph: 1 up, 2 right, 4 down, 8 left.
+//
+// Collapsing two panel borders is the union of their edges. A panel's
+// top-right corner (down + left) landing on its neighbour's top-left
+// (down + right) is down + left + right, which is the T that makes the two
+// read as one frame.
+const (
+	EdgeUp    = 1
+	EdgeRight = 2
+	EdgeDown  = 4
+	EdgeLeft  = 8
+)
+
+// partBits is the edges each part of a border carries, in the order Parts
+// returns them.
+var partBits = [11]int{
+	EdgeRight | EdgeDown,                     // TL
+	EdgeLeft | EdgeDown,                      // TR
+	EdgeUp | EdgeRight,                       // BL
+	EdgeUp | EdgeLeft,                        // BR
+	EdgeLeft | EdgeRight,                     // H
+	EdgeUp | EdgeDown,                        // V
+	EdgeUp | EdgeDown | EdgeRight,            // ML
+	EdgeUp | EdgeDown | EdgeLeft,             // MR
+	EdgeLeft | EdgeRight | EdgeDown,          // MT
+	EdgeLeft | EdgeRight | EdgeUp,            // MB
+	EdgeUp | EdgeRight | EdgeDown | EdgeLeft, // Cross
+}
+
+// Parts lists a border's glyphs in the order partBits describes them.
+func (b BorderChars) Parts() [11]rune {
+	return [11]rune{b.TL, b.TR, b.BL, b.BR, b.H, b.V, b.ML, b.MR, b.MT, b.MB, b.Cross}
+}
+
+var allBorderStyles = []BorderStyle{
+	BorderRounded, BorderSingle, BorderDouble, BorderThick, BorderDashed, BorderASCII,
+}
+
+// BorderBits returns the edges of a border glyph, and whether it is one.
+//
+// ASCII borders collide (every corner is '+') and the first match wins, which
+// is right: the union of anything with a '+' is a '+'.
+func BorderBits(ch rune) (int, bool) {
+	for _, style := range allBorderStyles {
+		chars, ok := style.Chars()
+		if !ok {
+			continue
+		}
+		for i, part := range chars.Parts() {
+			if part == ch {
+				return partBits[i], true
+			}
+		}
+	}
+	return 0, false
+}
+
+// BorderGlyph returns the glyph in style with exactly these edges.
+func BorderGlyph(style BorderStyle, bits int) (rune, bool) {
+	chars, ok := style.Chars()
+	if !ok {
+		return 0, false
+	}
+	parts := chars.Parts()
+	for i, b := range partBits {
+		if b == bits {
+			return parts[i], true
+		}
+	}
+	return 0, false
+}
+
 // TextOptions is how a run of text is drawn into a surface.
 type TextOptions struct {
 	Fg    *Color
@@ -72,9 +144,9 @@ type TextOptions struct {
 	MaxWidth int
 }
 
-func Text() TextOptions                        { return TextOptions{} }
-func (o TextOptions) WithFg(c Color) TextOptions   { o.Fg = &c; return o }
-func (o TextOptions) WithBg(c Color) TextOptions   { o.Bg = &c; return o }
+func Text() TextOptions                          { return TextOptions{} }
+func (o TextOptions) WithFg(c Color) TextOptions { o.Fg = &c; return o }
+func (o TextOptions) WithBg(c Color) TextOptions { o.Bg = &c; return o }
 func (o TextOptions) WithAttrs(a Attrs) TextOptions {
 	o.Attrs = &a
 	return o
@@ -99,6 +171,10 @@ type BoxOptions struct {
 	// Subtitle is right-aligned text on the top border, e.g. a value or hint.
 	Subtitle      string
 	SubtitleColor *Color
+	// Collapse merges this border with one already drawn in the same cell
+	// rather than overwriting it. Set for you by the container when the app
+	// asks for collapsed borders; there is no reason to pass it by hand.
+	Collapse bool
 	// NoFill skips painting the interior with Bg before drawing.
 	NoFill      bool
 	Footer      string
@@ -240,6 +316,28 @@ func (s Surface) VLine(x, y, length int, ch rune, style Style) {
 
 // Box draws a bordered box with an optional title and returns the interior
 // surface. Every panel in the library goes through here.
+// mergeBorder writes a border glyph, merging it with whatever border is
+// already there.
+//
+// Only border glyphs merge. Anything else in the cell is overwritten, which
+// keeps a panel drawn over a chart looking like a panel rather than growing
+// junctions out of the data.
+func (s Surface) mergeBorder(x, y int, ch rune, style BorderStyle, cellStyle Style) {
+	ax, ay := s.Rect.X+x, s.Rect.Y+y
+	if !s.visible(ax, ay) {
+		return
+	}
+	existing := rune(s.buffer.Chars[s.buffer.Index(ax, ay)])
+	before, wasBorder := BorderBits(existing)
+	after, isBorder := BorderBits(ch)
+	if wasBorder && isBorder && before != after {
+		if merged, ok := BorderGlyph(style, before|after); ok {
+			ch = merged
+		}
+	}
+	s.Glyph(x, y, ch, cellStyle)
+}
+
 func (s Surface) Box(o BoxOptions) Surface {
 	fg := s.Theme.Border
 	if o.BorderColor != nil {
@@ -262,15 +360,36 @@ func (s Surface) Box(o BoxOptions) Surface {
 	w, h := s.Width(), s.Height()
 	borderStyle := Style{Fg: &fg, Bg: bg}
 
-	s.Glyph(0, 0, chars.TL, borderStyle)
-	s.Glyph(w-1, 0, chars.TR, borderStyle)
-	s.HLine(1, 0, w-2, chars.H, borderStyle)
+	// With collapsing on, a border glyph landing on another one becomes the
+	// union of the two. Without it this is a plain write, so a screen that
+	// never asks for collapsing renders byte for byte as it did.
+	put := func(x, y int, ch rune) {
+		if o.Collapse {
+			s.mergeBorder(x, y, ch, o.Border, borderStyle)
+		} else {
+			s.Glyph(x, y, ch, borderStyle)
+		}
+	}
+	putH := func(x, y, length int, ch rune) {
+		for i := 0; i < length; i++ {
+			put(x+i, y, ch)
+		}
+	}
+	putV := func(x, y, length int, ch rune) {
+		for i := 0; i < length; i++ {
+			put(x, y+i, ch)
+		}
+	}
+
+	put(0, 0, chars.TL)
+	put(w-1, 0, chars.TR)
+	putH(1, 0, w-2, chars.H)
 	if h > 1 {
-		s.Glyph(0, h-1, chars.BL, borderStyle)
-		s.Glyph(w-1, h-1, chars.BR, borderStyle)
-		s.HLine(1, h-1, w-2, chars.H, borderStyle)
-		s.VLine(0, 1, h-2, chars.V, borderStyle)
-		s.VLine(w-1, 1, h-2, chars.V, borderStyle)
+		put(0, h-1, chars.BL)
+		put(w-1, h-1, chars.BR)
+		putH(1, h-1, w-2, chars.H)
+		putV(0, 1, h-2, chars.V)
+		putV(w-1, 1, h-2, chars.V)
 	}
 
 	// Measured before the title is drawn: both share the top border row, and

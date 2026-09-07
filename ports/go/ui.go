@@ -49,6 +49,10 @@ type frameCtx struct {
 	frame        int
 	elapsed      time.Duration
 	focusIndex   int
+	// collapseBorders merges the borders of adjacent panels into shared
+	// lines, the way CSS collapses table borders. Off unless the app asks for
+	// it, because it changes every layout that has two panels side by side.
+	collapseBorders bool
 
 	focusCursor  int
 	focusActions []func()
@@ -133,6 +137,10 @@ type CellOptions struct {
 type child struct {
 	constraint Constraint
 	draw       func(Surface)
+	// bordered is true when this child draws a border of its own. Only
+	// bordered siblings collapse into each other: a table pressed against a
+	// panel edge should not grow junctions out of its rows.
+	bordered bool
 }
 
 type Container struct {
@@ -172,6 +180,31 @@ func (c *Container) add(constraint Constraint, draw func(Surface)) *Container {
 	return c
 }
 
+// addBordered is add, for a child that draws its own border.
+func (c *Container) addBordered(constraint Constraint, bordered bool, draw func(Surface)) *Container {
+	c.children = append(c.children, child{constraint: constraint, draw: draw, bordered: bordered})
+	return c
+}
+
+// seams is the gap at each seam. Ordinarily one number repeated, but where
+// collapsing is on and two bordered siblings meet with no gap between them,
+// the seam is minus one so their borders land in the same column and merge.
+func (c *Container) seams() []int {
+	out := make([]int, max(0, len(c.children)-1))
+	for i := range out {
+		out[i] = c.gap
+	}
+	if !c.ctx.collapseBorders || c.gap != 0 {
+		return out
+	}
+	for i := range out {
+		if c.children[i].bordered && c.children[i+1].bordered {
+			out[i] = -1
+		}
+	}
+	return out
+}
+
 // constraintOfLayout is the constraint for a child that declared a Layout.
 func (c *Container) constraintOfLayout(l Layout, fallback Size, intrinsic *int) Constraint {
 	size := fallback
@@ -205,7 +238,7 @@ func (c *Container) Flush() {
 	for i, ch := range c.children {
 		constraints[i] = ch.constraint
 	}
-	rects := Stack(c.inner.Rect, constraints, c.direction, c.gap)
+	rects := StackWithGaps(c.inner.Rect, constraints, c.direction, c.seams())
 	children := c.children
 	c.children = nil
 	for i, ch := range children {
@@ -249,7 +282,9 @@ func (c *Container) Panel(o PanelOptions, build func(*Container)) *Container {
 	if o.Focused != nil {
 		focused = *o.Focused
 	}
-	return c.add(c.constraintOfLayout(o.Layout, Fill(), nil), func(s Surface) {
+	collapse := c.ctx.collapseBorders
+	bordered := o.Border != BorderNone
+	return c.addBordered(c.constraintOfLayout(o.Layout, Fill(), nil), bordered, func(s Surface) {
 		borderColor := s.Theme.Border
 		if focused {
 			borderColor = s.Theme.BorderFocused
@@ -261,6 +296,7 @@ func (c *Container) Panel(o PanelOptions, build func(*Container)) *Container {
 			Title: o.Title, TitleAlign: o.TitleAlign, TitleColor: o.TitleColor,
 			Subtitle: o.Subtitle, SubtitleColor: o.SubtitleColor, Footer: o.Footer,
 			Border: o.Border, BorderColor: &borderColor, Bg: o.Layout.Background,
+			Collapse: collapse,
 		})
 		padding := PadAxes(0, 1)
 		if o.InnerPadding != nil {
