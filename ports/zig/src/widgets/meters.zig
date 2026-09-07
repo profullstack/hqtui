@@ -246,6 +246,7 @@ pub const GraphOptions = struct {
     plot: PlotOptions = .{},
     /// Draw min/max labels down the left edge.
     axis: bool = false,
+    axis_format: ?*const fn ([]u8, f64) []const u8 = null,
     axis_color: ?Color = null,
     /// Time labels along the bottom, e.g. `.{ "60s", "30s", "0s" }`.
     time_axis: []const []const u8 = &.{},
@@ -286,8 +287,8 @@ pub fn drawGraph(allocator: std.mem.Allocator, s: Surface, options: GraphOptions
 
         var max_buf: [32]u8 = undefined;
         var min_buf: [32]u8 = undefined;
-        const max_label = niceLabel(&max_buf, maximum);
-        const min_label = niceLabel(&min_buf, minimum);
+        const max_label = if (options.axis_format) |format| format(&max_buf, maximum) else niceLabel(&max_buf, maximum);
+        const min_label = if (options.axis_format) |format| format(&min_buf, minimum) else niceLabel(&min_buf, minimum);
         const label_width = @max(
             unicode.stringWidth(max_label),
             unicode.stringWidth(min_label),

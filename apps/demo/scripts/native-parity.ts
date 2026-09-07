@@ -29,5 +29,5 @@ for (const theme of ["dark", "dracula", "nord"]) {
   }
 }
 }
-writeFileSync(new URL("ports/rust/demo/parity.json",root),JSON.stringify(cases,null,2)+"\n");
-console.log(`Generated ${cases.length} TypeScript dashboard reference cases.`);
+writeFileSync(new URL("ports/conformance/fixtures/demo-parity.json",root),JSON.stringify(cases,null,2)+"\n");
+console.log(`Generated ${cases.length} shared TypeScript screen reference cases.`);

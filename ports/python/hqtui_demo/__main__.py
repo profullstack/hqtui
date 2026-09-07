@@ -43,7 +43,7 @@ def main(argv=None):
         print("An interactive terminal is required. Use --snapshot for headless output.",file=sys.stderr)
         return 2
     source=Simulation(args.seed) if args.sim or (args.snapshot and not args.real) else Collector()
-    source.refresh(0.1)
+    if not isinstance(source,Simulation): source.refresh(0.1)
     for _ in range(args.ticks):
         if isinstance(source,Simulation): source.refresh(.1)
     state=State(copy.deepcopy(source.sample),source.source,list(source.unavailable),source.sensor_note,screen=args.screen,theme_index=THEMES.index(args.theme))
@@ -69,6 +69,7 @@ def main(argv=None):
         def update(frame):
             nonlocal pending,next_poll,last_frame
             now=time.monotonic(); state.fps=1/max(.001,now-last_frame); last_frame=now
+            state.clock=time.strftime("%H:%M:%S",time.gmtime())
             if pending is not None and pending.done():
                 pending.result(); pending=None
                 if not state.paused:

@@ -68,9 +68,7 @@ fn interact(app: *h.App, s: *m.State) void {
     if (app.pressed("toggle")) s.toggle = !s.toggle;
     if (app.pressed("select")) s.select_open = !s.select_open;
     if (app.pressed("palette")) s.palette = true;
-    for ([_][]const u8{ "Primary", "Success", "Warning", "Danger", "Ghost" }) |name| {
-        if (app.pressed(std.fmt.bufPrint(&buf, "button:{s}", .{name}) catch continue)) s.modal = true;
-    }
+    if (app.pressed("button:Primary")) s.modal = true;
     for (&s.panes, 0..) |*p, i| {
         const id = std.fmt.bufPrint(&buf, "pane:{d}", .{i}) catch continue;
         const delta = app.scrolled(id);
@@ -115,7 +113,7 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
     if (o.version) {
-        try stdout.writeStreamingAll(init.io, "0.1.11\n");
+        try stdout.writeStreamingAll(init.io, "0.1.12\n");
         return;
     }
     if (!o.snapshot and (!(try std.Io.File.stdin().isTty(init.io)) or !(try stdout.isTty(init.io)))) {
@@ -147,6 +145,7 @@ pub fn main(init: std.process.Init) !void {
     var app = try h.App.init(init.gpa, .{ .terminal = .{ .env = .fromEnviron(&init.minimal.environ) }, .theme = m.themes[state.theme], .fps = o.fps, .quit_keys = &.{}, .focus_navigation = false });
     defer app.deinit();
     var next: f64 = 0;
+    var last_frame = now(init.io);
     while (app.running()) {
         for (try app.poll()) |event| switch (event) {
             .key => |key| {
@@ -190,7 +189,15 @@ pub fn main(init: std.process.Init) !void {
             }
         }
         if (!m.eq(app.theme.name, m.themes[state.theme])) app.setTheme(m.themes[state.theme]);
-        _ = try app.draw(h.Body.with(&state, view.render));
+        const current = now(init.io);
+        state.fps = 1 / @max(0.001, current - last_frame);
+        last_frame = current;
+        const seconds: u64 = @intCast(@divTrunc(std.Io.Timestamp.now(init.io, .real).nanoseconds, 1_000_000_000));
+        _ = try std.fmt.bufPrint(&state.clock, "{d:0>2}:{d:0>2}:{d:0>2}", .{ seconds / 3600 % 24, seconds / 60 % 60, seconds % 60 });
+        const stats = try app.draw(h.Body.with(&state, view.render));
+        state.render_ms = @as(f64, @floatFromInt(stats.render_ns)) / 1e6;
+        state.changed_cells = stats.changed_cells;
+        state.output_bytes = stats.bytes;
     }
     app.restore();
 }

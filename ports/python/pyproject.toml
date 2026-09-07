@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "hqtui"
-version = "0.1.11"
+version = "0.1.12"
 description = "High Quality Terminal UI. btop-grade dashboards with a one-import API, dark by default, zero dependencies."
 readme = "README.md"
 license = { text = "MIT" }

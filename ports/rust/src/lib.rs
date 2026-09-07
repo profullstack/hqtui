@@ -67,4 +67,4 @@ pub mod prelude {
 }
 
 /// The version of the TypeScript reference implementation this port tracks.
-pub const REFERENCE_VERSION: &str = "0.1.11";
+pub const REFERENCE_VERSION: &str = "0.1.12";

@@ -99,7 +99,12 @@ pub const Pane = struct {
     selected: usize = 0,
     offset: usize = 0,
     total: usize = 0,
+    log: bool = false,
     pub fn move(self: *Pane, d: i64) void {
+        if (self.log) {
+            self.offset = @intCast(std.math.clamp(@as(i64, @intCast(self.offset)) - d, 0, @as(i64, @intCast(self.total -| 1))));
+            return;
+        }
         self.selected = @intCast(std.math.clamp(@as(i64, @intCast(self.selected)) + d, 0, @as(i64, @intCast(self.total -| 1))));
     }
 };
@@ -132,8 +137,14 @@ pub const State = struct {
     key_log: [100][64]u8 = undefined,
     key_lens: [100]usize = [_]usize{0} ** 100,
     key_count: usize = 0,
+    fps: f64 = 0,
+    render_ms: f64 = 0,
+    changed_cells: usize = 0,
+    output_bytes: usize = 0,
+    slider: f64 = 0.7,
+    clock: [8]u8 = "12:00:00".*,
     panes: [80]Pane = [_]Pane{.{}} ** 80,
-    focused: [10]usize = [_]usize{0} ** 10,
+    focused: [10]usize = .{ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     missing: []const u8 = "",
     cpu_previous: [257][2]f64 = [_][2]f64{.{ 0, 0 }} ** 257,
     net_previous: [2]f64 = .{ 0, 0 },
@@ -308,9 +319,9 @@ pub const State = struct {
             if (eq(k, "escape")) {
                 self.select_open = false;
             } else if (eq(k, "up")) {
-                self.select_index = (self.select_index + themes.len - 1) % themes.len;
+                self.select_index = (self.select_index + 3) % 4;
             } else if (eq(k, "down")) {
-                self.select_index = (self.select_index + 1) % themes.len;
+                self.select_index = (self.select_index + 1) % 4;
             } else if (eq(k, "enter")) {
                 self.theme = self.select_index;
                 self.select_open = false;

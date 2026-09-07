@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const version = "0.1.11"
+const version = "0.1.12"
 
 type options struct {
 	sim, real, snapshot, version bool
@@ -128,6 +128,7 @@ func run(args []string) int {
 	results := make(chan result, 1)
 	busy := false
 	next := time.Time{}
+	lastFrame := time.Now()
 	app.Render(func(frame ui.RenderArgs) {
 		select {
 		case r := <-results:
@@ -139,6 +140,13 @@ func run(args []string) int {
 		default:
 		}
 		now := time.Now()
+		s.fps = 1 / math.Max(.001, now.Sub(lastFrame).Seconds())
+		lastFrame = now
+		s.clock = now.UTC().Format("15:04:05")
+		stats := app.Stats()
+		s.renderMs = float64(stats.Render) / float64(time.Millisecond)
+		s.changedCells = stats.ChangedCells
+		s.outputBytes = stats.Bytes
 		if !s.paused && !busy && now.After(next) {
 			if real {
 				busy = true

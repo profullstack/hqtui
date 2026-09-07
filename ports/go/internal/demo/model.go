@@ -111,9 +111,18 @@ func clone(sample object) object {
 	return result
 }
 
-type pane struct{ selected, offset, total int }
+type pane struct {
+	selected, offset, total int
+	log                     bool
+}
 
-func (p *pane) move(delta int) { p.selected = clamp(p.selected+delta, 0, p.total-1) }
+func (p *pane) move(delta int) {
+	if p.log {
+		p.offset = clamp(p.offset-delta, 0, p.total-1)
+		return
+	}
+	p.selected = clamp(p.selected+delta, 0, p.total-1)
+}
 
 type state struct {
 	sample                                                                              object
@@ -127,10 +136,13 @@ type state struct {
 	missing                                                                             []string
 	tick                                                                                int
 	seed                                                                                uint32
+	fps, renderMs, slider                                                               float64
+	changedCells, outputBytes                                                           int
+	clock                                                                               string
 }
 
 func newState(real bool, seed uint32) *state {
-	s := &state{sample: loadSample(real), real: real, seed: seed, checked: true, toggle: true, panes: map[string]*pane{}, focused: map[int]string{}}
+	s := &state{sample: loadSample(real), real: real, seed: seed, checked: true, toggle: true, slider: .7, clock: "12:00:00", lastKey: "—", lastMouse: "—", panes: map[string]*pane{}, focused: map[int]string{}}
 	if !real {
 		for i := 0; i < 120; i++ {
 			s.simulate()
@@ -331,9 +343,9 @@ func (s *state) key(key, char string) bool {
 		case "escape":
 			s.selectOpen = false
 		case "up":
-			s.selectIndex = (s.selectIndex + len(themes) - 1) % len(themes)
+			s.selectIndex = (s.selectIndex + 3) % 4
 		case "down":
-			s.selectIndex = (s.selectIndex + 1) % len(themes)
+			s.selectIndex = (s.selectIndex + 1) % 4
 		case "enter":
 			s.theme = s.selectIndex
 			s.selectOpen = false

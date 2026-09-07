@@ -3,7 +3,7 @@ use serde_json::json;
 
 #[test]
 fn screens_match_typescript_cells() {
-    let cases: serde_json::Value = serde_json::from_str(include_str!("../parity.json")).unwrap();
+    let cases: serde_json::Value = serde_json::from_str(include_str!("../../../conformance/fixtures/demo-parity.json")).unwrap();
     for case in cases.as_array().unwrap() {
         let (w, h) = (
             case["width"].as_u64().unwrap() as usize,

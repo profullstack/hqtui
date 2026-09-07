@@ -81,9 +81,12 @@ export default async function Docs() {
             They work from any directory and never switch branches, reset, or pull in your checkout.
             All four dashboard commands now launch ten-screen native demos. Live metrics
             currently require Linux; use --sim for generated sample data on other platforms.
-            Rust screen bodies pass 120 cell-by-cell TypeScript comparisons, but live-data
-            collection and interaction parity are incomplete. Go, Python and Zig also still
-            need layout-parity work. Use 1–9 / 0 or Tab to change screens and q to quit.
+            All four native demos now use the TypeScript reference&apos;s ten screen layouts,
+            including its responsive dashboard, detailed telemetry tabs and widget showcases.
+            Each port is checked against 120 shared TypeScript reference frames across four
+            terminal sizes and three themes. Live-data availability still depends on the host
+            and permissions; full cross-platform collection and interaction parity is not claimed.
+            Use 1–9 / 0 or Tab to change screens and q to quit.
             Headless screenshots work without a TTY. Zig requires version 0.16.
           </P>
           <P>

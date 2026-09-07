@@ -1,12 +1,43 @@
 package demo
 
 import (
+	"fmt"
 	ui "github.com/profullstack/hqtui/ports/go"
 	"io"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestHTTPPaneUsesFinalViewport(t *testing.T) {
+	s := newState(false, 1337)
+	s.screen = 1
+	paths := []any{}
+	for i := 0; i < 50; i++ {
+		paths = append(paths, object{"path": fmt.Sprintf("/route-%03d", i), "count": i})
+	}
+	obj(obj(s.sample["telemetry"])["http"])["topPaths"] = paths
+	pane := s.pane("traffic.paths", 50)
+	pane.selected = 49
+	frame := ui.RenderToScreen(200, 60, "dark", s.render)
+	x, y, found := frame.Find("/route-049")
+	if !found {
+		t.Fatal("last HTTP path is not visible")
+	}
+	for _, region := range frame.Regions {
+		if region.OnClick != nil && x >= region.Rect.X && x < region.Rect.X+region.Rect.Width && y >= region.Rect.Y && y < region.Rect.Y+region.Rect.Height {
+			if pane.offset != 50-region.Rect.Height {
+				t.Fatalf("offset %d does not match final height %d", pane.offset, region.Rect.Height)
+			}
+			region.OnClick(0, 0, "left")
+			if pane.selected != pane.offset {
+				t.Fatal("no-header click selected wrong row")
+			}
+			return
+		}
+	}
+	t.Fatal("HTTP path table has no hit region")
+}
 
 func TestAllScreensThemesAndSizes(t *testing.T) {
 	s := newState(false, 1337)
@@ -16,7 +47,8 @@ func TestAllScreensThemesAndSizes(t *testing.T) {
 				s.screen = screen
 				s.theme = theme
 				frame := ui.RenderToScreen(120, 40, themeName, s.render)
-				if !frame.Contains("hqtui") || !frame.Contains(name) {
+				title := []string{"CPU Overview", "Protocols", "Active Sessions", "Connections", "Filesystems", "Buttons & Inputs", "Braille (2×4", "Theme ", "Last Events", "Full-screen churn"}[screen]
+				if !frame.Contains("hqtui") || !frame.Contains(title) {
 					t.Fatal("missing screen header")
 				}
 			})
@@ -102,8 +134,8 @@ func TestIndependentPanes(t *testing.T) {
 	if len(regions) < 2 {
 		t.Fatal("missing scroll regions")
 	}
-	regions[1].OnScroll(3)
-	if log.selected != 3 {
+	regions[1].OnScroll(-3)
+	if log.offset != 3 || log.selected != 0 {
 		t.Fatal("wheel ignored")
 	}
 }

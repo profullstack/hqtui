@@ -1,6 +1,6 @@
 .{
     .name = .hqtui,
-    .version = "0.1.11",
+    .version = "0.1.12",
     .fingerprint = 0x893d98ab54f6467a,
     .minimum_zig_version = "0.16.0",
     // Zero dependencies, including for tests: the conformance suite reads its

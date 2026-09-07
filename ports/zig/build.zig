@@ -15,6 +15,7 @@ pub fn build(b: *std.Build) void {
     // option keeps them free of assumptions about the working directory.
     const options = b.addOptions();
     options.addOptionPath("fixtures", b.path("../conformance/fixtures"));
+    options.addOptionPath("demo_parity", b.path("../conformance/fixtures/demo-parity.json"));
     const fixture_options = options.createModule();
 
     const tests = b.addTest(.{ .root_module = hqtui });
