@@ -35,6 +35,7 @@ test("the homepage also exposes both vanilla and mise commands", () => {
   const page = readFileSync(resolve(root, "apps/web/app/page.tsx"), "utf8");
   assert.ok(page.includes("command={language.demo}"));
   assert.ok(page.includes("command={language.miseDemo}"));
+  assert.ok(page.includes('LANGUAGES.find(({ id }) => id === "typescript")'));
   assert.throws(() => latestDemo("c"), /Unsupported/);
   assert.ok(existsSync(resolve(root, "apps/web/public/demo.sh")));
 });

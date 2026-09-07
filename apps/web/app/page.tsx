@@ -49,7 +49,7 @@ const DASHBOARD = `app.render(({ ui }) => {
 });`;
 
 /** Fetch current main into a private cache, build, then run. */
-const DEMO = LANGUAGES[0].demo;
+const DEMO = LANGUAGES.find(({ id }) => id === "typescript")!.demo;
 
 const TESTING = `import { renderToScreen } from "@profullstack/hqtui";
 
