@@ -42,6 +42,7 @@ export function WidgetCard({
   preferred: string;
 }) {
   const available = languages.filter((language) => widget.examples[language.id]);
+  const absent = languages.filter((language) => !widget.examples[language.id]);
   const [selected, setSelected] = useState(
     () => (widget.examples[preferred] ? preferred : available[0]?.id) ?? "",
   );
@@ -90,8 +91,9 @@ export function WidgetCard({
           {active ? <Code className="mt-2" code={active.code} /> : null}
           {missing > 0 ? (
             <p className="mt-2 text-[12px] text-white/35">
-              Not in {missing} of the {languages.length} ports yet. C++, Ruby, PHP and Perl reach
-              the library through a narrower native core.
+              Not yet in {absent.map((language) => language.label).join(", ")}. Those reach the
+              library through a narrower native core, or through a bridge whose record layout does
+              not describe this widget.
             </p>
           ) : null}
         </div>
