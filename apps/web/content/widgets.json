@@ -95,6 +95,22 @@
         "zig": {
           "code": "fn text(ui: *Container) anyerror!void {\n    try ui.text(\"Plain text. It fills the width it is given.\", .{});\n    try ui.text(\"Bold, in the theme's primary color.\", .{ .bold = true });\n    try ui.text(\"Right aligned.\", .{ .alignment = .right });\n    try ui.text(\n        \"Long copy wraps when you ask it to, instead of being cut at the edge.\",\n        .{ .wrap = true },\n    );\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_text(Surface s) {\n  // `text` places a string at a cell; `aligned` centres or right-aligns it on\n  // a row. Both take the colour explicitly.\n  const auto &t = theme(s);\n  text(s, 0, 0, \"Plain text. It fills the width it is given.\", t.foreground);\n  aligned(s, 1, \"Centered.\", t.foreground, HQ_CENTER);\n  aligned(s, 2, \"Right aligned.\", t.muted, HQ_RIGHT);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def text(ui)\n  # align is 0 left, 1 center, 2 right.\n  ui.text('Plain text. It fills the width it is given.')\n  ui.text('Centered.', align: 1)\n  ui.text('Right aligned.', align: 2)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_text(UI $ui): void\n{\n    // align is 0 left, 1 center, 2 right.\n    $ui->text('Plain text. It fills the width it is given.');\n    $ui->text('Centered.', ['align' => 1]);\n    $ui->text('Right aligned.', ['align' => 2]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_text {\n    my ($ui) = @_;\n    # align is 0 left, 1 center, 2 right.\n    $ui->text('Plain text. It fills the width it is given.');\n    $ui->text('Centered.', align => 1);\n    $ui->text('Right aligned.', align => 2);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -235,6 +251,18 @@
         "zig": {
           "code": "fn divider(ui: *Container) anyerror!void {\n    try ui.text(\"Above the line\", .{});\n    try ui.divider(.{});\n    try ui.text(\"Below it\", .{});\n    try ui.divider(.{ .label = \"status\", .alignment = .center });\n    try ui.text(\"A labelled divider titles a section without a panel\", .{});\n}",
           "syntax": "zig"
+        },
+        "ruby": {
+          "code": "def divider(ui)\n  ui.text('Above the line')\n  ui.divider\n  ui.text('Below it')\n  ui.divider('status')\n  ui.text('A labelled divider titles a section without spending a panel on it')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_divider(UI $ui): void\n{\n    $ui->text('Above the line');\n    $ui->divider();\n    $ui->text('Below it');\n    $ui->divider('status');\n    $ui->text('A labelled divider titles a section without spending a panel on it');\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_divider {\n    my ($ui) = @_;\n    $ui->text('Above the line');\n    $ui->divider;\n    $ui->text('Below it');\n    $ui->divider('status');\n    $ui->text('A labelled divider titles a section without spending a panel on it');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -270,6 +298,22 @@
         "zig": {
           "code": "fn keyValues(ui: *Container) anyerror!void {\n    // The backbone of every \"System\" panel: labels left, values right.\n    try ui.keyValues(.{ .rows = &.{\n        .{ .label = \"Host\", .value = \"web-01.iad\" },\n        .{ .label = \"Uptime\", .value = \"18d 04:12\" },\n        .{ .label = \"Load\", .value = \"0.42  0.51  0.60\" },\n        .{ .label = \"Established\", .value = \"1,284\" },\n    } });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_key_values(Surface s) {\n  // The backbone of every \"System\" panel: labels left, values right.\n  std::vector<KeyValue> rows{\n      {\"Host\", \"web-01.iad\"},\n      {\"Uptime\", \"18d 04:12\"},\n      {\"Load\", \"0.42  0.51  0.60\"},\n      {\"Established\", \"1,284\"},\n  };\n  draw_keys(s, rows);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def key_values(ui)\n  # The backbone of every \"System\" panel: labels left, values right.\n  ui.keys([\n            ['Host', 'web-01.iad'],\n            ['Uptime', '18d 04:12'],\n            ['Load', '0.42  0.51  0.60'],\n            ['Established', '1,284']\n          ])\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_key_values(UI $ui): void\n{\n    // The backbone of every \"System\" panel: labels left, values right.\n    $ui->keys([\n        ['Host', 'web-01.iad'],\n        ['Uptime', '18d 04:12'],\n        ['Load', '0.42  0.51  0.60'],\n        ['Established', '1,284'],\n    ]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_key_values {\n    my ($ui) = @_;\n    # The backbone of every \"System\" panel: labels left, values right.\n    $ui->keys([\n        ['Host',        'web-01.iad'],\n        ['Uptime',      '18d 04:12'],\n        ['Load',        '0.42  0.51  0.60'],\n        ['Established', '1,284'],\n    ]);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -340,6 +384,22 @@
         "zig": {
           "code": "fn table(ui: *Container) anyerror!void {\n    try ui.table(.{\n        .rows = &.{\n            .{ .cells = &.{ \"src\", \"4.2 KB\", \"dir\", \"2m ago\" } },\n            .{ .cells = &.{ \"test\", \"1.1 KB\", \"dir\", \"5m ago\" } },\n            .{ .cells = &.{ \"package.json\", \"1.2 KB\", \"file\", \"10m ago\" } },\n            .{ .cells = &.{ \"README.md\", \"3.4 KB\", \"file\", \"1h ago\" } },\n        },\n        .columns = &.{\n            .{ .title = \"Name\" },\n            .{ .title = \"Size\", .alignment = .right },\n            .{ .title = \"Type\" },\n            .{ .title = \"Modified\", .alignment = .right },\n        },\n        .selected = 1,\n        .zebra = true,\n    }, \"files\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_table(Surface s) {\n  Table t;\n  t.columns = {{\"Name\"}, {\"Size\", 9, 1, 0, HQ_RIGHT}, {\"Type\", 6}, {\"Modified\", 10, 1, 0, HQ_RIGHT}};\n  t.rows = {\n      {{\"src\", \"4.2 KB\", \"dir\", \"2m ago\"}},\n      {{\"test\", \"1.1 KB\", \"dir\", \"5m ago\"}},\n      {{\"package.json\", \"1.2 KB\", \"file\", \"10m ago\"}},\n      {{\"README.md\", \"3.4 KB\", \"file\", \"1h ago\"}},\n  };\n  t.zebra = true;\n  // The pane carries selection and scroll, and stays yours between frames.\n  Pane pane;\n  pane.selected = 1;\n  pane.total = static_cast<int>(t.rows.size());\n  t.pane = &pane;\n  draw_table(s, t);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def table(ui)\n  ui.table(\n    %w[Name Size Type Modified],\n    [\n      ['src', '4.2 KB', 'dir', '2m ago'],\n      ['test', '1.1 KB', 'dir', '5m ago'],\n      ['package.json', '1.2 KB', 'file', '10m ago'],\n      ['README.md', '3.4 KB', 'file', '1h ago']\n    ],\n    selected: 1\n  )\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_table(UI $ui): void\n{\n    $ui->table(\n        ['Name', 'Size', 'Type', 'Modified'],\n        [\n            ['src', '4.2 KB', 'dir', '2m ago'],\n            ['test', '1.1 KB', 'dir', '5m ago'],\n            ['package.json', '1.2 KB', 'file', '10m ago'],\n            ['README.md', '3.4 KB', 'file', '1h ago'],\n        ],\n        ['selected' => 1],\n    );\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_table {\n    my ($ui) = @_;\n    $ui->table(\n        ['Name', 'Size', 'Type', 'Modified'],\n        [\n            ['src',          '4.2 KB', 'dir',  '2m ago'],\n            ['test',         '1.1 KB', 'dir',  '5m ago'],\n            ['package.json', '1.2 KB', 'file', '10m ago'],\n            ['README.md',    '3.4 KB', 'file', '1h ago'],\n        ],\n        selected => 1,\n    );\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -445,6 +505,22 @@
         "zig": {
           "code": "fn log(ui: *Container) anyerror!void {\n    try ui.log(.{\n        .entries = &.{\n            .{ .time = \"12:45:02\", .level = \"INFO\", .message = \"listening on :8080\" },\n            .{ .time = \"12:45:09\", .level = \"WARN\", .message = \"slow query 412ms\", .meta = \"table=users\" },\n            .{ .time = \"12:45:11\", .level = \"ERROR\", .message = \"upstream timeout\" },\n            .{ .time = \"12:45:14\", .level = \"INFO\", .message = \"retry succeeded\" },\n        },\n        .scrollbar = true,\n    }, \"logs\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_log(Surface s) {\n  std::vector<LogEntry> entries{\n      {\"12:45:02\", \"INFO\", \"listening on :8080\", \"\"},\n      {\"12:45:09\", \"WARN\", \"slow query 412ms\", \"table=users\"},\n      {\"12:45:11\", \"ERROR\", \"upstream timeout\", \"\"},\n      {\"12:45:14\", \"INFO\", \"retry succeeded\", \"\"},\n  };\n  Pane pane;\n  pane.log = true;\n  pane.total = static_cast<int>(entries.size());\n  draw_log(s, entries, &pane);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def log(ui)\n  ui.log([\n           { time: '12:45:02', level: 'INFO', message: 'listening on :8080' },\n           { time: '12:45:09', level: 'WARN', message: 'slow query 412ms', meta: 'table=users' },\n           { time: '12:45:11', level: 'ERROR', message: 'upstream timeout' },\n           { time: '12:45:14', level: 'INFO', message: 'retry succeeded' }\n         ])\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_log(UI $ui): void\n{\n    $ui->log([\n        ['time' => '12:45:02', 'level' => 'INFO', 'message' => 'listening on :8080'],\n        ['time' => '12:45:09', 'level' => 'WARN', 'message' => 'slow query 412ms', 'meta' => 'table=users'],\n        ['time' => '12:45:11', 'level' => 'ERROR', 'message' => 'upstream timeout'],\n        ['time' => '12:45:14', 'level' => 'INFO', 'message' => 'retry succeeded'],\n    ]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_log {\n    my ($ui) = @_;\n    $ui->log([\n        { time => '12:45:02', level => 'INFO',  message => 'listening on :8080' },\n        { time => '12:45:09', level => 'WARN',  message => 'slow query 412ms', meta => 'table=users' },\n        { time => '12:45:11', level => 'ERROR', message => 'upstream timeout' },\n        { time => '12:45:14', level => 'INFO',  message => 'retry succeeded' },\n    ]);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -480,6 +556,22 @@
         "zig": {
           "code": "fn meter(ui: *Container) anyerror!void {\n    try ui.meter(.{ .value = 0.62, .label = \"CPU\" });\n    try ui.meter(.{ .value = 0.31, .label = \"MEM\", .style = .segmented });\n    try ui.meter(.{ .value = 0.87, .label = \"SWP\" });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_meter(Surface s) {\n  const int width = s.rect().width;\n  draw_meter(s.sub(Rect{0, 0, width, 1}), Meter{.value = 0.62, .label = \"CPU\"});\n  draw_meter(s.sub(Rect{0, 1, width, 1}), Meter{.value = 0.31, .label = \"MEM\"});\n  draw_meter(s.sub(Rect{0, 2, width, 1}), Meter{.value = 0.87, .label = \"SWP\"});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def meter(ui)\n  ui.meter(0.62, label: 'CPU')\n  ui.meter(0.31, label: 'MEM')\n  ui.meter(0.87, label: 'SWP')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_meter(UI $ui): void\n{\n    $ui->meter(0.62, ['label' => 'CPU']);\n    $ui->meter(0.31, ['label' => 'MEM']);\n    $ui->meter(0.87, ['label' => 'SWP']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_meter {\n    my ($ui) = @_;\n    $ui->meter(0.62, label => 'CPU');\n    $ui->meter(0.31, label => 'MEM');\n    $ui->meter(0.87, label => 'SWP');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -585,6 +677,22 @@
         "zig": {
           "code": "fn graph(ui: *Container) anyerror!void {\n    // Braille line chart. `fill` shades the area under the curve.\n    try ui.graph(.{\n        .series = &.{.{ .values = &cpu_history, .label = \"cpu\", .fill = true }},\n        .plot = .{ .min = 0, .max = 100 },\n    });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_graph(Surface s) {\n  // Braille line chart, filled under the curve.\n  Graph g;\n  g.series.push_back({cpu_history(), 0, \"cpu\", true});\n  g.min = 0;\n  g.max = 100;\n  draw_graph(s, g);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def graph(ui)\n  # Braille line chart, filled under the curve.\n  ui.graph(CPU_HISTORY, min: 0, max: 100)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_graph(UI $ui): void\n{\n    // Braille line chart, filled under the curve.\n    $ui->graph(CPU_HISTORY, ['min' => 0, 'max' => 100]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_graph {\n    my ($ui) = @_;\n    # Braille line chart, filled under the curve.\n    $ui->graph(\\@cpu_history, min => 0, max => 100);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -725,6 +833,22 @@
         "zig": {
           "code": "fn gauge(ui: *Container) anyerror!void {\n    // A semicircular dial. Wants at least nine columns by five rows.\n    try ui.gauge(.{ .value = 0.62, .label = \"62%\" });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_gauge(Surface s) {\n  // A semicircular dial. Wants at least nine columns by five rows.\n  draw_gauge(s, 0.62, \"62%\");\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def gauge(ui)\n  # A semicircular dial. Wants at least nine columns by five rows.\n  ui.gauge(0.62, label: '62%')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_gauge(UI $ui): void\n{\n    // A semicircular dial. Wants at least nine columns by five rows.\n    $ui->gauge(0.62, ['label' => '62%']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_gauge {\n    my ($ui) = @_;\n    # A semicircular dial. Wants at least nine columns by five rows.\n    $ui->gauge(0.62, label => '62%');\n}",
+          "syntax": "perl"
         }
       }
     },
