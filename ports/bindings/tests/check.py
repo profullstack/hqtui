@@ -89,7 +89,10 @@ def main():
         result=invoke(language,f'tests/render.{suffix}',input=payload)
         frames=[json.loads(line) for line in result.stdout.splitlines()]
         assert len(frames)==len(all_cases),(language,len(frames))
-        for case,actual in zip(cases,frames): assert actual==case['hashes'],(language,case['screen'],case['width'],case['theme'])
+        failures=[(case['screen'],case['width'],case['height'],case['theme'],
+                   [i for i,(a,b) in enumerate(zip(actual,case['hashes'])) if a!=b])
+                  for case,actual in zip(cases,frames) if actual!=case['hashes']]
+        assert not failures,(language,failures)
         if baseline is None: baseline=frames[len(cases):]
         else: assert frames[len(cases):]==baseline,(language,'custom widget mismatch')
         for custom_terminal in [False,True]:

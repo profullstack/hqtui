@@ -17,6 +17,9 @@ add_library(hqtui::c ALIAS hqtui)
 set_target_properties(hqtui PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED YES C_EXTENSIONS NO
     VERSION ${PROJECT_VERSION} SOVERSION 0 POSITION_INDEPENDENT_CODE ON EXPORT_NAME c)
 target_include_directories(hqtui PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+# Keep each arithmetic operation rounded like the TypeScript reference. Fused
+# multiply-add can change a final glyph/color rounding boundary on ARM targets.
+target_compile_options(hqtui PUBLIC $<$<COMPILE_LANG_AND_ID:C,GNU,Clang,AppleClang>:-ffp-contract=off> $<$<COMPILE_LANG_AND_ID:CXX,GNU,Clang,AppleClang>:-ffp-contract=off>)
 if(NOT MSVC)
     target_compile_options(hqtui PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wshadow)
     target_link_libraries(hqtui PUBLIC m)
