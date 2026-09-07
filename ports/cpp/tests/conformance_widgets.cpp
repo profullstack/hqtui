@@ -11,6 +11,7 @@
 // tells you *what* drifted rather than merely where.
 
 #include <cstdio>
+#include <limits>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -70,6 +71,41 @@ bool draw_scene(const std::string &name, Surface s) {
   }
   if (name == "meter") {
     draw_meter(s, Meter{.value = 0.72, .label = "CPU"});
+    return true;
+  }
+  if (name == "meter-segmented") {
+    draw_meter(s, Meter{.value = 0.33, .label = "MEM", .segmented = true});
+    return true;
+  }
+  if (name == "meter-ascii") {
+    draw_meter(s, Meter{.value = 0.9, .label = "IO", .ascii = true});
+    return true;
+  }
+  if (name == "meter-nan") {
+    draw_meter(s, Meter{.value = std::numeric_limits<double>::quiet_NaN(), .label = "BAD"});
+    return true;
+  }
+  if (name == "meters-grid") {
+    Meters m;
+    m.items = {{"c0", 0.2}, {"c1", 0.5}, {"c2", 0.8}, {"c3", 1}, {"c4", 0}, {"c5", 0.65}};
+    m.columns = 2;
+    draw_meters(s, m);
+    return true;
+  }
+  if (name == "progress") {
+    draw_progress(s, Progress{.value = 37, .max = 120, .label = "Sync", .show_count = true});
+    return true;
+  }
+  if (name == "bar-smooth") {
+    draw_bar(s, Bar{.value = 0.63});
+    return true;
+  }
+  if (name == "bar-segmented") {
+    draw_bar(s, Bar{.value = 0.63, .style = HQ_BAR_SEGMENTED});
+    return true;
+  }
+  if (name == "bar-ascii") {
+    draw_bar(s, Bar{.value = 0.63, .style = HQ_BAR_ASCII});
     return true;
   }
   if (name == "gauge") {

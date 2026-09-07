@@ -213,8 +213,26 @@ public:
         }
   }
 };
+/// How a bar's fill is drawn. Smooth uses partial blocks; segmented draws
+/// discrete ticks, which is the btop look and keeps stacked bars separable;
+/// ascii is the fallback for a terminal without the glyphs.
+enum BarStyle { HQ_BAR_SMOOTH, HQ_BAR_SEGMENTED, HQ_BAR_ASCII };
+
+struct Bar {
+  /// Already a 0-1 ratio.
+  double value = 0;
+  Color color = 0;
+  /// Colour along the theme's heat ramp by fill level rather than one colour.
+  bool heat = false;
+  int style = HQ_BAR_SMOOTH;
+  std::optional<Color> background;
+};
+void draw_bar(Surface, const Bar &);
+
 struct Meter {
   double value = 0;
+  /// When set, `value` is absolute and this is its maximum.
+  double max = 0;
   std::string label, readout;
   Color color = 0;
   int label_width = -1, value_width = -1;
@@ -222,13 +240,45 @@ struct Meter {
   /// Discrete ticks rather than partial blocks. Smooth is the default in every
   /// port; this one defaulted the other way and quietly drew a different meter
   /// from the rest of the library.
-  /// Discrete ticks rather than partial blocks. Smooth is the default in every
-  /// port; this one defaulted the other way and quietly drew a different meter
-  /// from the rest of the library.
   bool segmented = false;
+  /// Ascii fill, for a terminal without block glyphs. Wins over `segmented`.
+  bool ascii = false;
+  /// Green-to-red by fill level. Defaults to on when no colour was given, so
+  /// the readout and the bar agree about what "hot" means.
+  std::optional<bool> heat;
   std::optional<Color> background;
 };
 void draw_meter(Surface, const Meter &);
+
+struct MeterItem {
+  std::string label;
+  double value = 0;
+  double max = 0;
+  Color color = 0;
+  std::string text;
+};
+struct Meters {
+  std::vector<MeterItem> items;
+  int label_width = -1, value_width = -1;
+  std::optional<bool> heat;
+  int style = HQ_BAR_SMOOTH;
+  /// Lay out in N columns when there is room, like btop's core grid.
+  int columns = 1;
+  int gap = 2;
+  std::optional<Color> background;
+};
+void draw_meters(Surface, const Meters &);
+
+struct Progress {
+  double value = 0;
+  double max = 1;
+  std::string label;
+  Color color = 0;
+  /// Show `37/120` rather than a percentage.
+  bool show_count = false;
+  std::optional<Color> background;
+};
+void draw_progress(Surface, const Progress &);
 void draw_graph(Surface, const Graph &);
 void draw_gauge(Surface, double, std::string_view);
 void draw_keys(Surface, const std::vector<KeyValue> &, bool spread = true);

@@ -148,54 +148,141 @@ void draw_keys(Surface s, const std::vector<KeyValue> &rows, bool spread) {
            r.color ? r.color : t.foreground);
   }
 }
+/// Eighth-width blocks, for the partial cell at the end of a smooth bar.
+static uint32_t horizontal_glyph(double ratio, bool ascii) {
+  double r = ratio <= 0 ? 0 : ratio >= 1 ? 1 : ratio;
+  if (ascii)
+    return r == 0 ? ' ' : r < .5 ? '-' : '#';
+  static const uint32_t eighths[9] = {' ',    0x258f, 0x258e, 0x258d, 0x258c,
+                                      0x258b, 0x258a, 0x2589, 0x2588};
+  return eighths[iround(r * 8)];
+}
+
+void draw_bar(Surface s, const Bar &o) {
+  auto &t = theme(s);
+  int w = s.rect().width;
+  if (w <= 0 || s.rect().height <= 0)
+    return;
+  double r = ratio(o.value);
+  Color track = hq_mix(t.background, t.border, .8);
+  Color color = o.color ? o.color : t.primary;
+  uint32_t track_char = o.style == HQ_BAR_ASCII       ? '-'
+                        : o.style == HQ_BAR_SEGMENTED ? 0x25ae
+                                                      : 0x2500;
+  uint32_t fill_char = o.style == HQ_BAR_ASCII       ? '#'
+                       : o.style == HQ_BAR_SEGMENTED ? 0x25ae
+                                                     : 0x2588;
+
+  double filled = r * w;
+  int full = int(std::floor(filled));
+  for (int x = 0; x < w; x++) {
+    uint32_t ch;
+    Color fg;
+    if (x < full) {
+      ch = fill_char;
+      fg = o.heat ? hq_heat(&t, w <= 1 ? r : double(x) / (w - 1)) : color;
+    } else if (x == full && o.style != HQ_BAR_SEGMENTED) {
+      uint32_t glyph = horizontal_glyph(filled - full, o.style == HQ_BAR_ASCII);
+      ch = glyph == ' ' ? track_char : glyph;
+      fg = glyph == ' ' ? track : (o.heat ? hq_heat(&t, r) : color);
+    } else {
+      ch = track_char;
+      fg = track;
+    }
+    auto st = Style().foreground(fg);
+    if (o.background)
+      st = st.background(*o.background);
+    s.set(x, 0, ch, st);
+  }
+}
+
 void draw_meter(Surface s, const Meter &o) {
   auto &t = theme(s);
   int w = s.rect().width;
   if (w <= 0 || s.rect().height <= 0)
     return;
-  double v = ratio(o.value);
-  std::string value =
-      o.show_value
-          ? (o.readout.empty() ? number(iround(v * 100)) + "%" : o.readout)
-          : "";
-  int lw = o.label.empty()     ? 0
+  // Ordered so a non-finite value falls through to 0 rather than rendering
+  // "nan%" in black on black.
+  double r = ratio(o.max ? o.value / o.max : o.value);
+  bool heat = o.heat ? *o.heat : o.color == 0;
+
+  int lw = o.label.empty()   ? 0
            : o.label_width < 0 ? int(width(o.label)) + 1
-                               : o.label_width,
-      vw = value.empty()       ? 0
+                               : o.label_width;
+  std::string value = o.show_value
+                          ? (o.readout.empty() ? number(iround(r * 100)) + "%"
+                                               : o.readout)
+                          : "";
+  int vw = value.empty()      ? 0
            : o.value_width < 0 ? int(width(value)) + 1
-                               : o.value_width,
-      bw = std::max(0, w - lw - vw);
+                               : o.value_width;
+  int bw = std::max(0, w - lw - vw);
+
   if (lw)
     text(s, 0, 0, fit(o.label, lw), t.muted, 0, o.background);
-  auto track = hq_mix(t.background, t.border, .8);
-  double filled = v * bw;
-  for (int x = 0; x < bw; x++) {
-    uint32_t ch = ' ';
-    Color color = track;
-    if (o.segmented) {
-      ch = 0x25ae;
-      if (x < int(std::floor(filled)))
-        color =
-            o.color ? o.color : hq_heat(&t, bw <= 1 ? v : double(x) / (bw - 1));
-    } else {
-      double remainder = std::clamp(filled - x, 0., 1.);
-      int eighth = iround(remainder * 8);
-      ch = eighth == 8 ? 0x2588 : eighth ? 0x2590 - eighth : 0x2500;
-      if (eighth)
-        color = o.color ? o.color
-                        : hq_heat(&t, x < int(std::floor(filled)) && bw > 1
-                                          ? double(x) / (bw - 1)
-                                          : v);
-    }
-    auto st = Style().foreground(color);
-    if (o.background)
-      st = st.background(*o.background);
-    s.set(lw + x, 0, ch, st);
+  if (bw > 0) {
+    Bar bar;
+    bar.value = r;
+    bar.color = o.color;
+    bar.heat = heat;
+    bar.style = o.ascii ? HQ_BAR_ASCII
+                : o.segmented ? HQ_BAR_SEGMENTED
+                              : HQ_BAR_SMOOTH;
+    bar.background = o.background;
+    draw_bar(s.sub({lw, 0, bw, 1}), bar);
   }
   if (vw)
     text(s, w - vw, 0, fit(value, vw, HQ_RIGHT),
-         o.color ? o.color : hq_heat(&t, v), HQ_BOLD, o.background);
+         o.color ? o.color : (o.heat && !*o.heat ? t.foreground : hq_heat(&t, r)),
+         HQ_BOLD, o.background);
 }
+
+void draw_meters(Surface s, const Meters &o) {
+  int w = s.rect().width, h = s.rect().height;
+  if (w <= 0 || h <= 0 || o.items.empty())
+    return;
+  int columns = std::max(1, o.columns);
+  int gap = o.gap;
+  int col_width = (w - gap * (columns - 1)) / columns;
+  int per_column = int((o.items.size() + std::size_t(columns) - 1) / std::size_t(columns));
+  if (per_column <= 0 || col_width <= 0)
+    return;
+
+  for (std::size_t i = 0; i < o.items.size(); i++) {
+    int col = int(i) / per_column, row = int(i) % per_column;
+    if (row >= h || col >= columns)
+      continue;
+    const auto &item = o.items[i];
+    Meter m;
+    m.value = item.value;
+    m.max = item.max;
+    m.label = item.label;
+    m.readout = item.text;
+    m.color = item.color;
+    m.label_width = o.label_width;
+    m.value_width = o.value_width;
+    m.heat = o.heat;
+    m.segmented = o.style == HQ_BAR_SEGMENTED;
+    m.ascii = o.style == HQ_BAR_ASCII;
+    m.background = o.background;
+    draw_meter(s.sub({col * (col_width + gap), row, col_width, 1}), m);
+  }
+}
+
+void draw_progress(Surface s, const Progress &o) {
+  auto &t = theme(s);
+  Meter m;
+  m.value = o.value;
+  m.max = o.max ? o.max : 1;
+  m.label = o.label;
+  m.color = o.color ? o.color : t.primary;
+  m.heat = false;
+  m.background = o.background;
+  if (o.show_count)
+    m.readout = number(iround(o.value)) + "/" + number(iround(m.max));
+  draw_meter(s, m);
+}
+
 void draw_graph(Surface surface, const Graph &o) {
   if (surface.rect().width <= 0 || surface.rect().height <= 0)
     return;
