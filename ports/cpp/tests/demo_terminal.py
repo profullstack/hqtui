@@ -75,6 +75,13 @@ def run(args, kill=False):
         proc.wait(timeout=.1)
         assert proc.returncode == (143 if kill else 0), proc.returncode
         after = termios.tcgetattr(slave)
+        if sys.platform == 'darwin':
+            # XNU sets PENDIN (queue state, not a user setting) when ICANON is
+            # restored. Preserve queued input rather than flushing it merely
+            # to clear this bit. Compare every actual terminal setting.
+            # https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/tty.c
+            before[3] &= ~termios.PENDIN
+            after[3] &= ~termios.PENDIN
         assert after == before, ('terminal state was not restored', before, after)
     finally:
         if proc.poll() is None:
