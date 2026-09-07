@@ -39,6 +39,12 @@ const nextConfig: NextConfig = {
     "/blog": ["./content/blog/**/*"],
     "/blog/[slug]": ["./content/blog/**/*"],
     "/blog/feed.xml": ["./content/blog/**/*"],
+    // The cookbook reads its chapters the same way, and the paid PDF is read
+    // by the download route from outside public/, so it has to be named too.
+    "/book": ["./content/book/*.md"],
+    "/book/[slug]": ["./content/book/*.md"],
+    "/book/buy": ["./content/book/*.md"],
+    "/api/book/download": ["./content/book/dist/book.pdf"],
   },
   poweredByHeader: false,
   reactStrictMode: true,
