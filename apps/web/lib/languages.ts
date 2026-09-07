@@ -17,11 +17,22 @@ export type Language = {
 export const CLONE = "git clone https://github.com/profullstack/hqtui";
 export const LAUNCHER = "https://hqtui.com/demo.sh";
 export function latestDemo(language: string, mise = false): string {
-  if (!["typescript", "rust", "go", "python", "zig"].includes(language)) throw new Error("Unsupported demo language");
+  if (!["typescript", "rust", "go", "python", "zig", "cpp"].includes(language)) throw new Error("Unsupported demo language");
   return `curl -fsSL ${LAUNCHER} | sh -s -- --${mise ? "mise" : "system"} ${language}`;
 }
 
 export const LANGUAGES: readonly Language[] = [
+  {
+    name: "C++",
+    id: "cpp",
+    description: "Native C++17 demo over the shared C renderer. Experimental library API; requires GCC/Clang and CMake.",
+    href: "/docs#cpp",
+    demo: latestDemo("cpp"),
+    snapshotDemo: `${latestDemo("cpp")} --snapshot`,
+    interactiveDemo: latestDemo("cpp"),
+    miseDemo: latestDemo("cpp", true),
+    native: true,
+  },
   {
     name: "TypeScript",
     id: "typescript",

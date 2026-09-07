@@ -11,6 +11,7 @@ import { CLONE, LANGUAGES, PORTS } from "@/lib/languages";
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Docs" };
+const TYPESCRIPT = LANGUAGES.find(({ id }) => id === "typescript")!;
 
 const SECTIONS = [
   { id: "languages", label: "Choose a language" },
@@ -64,9 +65,9 @@ export default async function Docs() {
         <main className="min-w-0 flex-1">
           <h1 className="text-4xl font-bold tracking-tight">Documentation</h1>
           <P>
-            HQTUI builds terminal applications in TypeScript, Rust, Go, Python and Zig.
-            All five implementations provide differential rendering, Braille graphics,
-            truecolor, widgets and headless testing.
+            HQTUI builds terminal applications in TypeScript, Rust, Go, Python and Zig,
+            with a new native C++ ten-screen demo over the shared C rendering core.
+            The C++ library API remains experimental.
           </P>
 
           <H2 id="languages">Choose a language</H2>
@@ -76,18 +77,25 @@ export default async function Docs() {
             ))}
           </div>
           <P>
-            Rust, Go, Python and Zig are native ports with no JavaScript runtime requirement.
+            Rust, Go, Python, Zig and C++ demos need no JavaScript runtime.
             Both the vanilla and mise commands below fetch latest main before running.
             They work from any directory and never switch branches, reset, or pull in your checkout.
-            All four dashboard commands now launch ten-screen native demos. Live metrics
+            All five native dashboard commands launch ten-screen demos. Live metrics
             currently require Linux; use --sim for generated sample data on other platforms.
-            All four native demos now use the TypeScript reference&apos;s ten screen layouts,
+            All five native demos use the TypeScript reference&apos;s ten screen layouts,
             including its responsive dashboard, detailed telemetry tabs and widget showcases.
             Each port is checked against 120 shared TypeScript reference frames across four
             terminal sizes and three themes. Live-data availability still depends on the host
             and permissions; full cross-platform collection and interaction parity is not claimed.
             Use 1–9 / 0 or Tab to change screens and q to quit.
             Headless screenshots work without a TTY. Zig requires version 0.16.
+          </P>
+          <P>
+            C++ requires a C++17 compiler (GCC or Clang) and CMake 3.20+.
+            Its mise command supplies pinned CMake; you still need your platform&apos;s
+            C/C++ build tools. The interactive C++ terminal supports Linux/macOS;
+            live collection and exact 120-frame parity are currently tested on Linux.
+            The C-only demo and other mise language integrations are not ready yet.
           </P>
           <P>
             Linux sensor panels now collect available hwmon temperatures, fans, voltage,
@@ -127,7 +135,7 @@ export default async function Docs() {
           </div>
           <P>For development only, you can still clone the monorepo and use its local commands; those do not auto-update:</P>
           <CommandBlock className="mt-4" command={CLONE} label="Developer checkout (optional)" />
-          <P>In an updated checkout, mise run demo:rust also updates before running (likewise demo:go, demo:python, demo:zig and demo:typescript). Use demo-local:rust and the other demo-local tasks to work on your local edits without updating.</P>
+          <P>In an updated checkout, mise run demo:cpp updates before running (likewise demo:rust, demo:go, demo:python, demo:zig and demo:typescript). Use demo-local:cpp and the other demo-local tasks to work on your local edits without updating.</P>
           <P>
             <Link href="/blog/native-rust-go-python-zig" className="text-[#5fff87] underline underline-offset-4">Read how the ports share a conformance corpus</Link>.
             The API guide below describes the TypeScript reference implementation.
@@ -135,8 +143,8 @@ export default async function Docs() {
 
           <H2 id="install">Install TypeScript</H2>
           <P>Try the full ten-screen demo with simulated data, without creating an app:</P>
-          <CommandBlock className="mt-3" command={LANGUAGES[0].interactiveDemo} label="TypeScript demo" />
-          <CommandBlock className="mt-3" command={LANGUAGES[0].miseDemo} label="TypeScript · mise" />
+          <CommandBlock className="mt-3" command={TYPESCRIPT.interactiveDemo} label="TypeScript demo" />
+          <CommandBlock className="mt-3" command={TYPESCRIPT.miseDemo} label="TypeScript · mise" />
           <P>Omit <code>--sim</code> to use real system metrics. To build your own app, install the library:</P>
           <Code className="mt-4" code={`bun add @profullstack/hqtui   # Bun is the default runtime
 npm  add @profullstack/hqtui   # Node 22.6+ works unchanged`} />

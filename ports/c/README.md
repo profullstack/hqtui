@@ -6,6 +6,9 @@ the full widget suite, terminal/input layer and ten-screen reference demo are
 still being implemented. It is deliberately absent from the website's list of
 supported languages. Do not substitute a small sample for `hqtui-demo`.
 
+The [C++ demo](../cpp/README.md) now uses this C core with a C++ widget/terminal
+layer. It does not make the C-only library or C-only demo complete.
+
 Implemented: packed color math and palette conversion, bounded UTF-8 graphemes,
 parallel-array framebuffers, clipped surfaces, reference border/title rendering,
 nine theme palettes, constrained layouts, and a reusable changed-cell encoder.

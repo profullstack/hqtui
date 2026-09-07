@@ -28,7 +28,7 @@ jobs:
       - name: Configure
         run: cmake -S ports/cpp -B ports/cpp/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${{ matrix.shared }}
       - run: cmake --build ports/cpp/build --config Release --parallel
-      - run: ctest --test-dir ports/cpp/build -C Release --output-on-failure
+      - run: ctest --test-dir ports/cpp/build -C Release --output-on-failure --timeout 120
       - name: Install without touching system directories
         run: cmake --install ports/cpp/build --config Release --prefix "${{ runner.temp }}/hqtui-install"
       - name: Build separate installed consumers
