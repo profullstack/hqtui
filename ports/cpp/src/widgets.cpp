@@ -14,6 +14,123 @@ static uint32_t vertical(double v, const std::string &mode = "block") {
   }
   return n ? 0x2580 + n : ' ';
 }
+/// Splits on newlines, then wraps each line on `columns` when asked. Matches
+/// the reference's wrap: break on the last space that fits, and hard-break a
+/// word longer than the line.
+static std::vector<std::string> lines_of(std::string_view content, int columns,
+                                         bool wrap) {
+  std::vector<std::string> out;
+  std::size_t start = 0;
+  while (start <= content.size()) {
+    std::size_t brk = content.find('\n', start);
+    std::string_view line = content.substr(
+        start, brk == std::string_view::npos ? std::string_view::npos : brk - start);
+    if (!wrap || columns <= 0 || int(width(line)) <= columns) {
+      out.emplace_back(line);
+    } else {
+      std::string rest(line);
+      while (int(width(rest)) > columns) {
+        // The longest prefix that fits, then back up to a space if there is one.
+        std::size_t i = 0, end = 0;
+        int used = 0;
+        while (i < rest.size()) {
+          unsigned char ch = rest[i];
+          std::size_t len = ch < 128 ? 1 : ch < 224 ? 2 : ch < 240 ? 3 : 4;
+          len = std::min(len, rest.size() - i);
+          int w = int(width(std::string_view(rest).substr(i, len)));
+          if (used + w > columns)
+            break;
+          used += w;
+          i += len;
+          end = i;
+        }
+        std::size_t space = rest.rfind(' ', end);
+        std::size_t cut = (space != std::string::npos && space > 0) ? space : end;
+        out.push_back(rest.substr(0, cut));
+        rest = rest.substr(cut == space ? cut + 1 : cut);
+      }
+      out.push_back(rest);
+    }
+    if (brk == std::string_view::npos)
+      break;
+    start = brk + 1;
+  }
+  return out;
+}
+
+void draw_text(Surface s, std::string_view content, const TextStyle &o) {
+  auto &t = theme(s);
+  int w = s.rect().width, h = s.rect().height;
+  if (w <= 0 || h <= 0)
+    return;
+  Color fg = o.fg ? o.fg : t.foreground;
+  auto lines = lines_of(content, w, o.wrap);
+  for (int i = 0; i < h && i < int(lines.size()); i++)
+    text(s, 0, i, fit(lines[std::size_t(i)], w, o.align), fg, o.attrs, o.bg);
+}
+
+int draw_badge(Surface s, const Badge &o) {
+  auto &t = theme(s);
+  int surface_width = s.rect().width;
+  if (surface_width <= 0 || s.rect().height <= 0)
+    return 0;
+  Color color = o.color ? o.color : t.primary;
+  std::string label = " " + o.text + " ";
+  int w = std::min(int(width(label)), surface_width);
+
+  Color fg = color;
+  std::optional<Color> bg;
+  int attrs = HQ_BOLD;
+  if (o.variant == HQ_BADGE_FILLED) {
+    fg = t.dark ? t.background : t.surface;
+    bg = color;
+  } else if (o.variant == HQ_BADGE_SUBTLE) {
+    bg = hq_mix(t.surface, color, .18);
+    attrs = 0;
+  }
+
+  int x = o.align == HQ_RIGHT      ? surface_width - w
+          : o.align == HQ_CENTER   ? (surface_width - w) / 2
+                                   : 0;
+  text(s, std::max(0, x), 0, fit(label, w, HQ_LEFT), fg, attrs, bg);
+  return w;
+}
+
+void draw_divider(Surface s, const Divider &o) {
+  auto &t = theme(s);
+  int w = s.rect().width;
+  if (w <= 0 || s.rect().height <= 0)
+    return;
+  Color color = o.color ? o.color : t.border;
+  uint32_t ch = 0x2500;
+  if (!o.ch.empty()) {
+    // First code point of the caller's rule character.
+    unsigned char lead = o.ch[0];
+    std::size_t len = lead < 128 ? 1 : lead < 224 ? 2 : lead < 240 ? 3 : 4;
+    len = std::min(len, o.ch.size());
+    ch = 0;
+    if (len == 1) {
+      ch = lead;
+    } else {
+      ch = lead & (0xffu >> (len + 1));
+      for (std::size_t i = 1; i < len; i++)
+        ch = (ch << 6) | (uint32_t(o.ch[i]) & 0x3f);
+    }
+  }
+  auto st = Style().foreground(color);
+  for (int x = 0; x < w; x++)
+    s.set(x, 0, ch, st);
+
+  if (!o.label.empty()) {
+    std::string label = " " + o.label + " ";
+    int lw = int(width(label));
+    int x = o.align == HQ_LEFT      ? 1
+            : o.align == HQ_RIGHT   ? w - lw - 1
+                                    : (w - lw) / 2;
+    text(s, std::max(0, x), 0, fit(label, std::min(lw, w), HQ_LEFT), t.muted, 0, {});
+  }
+}
+
 void draw_keys(Surface s, const std::vector<KeyValue> &rows, bool spread) {
   auto &t = theme(s);
   int w = s.rect().width, h = s.rect().height, lw = 0;

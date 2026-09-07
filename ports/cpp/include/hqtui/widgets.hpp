@@ -85,6 +85,36 @@ inline Constraint fr(double n = 1, int min = 0) {
 inline Constraint automatic(int intrinsic, int min = 0) {
   return {HQ_AUTO, 0., min, -1, intrinsic};
 }
+/// Aligned, styled, optionally wrapped copy. Every other widget is built on it.
+struct TextStyle {
+  Color fg = 0;
+  std::optional<Color> bg;
+  int align = HQ_LEFT;
+  int attrs = 0;
+  /// Wrap on the surface width rather than truncating at the edge.
+  bool wrap = false;
+};
+void draw_text(Surface, std::string_view content, const TextStyle & = {});
+
+enum BadgeVariant { HQ_BADGE_FILLED, HQ_BADGE_OUTLINE, HQ_BADGE_SUBTLE };
+struct Badge {
+  std::string text;
+  Color color = 0;
+  int variant = HQ_BADGE_FILLED;
+  int align = HQ_LEFT;
+};
+/// Returns the columns the chip occupies.
+int draw_badge(Surface, const Badge &);
+
+struct Divider {
+  std::string label;
+  Color color = 0;
+  /// The rule character. Empty means the theme's horizontal line.
+  std::string ch;
+  int align = HQ_LEFT;
+};
+void draw_divider(Surface, const Divider & = {});
+
 struct KeyValue {
   std::string label, value;
   Color color = 0;

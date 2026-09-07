@@ -33,6 +33,36 @@ const std::vector<double> kSeries{3, 7, 2, 9, 4, 8, 6, 1, 5, 9,
 bool draw_scene(const std::string &name, Surface s) {
   const auto &t = theme(s);
 
+  if (name == "text-plain") {
+    draw_text(s, "hello terminal");
+    return true;
+  }
+  if (name == "text-wrapped") {
+    draw_text(s, "the quick brown fox jumps", TextStyle{.wrap = true});
+    return true;
+  }
+  if (name == "text-aligned") {
+    draw_text(s.sub({0, 0, 20, 1}), "left", TextStyle{.align = HQ_LEFT});
+    draw_text(s.sub({0, 1, 20, 1}), "center", TextStyle{.align = HQ_CENTER});
+    draw_text(s.sub({0, 2, 20, 1}), "right", TextStyle{.align = HQ_RIGHT});
+    return true;
+  }
+  if (name == "badge") {
+    draw_badge(s, Badge{.text = "LIVE"});
+    return true;
+  }
+  if (name == "badge-outline") {
+    draw_badge(s, Badge{.text = "IDLE", .variant = HQ_BADGE_OUTLINE});
+    return true;
+  }
+  if (name == "badge-subtle") {
+    draw_badge(s, Badge{.text = "WARN", .variant = HQ_BADGE_SUBTLE});
+    return true;
+  }
+  if (name == "divider") {
+    draw_divider(s, Divider{.label = "Section"});
+    return true;
+  }
   if (name == "keyvalues") {
     std::vector<KeyValue> rows{{"Host", "seed1"}, {"Uptime", "12d 4h"}, {"Load", "0.42"}};
     draw_keys(s, rows);
