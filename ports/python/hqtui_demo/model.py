@@ -107,8 +107,11 @@ class Pane:
     selected: int = 0
     offset: int = 0
     total: int = 0
+    log: bool = False
 
     def move(self, delta: int) -> None:
+        if self.log:
+            self.offset=max(0,min(max(0,self.total-1),self.offset-delta));return
         self.selected = max(0, min(max(0, self.total - 1), self.selected + delta))
 
 
@@ -144,6 +147,8 @@ class State:
     render_ms: float = 0
     changed_cells: int = 0
     output_bytes: int = 0
+    slider: float = .7
+    clock: str = "12:00:00"
 
     def pane(self, name: str, total: int) -> Pane:
         pane = self.panes.setdefault(name, Pane())
@@ -199,8 +204,8 @@ class State:
             return False
         if self.select_open:
             if key == "escape": self.select_open = False
-            elif key == "up": self.select_index = (self.select_index - 1) % len(THEMES)
-            elif key == "down": self.select_index = (self.select_index + 1) % len(THEMES)
+            elif key == "up": self.select_index = (self.select_index - 1) % 4
+            elif key == "down": self.select_index = (self.select_index + 1) % 4
             elif key == "enter": self.theme_index = self.select_index; self.select_open = False
             return False
         if key == "e" and self.screen in ("components", "input"):

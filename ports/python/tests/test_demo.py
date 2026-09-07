@@ -29,7 +29,8 @@ class DemoTests(unittest.TestCase):
                     state.screen=screen; state.theme_index=i
                     frame=self.snapshot(state)
                     self.assertTrue(frame.contains("hqtui"))
-                    self.assertTrue(frame.contains(screen))
+                    title=dict(zip(SCREENS,("CPU Overview","Protocols","Active Sessions","Connections","Filesystems","Buttons & Inputs","Braille (2×4","Theme ","Last Events","Full-screen churn")))[screen]
+                    self.assertTrue(frame.contains(title))
                     self.assertEqual(len(frame.text().splitlines()),40)
 
     def test_small_and_large_screens(self):
@@ -75,20 +76,31 @@ class DemoTests(unittest.TestCase):
         self.assertEqual(state.theme_index,1); self.assertFalse(state.select_open)
 
     def test_panes_are_independent_and_click_uses_offset(self):
-        state=self.state(); frame=self.snapshot(state,160,50)
+        state=self.state(); frame=self.snapshot(state,120,40)
         process=state.panes["dashboard.processes"]; logs=state.panes["dashboard.logs"]
         state.focused[state.screen]="dashboard.processes"; state.key("end")
-        frame=self.snapshot(state,160,50)
+        frame=self.snapshot(state,120,40)
         self.assertGreater(process.offset,0); self.assertEqual(logs.selected,0)
         regions=[r for r in frame.regions if r.on_scroll]
         proc_region=regions[0]; proc_region.on_click(0,1,"left")
         self.assertEqual(process.selected,process.offset)
-        regions[1].on_scroll(3); self.assertEqual(logs.selected,3)
+        regions[1].on_scroll(-3); self.assertEqual(logs.offset,3);self.assertEqual(logs.selected,0)
 
     def test_controls_click(self):
         state=self.state("components"); frame=self.snapshot(state)
-        region=next(r for r in frame.regions if r.on_click and r.rect.y>4)
+        position=frame.find("Primary");self.assertIsNotNone(position)
+        x,y=position
+        region=next(r for r in reversed(frame.regions) if r.on_click and r.rect.x<=x<r.rect.x+r.rect.width and r.rect.y<=y<r.rect.y+r.rect.height)
         region.on_click(0,0,"left"); self.assertTrue(state.modal)
+
+    def test_http_pane_uses_final_viewport(self):
+        state=self.state("traffic");state.sample["telemetry"]["http"]["topPaths"]=[{"path":f"/route-{i:03d}","count":i} for i in range(50)]
+        pane=state.pane("traffic.paths",50);pane.selected=49
+        frame=self.snapshot(state,200,60);position=frame.find("/route-049");self.assertIsNotNone(position)
+        x,y=position
+        region=next(r for r in reversed(frame.regions) if r.on_click and r.rect.x<=x<r.rect.x+r.rect.width and r.rect.y<=y<r.rect.y+r.rect.height)
+        self.assertEqual(pane.offset,50-region.rect.height)
+        region.on_click(0,0,"left");self.assertEqual(pane.selected,pane.offset)
 
     def test_invalid_options_before_terminal(self):
         for args in (("--fps","0"),("--interval","nan"),("--width","999999"),("--ticks","-1"),("--seed","-1"),("--sim","--real"),("--theme","wrong")):
@@ -98,7 +110,7 @@ class DemoTests(unittest.TestCase):
 
     def test_cli_headless_and_non_tty(self):
         result=subprocess.run([sys.executable,"-m","hqtui_demo","--snapshot","--screen","input"],capture_output=True,text=True,timeout=10)
-        self.assertEqual(result.returncode,0,result.stderr); self.assertIn("Input Inspector",result.stdout)
+        self.assertEqual(result.returncode,0,result.stderr); self.assertIn("Last Events",result.stdout)
         result=subprocess.run([sys.executable,"-m","hqtui_demo"],capture_output=True,text=True,timeout=10)
         self.assertEqual(result.returncode,2); self.assertIn("--snapshot",result.stderr)
 

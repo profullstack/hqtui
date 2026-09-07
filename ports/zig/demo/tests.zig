@@ -6,12 +6,80 @@ const cli = @import("main.zig");
 const collect = @import("collect.zig");
 const sensors = @import("sensors.zig");
 const traffic = @import("traffic.zig");
+test "native screens match TypeScript reference cells" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const a = arena.allocator();
+    const raw = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, @import("build_options").demo_parity, a, .limited(8 * 1024 * 1024));
+    const cases = try std.json.parseFromSliceLeaky(m.Value, a, raw, .{});
+    for (m.arr(cases)) |case| {
+        const screen = m.index(&m.screens, m.string(m.get(case, "screen"))) orelse 0;
+        var state = try m.State.init(std.testing.allocator, false, 1337);
+        defer state.deinit();
+        state.parsed.value = try std.json.parseFromSliceLeaky(m.Value, state.allocator(), @embedFile("sample.json"), .{});
+        const width: usize = @intFromFloat(m.num(m.get(case, "width")));
+        const height: usize = @intFromFloat(m.num(m.get(case, "height")));
+        const theme = m.string(m.get(case, "theme"));
+        state.theme = m.index(&m.themes, theme) orelse 0;
+        state.screen = screen;
+        var frame = try h.renderToScreen(std.testing.allocator, width, height, theme, if (screen == 0) h.Body.with(&state, @import("dashboard.zig").render) else if (screen <= 4) h.Body.with(&state, @import("telemetry_view.zig").render) else h.Body.with(&state, @import("showcase.zig").render));
+        defer frame.deinit();
+        for (0..height) |y| {
+            var hash: u32 = 2166136261;
+            for (0..width) |x| {
+                const cell = frame.cell(x, y);
+                for (cell.text) |b| hash = (hash ^ b) *% 16777619;
+                hash = (hash ^ 0) *% 16777619;
+                for ([_]u32{ @intFromEnum(cell.fg), @intFromEnum(cell.bg), cell.attrs.bits() }) |v| {
+                    for (0..4) |i| {
+                        const shift: u5 = @intCast(i * 8);
+                        hash = (hash ^ @as(u8, @truncate(v >> shift))) *% 16777619;
+                    }
+                }
+            }
+            const expected: u32 = @intFromFloat(m.num(m.arr(m.get(case, "hashes"))[y]));
+            if (hash != expected) {
+                std.debug.print("dashboard {d}x{d}/{s} row {d}: {s}\n", .{ width, height, theme, y, try frame.line(y) });
+                try std.testing.expectEqual(expected, hash);
+            }
+        }
+    }
+}
 test "Linux procfs readers do not treat zero stat size as empty" {
     if (@import("builtin").os.tag != .linux) return;
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
     const raw = @import("native_io.zig").read(arena.allocator(), std.testing.io, "/proc/meminfo");
     try std.testing.expect(std.mem.indexOf(u8, raw, "MemTotal:") != null);
+}
+
+test "HTTP paths use final viewport and logs scroll backwards from tail" {
+    var state = try m.State.init(std.testing.allocator, false, 1337);
+    defer state.deinit();
+    state.screen = 1;
+    const paths = m.ptr(&state.parsed.value, "telemetry.http.topPaths");
+    paths.array.clearRetainingCapacity();
+    for (0..50) |i| {
+        const text = try std.fmt.allocPrint(state.allocator(), "{{\"path\":\"/route-{d:0>3}\",\"count\":{d}}}", .{ i, i });
+        try paths.array.append(try std.json.parseFromSliceLeaky(m.Value, state.allocator(), text, .{}));
+    }
+    state.panes[8].selected = 49;
+    var frame = try h.renderToScreen(std.testing.allocator, 200, 60, "dark", h.Body.with(&state, view.render));
+    defer frame.deinit();
+    try std.testing.expect(frame.contains("/route-049"));
+    var found = false;
+    for (frame.regions) |region| {
+        if (m.eq(region.id, "pane:8")) {
+            found = true;
+            try std.testing.expectEqual(@as(usize, 50) - region.rect.height, state.panes[8].offset);
+        }
+    }
+    try std.testing.expect(found);
+    var pane = m.Pane{ .log = true, .total = 50 };
+    pane.move(-3);
+    try std.testing.expectEqual(@as(usize, 3), pane.offset);
+    pane.move(100);
+    try std.testing.expectEqual(@as(usize, 0), pane.offset);
 }
 
 test "Traffic and Sessions use shared real-source parsers and render rows" {
@@ -141,14 +209,15 @@ test "shared sensor sources refresh and render" {
 test "all ten screens, all themes, small and large terminals" {
     var state = try m.State.init(std.testing.allocator, false, 1337);
     defer state.deinit();
-    for (m.screens, 0..) |name, i| {
+    for (m.screens, 0..) |_, i| {
         state.screen = i;
         for (m.themes, 0..) |theme, j| {
             state.theme = j;
             var screen = try h.renderToScreen(std.testing.allocator, 120, 40, theme, h.Body.with(&state, view.render));
             defer screen.deinit();
             try std.testing.expect(screen.contains("hqtui"));
-            try std.testing.expect(screen.contains(name));
+            const title = ([_][]const u8{ "CPU Overview", "Protocols", "Active Sessions", "Connections", "Filesystems", "Buttons & Inputs", "Braille (2×4", "Theme ", "Last Events", "Full-screen churn" })[i];
+            try std.testing.expect(screen.contains(title));
         }
         for ([_][2]usize{ .{ 1, 1 }, .{ 20, 5 }, .{ 40, 12 }, .{ 80, 24 }, .{ 160, 55 } }) |size| {
             var screen = try h.renderToScreen(std.testing.allocator, size[0], size[1], "dark", h.Body.with(&state, view.render));
