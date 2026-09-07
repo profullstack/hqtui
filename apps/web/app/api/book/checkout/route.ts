@@ -24,6 +24,9 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     // Never render the upstream body: it can carry the request we signed.
     console.error("hqtui: cookbook checkout failed", error);
-    return NextResponse.redirect(new URL("/book/buy?error=1", request.url), 303);
+    // A relative Location, not one built from request.url: behind Railway's
+    // proxy that is the container's own address, and the browser would be sent
+    // to https://0.0.0.0:8080.
+    return new Response(null, { status: 303, headers: { location: "/book/buy?error=1" } });
   }
 }

@@ -98,7 +98,10 @@ export async function createPayment(chain: string = DEFAULT_CHAIN): Promise<Crea
 
   const response = await fetch(`${apiBase()}/payments/create`, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-api-key": key },
+    // The business API key travels as a bearer token. `x-api-key` is refused
+    // with "Missing authorization header", which reads like the key is absent
+    // rather than in the wrong place.
+    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
     body: JSON.stringify({
       business_id: business,
       amount: PRICE_USD,
