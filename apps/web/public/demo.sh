@@ -146,11 +146,41 @@ main() (
     tool_spec=$tool
     # Prebuilt PHP includes development headers for our small native adapter.
     [ "$language" != php ] || tool_spec=conda:php
-    # A system toolchain older than this revision's pin does not fail here; it
-    # fails later, describing the wrong problem. Bun 1.3 cannot read a
-    # lockfileVersion 2 bun.lock, so it drops the lockfile and then reports
-    # frozen-lockfile drift, which reads as a broken repository. Compare the
-    # resolved driver against the pin up front and name both versions.
+    # What --mise installs is a pin, not a floor. Perl 5.40 and Ruby 3.3 build
+    # these bindings perfectly well, and treating the pin as a requirement makes
+    # --system useless on any machine that is not already pinned, which is most
+    # of them. So fail only below the version the port itself says it needs, and
+    # merely mention anything between that and the pin.
+    #
+    # Each floor is the one declared in that port's own manifest: go.mod,
+    # Cargo.toml rust-version, pyproject.toml requires-python, hqtui.gemspec,
+    # composer.json, Makefile.PL MIN_PERL_VERSION, CMakeLists.txt. Bun's is not
+    # a preference: 1.3 cannot parse a lockfileVersion 2 bun.lock, drops the
+    # lockfile, and then blames the repository for frozen-lockfile drift.
+    # apps/demo/scripts/test-updater.py checks this table against those files.
+    minimum=
+    case "$language" in
+        typescript) minimum=1.4.0 ;;
+        rust) minimum=1.75 ;;
+        go) minimum=1.22 ;;
+        python) minimum=3.10 ;;
+        zig) minimum=0.16.0 ;;
+        cpp) minimum=3.20 ;;
+        ruby) minimum=3.1 ;;
+        php) minimum=8.1 ;;
+        perl) minimum=5.20 ;;
+    esac
+    # Field-wise numeric comparison; absent trailing fields count as zero.
+    version_ge() {
+        awk -v have="$1" -v want="$2" 'BEGIN {
+            n = split(have, a, "."); m = split(want, b, "."); if (m > n) n = m
+            for (i = 1; i <= n; i++) {
+                if (a[i] + 0 > b[i] + 0) exit 0
+                if (a[i] + 0 < b[i] + 0) exit 1
+            }
+            exit 0
+        }'
+    }
     if [ "$manager" = system ]; then
         case "$language" in
             typescript|rust|python|cpp|ruby) installed=$("$driver_path" --version 2>/dev/null) ;;
@@ -162,16 +192,11 @@ main() (
         # line, whatever surrounds it ("go version go1.26.0", "cmake version 4.4.3").
         installed=$(printf '%s\n' "$installed" | sed -n '1s/[^0-9]*\([0-9][0-9.]*\).*/\1/p' | sed 's/\.*$//')
         [ -n "$installed" ] || fail "Cannot read the version of $driver_path. Use --mise to build against the pinned toolchain."
-        # Field-wise numeric comparison; absent trailing fields count as zero.
-        if ! awk -v have="$installed" -v want="$version" 'BEGIN {
-                n = split(have, a, "."); m = split(want, b, "."); if (m > n) n = m
-                for (i = 1; i <= n; i++) {
-                    if (a[i] + 0 > b[i] + 0) exit 0
-                    if (a[i] + 0 < b[i] + 0) exit 1
-                }
-                exit 0
-            }'; then
-            fail "This revision pins $tool $version, but $driver_path is $installed. Install $driver $version or newer, or rerun with --mise to build against the pinned toolchain."
+        if ! version_ge "$installed" "$minimum"; then
+            fail "$driver_path is $installed, and this demo needs $driver $minimum or newer. Upgrade $driver, or rerun with --mise to build against the pinned $tool $version."
+        fi
+        if ! version_ge "$installed" "$version"; then
+            note "Building with your $driver $installed; this revision pins $tool $version. Rerun with --mise if the build fails."
         fi
     fi
     run_tool() {
@@ -203,12 +228,30 @@ main() (
             cmake_version=$(awk '$1 == "cmake" && $2 == "=" {gsub(/"/, "", $3); print $3; exit}' "$source/mise.toml")
             case "$cmake_version" in ''|*[!0-9.]*) fail 'Invalid CMake pin.' ;; esac
             cmake_driver=cmake
+            cmake_via_mise=0
             if [ "$manager" = system ]; then
-                cmake_driver=$(command -v cmake) || fail 'CMake is required. Install it or use --mise.'
-                case "$cmake_driver" in */mise/shims/*) cmake_driver=$(mise which cmake) || fail 'Activate CMake or use --mise.' ;; esac
+                if cmake_driver=$(command -v cmake 2>/dev/null); then
+                    case "$cmake_driver" in */mise/shims/*) cmake_driver=$(mise which cmake) || fail 'Activate CMake or use --mise.' ;; esac
+                elif command -v mise >/dev/null 2>&1; then
+                    # CMake is a build tool for the native binding, not the
+                    # language runtime this flag is about, and the C++ compiler
+                    # still comes from the host. Borrowing the pinned CMake beats
+                    # refusing to run on a machine that has everything else.
+                    note "No system CMake; borrowing the pinned CMake $cmake_version through mise."
+                    cmake_via_mise=1
+                else
+                    case "$(uname -s)" in
+                        Darwin) fail 'CMake is needed to build the native binding. Install it with "brew install cmake", or install mise and rerun.' ;;
+                        *) fail 'CMake is needed to build the native binding. Install it with your package manager (for example "apt install cmake"), or install mise and rerun.' ;;
+                    esac
+                fi
             fi
             binding_cmake() {
-                if [ "$manager" = mise ]; then mise --no-config exec "cmake@$cmake_version" -- cmake "$@"; else "$cmake_driver" "$@"; fi
+                if [ "$manager" = mise ] || [ "$cmake_via_mise" -eq 1 ]; then
+                    mise --no-config exec "cmake@$cmake_version" -- cmake "$@"
+                else
+                    "$cmake_driver" "$@"
+                fi
             }
             binding_identity=$language-$version
             php_config=
@@ -254,7 +297,31 @@ main() (
                     PERL5LIB=$perl_deps/lib/perl5${PERL5LIB:+:$PERL5LIB}; export PERL5LIB
                     if ! run_tool perl -MFFI::Platypus=2.11 -e '' 2>/dev/null; then
                         note 'Installing Perl FFI::Platypus into the private demo cache…'
-                        run_tool cpanm --local-lib-contained "$perl_deps" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.11 >&2 || fail 'Install cpanm and native build tools, then retry. No global Perl modules were modified.'
+                        if command -v cpanm >/dev/null 2>&1; then
+                            run_tool cpanm --local-lib-contained "$perl_deps" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.11 >&2 \
+                                || fail 'FFI::Platypus did not build. A C compiler and make are required. No global Perl modules were modified.'
+                        else
+                            # macOS ships Perl but no cpanm, which stopped
+                            # --system perl before it built anything. Fetch the
+                            # standalone installer into the private cache rather
+                            # than asking for a manual step; nothing global and
+                            # nothing outside the cache is touched.
+                            cpanm_script=$cache/deps/perl/cpanm
+                            if [ ! -f "$cpanm_script" ]; then
+                                mkdir -p "$cache/deps/perl"
+                                note 'No cpanm found; fetching the standalone installer from cpanmin.us into the demo cache…'
+                                if command -v curl >/dev/null 2>&1; then
+                                    curl -fsSL https://cpanmin.us -o "$cpanm_script.pending" || fail 'Could not download cpanm. Install cpanm, or use --mise.'
+                                elif command -v wget >/dev/null 2>&1; then
+                                    wget -qO "$cpanm_script.pending" https://cpanmin.us || fail 'Could not download cpanm. Install cpanm, or use --mise.'
+                                else
+                                    fail 'Fetching cpanm needs curl or wget. Install cpanm, or use --mise.'
+                                fi
+                                mv "$cpanm_script.pending" "$cpanm_script"
+                            fi
+                            run_tool perl "$cpanm_script" --local-lib-contained "$perl_deps" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.11 >&2 \
+                                || fail 'FFI::Platypus did not build. A C compiler and make are required. No global Perl modules were modified.'
+                        fi
                     fi
                     launch perl "$source/ports/perl/examples/dashboard.pl" "$@"
                     ;;
