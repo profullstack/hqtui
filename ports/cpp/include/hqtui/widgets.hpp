@@ -63,13 +63,15 @@ inline std::string fit(std::string_view s, int columns, int align = HQ_LEFT,
   return std::string(left, ' ') + out + std::string(padding - left, ' ');
 }
 inline const hq_theme &theme(Surface s) { return *s.native().theme; }
-inline void text(Surface s, int x, int y, std::string_view value, Color fg,
-                 uint16_t attrs = 0, std::optional<Color> bg = {}) {
+/// Returns the columns written, so a caller laying items out in a row can
+/// advance by what was actually drawn rather than by what it hoped to draw.
+inline std::size_t text(Surface s, int x, int y, std::string_view value, Color fg,
+                        uint16_t attrs = 0, std::optional<Color> bg = {}) {
   hq_text_options o{};
   o.style = Style().foreground(fg).attributes(attrs);
   if (bg)
     o.style = Style(o.style.fg, *bg, attrs);
-  s.text(x, y, std::string(value).c_str(), o);
+  return s.text(x, y, std::string(value).c_str(), o);
 }
 inline void aligned(Surface s, int y, std::string_view value, Color fg,
                     int align = HQ_LEFT, uint16_t attrs = 0,
@@ -315,6 +317,89 @@ void draw_graph(Surface, const Graph &);
 void draw_gauge(Surface, double, std::string_view);
 void draw_keys(Surface, const std::vector<KeyValue> &, bool spread = true);
 void draw_scrollbar(Surface, int, int, int, int, int);
+/// Surface tinted one step above the theme's surface, for a control's chrome.
+inline Color elevate(const hq_theme &t, double amount = .06) {
+  return hq_mix(t.surface, t.dark ? 0xffffffu : 0x000000u, amount);
+}
+
+enum ButtonVariant {
+  HQ_BUTTON_PRIMARY,
+  HQ_BUTTON_SUCCESS,
+  HQ_BUTTON_WARNING,
+  HQ_BUTTON_DANGER,
+  HQ_BUTTON_GHOST
+};
+struct Button {
+  std::string label;
+  bool focused = false;
+  Color color = 0;
+  int variant = HQ_BUTTON_PRIMARY;
+  bool disabled = false;
+  int width = -1;
+  int align = HQ_CENTER;
+};
+/// Returns the width it drew, so callers can lay buttons out in a row.
+int draw_button(Surface, const Button &);
+
+enum CheckboxVariant { HQ_CHECKBOX_BOX, HQ_CHECKBOX_TOGGLE, HQ_CHECKBOX_RADIO };
+struct Checkbox {
+  std::string label;
+  bool checked = false;
+  bool focused = false;
+  Color color = 0;
+  int variant = HQ_CHECKBOX_BOX;
+};
+int draw_checkbox(Surface, const Checkbox &);
+
+/// A closed dropdown, or an open one with its option list underneath.
+struct Select {
+  std::string value;
+  bool focused = false;
+  bool open = false;
+  std::vector<std::string> options;
+  int selected_index = 0;
+  int width = -1;
+  Color color = 0;
+};
+void draw_select(Surface, const Select &);
+
+struct TextInput {
+  std::string value, placeholder, label;
+  bool focused = false;
+  /// Caret index. Negative means the end of the value.
+  int cursor = -1;
+  int width = -1;
+  bool password = false;
+  Color color = 0;
+};
+void draw_text_input(Surface, const TextInput &);
+
+enum TabVariant { HQ_TAB_FILLED, HQ_TAB_UNDERLINE };
+struct Tabs {
+  std::vector<std::string> tabs;
+  int active = 0;
+  Color color = 0;
+  int align = HQ_LEFT;
+  int variant = HQ_TAB_FILLED;
+};
+void draw_tabs(Surface, const Tabs &);
+
+/// The F1/F2/F10 bar along the bottom of every serious TUI.
+struct StatusItem {
+  std::string key, label;
+  Color color = 0;
+  /// Highlight this entry, e.g. the active mode.
+  bool active = false;
+};
+struct StatusBar {
+  std::vector<StatusItem> items, right;
+  std::optional<Color> background;
+  Color key_color = 0;
+  /// Reverse-video key caps, like a function-key bar. False draws them plain.
+  bool caps = true;
+};
+void draw_status_bar(Surface, const StatusBar &);
+
 struct Column {
   std::string title;
   int width = -1, min = 1;

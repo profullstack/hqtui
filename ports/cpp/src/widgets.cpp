@@ -707,6 +707,185 @@ static int resolve_offset(int offset, int selected, int capacity, int total, boo
   return std::clamp(start, 0, max_offset);
 }
 
+int draw_button(Surface s, const Button &o) {
+  auto &t = theme(s);
+  int surface_width = s.rect().width;
+  if (surface_width <= 0 || s.rect().height <= 0)
+    return 0;
+  Color color = o.color ? o.color
+                : o.variant == HQ_BUTTON_SUCCESS ? t.success
+                : o.variant == HQ_BUTTON_WARNING ? t.warning
+                : o.variant == HQ_BUTTON_DANGER  ? t.danger
+                : o.variant == HQ_BUTTON_GHOST   ? t.muted
+                                                 : t.primary;
+  std::string label = " " + o.label + " ";
+  int w = std::min(o.width < 0 ? int(width(label)) : o.width, surface_width);
+
+  Color fg = color;
+  std::optional<Color> bg;
+  int attrs = 0;
+  if (o.disabled) {
+    fg = t.muted;
+    bg = elevate(t, .05);
+  } else if (o.focused) {
+    fg = t.dark ? t.background : t.surface;
+    bg = color;
+    attrs = HQ_BOLD;
+  } else if (o.variant != HQ_BUTTON_GHOST) {
+    bg = hq_mix(t.surface, color, .16);
+    attrs = HQ_BOLD;
+  }
+  text(s, 0, 0, fit(label, w, o.align), fg, attrs, bg);
+  return w;
+}
+
+int draw_checkbox(Surface s, const Checkbox &o) {
+  auto &t = theme(s);
+  if (s.rect().width <= 0 || s.rect().height <= 0)
+    return 0;
+  Color color = o.color ? o.color : (o.checked ? t.success : t.muted);
+  const char *glyph = o.variant == HQ_CHECKBOX_TOGGLE
+                          ? (o.checked ? "[▮ ]" : "[ ▮]")
+                      : o.variant == HQ_CHECKBOX_RADIO
+                          ? (o.checked ? "(●)" : "( )")
+                          : (o.checked ? "[✓]" : "[ ]");
+  int x = int(text(s, 0, 0, glyph, color, o.focused ? HQ_BOLD : 0, {}));
+  if (!o.label.empty())
+    x += int(text(s, x, 0, " " + o.label, o.focused ? t.foreground : t.muted,
+                  o.focused ? HQ_BOLD : 0, {}));
+  return x;
+}
+
+void draw_select(Surface s, const Select &o) {
+  auto &t = theme(s);
+  int surface_width = s.rect().width, h = s.rect().height;
+  if (surface_width <= 0 || h <= 0)
+    return;
+  int w = std::min(o.width < 0 ? surface_width : o.width, surface_width);
+  Color color = o.color ? o.color : (o.focused ? t.border_focused : t.border);
+  Color chrome = elevate(t, .05);
+
+  std::string label = " " + std::string(fit(o.value, std::max(0, w - 4), HQ_LEFT));
+  text(s, 0, 0, fit(label, w - 2), t.foreground, o.focused ? HQ_BOLD : 0, chrome);
+  text(s, w - 2, 0, o.open ? " ▴" : " ▾", color, 0, chrome);
+
+  if (o.open && !o.options.empty()) {
+    int rows = std::min(int(o.options.size()), h - 1);
+    Color open_bg = elevate(t, .08);
+    for (int i = 0; i < rows; i++) {
+      bool selected = i == o.selected_index;
+      text(s, 0, i + 1, fit(" " + std::string(fit(o.options[std::size_t(i)], w - 2, HQ_LEFT)), w),
+           selected ? t.selection_text : t.foreground, 0,
+           selected ? t.selection : open_bg);
+    }
+  }
+}
+
+void draw_text_input(Surface s, const TextInput &o) {
+  auto &t = theme(s);
+  int surface_width = s.rect().width;
+  if (surface_width <= 0 || s.rect().height <= 0)
+    return;
+  int w = std::min(o.width < 0 ? surface_width : o.width, surface_width);
+  int lw = o.label.empty() ? 0 : int(width(o.label)) + 1;
+  if (!o.label.empty())
+    text(s, 0, 0, o.label, t.muted, 0, {});
+
+  int field = std::max(0, w - lw);
+  Color bg = elevate(t, o.focused ? .1 : .05);
+  s.sub({lw, 0, field, 1}).fill(' ', Style().background(bg));
+
+  std::string shown = o.value;
+  if (o.password) {
+    shown.clear();
+    // One bullet per character, not per byte.
+    for (std::size_t i = 0; i < o.value.size();) {
+      unsigned char lead = o.value[i];
+      i += lead < 128 ? 1 : lead < 224 ? 2 : lead < 240 ? 3 : 4;
+      shown += "•";
+    }
+  }
+  bool empty = shown.empty();
+  std::string content = empty ? o.placeholder : shown;
+  text(s, lw + 1, 0, fit(content, std::max(0, field - 2), HQ_LEFT, false),
+       empty ? t.muted : t.foreground, 0, bg);
+
+  if (o.focused) {
+    int caret = o.cursor < 0 ? int(width(shown)) : o.cursor;
+    int x = std::min(lw + 1 + caret, lw + field - 1);
+    auto native = s.native();
+    hq_rect cell{native.rect.x + x, native.rect.y, 1, 1};
+    hq_style style{t.background, o.color ? o.color : t.cursor, 0, HQ_STYLE_FG | HQ_STYLE_BG};
+    hq_buffer_style(native.buffer, hq_intersect(cell, native.clip), style);
+  }
+}
+
+void draw_tabs(Surface s, const Tabs &o) {
+  auto &t = theme(s);
+  int w = s.rect().width;
+  if (w <= 0 || s.rect().height <= 0)
+    return;
+  Color color = o.color ? o.color : t.accent;
+  int total = 0;
+  for (const auto &tab : o.tabs)
+    total += int(width(tab)) + 4;
+  int x = o.align == HQ_CENTER  ? std::max(0, (w - total) / 2)
+          : o.align == HQ_RIGHT ? std::max(0, w - total)
+                                : 0;
+
+  for (std::size_t i = 0; i < o.tabs.size(); i++) {
+    bool active = int(i) == o.active;
+    std::string label = "  " + o.tabs[i] + "  ";
+    Color fg = active ? (o.variant == HQ_TAB_FILLED ? (t.dark ? t.background : t.surface) : color)
+                      : t.muted;
+    std::optional<Color> bg;
+    int attrs = 0;
+    if (active) {
+      attrs = o.variant == HQ_TAB_FILLED ? HQ_BOLD : (HQ_BOLD | HQ_UNDERLINE);
+      if (o.variant == HQ_TAB_FILLED)
+        bg = color;
+    }
+    x += int(text(s, x, 0, label, fg, attrs, bg));
+  }
+}
+
+void draw_status_bar(Surface s, const StatusBar &o) {
+  auto &t = theme(s);
+  int w = s.rect().width;
+  if (w <= 0 || s.rect().height <= 0)
+    return;
+  Color bg = o.background ? *o.background : elevate(t, .04);
+  s.fill(' ', Style().background(bg));
+
+  auto draw_items = [&](const std::vector<StatusItem> &items, int start) {
+    int cx = start;
+    for (const auto &item : items) {
+      if (cx >= w)
+        break;
+      if (!item.key.empty()) {
+        Color cap_fg = o.caps ? (t.dark ? t.background : t.surface)
+                              : (o.key_color ? o.key_color : t.accent);
+        Color cap_bg = o.caps ? (o.key_color ? o.key_color : t.accent) : bg;
+        cx += int(text(s, cx, 0, item.key, cap_fg, HQ_BOLD, cap_bg));
+        cx += int(text(s, cx, 0, " ", t.foreground, 0, bg));
+      }
+      cx += int(text(s, cx, 0, item.label,
+                     item.active ? t.foreground : (item.color ? item.color : t.muted),
+                     item.active ? HQ_BOLD : 0, bg));
+      cx += int(text(s, cx, 0, "  ", t.foreground, 0, bg));
+    }
+    return cx;
+  };
+
+  int x = draw_items(o.items, 1);
+  if (!o.right.empty()) {
+    int right_width = 0;
+    for (const auto &item : o.right)
+      right_width += int(width(item.label)) + (item.key.empty() ? 0 : int(width(item.key)) + 1) + 2;
+    draw_items(o.right, std::max(x, w - right_width - 1));
+  }
+}
+
 void draw_list(Surface s, const List &o) {
   auto &t = theme(s);
   int h = s.rect().height;

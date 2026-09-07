@@ -144,6 +144,64 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_table(s, table);
     return true;
   }
+  if (name == "button") {
+    draw_button(s, Button{.label = "OK"});
+    return true;
+  }
+  if (name == "button-focused") {
+    draw_button(s, Button{.label = "Run", .focused = true});
+    return true;
+  }
+  if (name == "button-variants") {
+    draw_button(s.sub({0, 0, 10, 1}), Button{.label = "ok", .variant = HQ_BUTTON_SUCCESS});
+    draw_button(s.sub({10, 0, 10, 1}), Button{.label = "hm", .variant = HQ_BUTTON_WARNING});
+    draw_button(s.sub({20, 0, 10, 1}), Button{.label = "no", .variant = HQ_BUTTON_DANGER});
+    draw_button(s.sub({30, 0, 10, 1}), Button{.label = "gh", .variant = HQ_BUTTON_GHOST});
+    return true;
+  }
+  if (name == "checkbox") {
+    draw_checkbox(s.sub({0, 0, 24, 1}), Checkbox{.label = "on", .checked = true});
+    draw_checkbox(s.sub({0, 1, 24, 1}), Checkbox{.label = "toggle", .variant = HQ_CHECKBOX_TOGGLE});
+    draw_checkbox(s.sub({0, 2, 24, 1}),
+                  Checkbox{.label = "radio", .checked = true, .variant = HQ_CHECKBOX_RADIO});
+    return true;
+  }
+  if (name == "select-closed") {
+    draw_select(s, Select{.value = "dark"});
+    return true;
+  }
+  if (name == "select-open") {
+    draw_select(s, Select{.value = "dark",
+                          .open = true,
+                          .options = {"dark", "nord", "light"},
+                          .selected_index = 1});
+    return true;
+  }
+  if (name == "text-input") {
+    draw_text_input(s, TextInput{.value = "seed", .label = "host", .focused = true});
+    return true;
+  }
+  if (name == "text-input-password") {
+    draw_text_input(s, TextInput{.value = "hunter2", .password = true});
+    return true;
+  }
+  if (name == "text-input-placeholder") {
+    draw_text_input(s, TextInput{.value = "", .placeholder = "search…"});
+    return true;
+  }
+  if (name == "tabs") {
+    draw_tabs(s, Tabs{.tabs = {"cpu", "mem", "net"}, .active = 1});
+    return true;
+  }
+  if (name == "tabs-underline") {
+    draw_tabs(s, Tabs{.tabs = {"a", "b"}, .active = 0, .variant = HQ_TAB_UNDERLINE});
+    return true;
+  }
+  if (name == "status-bar") {
+    draw_status_bar(s, StatusBar{.items = {{"F1", "Help"}, {"F10", "Quit"}},
+                                 .right = {{"", "30fps"}}});
+    return true;
+  }
   if (name == "list") {
     List list;
     list.items = {{"alpha"}, {"beta"}, {"gamma"}, {"delta"}};
