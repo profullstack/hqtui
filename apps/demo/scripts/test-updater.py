@@ -40,7 +40,7 @@ class Updater(unittest.TestCase):
         return subprocess.check_output(["git", *args], cwd=self.repo, stderr=subprocess.DEVNULL, text=True).strip()
 
     def commit(self, label):
-        (self.repo / "mise.toml").write_text('[tools]\nbun = "1.4.0"\npython = "3.12.13"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\n')
+        (self.repo / "mise.toml").write_text('[tools]\nbun = "1.4.0"\npython = "3.12.13"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\ncmake = "4.4.3"\n')
         (self.repo / ".gitignore").write_text('__pycache__/\n')
         path = self.repo / "ports/python/examples"
         path.mkdir(parents=True, exist_ok=True)
@@ -49,7 +49,7 @@ class Updater(unittest.TestCase):
             'import json, os, sys\n'
             f'print(json.dumps({{"revision": {label!r}, "args": sys.argv[1:], "cwd": os.getcwd(), "tty": os.isatty(0)}}), flush=True)\n'
             'if "--wait" in sys.argv: input()\n')
-        for language in ("rust", "go", "zig"):
+        for language in ("rust", "go", "zig", "cpp"):
             (self.repo / "ports" / language).mkdir(exist_ok=True)
             (self.repo / "ports" / language / "source").write_text(label)
         self.git("add", ".")
@@ -100,7 +100,7 @@ class Updater(unittest.TestCase):
         self.assertFalse((self.root / "cache/v1/revisions").exists())
 
     def test_invalid_language_and_missing_terminal_fail_before_fetch(self):
-        for args in (("--system", "cpp"), ("--system", "python")):
+        for args in (("--system", "c"), ("--system", "python")):
             result = self.run_demo(*args)
             self.assertNotEqual(result.returncode, 0)
         self.assertFalse((self.root / "cache").exists())
@@ -124,13 +124,21 @@ elif tool=="go":
 elif tool=="zig":
     assert args[0:3]==["build","-Doptimize=ReleaseFast","--prefix"]
     output=pathlib.Path(args[3])/"bin/hqtui-demo-zig"
+elif tool=="cmake":
+    if args[0]=="-S":
+        source=pathlib.Path(args[1]); build=pathlib.Path(args[3])
+        build.mkdir(parents=True,exist_ok=True)
+        (build/"source").write_text((source/"source").read_text())
+        sys.exit(0)
+    assert args[0]=="--build" and args[2:4]==["--target","hqtui-demo-cpp"]
+    output=pathlib.Path(args[1])/"hqtui-demo-cpp"
 else: raise AssertionError(tool)
-label=pathlib.Path("source").read_text()
+label=(pathlib.Path(args[1])/"source" if tool=="cmake" else pathlib.Path("source")).read_text()
 output.parent.mkdir(parents=True,exist_ok=True)
 output.write_text("#!/usr/bin/env python3\\nimport json,sys\\nprint(json.dumps(dict(revision="+repr(label)+",args=sys.argv[1:])))\\n")
 output.chmod(0o700)
 '''
-        for name in ("mise", "cargo", "go", "zig"):
+        for name in ("mise", "cargo", "go", "zig", "cmake"):
             path = self.bin / name
             path.write_text(code)
             path.chmod(0o700)
@@ -138,22 +146,22 @@ output.chmod(0o700)
     def test_vanilla_and_mise_build_latest_and_reuse_only_same_revision(self):
         self.stub_compilers()
         for manager in ("--system", "--mise"):
-            for language in ("rust", "go", "zig"):
+            for language in ("rust", "go", "zig", "cpp"):
                 result = self.run_demo(manager, language, "--snapshot", "argument with spaces")
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(json.loads(result.stdout)["revision"], "first")
                 self.assertEqual(json.loads(result.stdout)["args"][-1], "argument with spaces")
         log = [json.loads(line) for line in (self.root / "tools.jsonl").read_text().splitlines()]
-        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") for row in log), 6)
-        for language in ("rust", "go", "zig"):
+        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") or row[:2]==["cmake","--build"] for row in log), 8)
+        for language in ("rust", "go", "zig", "cpp"):
             self.assertEqual(self.run_demo("--mise", language, "--snapshot").returncode, 0)
         self.commit("second")
-        for language in ("rust", "go", "zig"):
+        for language in ("rust", "go", "zig", "cpp"):
             result = self.run_demo("--mise", language, "--snapshot")
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout)["revision"], "second")
         log = [json.loads(line) for line in (self.root / "tools.jsonl").read_text().splitlines()]
-        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") for row in log), 9)
+        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") or row[:2]==["cmake","--build"] for row in log), 12)
 
     @unittest.skipUnless(os.name == "posix", "requires a controlling PTY")
     def test_pipe_launcher_reattaches_keyboard_and_releases_build_lock(self):

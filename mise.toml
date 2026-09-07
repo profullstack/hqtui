@@ -1,4 +1,4 @@
-# Reproducible toolchains for the five native implementations in this monorepo.
+# Reproducible runtime/build tools for the demos in this monorepo.
 # Adding a tool here is not a claim that a native hqtui library exists for it.
 [tools]
 bun = "1.4.0"
@@ -6,6 +6,15 @@ python = "3.12.13"
 go = "1.26.0"
 rust = "1.97.1"
 zig = "0.16.0"
+cmake = "4.4.3"
+
+[tasks."demo:cpp"]
+description = "Update and run the native C++ ten-screen demo (requires C/C++ compiler)"
+run = "sh apps/web/public/demo.sh --mise cpp"
+
+[tasks."demo-local:cpp"]
+description = "Build and run this checkout's C++ demo without updating"
+run = ["cmake -S ports/cpp -B ports/cpp/build-demo -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF", "cmake --build ports/cpp/build-demo --target hqtui-demo-cpp --parallel 2", "ports/cpp/build-demo/hqtui-demo-cpp"]
 
 [tasks."demo:typescript"]
 description = "TypeScript reference demo (Bun)"

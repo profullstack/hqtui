@@ -1,7 +1,9 @@
 # hqtui, in other languages
 
 C and C++ are now being implemented with one shared native C rendering core and
-a thin C++17 ownership API. They are **not complete supported ports yet**. See
+a C++17 ownership/widget API. The C++ ten-screen demo is now runnable and has
+120 exact screen-body checks on Linux; its library API remains experimental.
+The C-only demo is **not complete**. See
 [C](c/README.md), [C++](cpp/README.md), and the [acceptance checklist](c/STATUS.md).
 
 Native ports of [the TypeScript reference implementation](https://hqtui.com).

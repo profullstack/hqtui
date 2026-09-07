@@ -44,6 +44,7 @@ class Surface {
 public:
     // A borrowed view: keep its Buffer and any custom theme alive.
     explicit Surface(hq_surface surface) noexcept : surface_(surface) {}
+    hq_surface native() const noexcept { return surface_; }
     Rect rect() const noexcept { return surface_.rect; }
     Surface sub(Rect local) const noexcept { return Surface(hq_surface_sub(surface_,local)); }
     Surface region(Rect absolute) const noexcept { return Surface(hq_surface_region(surface_,absolute)); }

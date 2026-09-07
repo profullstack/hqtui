@@ -144,12 +144,12 @@ export default async function Home() {
               priority
               className="mx-auto mb-6 w-[22rem] max-w-full sm:w-[30rem]"
             />
-            <h1 className="sr-only">HQTUI — High Quality Terminal UI for TypeScript, Rust, Go, Python and Zig</h1>
+            <h1 className="sr-only">HQTUI — High Quality Terminal UI for TypeScript, Rust, Go, Python, Zig and C++</h1>
             <p className="mb-6 text-balance text-lg text-white/70">
-              High Quality Terminal UI for TypeScript, Rust, Go, Python and Zig
+              High Quality Terminal UI for TypeScript, Rust, Go, Python, Zig and C++
             </p>
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
-              v0.1.12 · 5 languages · MIT
+              v0.1.12 · 6 language demos · MIT
             </Badge>
             <p className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
               Terminal dashboards that
@@ -227,17 +227,18 @@ export default async function Home() {
       </section>
 
       <section id="languages" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6">
-        <h2 className="text-3xl font-bold tracking-tight">One terminal UI, five languages</h2>
+        <h2 className="text-3xl font-bold tracking-tight">One terminal UI, six language demos</h2>
         <p className="mt-3 max-w-3xl text-white/60">
           Build in TypeScript or use a native Rust, Go, Python or Zig implementation.
-          Each port includes the app loop, widgets, themes, input handling and a headless renderer.
-          The four native ports need no JavaScript runtime and use only their standard libraries.
+          C++ now has a native ten-screen demo over the shared C rendering core, with an experimental library API.
+          The native demos need no JavaScript runtime.
         </p>
         <div className="mt-6 max-w-2xl">
           <p className="text-sm text-white/50">
             Every command checks latest main, builds in a private cache, and runs it.
             No manual clone or pull. Vanilla uses your installed toolchain; mise uses
-            the pinned toolchain. Git and curl are required; the first build takes longer.
+            the pinned toolchain. C++ uses pinned CMake with your installed GCC/Clang.
+            Git and curl are required; the first build takes longer.
           </p>
         </div>
 

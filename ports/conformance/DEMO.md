@@ -17,6 +17,11 @@ attributes, allowing at most one Braille dot in the Components gauge: Go's cosin
 and the reference runtime differ by one ULP at 2π/3, which straddles a half-pixel.
 That tolerance cannot hide spacing, color, text or other-screen differences.
 
+C++ now runs the same 120 exact screen-body hash checks on Linux through
+`mise run test:cpp`. Its shell/terminal acceptance checks also exercise all ten
+tabs, overlays, resize, q/SIGTERM and terminal cleanup. The reusable C++ library
+API is still experimental, and the C-only demo is not implemented.
+
 The reference frames check screen bodies, not every possible interaction or live
 system sample. Native suites additionally exercise keyboard/overlay priority,
 scroll offsets, mouse selection, real-source parsing, real/simulated CLI launches

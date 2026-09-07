@@ -1,0 +1,2 @@
+#pragma once
+namespace demo { inline constexpr const char* sample_json=R"hqtuisample(@HQTUI_DEMO_SAMPLE@)hqtuisample"; }

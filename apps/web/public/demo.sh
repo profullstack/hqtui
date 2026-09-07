@@ -9,7 +9,7 @@ main() (
     note() { printf 'hqtui-demo: %s\n' "$*" >&2; }
     usage() {
         printf '%s\n' 'Usage: demo.sh [--mise|--system] [--check] LANGUAGE [demo arguments...]' \
-          'Languages: typescript (ts), rust, go, python, zig' \
+          'Languages: typescript (ts), rust, go, python, zig, cpp (c++)' \
           'Every invocation fetches latest main. --check prints the revision without building.' \
           'Defaults to mise when installed, otherwise uses your installed compiler/runtime.' \
           'Examples: demo.sh rust --sim; demo.sh --mise rust --snapshot'
@@ -31,7 +31,8 @@ main() (
     case "$language" in
         ts|typescript) language=typescript; tool=bun ;;
         rust|go|python|zig) tool=$language ;;
-        *) fail "Unsupported language '$language'. C/C++ demos are not ready; use typescript, rust, go, python or zig." ;;
+        cpp|c++) language=cpp; tool=cmake ;;
+        *) fail "Unsupported language '$language'. The C-only demo is not ready; use typescript, rust, go, python, zig or cpp." ;;
     esac
     # When invoked through curl | sh, the pipe is not the demo's keyboard.
     # Connect only interactive runs to the controlling terminal; preserve pipes
@@ -55,7 +56,7 @@ main() (
         command -v mise >/dev/null 2>&1 || fail 'mise was requested but is not installed. Install mise or omit --mise.'
     fi
     if [ "$manager" = system ] && [ "$check" -eq 0 ]; then
-        case "$language" in rust) driver=cargo ;; typescript) driver=bun ;; python) driver=python3 ;; *) driver=$language ;; esac
+        case "$language" in rust) driver=cargo ;; typescript) driver=bun ;; python) driver=python3 ;; cpp) driver=cmake ;; *) driver=$language ;; esac
         driver_path=$(command -v "$driver") || fail "$driver is not installed. Install it, or use --mise."
         # Resolve a mise shim BEFORE entering the fetched checkout. Vanilla must
         # not accidentally load or ask to trust the downloaded mise.toml. Keep the
@@ -152,6 +153,22 @@ main() (
     bins=$cache/bin/$platform/$manager-$tool-$version/$revision
     mkdir -p "$bins" "$cache/build"
     case "$language" in
+        cpp)
+            case "$(uname -s)" in Linux|Darwin) ;; *) fail 'The C++ terminal demo currently supports Linux/macOS; use another demo on this platform.' ;; esac
+            # mise manages CMake here. The native C/C++ compiler is supplied by
+            # the host (GCC/Clang), not silently replaced or downloaded.
+            command -v "${CXX:-c++}" >/dev/null 2>&1 || fail 'A C++17 compiler is required (GCC/Clang). Install your platform build tools, then rerun.'
+            if [ ! -f "$bins/cpp.ready" ] || [ ! -x "$bins/cpp" ]; then
+                note 'Building optimized C++ demo (first run of this revision)…'
+                cpp_build=$cache/build/cpp/$platform/$manager/$revision
+                run_tool cmake -S "$source/ports/cpp" -B "$cpp_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DHQTUI_LTO=ON >&2
+                run_tool cmake --build "$cpp_build" --target hqtui-demo-cpp --parallel 2 >&2
+                cp "$cpp_build/hqtui-demo-cpp" "$bins/cpp.pending"
+                mv "$bins/cpp.pending" "$bins/cpp"
+                printf '%s\n' "$revision" > "$bins/cpp.ready"
+            fi
+            launch "$bins/cpp" "$@"
+            ;;
         rust)
             cd "$source/ports/rust"
             if [ ! -f "$bins/rust.ready" ] || [ ! -x "$bins/rust" ]; then
