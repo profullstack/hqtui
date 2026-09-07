@@ -10,6 +10,10 @@ cmake = "4.4.3"
 ruby = "4.0.6"
 "conda:php" = "8.5.9"
 perl = "5.44.0.0"
+# The cookbook: markdown in, PDF and EPUB out. Typst is pandoc's PDF engine
+# here, so the book builds without a LaTeX installation.
+pandoc = "3.11"
+typst = "0.15.1"
 
 [tasks."demo:ruby"]
 description = "Update and run Ruby binding demo"
