@@ -36,12 +36,12 @@ pub const BorderStyle = enum {
 
     pub fn chars(self: BorderStyle) ?BorderChars {
         return switch (self) {
-            .rounded => .{ .tl = '╭', .tr = '╮', .bl = '╰', .br = '╯', .h = '─', .v = '│' },
-            .single => .{ .tl = '┌', .tr = '┐', .bl = '└', .br = '┘', .h = '─', .v = '│' },
-            .double => .{ .tl = '╔', .tr = '╗', .bl = '╚', .br = '╝', .h = '═', .v = '║' },
-            .thick => .{ .tl = '┏', .tr = '┓', .bl = '┗', .br = '┛', .h = '━', .v = '┃' },
-            .dashed => .{ .tl = '╭', .tr = '╮', .bl = '╰', .br = '╯', .h = '╌', .v = '╎' },
-            .ascii => .{ .tl = '+', .tr = '+', .bl = '+', .br = '+', .h = '-', .v = '|' },
+            .rounded => .{ .tl = '╭', .tr = '╮', .bl = '╰', .br = '╯', .h = '─', .v = '│', .ml = '├', .mr = '┤', .mt = '┬', .mb = '┴', .cross = '┼' },
+            .single => .{ .tl = '┌', .tr = '┐', .bl = '└', .br = '┘', .h = '─', .v = '│', .ml = '├', .mr = '┤', .mt = '┬', .mb = '┴', .cross = '┼' },
+            .double => .{ .tl = '╔', .tr = '╗', .bl = '╚', .br = '╝', .h = '═', .v = '║', .ml = '╠', .mr = '╣', .mt = '╦', .mb = '╩', .cross = '╬' },
+            .thick => .{ .tl = '┏', .tr = '┓', .bl = '┗', .br = '┛', .h = '━', .v = '┃', .ml = '┣', .mr = '┫', .mt = '┳', .mb = '┻', .cross = '╋' },
+            .dashed => .{ .tl = '╭', .tr = '╮', .bl = '╰', .br = '╯', .h = '╌', .v = '╎', .ml = '├', .mr = '┤', .mt = '┬', .mb = '┴', .cross = '┼' },
+            .ascii => .{ .tl = '+', .tr = '+', .bl = '+', .br = '+', .h = '-', .v = '|', .ml = '+', .mr = '+', .mt = '+', .mb = '+', .cross = '+' },
             .none => null,
         };
     }
@@ -54,7 +54,69 @@ pub const BorderChars = struct {
     br: u21,
     h: u21,
     v: u21,
+    /// Junctions, for collapsed borders. A panel on its own never draws them.
+    ml: u21,
+    mr: u21,
+    mt: u21,
+    mb: u21,
+    cross: u21,
+
+    /// The glyphs in the order `part_bits` describes them.
+    pub fn parts(self: BorderChars) [11]u21 {
+        return .{ self.tl, self.tr, self.bl, self.br, self.h, self.v, self.ml, self.mr, self.mt, self.mb, self.cross };
+    }
 };
+
+/// Edge bits for a border glyph: 1 up, 2 right, 4 down, 8 left.
+///
+/// Collapsing two panel borders is the union of their edges. A panel's
+/// top-right corner (down + left) landing on its neighbour's top-left
+/// (down + right) is down + left + right, which is the T that makes the two
+/// read as one frame.
+pub const edge_up: u8 = 1;
+pub const edge_right: u8 = 2;
+pub const edge_down: u8 = 4;
+pub const edge_left: u8 = 8;
+
+const part_bits = [11]u8{
+    edge_right | edge_down, // tl
+    edge_left | edge_down, // tr
+    edge_up | edge_right, // bl
+    edge_up | edge_left, // br
+    edge_left | edge_right, // h
+    edge_up | edge_down, // v
+    edge_up | edge_down | edge_right, // ml
+    edge_up | edge_down | edge_left, // mr
+    edge_left | edge_right | edge_down, // mt
+    edge_left | edge_right | edge_up, // mb
+    edge_up | edge_right | edge_down | edge_left, // cross
+};
+
+const all_border_styles = [_]BorderStyle{ .rounded, .single, .double, .thick, .dashed, .ascii };
+
+/// The edges of a border glyph, or null when it is not one.
+///
+/// ASCII borders collide (every corner is '+') and the first match wins, which
+/// is right: the union of anything with a '+' is a '+'.
+pub fn borderBits(ch: u21) ?u8 {
+    for (all_border_styles) |style| {
+        const chars = style.chars() orelse continue;
+        for (chars.parts(), 0..) |part, i| {
+            if (part == ch) return part_bits[i];
+        }
+    }
+    return null;
+}
+
+/// The glyph in `style` with exactly these edges, or null if there is none.
+pub fn borderGlyph(style: BorderStyle, bits: u8) ?u21 {
+    const chars = style.chars() orelse return null;
+    const parts = chars.parts();
+    for (part_bits, 0..) |value, i| {
+        if (value == bits) return parts[i];
+    }
+    return null;
+}
 
 /// How a run of text is drawn into a surface.
 pub const TextOptions = struct {
@@ -88,6 +150,10 @@ pub const BoxOptions = struct {
     subtitle_color: ?Color = null,
     /// Paint the interior with `bg` before drawing.
     fill: bool = true,
+    /// Merge this border with one already drawn in the same cell rather than
+    /// overwriting it. Set for you by the container when the app asks for
+    /// collapsed borders; there is no reason to pass it by hand.
+    collapse: bool = false,
     footer: []const u8 = "",
     footer_color: ?Color = null,
 };
@@ -251,6 +317,26 @@ pub const Surface = struct {
 
     /// Draw a bordered box with an optional title, and return the interior
     /// surface. Every panel in the library goes through here.
+    /// Writes a border glyph, merging it with whatever border is already there.
+    ///
+    /// Only border glyphs merge. Anything else in the cell is overwritten,
+    /// which keeps a panel drawn over a chart looking like a panel rather than
+    /// growing junctions out of the data.
+    fn mergeBorder(self: Surface, x: isize, y: isize, ch: u21, style: BorderStyle, cell_style: Style) void {
+        const ax = self.rect.x + x;
+        const ay = self.rect.y + y;
+        if (!self.clip.contains(ax, ay)) return;
+
+        const existing = self.buffer.chars[self.buffer.index(@intCast(ax), @intCast(ay))];
+        var out = ch;
+        if (borderBits(@intCast(existing))) |before| {
+            if (borderBits(ch)) |after| {
+                if (before != after) out = borderGlyph(style, before | after) orelse ch;
+            }
+        }
+        self.glyph(x, y, out, cell_style);
+    }
+
     pub fn box(self: Surface, options: BoxOptions) Surface {
         const fg = options.border_color orelse self.theme.border;
         const bg = options.bg;
@@ -266,15 +352,24 @@ pub const Surface = struct {
         const h = self.height();
         const border_style: Style = .{ .fg = fg, .bg = bg };
 
-        self.glyph(0, 0, chars.tl, border_style);
-        self.glyph(@intCast(w - 1), 0, chars.tr, border_style);
-        self.hline(1, 0, w - 2, chars.h, border_style);
+        // With collapsing on, a border glyph landing on another one becomes the
+        // union of the two. Without it this is a plain write, so a screen that
+        // never asks for collapsing renders byte for byte as it did.
+        const put = struct {
+            fn call(s: Surface, collapse: bool, style: BorderStyle, cell_style: Style, x: isize, y: isize, ch: u21) void {
+                if (collapse) s.mergeBorder(x, y, ch, style, cell_style) else s.glyph(x, y, ch, cell_style);
+            }
+        }.call;
+
+        put(self, options.collapse, options.border, border_style, 0, 0, chars.tl);
+        put(self, options.collapse, options.border, border_style, @intCast(w - 1), 0, chars.tr);
+        for (0..w - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(1 + i), 0, chars.h);
         if (h > 1) {
-            self.glyph(0, @intCast(h - 1), chars.bl, border_style);
-            self.glyph(@intCast(w - 1), @intCast(h - 1), chars.br, border_style);
-            self.hline(1, @intCast(h - 1), w - 2, chars.h, border_style);
-            self.vline(0, 1, h - 2, chars.v, border_style);
-            self.vline(@intCast(w - 1), 1, h - 2, chars.v, border_style);
+            put(self, options.collapse, options.border, border_style, 0, @intCast(h - 1), chars.bl);
+            put(self, options.collapse, options.border, border_style, @intCast(w - 1), @intCast(h - 1), chars.br);
+            for (0..w - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(1 + i), @intCast(h - 1), chars.h);
+            for (0..h - 2) |i| put(self, options.collapse, options.border, border_style, 0, @intCast(1 + i), chars.v);
+            for (0..h - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(w - 1), @intCast(1 + i), chars.v);
         }
 
         // Measured before the title is drawn: both share the top border row, and

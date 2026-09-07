@@ -203,10 +203,30 @@ pub fn solve(
     items: []const Constraint,
     gap: usize,
 ) ![]usize {
+    const seams = try allocator.alloc(isize, items.len -| 1);
+    defer allocator.free(seams);
+    @memset(seams, @intCast(gap));
+    return solveWithGaps(allocator, total, items, seams);
+}
+
+/// As `solve`, but with a gap per seam, which may be negative.
+///
+/// A negative seam is how collapsed borders work: two panels overlap by the
+/// column their borders share, so the pair occupies one column less than the
+/// sum of their widths.
+pub fn solveWithGaps(
+    allocator: std.mem.Allocator,
+    total: usize,
+    items: []const Constraint,
+    gaps: []const isize,
+) ![]usize {
     const n = items.len;
     if (n == 0) return allocator.alloc(usize, 0);
 
-    const available = total -| gap * (n - 1);
+    var gap_total: isize = 0;
+    for (gaps[0..@min(gaps.len, n - 1)]) |g| gap_total += g;
+    const signed_available = @as(isize, @intCast(total)) - gap_total;
+    const available: usize = if (signed_available > 0) @intCast(signed_available) else 0;
     const parsed = try allocator.alloc(Resolved, n);
     defer allocator.free(parsed);
     for (items, 0..) |c, i| parsed[i] = parseConstraint(c, available);
@@ -315,8 +335,22 @@ pub fn stack(
     direction: Direction,
     gap: usize,
 ) ![]Rect {
+    const seams = try allocator.alloc(isize, items.len -| 1);
+    defer allocator.free(seams);
+    @memset(seams, @intCast(gap));
+    return stackWithGaps(allocator, rect, items, direction, seams);
+}
+
+/// As `stack`, but with a gap per seam, which may be negative.
+pub fn stackWithGaps(
+    allocator: std.mem.Allocator,
+    rect: Rect,
+    items: []const Constraint,
+    direction: Direction,
+    gaps: []const isize,
+) ![]Rect {
     const horizontal = direction == .row;
-    const sizes = try solve(allocator, if (horizontal) rect.width else rect.height, items, gap);
+    const sizes = try solveWithGaps(allocator, if (horizontal) rect.width else rect.height, items, gaps);
     defer allocator.free(sizes);
 
     const out = try allocator.alloc(Rect, sizes.len);
@@ -326,7 +360,7 @@ pub fn stack(
             .{ .x = offset, .y = rect.y, .width = size, .height = rect.height }
         else
             .{ .x = rect.x, .y = offset, .width = rect.width, .height = size };
-        offset += @as(isize, @intCast(size)) + @as(isize, @intCast(gap));
+        offset += @as(isize, @intCast(size)) + (if (i < gaps.len) gaps[i] else 0);
     }
     return out;
 }

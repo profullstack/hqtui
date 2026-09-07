@@ -151,6 +151,33 @@ pub fn renderWith(
     overrides: Overrides,
     view: ui.Body,
 ) !RenderedScreen {
+    return renderWithCollapse(parent, width, height, theme_name, frame, overrides, false, view);
+}
+
+/// Render with adjacent panel borders merged, as `App.Options.collapse_borders`
+/// does for a running app. The caller owns the result.
+pub fn renderCollapsedToText(
+    parent: std.mem.Allocator,
+    width: usize,
+    height: usize,
+    theme_name: []const u8,
+    view: ui.Body,
+) ![]u8 {
+    var screen = try renderWithCollapse(parent, width, height, theme_name, 0, .{}, true, view);
+    defer screen.deinit();
+    return parent.dupe(u8, try screen.text());
+}
+
+fn renderWithCollapse(
+    parent: std.mem.Allocator,
+    width: usize,
+    height: usize,
+    theme_name: []const u8,
+    frame: u64,
+    overrides: Overrides,
+    collapse_borders: bool,
+    view: ui.Body,
+) !RenderedScreen {
     const arena = try parent.create(std.heap.ArenaAllocator);
     errdefer parent.destroy(arena);
     arena.* = .init(parent);
@@ -166,6 +193,7 @@ pub fn renderWith(
     buffer.clear(resolved.background, resolved.foreground);
 
     var ctx = ui.Ctx.init(alloc, resolved, caps, width, height);
+    ctx.collapse_borders = collapse_borders;
     ctx.frame = frame;
 
     const root = Surface.root(&buffer, resolved);

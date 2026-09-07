@@ -125,6 +125,10 @@ pub const Ctx = struct {
     elapsed: u64 = 0,
     /// Which focusable control currently has focus.
     focus_index: usize = 0,
+    /// Merge the borders of adjacent panels into shared lines, the way CSS
+    /// collapses table borders. Off unless the app asks for it, because it
+    /// changes every layout that has two panels side by side.
+    collapse_borders: bool = false,
 
     focus_cursor: usize = 0,
     focus_ids: std.ArrayList([]const u8) = .empty,
@@ -392,6 +396,10 @@ const Node = union(enum) {
 const Child = struct {
     constraint: Constraint,
     node: Node,
+    /// True when this child draws a border of its own. Only bordered siblings
+    /// collapse into each other: a table pressed against a panel edge should
+    /// not grow junctions out of its rows.
+    bordered: bool = false,
 };
 
 /// Draw one resolved child onto the surface the solver gave it.
@@ -421,6 +429,7 @@ fn drawNode(ctx: *Ctx, s: Surface, node: Node) anyerror!void {
                 .border = o.border orelse .rounded,
                 .border_color = border_color,
                 .bg = o.layout.background,
+                .collapse = ctx.collapse_borders,
             });
             const inner: Layout = .{
                 .gap = o.layout.gap,
@@ -587,6 +596,26 @@ pub const Container = struct {
         };
     }
 
+    /// The gap at each seam. Ordinarily one number repeated, but where
+    /// collapsing is on and two bordered siblings meet with no gap between
+    /// them, the seam is minus one so their borders land in the same column
+    /// and merge. The caller owns the slice.
+    fn seams(self: *Container, allocator: std.mem.Allocator) ![]isize {
+        const out = try allocator.alloc(isize, self.children.items.len -| 1);
+        @memset(out, @intCast(self.gap));
+        if (!self.ctx.collapse_borders or self.gap != 0) return out;
+        for (out, 0..) |*seam, i| {
+            if (self.children.items[i].bordered and self.children.items[i + 1].bordered) {
+                seam.* = -1;
+            }
+        }
+        return out;
+    }
+
+    fn addBordered(self: *Container, constraint: Constraint, node: Node, bordered: bool) !void {
+        try self.children.append(self.ctx.allocator, .{ .constraint = constraint, .node = node, .bordered = bordered });
+    }
+
     fn add(self: *Container, constraint: Constraint, node: Node) !void {
         try self.children.append(self.ctx.allocator, .{ .constraint = constraint, .node = node });
     }
@@ -625,12 +654,14 @@ pub const Container = struct {
         defer allocator.free(constraints);
         for (self.children.items, 0..) |c, i| constraints[i] = c.constraint;
 
-        const rects = try layout_mod.stack(
+        const seam_gaps = try self.seams(allocator);
+        defer allocator.free(seam_gaps);
+        const rects = try layout_mod.stackWithGaps(
             allocator,
             self.inner.rect,
             constraints,
             self.direction,
-            self.gap,
+            seam_gaps,
         );
         defer allocator.free(rects);
 
@@ -673,9 +704,10 @@ pub const Container = struct {
             self.ctx.registerFocus(id)
         else
             false;
-        try self.add(
+        try self.addBordered(
             self.constraintOf(options.layout, .fill, null),
             .{ .panel = .{ .options = options, .focused = focused, .body = body } },
+            (options.border orelse .rounded) != .none,
         );
     }
 
