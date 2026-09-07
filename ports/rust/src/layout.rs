@@ -284,12 +284,22 @@ fn clamp(v: f64, min: f64, max: f64) -> f64 {
 /// Distribute `total` across `items`, honouring gaps, fractions and min/max.
 /// Always returns non-negative sizes that sum to at most `total`.
 pub fn solve(total: usize, items: &[Constraint], gap: usize) -> Vec<usize> {
+    let seams = vec![gap as isize; items.len().saturating_sub(1)];
+    solve_with_gaps(total, items, &seams)
+}
+
+/// As `solve`, but with a gap per seam, which may be negative.
+///
+/// A negative seam is how collapsed borders work: two panels overlap by the
+/// column their borders share, so the pair occupies one column less than the
+/// sum of their widths.
+pub fn solve_with_gaps(total: usize, items: &[Constraint], gaps: &[isize]) -> Vec<usize> {
     let n = items.len();
     if n == 0 {
         return Vec::new();
     }
-    let gap_total = gap * (n - 1);
-    let available = total.saturating_sub(gap_total);
+    let gap_total: isize = gaps.iter().take(n - 1).sum();
+    let available = (total as isize - gap_total).max(0) as usize;
     let parsed: Vec<Resolved> = items.iter().map(|c| parse_constraint(c, available)).collect();
 
     let mut used = 0i64;
@@ -377,17 +387,28 @@ pub fn solve(total: usize, items: &[Constraint], gap: usize) -> Vec<usize> {
 
 /// Lay children out along one axis inside `rect`.
 pub fn stack(rect: Rect, items: &[Constraint], direction: Direction, gap: usize) -> Vec<Rect> {
+    let seams = vec![gap as isize; items.len().saturating_sub(1)];
+    stack_with_gaps(rect, items, direction, &seams)
+}
+
+/// As `stack`, but with a gap per seam, which may be negative.
+pub fn stack_with_gaps(
+    rect: Rect,
+    items: &[Constraint],
+    direction: Direction,
+    gaps: &[isize],
+) -> Vec<Rect> {
     let horizontal = direction == Direction::Row;
-    let sizes = solve(if horizontal { rect.width } else { rect.height }, items, gap);
+    let sizes = solve_with_gaps(if horizontal { rect.width } else { rect.height }, items, gaps);
     let mut out = Vec::with_capacity(sizes.len());
     let mut offset = if horizontal { rect.x } else { rect.y };
-    for size in sizes {
+    for (i, size) in sizes.into_iter().enumerate() {
         out.push(if horizontal {
             Rect { x: offset, y: rect.y, width: size, height: rect.height }
         } else {
             Rect { x: rect.x, y: offset, width: rect.width, height: size }
         });
-        offset += size as isize + gap as isize;
+        offset += size as isize + gaps.get(i).copied().unwrap_or(0);
     }
     out
 }

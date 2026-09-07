@@ -37,6 +37,71 @@ pub struct BorderChars {
     pub cross: char,
 }
 
+/// Edge bits for a border glyph: 1 up, 2 right, 4 down, 8 left.
+///
+/// Collapsing two panel borders is the union of their edges. A panel's
+/// top-right corner (down + left) landing on its neighbour's top-left
+/// (down + right) is down + left + right, which is the T that makes the two
+/// read as one frame.
+pub const EDGE_UP: u8 = 1;
+pub const EDGE_RIGHT: u8 = 2;
+pub const EDGE_DOWN: u8 = 4;
+pub const EDGE_LEFT: u8 = 8;
+
+/// The edges each part of a border carries.
+const PART_BITS: [u8; 11] = [
+    EDGE_RIGHT | EDGE_DOWN,               // tl
+    EDGE_LEFT | EDGE_DOWN,                // tr
+    EDGE_UP | EDGE_RIGHT,                 // bl
+    EDGE_UP | EDGE_LEFT,                  // br
+    EDGE_LEFT | EDGE_RIGHT,               // h
+    EDGE_UP | EDGE_DOWN,                  // v
+    EDGE_UP | EDGE_DOWN | EDGE_RIGHT,     // ml
+    EDGE_UP | EDGE_DOWN | EDGE_LEFT,      // mr
+    EDGE_LEFT | EDGE_RIGHT | EDGE_DOWN,   // mt
+    EDGE_LEFT | EDGE_RIGHT | EDGE_UP,     // mb
+    0b1111,                               // cross
+];
+
+impl BorderChars {
+    fn parts(&self) -> [char; 11] {
+        [self.tl, self.tr, self.bl, self.br, self.h, self.v, self.ml, self.mr, self.mt, self.mb, self.cross]
+    }
+}
+
+const ALL_STYLES: [BorderStyle; 6] = [
+    BorderStyle::Rounded,
+    BorderStyle::Single,
+    BorderStyle::Double,
+    BorderStyle::Thick,
+    BorderStyle::Dashed,
+    BorderStyle::Ascii,
+];
+
+/// The edges of a border glyph, or `None` when it is not one.
+///
+/// ASCII borders collide (every corner is `+`) and the first match wins, which
+/// is right: the union of anything with a `+` is a `+`.
+pub fn border_bits(ch: char) -> Option<u8> {
+    for style in ALL_STYLES {
+        if let Some(chars) = style.chars() {
+            for (i, part) in chars.parts().into_iter().enumerate() {
+                if part == ch {
+                    return Some(PART_BITS[i]);
+                }
+            }
+        }
+    }
+    None
+}
+
+/// The glyph in `style` with exactly these edges, or `None` if there is none.
+pub fn border_glyph(style: BorderStyle, bits: u8) -> Option<char> {
+    let chars = style.chars()?;
+    let parts = chars.parts();
+    PART_BITS.iter().position(|b| *b == bits).map(|i| parts[i])
+}
+
 impl BorderStyle {
     pub fn chars(self) -> Option<BorderChars> {
         Some(match self {
@@ -149,6 +214,10 @@ pub struct BoxOptions {
     pub subtitle_color: Option<Color>,
     /// Paint the interior with `bg` before drawing. Defaults to on when `bg` is set.
     pub fill: Option<bool>,
+    /// Merge this border with one already drawn in the same cell rather than
+    /// overwriting it. Set for you by the container when the app asks for
+    /// collapsed borders; there is no reason to pass it by hand.
+    pub collapse: bool,
     pub footer: Option<String>,
     pub footer_color: Option<Color>,
 }
@@ -366,6 +435,31 @@ impl Surface {
 
     /// Draw a bordered box with an optional title, and return the interior
     /// surface. Every panel in the library goes through here.
+    /// Writes a border glyph, merging it with whatever border is already there.
+    ///
+    /// Only border glyphs merge. Anything else in the cell is overwritten,
+    /// which keeps a panel drawn over a chart looking like a panel rather than
+    /// growing junctions out of the data.
+    fn merge_border(&self, x: isize, y: isize, ch: char, style: BorderStyle, cell_style: &Style) {
+        let ax = self.rect.x + x;
+        let ay = self.rect.y + y;
+        if !self.visible(ax, ay) {
+            return;
+        }
+        let existing = {
+            let buffer = self.buffer.borrow();
+            let i = buffer.index(ax as usize, ay as usize);
+            buffer.chars.get(i).copied().and_then(char::from_u32)
+        };
+        let merged = match (existing.and_then(border_bits), border_bits(ch)) {
+            (Some(before), Some(after)) if before != after => {
+                border_glyph(style, before | after).unwrap_or(ch)
+            }
+            _ => ch,
+        };
+        self.glyph(x, y, merged, cell_style);
+    }
+
     pub fn draw_box(&self, options: &BoxOptions) -> Surface {
         let style_kind = options.border.unwrap_or(BorderStyle::Rounded);
         let fg = options.border_color.unwrap_or(self.theme.border);
@@ -387,15 +481,36 @@ impl Surface {
         let h = self.height();
         let border_style = Style { fg: Some(fg), bg, attrs: None };
 
-        self.glyph(0, 0, chars.tl, &border_style);
-        self.glyph(w as isize - 1, 0, chars.tr, &border_style);
-        self.hline(1, 0, w - 2, chars.h, &border_style);
+        // With collapsing on, a border glyph landing on another one becomes
+        // the union of the two. Without it this is a plain write, so a screen
+        // that never asks for collapsing renders byte for byte as it did.
+        let put = |x: isize, y: isize, ch: char| {
+            if options.collapse {
+                self.merge_border(x, y, ch, style_kind, &border_style);
+            } else {
+                self.glyph(x, y, ch, &border_style);
+            }
+        };
+        let put_h = |x: isize, y: isize, length: usize, ch: char| {
+            for i in 0..length {
+                put(x + i as isize, y, ch);
+            }
+        };
+        let put_v = |x: isize, y: isize, length: usize, ch: char| {
+            for i in 0..length {
+                put(x, y + i as isize, ch);
+            }
+        };
+
+        put(0, 0, chars.tl);
+        put(w as isize - 1, 0, chars.tr);
+        put_h(1, 0, w - 2, chars.h);
         if h > 1 {
-            self.glyph(0, h as isize - 1, chars.bl, &border_style);
-            self.glyph(w as isize - 1, h as isize - 1, chars.br, &border_style);
-            self.hline(1, h as isize - 1, w - 2, chars.h, &border_style);
-            self.vline(0, 1, h - 2, chars.v, &border_style);
-            self.vline(w as isize - 1, 1, h - 2, chars.v, &border_style);
+            put(0, h as isize - 1, chars.bl);
+            put(w as isize - 1, h as isize - 1, chars.br);
+            put_h(1, h as isize - 1, w - 2, chars.h);
+            put_v(0, 1, h - 2, chars.v);
+            put_v(w as isize - 1, 1, h - 2, chars.v);
         }
 
         // Measured before the title is drawn: both share the top border row,
