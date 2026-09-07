@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hqtui_c VERSION 0.1.12 LANGUAGES C)
+project(hqtui_c VERSION 0.2.0 LANGUAGES C)
 include(GNUInstallDirs)
 include(CTest)
 option(HQTUI_SANITIZE "Build with address/undefined behavior sanitizers" OFF)

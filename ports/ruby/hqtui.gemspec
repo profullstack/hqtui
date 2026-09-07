@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'hqtui'
-  s.version = '0.1.12'
+  s.version = '0.2.0'
   s.summary = 'Ruby bindings to the HQTUI native terminal renderer'
   s.authors = ['Profullstack']
   s.homepage = 'https://hqtui.com/docs#ruby'

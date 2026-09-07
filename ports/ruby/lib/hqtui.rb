@@ -3,7 +3,7 @@ require 'json'
 require 'fiddle/import'
 
 module Hqtui
-  VERSION = '0.1.12'
+  VERSION = '0.2.0'
   class Error < StandardError; end
   def self.native
     @native ||= Module.new do

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hqtui_cpp VERSION 0.1.12 LANGUAGES C CXX)
+project(hqtui_cpp VERSION 0.2.0 LANGUAGES C CXX)
 include(CTest)
 include(GNUInstallDirs)
 if(NOT TARGET hqtui::c)

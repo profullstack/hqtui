@@ -113,7 +113,7 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
     if (o.version) {
-        try stdout.writeStreamingAll(init.io, "0.1.12\n");
+        try stdout.writeStreamingAll(init.io, "0.2.0\n");
         return;
     }
     if (!o.snapshot and (!(try std.Io.File.stdin().isTty(init.io)) or !(try stdout.isTty(init.io)))) {

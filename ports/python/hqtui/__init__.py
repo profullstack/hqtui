@@ -31,9 +31,9 @@ from .theme import THEMES, Theme, define_theme, resolve_theme
 from .ui import Cell, Container, Grid, GridSpec, Layout, Panel, ScrollHandlers
 from .unicode import Align, fit, string_width, truncate, wrap
 
-__version__ = "0.1.12"
+__version__ = "0.2.0"
 
-REFERENCE_VERSION = "0.1.12"
+REFERENCE_VERSION = "0.2.0"
 """The version of the TypeScript reference implementation this port tracks."""
 
 __all__ = [
