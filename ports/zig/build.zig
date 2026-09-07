@@ -46,7 +46,7 @@ pub fn build(b: *std.Build) void {
 
     // Examples are separate executables, so `zig build run-screenshot` works
     // without a TTY while `run-dashboard` takes one over.
-    for ([_][]const u8{ "hello", "dashboard", "screenshot" }) |name| {
+    for ([_][]const u8{ "hello", "dashboard", "screenshot", "widgets" }) |name| {
         const command_name = if (std.mem.eql(u8, name, "dashboard")) "dashboard-mini" else name;
         const exe = b.addExecutable(.{
             .name = command_name,
