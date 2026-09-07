@@ -62,7 +62,17 @@ def run(args, kill=False):
             os.kill(proc.pid, signal.SIGTERM)
         else:
             os.write(master, b'q')
-        proc.wait(timeout=3)
+        # A real terminal keeps consuming output during shutdown. macOS PTYs
+        # have a small buffer: waiting without draining can block the demo in
+        # the remainder of its last frame before it reads q or restores state.
+        deadline = time.monotonic() + 3
+        while proc.poll() is None and time.monotonic() < deadline:
+            if select.select([master], [], [], .05)[0]:
+                try:
+                    os.read(master, 65536)
+                except (BlockingIOError, OSError):
+                    pass
+        proc.wait(timeout=.1)
         assert proc.returncode == (143 if kill else 0), proc.returncode
         assert termios.tcgetattr(slave) == before, 'terminal state was not restored'
     finally:
