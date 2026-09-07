@@ -29,8 +29,13 @@ def terminal(language, custom=False, terminate=False):
     before=termios.tcgetattr(slave)
     relative=f'examples/{"hello" if custom else "dashboard"}.{EXT[language]}'
     args=['--interactive'] if custom else ['--sim']
+    # Keep the VM a non-session-leader. Some VMs reopen their stdin device;
+    # making them session leaders allows an implicit controlling-TTY acquisition
+    # and macOS can revoke the slave when that session exits, before inspection.
+    # These in-process simulated demos spawn no children; signal the VM directly.
+    print(f'PTY: {language}, custom={custom}, signal={terminate}',flush=True)
     proc=subprocess.Popen([*COMMANDS[language],str(ROOT/'ports'/language/relative),*args],
-                          stdin=slave,stdout=slave,stderr=slave,start_new_session=True)
+                          stdin=slave,stdout=slave,stderr=slave)
     os.set_blocking(master,False)
     output=bytearray()
     def read():
@@ -61,7 +66,7 @@ def terminal(language, custom=False, terminate=False):
             before[3]&=~termios.PENDIN;after[3]&=~termios.PENDIN
         assert after==before,(language,'terminal not restored',before,after)
     finally:
-        if proc.poll() is None: os.killpg(proc.pid,signal.SIGKILL);proc.wait()
+        if proc.poll() is None: proc.kill();proc.wait()
         os.close(master);os.close(slave)
 
 def main():
