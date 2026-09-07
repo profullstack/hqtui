@@ -60,6 +60,12 @@
       "label": "Perl",
       "file": "ports/perl/examples/widgets.pl",
       "syntax": "perl"
+    },
+    {
+      "id": "cobol",
+      "label": "COBOL",
+      "file": "ports/cobol/examples/widgets.cbl",
+      "syntax": "cobol"
     }
   ],
   "widgets": [
@@ -111,6 +117,10 @@
         "perl": {
           "code": "sub widget_text {\n    my ($ui) = @_;\n    # align is 0 left, 1 center, 2 right.\n    $ui->text('Plain text. It fills the width it is given.');\n    $ui->text('Centered.', align => 1);\n    $ui->text('Right aligned.', align => 2);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "TEXT-WIDGET.\n    MOVE \"text\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"LEFT\" TO SR-KEY\n    MOVE \"Plain text. It fills the width it is given.\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"CENTER\" TO SR-KEY\n    MOVE \"Centered.\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"RIGHT\" TO SR-KEY\n    MOVE \"Right aligned.\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -263,6 +273,10 @@
         "perl": {
           "code": "sub widget_divider {\n    my ($ui) = @_;\n    $ui->text('Above the line');\n    $ui->divider;\n    $ui->text('Below it');\n    $ui->divider('status');\n    $ui->text('A labelled divider titles a section without spending a panel on it');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "DIVIDER-WIDGET.\n    MOVE \"divider\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"Above the line\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"DIVIDER\" TO SR-VERB\n    PERFORM EMIT-RECORD\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"Below it\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"DIVIDER\" TO SR-VERB\n    MOVE \"status\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -314,6 +328,10 @@
         "perl": {
           "code": "sub widget_key_values {\n    my ($ui) = @_;\n    # The backbone of every \"System\" panel: labels left, values right.\n    $ui->keys([\n        ['Host',        'web-01.iad'],\n        ['Uptime',      '18d 04:12'],\n        ['Load',        '0.42  0.51  0.60'],\n        ['Established', '1,284'],\n    ]);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "KEYVALUES-WIDGET.\n    MOVE \"keyValues\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Host\" TO SR-KEY\n    MOVE \"web-01.iad\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Uptime\" TO SR-KEY\n    MOVE \"18d 04:12\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Load\" TO SR-KEY\n    MOVE \"0.42  0.51  0.60\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"KEYVALUE\" TO SR-VERB\n    MOVE \"Established\" TO SR-KEY\n    MOVE \"1,284\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -400,6 +418,10 @@
         "perl": {
           "code": "sub widget_table {\n    my ($ui) = @_;\n    $ui->table(\n        ['Name', 'Size', 'Type', 'Modified'],\n        [\n            ['src',          '4.2 KB', 'dir',  '2m ago'],\n            ['test',         '1.1 KB', 'dir',  '5m ago'],\n            ['package.json', '1.2 KB', 'file', '10m ago'],\n            ['README.md',    '3.4 KB', 'file', '1h ago'],\n        ],\n        selected => 1,\n    );\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "TABLE-WIDGET.\n    MOVE \"table\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> One COLUMN record per column; SR-KEY carries the alignment.\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"LEFT\" TO SR-KEY\n    MOVE \"Name\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"RIGHT\" TO SR-KEY\n    MOVE \"Size\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"LEFT\" TO SR-KEY\n    MOVE \"Type\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"COLUMN\" TO SR-VERB\n    MOVE \"RIGHT\" TO SR-KEY\n    MOVE \"Modified\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    *> Cells are separated by \"|\", the one character no filename here uses.\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"src|4.2 KB|dir|2m ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"test|1.1 KB|dir|5m ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"package.json|1.2 KB|file|10m ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ROW\" TO SR-VERB\n    MOVE \"README.md|3.4 KB|file|1h ago\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"SELECT\" TO SR-VERB\n    MOVE \"1\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -521,6 +543,10 @@
         "perl": {
           "code": "sub widget_log {\n    my ($ui) = @_;\n    $ui->log([\n        { time => '12:45:02', level => 'INFO',  message => 'listening on :8080' },\n        { time => '12:45:09', level => 'WARN',  message => 'slow query 412ms', meta => 'table=users' },\n        { time => '12:45:11', level => 'ERROR', message => 'upstream timeout' },\n        { time => '12:45:14', level => 'INFO',  message => 'retry succeeded' },\n    ]);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "LOG-WIDGET.\n    MOVE \"log\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"INFO\" TO SR-KEY\n    MOVE \"12:45:02|listening on :8080\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"WARN\" TO SR-KEY\n    MOVE \"12:45:09|slow query 412ms|table=users\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"ERROR\" TO SR-KEY\n    MOVE \"12:45:11|upstream timeout\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LOG\" TO SR-VERB\n    MOVE \"INFO\" TO SR-KEY\n    MOVE \"12:45:14|retry succeeded\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -572,6 +598,10 @@
         "perl": {
           "code": "sub widget_meter {\n    my ($ui) = @_;\n    $ui->meter(0.62, label => 'CPU');\n    $ui->meter(0.31, label => 'MEM');\n    $ui->meter(0.87, label => 'SWP');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "METER-WIDGET.\n    MOVE \"meter\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"METER\" TO SR-VERB\n    MOVE \"CPU\" TO SR-KEY\n    MOVE \"0.62\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"METER\" TO SR-VERB\n    MOVE \"MEM\" TO SR-KEY\n    MOVE \"0.31\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"METER\" TO SR-VERB\n    MOVE \"SWP\" TO SR-KEY\n    MOVE \"0.87\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -693,6 +723,10 @@
         "perl": {
           "code": "sub widget_graph {\n    my ($ui) = @_;\n    # Braille line chart, filled under the curve.\n    $ui->graph(\\@cpu_history, min => 0, max => 100);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "GRAPH-WIDGET.\n    MOVE \"graph\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> One point per record, straight out of a table. This is the shape a\n    *> nightly batch job already has.\n    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 20\n        MOVE \"GRAPHPT\" TO SR-VERB\n        MOVE CPU-POINT(I) TO SR-NUM\n        PERFORM EMIT-RECORD\n    END-PERFORM.",
+          "syntax": "cobol"
         }
       }
     },
@@ -849,6 +883,10 @@
         "perl": {
           "code": "sub widget_gauge {\n    my ($ui) = @_;\n    # A semicircular dial. Wants at least nine columns by five rows.\n    $ui->gauge(0.62, label => '62%');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "GAUGE-WIDGET.\n    MOVE \"gauge\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"GAUGE\" TO SR-VERB\n    MOVE \"62%\" TO SR-TEXT\n    MOVE \"0.62\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },

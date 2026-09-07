@@ -12,7 +12,8 @@
  *
  * A language that has no marked region for a widget is reported as not having
  * it. That is the honest answer for C++, Ruby, PHP and Perl, which reach the
- * library through a narrower native core than the five native ports do.
+ * library through a narrower native core, and for COBOL, which does not link
+ * against it at all: it writes 80-column records that an adapter renders.
  *
  * Run: bun examples/widgets/build-catalog.ts
  */
@@ -65,6 +66,7 @@ export const LANGUAGES: LanguageSpec[] = [
   { id: "ruby", label: "Ruby", file: "ports/ruby/examples/widgets.rb", syntax: "ruby" },
   { id: "php", label: "PHP", file: "ports/php/examples/widgets.php", syntax: "php" },
   { id: "perl", label: "Perl", file: "ports/perl/examples/widgets.pl", syntax: "perl" },
+  { id: "cobol", label: "COBOL", file: "ports/cobol/examples/widgets.cbl", syntax: "cobol" },
 ];
 
 export const WIDGETS: WidgetSpec[] = [
