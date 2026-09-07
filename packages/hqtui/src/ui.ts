@@ -33,6 +33,12 @@ export interface RenderContext {
   /** Milliseconds since the app started. */
   elapsed: number;
   focusIndex: number;
+  /**
+   * Merge the borders of adjacent panels into shared lines, the way CSS
+   * collapses table borders. Off unless the app asks for it, because it
+   * changes every layout that has two panels side by side.
+   */
+  collapseBorders: boolean;
   registerFocus(action?: () => void): FocusRegistration;
   hit(region: HitRegion): void;
   overlay(draw: (root: Surface) => void): void;
@@ -52,6 +58,12 @@ export interface ScrollHandlers {
 interface Child {
   constraint: Constraint;
   draw: (surface: Surface) => void;
+  /**
+   * True when this child draws a border of its own. Only bordered siblings
+   * collapse into each other: a table pressed against a panel edge should not
+   * grow junctions out of its rows.
+   */
+  bordered?: boolean;
 }
 
 export interface ContainerOptions {
@@ -131,9 +143,25 @@ export class Container {
     return this.direction === "column" ? this.inner.width : this.inner.height;
   }
 
-  private add(draw: (surface: Surface) => void, constraint: Constraint = {}): this {
-    this.children.push({ draw, constraint });
+  private add(
+    draw: (surface: Surface) => void,
+    constraint: Constraint = {},
+    bordered = false,
+  ): this {
+    this.children.push({ draw, constraint, bordered });
     return this;
+  }
+
+  /**
+   * The gap at each seam. Ordinarily one number repeated, but where collapsing
+   * is on and two bordered siblings meet with no gap between them, the seam is
+   * minus one so their borders land in the same column and merge.
+   */
+  private seams(): number | number[] {
+    if (!this.ctx.collapseBorders || this.gap !== 0 || this.children.length < 2) return this.gap;
+    return this.children
+      .slice(0, -1)
+      .map((child, i) => (child.bordered && this.children[i + 1]?.bordered ? -1 : this.gap));
   }
 
   /**
@@ -174,7 +202,7 @@ export class Container {
       this.inner.rect,
       this.children.map((c) => c.constraint),
       this.direction,
-      this.gap,
+      this.seams(),
     );
     this.children.forEach((child, i) => {
       const rect = rects[i];
@@ -235,6 +263,7 @@ export class Container {
         border: options.border ?? "rounded",
         borderColor: options.borderColor ?? (focused ? this.theme.borderFocused : this.theme.border),
         bg: options.background,
+        collapse: this.ctx.collapseBorders,
       };
       const interior = surface.box(boxOptions);
       const container = new Container(interior, this.ctx, "column", {
@@ -243,7 +272,7 @@ export class Container {
       });
       build?.(container);
       container.flush();
-    }, this.sizeOf(options, "fill"));
+    }, this.sizeOf(options, "fill"), (options.border ?? "rounded") !== "none");
   }
 
   /** A panel without a border — a grouping box that costs no rows. */

@@ -16,6 +16,8 @@ export interface RenderOptions {
   frame?: number;
   elapsed?: number;
   focus?: number;
+  /** Merge the borders of adjacent panels, as `createApp` can. */
+  collapseBorders?: boolean;
 }
 
 export interface CellSnapshot {
@@ -94,6 +96,7 @@ export function renderToScreen(
     frame: options.frame ?? 0,
     elapsed: options.elapsed ?? 0,
     focusIndex: options.focus ?? 0,
+    collapseBorders: options.collapseBorders ?? false,
     registerFocus: () => {
       const index = focusCursor++;
       return { index, focused: index === (options.focus ?? 0) };
