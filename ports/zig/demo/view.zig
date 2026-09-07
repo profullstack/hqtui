@@ -44,10 +44,10 @@ pub fn render(s: *State, p: *Container) anyerror!void {
     try p.spacer(.{ .cells = 1 });
     try p.column(.{ .layout = .{ .size = .{ .cells = @intCast(p.height() -| 4) } } }, h.Body.with(s, body));
     try p.spacer(.{ .cells = 1 });
-    const items = try p.ctx.allocator.dupe(h.widgets.StatusItem, &.{ .{ .key = "F1", .label = "Help" }, .{ .key = "F2", .label = try p.fmt("Theme ({s})", .{p.theme().name}) }, .{ .key = "F3", .label = if (s.filtering) try p.fmt("Filter: {s}_", .{s.filter.slice()}) else "Filter", .active = s.filtering }, .{ .key = "F6", .label = try p.fmt("Sort: {s}", .{([_][]const u8{ "cpu", "mem", "pid", "name" })[s.sort]}) }, .{ .key = "^K", .label = "Palette" }, .{ .key = "Tab", .label = "Screen" }, .{ .key = "q", .label = "Quit" } });
+    const items = try p.ctx.allocator.dupe(h.widgets.StatusItem, &.{ .{ .key = "F1", .label = "Help" }, .{ .key = "F2", .label = try p.fmt("Theme ({s})", .{p.theme().name}) }, .{ .key = "F3", .label = if (s.filtering) try p.fmt("Filter: {s}_", .{s.filter.slice()}) else "Filter", .active = s.filtering }, .{ .key = "c", .label = "Collapse", .active = s.collapse }, .{ .key = "F6", .label = try p.fmt("Sort: {s}", .{([_][]const u8{ "cpu", "mem", "pid", "name" })[s.sort]}) }, .{ .key = "^K", .label = "Palette" }, .{ .key = "Tab", .label = "Screen" }, .{ .key = "q", .label = "Quit" } });
     const right = try p.ctx.allocator.dupe(h.widgets.StatusItem, &.{.{ .label = try p.fmt("{d:.2}ms  {d} cells  {d}B", .{ s.render_ms, s.changed_cells, s.output_bytes }) }});
     try p.statusBar(.{ .items = items, .right = right });
-    if (s.help) p.modal(.{ .title = "hqtui — Help", .message = "1–9/0 / Tab: screen\nF2 theme · F3 filter · F6 sort\nCtrl+K palette · Space pause\nArrows / PgUp / PgDn / Home / End: scroll\nMouse tabs, controls, selection and wheel\ne edits text · Esc finishes\nq / Ctrl+C quit · Any key closes help" });
+    if (s.help) p.modal(.{ .title = "hqtui — Help", .message = "1–9/0 / Tab: screen\nF2 theme · F3 filter · F6 sort\nc collapse panel borders\nCtrl+K palette · Space pause\nArrows / PgUp / PgDn / Home / End: scroll\nMouse tabs, controls, selection and wheel\ne edits text · Esc finishes\nq / Ctrl+C quit · Any key closes help" });
     if (s.modal) p.modal(.{ .title = "Read-only Demo", .message = "No process will be killed and no service changed.\nPress any key to close." });
     if (s.palette) {
         const matches = try s.commands(p.ctx.allocator);

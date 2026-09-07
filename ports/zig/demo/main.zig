@@ -189,6 +189,7 @@ pub fn main(init: std.process.Init) !void {
             }
         }
         if (!m.eq(app.theme.name, m.themes[state.theme])) app.setTheme(m.themes[state.theme]);
+        if (app.collapseBorders() != state.collapse) app.setCollapseBorders(state.collapse);
         const current = now(init.io);
         state.fps = 1 / @max(0.001, current - last_frame);
         last_frame = current;

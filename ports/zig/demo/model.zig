@@ -123,6 +123,7 @@ pub const State = struct {
     modal: bool = false,
     palette: bool = false,
     filtering: bool = false,
+    collapse: bool = false,
     editing: bool = false,
     checked: bool = true,
     toggle: bool = true,
@@ -335,6 +336,10 @@ pub const State = struct {
             self.theme = (self.theme + 1) % themes.len;
         } else if (eq(k, "f3")) {
             self.filtering = true;
+        } else if (eq(k, "c")) {
+            // Shows what collapse_borders does, live. Worth a key because the
+            // difference is only visible when panels sit next to each other.
+            self.collapse = !self.collapse;
         } else if (eq(k, "f6")) {
             self.sort = (self.sort + 1) % 4;
         } else if (eq(k, "ctrl+k")) {

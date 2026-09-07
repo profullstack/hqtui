@@ -271,6 +271,9 @@ fn run() -> Result<(), String> {
         if app.theme.name != THEMES[s.theme] {
             app.set_theme(THEMES[s.theme]);
         }
+        if app.collapse_borders() != s.collapse {
+            app.set_collapse_borders(s.collapse);
+        }
         let seconds = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()

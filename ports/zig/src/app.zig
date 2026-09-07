@@ -196,6 +196,19 @@ pub const App = struct {
         self.force_repaint = true;
     }
 
+    /// Whether adjacent panel borders are being merged.
+    pub fn collapseBorders(self: App) bool {
+        return self.options.collapse_borders;
+    }
+
+    /// Turn collapsed borders on or off while running, so a keybinding can show
+    /// what the flag does. It changes the layout rather than only the glyphs,
+    /// so it forces a full repaint.
+    pub fn setCollapseBorders(self: *App, value: bool) void {
+        self.options.collapse_borders = value;
+        self.force_repaint = true;
+    }
+
     fn targetFps(self: App) u32 {
         return if (self.capabilities.ssh)
             @min(self.options.fps, self.options.remote_fps)

@@ -162,6 +162,18 @@ func (a *App) SetTheme(name string) *App {
 	return a
 }
 
+// CollapseBorders reports whether adjacent panel borders are being merged.
+func (a *App) CollapseBorders() bool { return a.options.CollapseBorders }
+
+// SetCollapseBorders turns collapsed borders on or off while running, so a
+// keybinding can show what the flag does. It changes the layout rather than
+// only the glyphs, so it forces a full repaint.
+func (a *App) SetCollapseBorders(value bool) *App {
+	a.options.CollapseBorders = value
+	a.Redraw()
+	return a
+}
+
 func (a *App) OnKey(fn func(InputEvent)) *App { a.keyHandlers = append(a.keyHandlers, fn); return a }
 func (a *App) OnMouse(fn func(InputEvent)) *App {
 	a.mouseHandlers = append(a.mouseHandlers, fn)

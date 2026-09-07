@@ -214,6 +214,19 @@ impl App {
         self.force_repaint = true;
     }
 
+    /// Whether adjacent panel borders are being merged.
+    pub fn collapse_borders(&self) -> bool {
+        self.options.collapse_borders
+    }
+
+    /// Turn collapsed borders on or off while running, so a keybinding can show
+    /// what the flag does. It changes the layout rather than only the glyphs,
+    /// so it forces a full repaint.
+    pub fn set_collapse_borders(&mut self, value: bool) {
+        self.options.collapse_borders = value;
+        self.force_repaint = true;
+    }
+
     fn target_fps(&self) -> u32 {
         if self.capabilities.ssh {
             self.options.fps.min(self.options.remote_fps)

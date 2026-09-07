@@ -93,6 +93,12 @@ pub fn render<'a>(ui: &mut Container<'a>, s: &'a State) {
                 active: s.filtering,
                 ..Default::default()
             },
+            StatusItem {
+                key: Some("c".into()),
+                label: "Collapse".into(),
+                active: s.collapse,
+                ..Default::default()
+            },
             StatusItem::new(format!("Sort: {}", ["cpu", "mem", "pid", "name"][s.sort])).key("F6"),
             StatusItem::new("Palette").key("^K"),
             StatusItem::new("Screen").key("Tab"),
@@ -105,7 +111,7 @@ pub fn render<'a>(ui: &mut Container<'a>, s: &'a State) {
         ..Default::default()
     });
     if s.help {
-        ui.modal(ModalOptions::new().title("hqtui — Help").message("1–9/0 / Tab: screen\nF2 theme · F3 filter · F6 sort\nCtrl+K palette · Space pause\nArrows / PgUp / PgDn / Home / End: scroll\nMouse tabs, controls, selection and wheel\ne edits text · Esc finishes\nq / Ctrl+C quit · Any key closes help"));
+        ui.modal(ModalOptions::new().title("hqtui — Help").message("1–9/0 / Tab: screen\nF2 theme · F3 filter · F6 sort\nc collapse panel borders\nCtrl+K palette · Space pause\nArrows / PgUp / PgDn / Home / End: scroll\nMouse tabs, controls, selection and wheel\ne edits text · Esc finishes\nq / Ctrl+C quit · Any key closes help"));
     }
     if s.modal {
         ui.modal(

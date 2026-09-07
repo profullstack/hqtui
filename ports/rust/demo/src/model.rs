@@ -125,6 +125,7 @@ pub struct State {
     pub modal: bool,
     pub palette: bool,
     pub filtering: bool,
+    pub collapse: bool,
     pub editing: bool,
     pub checked: bool,
     pub toggle: bool,
@@ -161,6 +162,7 @@ impl State {
             modal: false,
             palette: false,
             filtering: false,
+            collapse: false,
             editing: false,
             checked: true,
             toggle: true,
@@ -392,6 +394,9 @@ impl State {
             "f1" => self.help = true,
             "f2" => self.theme = (self.theme + 1) % THEMES.len(),
             "f3" => self.filtering = true,
+            // Shows what collapse_borders does, live. Worth a key because the
+            // difference is only visible when panels sit next to each other.
+            "c" => self.collapse = !self.collapse,
             "f6" => self.sort = (self.sort + 1) % 4,
             "ctrl+k" => {
                 self.palette = true;
