@@ -58,6 +58,7 @@ elif name=='docker': print(json.dumps({'Names':'cpp-fixture-container','Image':'
             if language == 'cpp':
                 cases[1][1].extend(['/health', '/missing', '/chat'])
                 cases.append(('services', ['cpp-fixture-container', 'test:local']))
+                cases.append(('network', ['127.0.0.1']))
             for screen, expected in cases:
                 result = subprocess.run([*command, '--real', '--snapshot', '--screen', screen,
                                          '--width', '240', '--height', '80'], cwd=ROOT / 'ports' / language,

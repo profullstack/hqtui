@@ -4,6 +4,11 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
+#if defined(__linux__)
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#endif
 #if defined(__unix__) || defined(__APPLE__)
 #include <fcntl.h>
 #include <poll.h>
@@ -298,11 +303,41 @@ void Collector::refresh(const std::atomic<bool> *cancel) {
       else if (prefix.rfind("in", 0) == 0)
         sensors.push_back(Json::Object{
             {"label", label}, {"value", fixed(value / 1000, 2) + " V"}});
+      else if (prefix.rfind("curr", 0) == 0)
+        sensors.push_back(Json::Object{
+            {"label", label}, {"value", fixed(value / 1000, 2) + " A"}});
+      else if (prefix.rfind("power", 0) == 0)
+        sensors.push_back(Json::Object{
+            {"label", label}, {"value", fixed(value / 1e6, 2) + " W"}});
     }
   }
   data["sensors"] = sensors;
   data["temperatures"] = temps;
   Json::Array interfaces;
+  std::map<std::string, std::string> addresses;
+  ifaddrs *raw_addresses = nullptr;
+  if (getifaddrs(&raw_addresses) == 0) {
+    std::unique_ptr<ifaddrs, decltype(&freeifaddrs)> owned(raw_addresses,
+                                                           freeifaddrs);
+    for (auto *entry = owned.get(); entry; entry = entry->ifa_next) {
+      if (!entry->ifa_addr || !entry->ifa_name)
+        continue;
+      int family = entry->ifa_addr->sa_family;
+      if (family != AF_INET && family != AF_INET6)
+        continue;
+      const void *address =
+          family == AF_INET
+              ? static_cast<const void *>(
+                    &reinterpret_cast<sockaddr_in *>(entry->ifa_addr)->sin_addr)
+              : static_cast<const void *>(
+                    &reinterpret_cast<sockaddr_in6 *>(entry->ifa_addr)
+                         ->sin6_addr);
+      char formatted[INET6_ADDRSTRLEN];
+      if (inet_ntop(family, address, formatted, sizeof formatted) &&
+          (family == AF_INET || !addresses.count(entry->ifa_name)))
+        addresses[entry->ifa_name] = formatted;
+    }
+  }
   double rx = 0, tx = 0, rxrate = 0, txrate = 0;
   for (auto &line : lines(read_file("/proc/net/dev"))) {
     auto colon = line.find(':');
@@ -318,7 +353,7 @@ void Collector::refresh(const std::atomic<bool> *cancel) {
         {"name", name},
         {"state",
          trim(read_file("/sys/class/net/" + name + "/operstate", 128))},
-        {"ip", ""},
+        {"ip", addresses[name]},
         {"mac", trim(read_file("/sys/class/net/" + name + "/address", 128))},
         {"mtu", numeric(read_file("/sys/class/net/" + name + "/mtu", 128))},
         {"rxTotal", a},
