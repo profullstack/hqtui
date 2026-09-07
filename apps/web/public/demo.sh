@@ -146,6 +146,34 @@ main() (
     tool_spec=$tool
     # Prebuilt PHP includes development headers for our small native adapter.
     [ "$language" != php ] || tool_spec=conda:php
+    # A system toolchain older than this revision's pin does not fail here; it
+    # fails later, describing the wrong problem. Bun 1.3 cannot read a
+    # lockfileVersion 2 bun.lock, so it drops the lockfile and then reports
+    # frozen-lockfile drift, which reads as a broken repository. Compare the
+    # resolved driver against the pin up front and name both versions.
+    if [ "$manager" = system ]; then
+        case "$language" in
+            typescript|rust|python|cpp|ruby) installed=$("$driver_path" --version 2>/dev/null) ;;
+            go|zig) installed=$("$driver_path" version 2>/dev/null) ;;
+            php) installed=$("$driver_path" -r 'echo PHP_VERSION;' 2>/dev/null) ;;
+            perl) installed=$("$driver_path" -e 'printf "%vd", $^V' 2>/dev/null) ;;
+        esac
+        # Every driver above prints its version as the first number on the first
+        # line, whatever surrounds it ("go version go1.26.0", "cmake version 4.4.3").
+        installed=$(printf '%s\n' "$installed" | sed -n '1s/[^0-9]*\([0-9][0-9.]*\).*/\1/p' | sed 's/\.*$//')
+        [ -n "$installed" ] || fail "Cannot read the version of $driver_path. Use --mise to build against the pinned toolchain."
+        # Field-wise numeric comparison; absent trailing fields count as zero.
+        if ! awk -v have="$installed" -v want="$version" 'BEGIN {
+                n = split(have, a, "."); m = split(want, b, "."); if (m > n) n = m
+                for (i = 1; i <= n; i++) {
+                    if (a[i] + 0 > b[i] + 0) exit 0
+                    if (a[i] + 0 < b[i] + 0) exit 1
+                }
+                exit 0
+            }'; then
+            fail "This revision pins $tool $version, but $driver_path is $installed. Install $driver $version or newer, or rerun with --mise to build against the pinned toolchain."
+        fi
+    fi
     run_tool() {
         if [ "$manager" = mise ]; then
             mise --no-config exec "$tool_spec@$version" -- "$@"
