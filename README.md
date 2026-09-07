@@ -1,8 +1,9 @@
 <p align="center">
-  <img src="./assets/logo.png" alt="HQTUI — High Quality Terminal UI for TypeScript" width="560">
+  <img src="./assets/logo.png" alt="HQTUI — High Quality Terminal UI" width="560">
 </p>
-<p align="center"><strong>High Quality Terminal UI for TypeScript</strong><br>
-btop-grade dashboards with a one-import API, dark by default, zero runtime dependencies.</p>
+<p align="center"><strong>High Quality Terminal UI</strong><br>
+btop-grade dashboards with a one-import API, dark by default, zero runtime dependencies.<br>
+TypeScript, Rust, Go, Python, Zig, C++, Ruby, PHP and Perl.</p>
 <p align="center">
   <a href="https://hqtui.com">hqtui.com</a> ·
   <a href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a> ·
@@ -13,6 +14,16 @@ btop-grade dashboards with a one-import API, dark by default, zero runtime depen
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node-%E2%89%A5%2022.6-5FA04E?logo=nodedotjs&logoColor=white" alt="Node 22.6 or newer"></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/Bun-%E2%89%A5%201.1-000000?logo=bun&logoColor=white" alt="Bun 1.1 or newer"></a>
   <a href="https://deno.com"><img src="https://img.shields.io/badge/Deno-2.x-000000?logo=deno&logoColor=white" alt="Deno 2"></a>
+</p>
+<p align="center">
+  <a href="ports/rust/"><img src="https://img.shields.io/badge/Rust-port-000000?logo=rust&logoColor=white" alt="Rust port"></a>
+  <a href="ports/go/"><img src="https://img.shields.io/badge/Go-port-00ADD8?logo=go&logoColor=white" alt="Go port"></a>
+  <a href="ports/python/"><img src="https://img.shields.io/badge/Python-port-3776AB?logo=python&logoColor=white" alt="Python port"></a>
+  <a href="ports/zig/"><img src="https://img.shields.io/badge/Zig-port-F7A41D?logo=zig&logoColor=white" alt="Zig port"></a>
+  <a href="ports/cpp/"><img src="https://img.shields.io/badge/C%2B%2B-demo-00599C?logo=cplusplus&logoColor=white" alt="C++ demo"></a>
+  <a href="ports/bindings/"><img src="https://img.shields.io/badge/Ruby-bindings-CC342D?logo=ruby&logoColor=white" alt="Ruby bindings"></a>
+  <a href="ports/bindings/"><img src="https://img.shields.io/badge/PHP-bindings-777BB4?logo=php&logoColor=white" alt="PHP bindings"></a>
+  <a href="ports/bindings/"><img src="https://img.shields.io/badge/Perl-bindings-39457E?logo=perl&logoColor=white" alt="Perl bindings"></a>
 </p>
 
 ![HQTUI dashboard](./assets/screens/dashboard.png)
@@ -27,6 +38,9 @@ npx  @profullstack/hqtui-demo                    # Node 22.6+
 deno run -A npm:@profullstack/hqtui-demo         # Deno 2
 ```
 
+The same ten-screen demo runs natively in eight other languages, one command
+each and no checkout: see [See it running](#see-it-running).
+
 Add `--sim` to any of them for a deterministic simulation instead of your real machine.
 
 ---
@@ -35,8 +49,8 @@ Add `--sim` to any of them for a deterministic simulation instead of your real m
 
 Terminal apps do not have to look like 1990s ncurses software. HQTUI owns the terminal
 directly — ANSI/VT sequences, a typed-array framebuffer, differential rendering, Braille
-graphics and truecolor — so a dashboard written in TypeScript can look and feel like a
-modern desktop app while starting instantly and running fine over SSH.
+graphics and truecolor — so a dashboard can look and feel like a modern desktop app
+while starting instantly and running fine over SSH.
 
 No ncurses. No browser DOM. No React. No native addon. No network access. Ever.
 
@@ -47,6 +61,10 @@ bun  add @profullstack/hqtui        # Bun is the default runtime
 npm  add @profullstack/hqtui        # Node 22.6+ works too
 deno add npm:@profullstack/hqtui    # Deno 2
 ```
+
+The API below is the TypeScript reference implementation. Rust, Go, Python, Zig,
+C++, Ruby, PHP and Perl each have their own idiomatic API over the same
+rendering model: see [Other languages](#other-languages).
 
 ## Hello, terminal
 
@@ -106,15 +124,53 @@ await app.start();
 
 ## See it running
 
+Ten screens. Real metrics on Linux, macOS and Windows, with no native dependencies.
+
+From npm, on any JavaScript runtime you already have:
+
 ```bash
 bunx @profullstack/hqtui-demo                    # Bun
 npx  @profullstack/hqtui-demo                    # Node 22.6+
 deno run -A npm:@profullstack/hqtui-demo         # Deno 2
 ```
 
-Any of them takes `--sim` to run a deterministic simulation instead of your real machine.
+Every language runs that same demo through one launcher. It fetches current
+`main` into a private cache, prints the exact commit it built, and leaves your
+checkout alone. It is a shell script from the internet, so
+[read it first](https://hqtui.com/demo.sh):
 
-Ten screens. Real metrics on Linux, macOS and Windows, with no native dependencies.
+```bash
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system typescript
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system rust
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system go
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system python
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system zig
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system cpp
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system ruby
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system php
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system perl
+```
+
+`--system` uses the toolchain you already have installed. Swap it for `--mise`
+and the launcher supplies a pinned one instead, so nothing but `mise` has to be
+on the box. Demo arguments pass straight through: `--sim` for a deterministic
+simulation, `--snapshot` for headless text where there is no TTY, and
+`--screen traffic` to open on one tab.
+
+From a checkout, `mise run demo:<language>` is the same thing, and
+`mise run demo-local:<language>` runs your local edits without updating first.
+Or run the examples directly:
+
+```bash
+bun apps/demo/src/main.ts                            # TypeScript
+cd ports/rust   && cargo run --example dashboard     # Rust
+cd ports/go     && go run ./examples/dashboard       # Go
+cd ports/python && python examples/dashboard.py      # Python
+cd ports/zig    && zig build run-dashboard           # Zig
+```
+
+C++, Ruby, PHP and Perl build a native library first; their READMEs have the
+CMake invocation.
 
 ### Traffic — every protocol in and out of the host
 
@@ -211,18 +267,36 @@ packages/hqtui   the library
 apps/demo        the reference dashboard (real + simulated data)
 apps/web         hqtui.com
 examples/        small, focused programs
-ports/           native ports: Rust, Go, Python, Zig
+ports/           Rust, Go, Python, Zig, C, C++ and the Ruby/PHP/Perl bindings
 docs/            the original PRD
 ```
 
 ## Other languages
 
-hqtui exists natively in [Rust](ports/rust/), [Go](ports/go/),
-[Python](ports/python/) and [Zig](ports/zig/) — real ports, not bindings, each
-with no dependencies beyond its standard library. They stay honest against this
-implementation through a shared corpus of golden fixtures: the same widget
-arguments must produce the same cells, the same colors and the same escape
-bytes. [ports/README.md](ports/README.md) has the details, and
+hqtui is not a TypeScript library that grew wrappers. Nine languages run the
+same ten screens, and they stay honest against each other through a shared
+corpus of golden fixtures — thirteen groups, roughly nine thousand reference
+cells. The same widget arguments must produce the same cells, the same colors
+and the same escape bytes, byte for byte.
+
+| Language | What it is | Runtime deps | Docs |
+|---|---|---|---|
+| TypeScript | the reference implementation | none | [packages/hqtui](packages/hqtui/) |
+| [Rust](ports/rust/) | native port | standard library only | [README](ports/rust/README.md) |
+| [Go](ports/go/) | native port | standard library only | [README](ports/go/README.md) |
+| [Python](ports/python/) | native port | standard library only | [README](ports/python/README.md) |
+| [Zig](ports/zig/) | native port | standard library only | [README](ports/zig/README.md) |
+| [C++](ports/cpp/) | native demo on the C core; library API experimental | none | [README](ports/cpp/README.md) |
+| [Ruby](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
+| [PHP](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
+| [Perl](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
+
+The four native ports are ports, not bindings: no Node is in the picture at
+runtime or at build time, and each is idiomatic in its own language rather than
+a transliteration. The C11 core in [ports/c](ports/c/) is still in development
+and has no demo of its own yet.
+
+[ports/README.md](ports/README.md) has the details, and
 [ports/TARGETS.md](ports/TARGETS.md) is the scored list of which language is
 next.
 
@@ -237,7 +311,7 @@ conversations.
 
 ## Runtimes
 
-Bun is the default. Node 22.6+ runs everything unchanged (it strips TypeScript natively).
+For the TypeScript implementation, Bun is the default. Node 22.6+ runs everything unchanged (it strips TypeScript natively).
 Deno 2 runs the library and the demo through its npm compatibility layer (`deno run -A`);
 it is exercised by hand rather than in CI. Tested on Linux, macOS and Windows Terminal; degrades
 gracefully on limited terminals (no mouse, quantized color, ASCII instead of Braille).
