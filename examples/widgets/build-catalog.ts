@@ -56,6 +56,7 @@ export interface WidgetSpec {
  */
 export const LANGUAGES: LanguageSpec[] = [
   { id: "typescript", label: "TypeScript", file: "examples/widgets/gallery.ts", syntax: "ts" },
+  { id: "javascript", label: "JavaScript", file: "examples/widgets/gallery.js", syntax: "js" },
   { id: "rust", label: "Rust", file: "ports/rust/examples/widgets.rs", syntax: "rust" },
   { id: "go", label: "Go", file: "ports/go/examples/widgets/main.go", syntax: "go" },
   { id: "python", label: "Python", file: "ports/python/examples/widgets.py", syntax: "python" },
