@@ -2,9 +2,9 @@ name: C and C++ core
 on:
   push:
     branches: [main]
-    paths: ['ports/c/**', 'ports/cpp/**', 'ports/conformance/**', 'apps/benchmark/src/*native-core.ts', '.github/workflows/c-cpp.yml']
+    paths: ['ports/c/**', 'ports/cpp/**', 'ports/bindings/**', 'ports/php/native/**', 'ports/conformance/**', 'apps/benchmark/src/*native-core.ts', '.github/workflows/c-cpp.yml']
   pull_request:
-    paths: ['ports/c/**', 'ports/cpp/**', 'ports/conformance/**', 'apps/benchmark/src/*native-core.ts', '.github/workflows/c-cpp.yml']
+    paths: ['ports/c/**', 'ports/cpp/**', 'ports/bindings/**', 'ports/php/native/**', 'ports/conformance/**', 'apps/benchmark/src/*native-core.ts', '.github/workflows/c-cpp.yml']
 permissions:
   contents: read
 jobs:
@@ -43,7 +43,7 @@ jobs:
         with:
           bun-version: '1.4.0'
       - name: Sanitizer build
-        run: cmake -S ports/cpp -B ports/cpp/build-sanitize -DCMAKE_BUILD_TYPE=Debug -DHQTUI_SANITIZE=ON
+        run: cmake -S ports/cpp -B ports/cpp/build-sanitize -DCMAKE_BUILD_TYPE=Debug -DHQTUI_SANITIZE=ON -DHQTUI_BUILD_BINDINGS=ON
       - run: cmake --build ports/cpp/build-sanitize --parallel
       - run: ctest --test-dir ports/cpp/build-sanitize --output-on-failure
       - name: Optimized build

@@ -9,7 +9,7 @@ main() (
     note() { printf 'hqtui-demo: %s\n' "$*" >&2; }
     usage() {
         printf '%s\n' 'Usage: demo.sh [--mise|--system] [--check] LANGUAGE [demo arguments...]' \
-          'Languages: typescript (ts), rust, go, python, zig, cpp (c++)' \
+          'Languages: typescript (ts), rust, go, python, zig, cpp (c++), ruby, php, perl' \
           'Every invocation fetches latest main. --check prints the revision without building.' \
           'Defaults to mise when installed, otherwise uses your installed compiler/runtime.' \
           'Examples: demo.sh rust --sim; demo.sh --mise rust --snapshot'
@@ -30,9 +30,10 @@ main() (
     language=$1; shift
     case "$language" in
         ts|typescript) language=typescript; tool=bun ;;
-        rust|go|python|zig) tool=$language ;;
+        rust|go|python|zig|ruby|perl) tool=$language ;;
+        php) tool=conda:php ;;
         cpp|c++) language=cpp; tool=cmake ;;
-        *) fail "Unsupported language '$language'. The C-only demo is not ready; use typescript, rust, go, python, zig or cpp." ;;
+        *) fail "Unsupported language '$language'. Use typescript, rust, go, python, zig, cpp, ruby, php or perl. The C-only demo is not ready." ;;
     esac
     # When invoked through curl | sh, the pipe is not the demo's keyboard.
     # Connect only interactive runs to the controlling terminal; preserve pipes
@@ -130,11 +131,14 @@ main() (
     [ -z "$(git_safe -C "$source" status --porcelain --untracked-files=normal)" ] \
         || fail "Cached source was modified: $source. It has been left untouched; choose a new HQTUI_DEMO_CACHE location."
     # Read only the selected version string, not mise hooks or environment code.
-    version=$(awk -v key="$tool" '$1 == key && $2 == "=" {gsub(/"/, "", $3); print $3; exit}' "$source/mise.toml")
+    version=$(awk -v key="$tool" '{name=$1; gsub(/"/, "", name)} name == key && $2 == "=" {gsub(/"/, "", $3); print $3; exit}' "$source/mise.toml")
     case "$version" in ''|*[!0-9.]*) fail "Invalid pinned $tool version in mise.toml." ;; esac
+    tool_spec=$tool
+    # Prebuilt PHP includes development headers for our small native adapter.
+    [ "$language" != php ] || tool_spec=conda:php
     run_tool() {
         if [ "$manager" = mise ]; then
-            mise --no-config exec "$tool@$version" -- "$@"
+            mise --no-config exec "$tool_spec@$version" -- "$@"
         else
             "$@"
         fi
@@ -143,7 +147,7 @@ main() (
         cleanup; locked=0
         trap - EXIT INT TERM HUP
         if [ "$manager" = mise ]; then
-            exec mise --no-config exec "$tool@$version" -- "$@"
+            exec mise --no-config exec "$tool_spec@$version" -- "$@"
         else
             exec "$@"
         fi
@@ -153,6 +157,69 @@ main() (
     bins=$cache/bin/$platform/$manager-$tool-$version/$revision
     mkdir -p "$bins" "$cache/build"
     case "$language" in
+        ruby|php|perl)
+            case "$(uname -s)" in Linux) library_suffix=so ;; Darwin) library_suffix=dylib ;; *) fail 'These bindings currently support Linux/macOS.' ;; esac
+            command -v "${CXX:-c++}" >/dev/null 2>&1 || fail 'A C++17 compiler (GCC/Clang) is required.'
+            cmake_version=$(awk '$1 == "cmake" && $2 == "=" {gsub(/"/, "", $3); print $3; exit}' "$source/mise.toml")
+            case "$cmake_version" in ''|*[!0-9.]*) fail 'Invalid CMake pin.' ;; esac
+            cmake_driver=cmake
+            if [ "$manager" = system ]; then
+                cmake_driver=$(command -v cmake) || fail 'CMake is required. Install it or use --mise.'
+                case "$cmake_driver" in */mise/shims/*) cmake_driver=$(mise which cmake) || fail 'Activate CMake or use --mise.' ;; esac
+            fi
+            binding_cmake() {
+                if [ "$manager" = mise ]; then mise --no-config exec "cmake@$cmake_version" -- cmake "$@"; else "$cmake_driver" "$@"; fi
+            }
+            binding_identity=$language-$version
+            php_config=
+            if [ "$language" = php ]; then
+                # Prefer the compiled adapter; a vanilla FFI-enabled PHP can
+                # instead use the C ABI without PHP development headers.
+                php_config=$(run_tool sh -c 'command -v php-config' 2>/dev/null) || php_config=
+                php_version=$(run_tool php -r 'echo PHP_VERSION;')
+                if [ -n "$php_config" ]; then
+                    [ "$(run_tool "$php_config" --version)" = "$php_version" ] || fail 'php-config must match the selected PHP runtime. Fix PATH or use --mise.'
+                fi
+                php_abi=$(run_tool php -r 'echo PHP_VERSION, ":", PHP_ZTS, ":", PHP_DEBUG, ":", PHP_BINARY;' | git_safe hash-object --stdin)
+                binding_identity=$binding_identity-$php_abi
+                if [ -z "$php_config" ]; then
+                    run_tool php -r 'exit(extension_loaded("ffi") ? 0 : 1);' || fail 'PHP needs php-config/development headers or its FFI extension.'
+                fi
+            fi
+            binding_build=$cache/build/bindings/$platform/$manager/$binding_identity/$revision
+            if [ ! -f "$binding_build/ready" ] || [ ! -f "$binding_build/libhqtui_bindings.$library_suffix" ]; then
+                note "Building shared native renderer for $language (first run of this revision)…"
+                binding_cmake -S "$source/ports/cpp" -B "$binding_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DHQTUI_LTO=ON -DHQTUI_BUILD_BINDINGS=ON "-DHQTUI_PHP_CONFIG=$php_config" >&2
+                binding_cmake --build "$binding_build" --target hqtui_bindings --parallel 2 >&2
+                if [ -n "$php_config" ]; then binding_cmake --build "$binding_build" --target hqtui_php --parallel 2 >&2; fi
+                printf '%s\n' "$revision" > "$binding_build/ready"
+            fi
+            HQTUI_NATIVE_LIB=$binding_build/libhqtui_bindings.$library_suffix
+            export HQTUI_NATIVE_LIB
+            case "$language" in
+                ruby)
+                    run_tool ruby -rfiddle/import -e '' || fail 'Ruby needs Fiddle (gem install fiddle).'
+                    launch ruby "$source/ports/ruby/examples/dashboard.rb" "$@"
+                    ;;
+                php)
+                    if [ -f "$binding_build/hqtui_php.so" ]; then
+                        launch php -d "extension=$binding_build/hqtui_php.so" "$source/ports/php/examples/dashboard.php" "$@"
+                    else
+                        launch php "$source/ports/php/examples/dashboard.php" "$@"
+                    fi
+                    ;;
+                perl)
+                    perl_abi=$(run_tool perl -MConfig -e 'print "$^X:$Config{version}:$Config{archname}"' | git_safe hash-object --stdin)
+                    perl_deps=$cache/deps/perl/$platform/$perl_abi-platypus-2.11
+                    PERL5LIB=$perl_deps/lib/perl5${PERL5LIB:+:$PERL5LIB}; export PERL5LIB
+                    if ! run_tool perl -MFFI::Platypus=2.11 -e '' 2>/dev/null; then
+                        note 'Installing Perl FFI::Platypus into the private demo cache…'
+                        run_tool cpanm --local-lib-contained "$perl_deps" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.11 >&2 || fail 'Install cpanm and native build tools, then retry. No global Perl modules were modified.'
+                    fi
+                    launch perl "$source/ports/perl/examples/dashboard.pl" "$@"
+                    ;;
+            esac
+            ;;
         cpp)
             case "$(uname -s)" in Linux|Darwin) ;; *) fail 'The C++ terminal demo currently supports Linux/macOS; use another demo on this platform.' ;; esac
             # mise manages CMake here. The native C/C++ compiler is supplied by

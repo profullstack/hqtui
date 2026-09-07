@@ -490,7 +490,8 @@ static void simulate(State &s) {
 }
 } // namespace demo
 #ifndef HQTUI_DEMO_TEST
-int main(int argc, char **argv) {
+int hqtui_demo_main(int argc, char **argv) {
+  demo::interrupted = 0;
   using namespace demo;
   try {
     bool snapshot = false, body_only = false, sim = false, real = false;
@@ -692,4 +693,7 @@ int main(int argc, char **argv) {
     return 2;
   }
 }
+#ifndef HQTUI_DEMO_LIBRARY
+int main(int argc, char **argv) { return hqtui_demo_main(argc, argv); }
+#endif
 #endif

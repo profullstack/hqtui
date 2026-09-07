@@ -20,7 +20,7 @@ The following runtime/tool IDs were checked with `mise registry` on 2026-09-07:
 | C++ | cmake (host GCC/Clang compiler required) | Native demo; experimental API |
 | C# / F# / .NET | dotnet | Pending implementation strategy |
 | Java / Kotlin / Scala / Clojure | java, kotlin, scala, clojure | Pending |
-| Ruby, PHP, Perl | ruby, php, perl | Pending |
+| Ruby, PHP, Perl | ruby, conda:php, perl | Experimental shared-engine bindings implemented |
 | Lua / LuaJIT | lua, luajit | Pending |
 | Swift, Crystal, Odin, V | swift, crystal, odin, v | Pending |
 | Elixir / Erlang / Gleam | elixir, erlang, gleam | Pending |
@@ -29,10 +29,10 @@ The following runtime/tool IDs were checked with `mise registry` on 2026-09-07:
 This is a checked expansion inventory, not an exhaustive claim about third-party
 mise plugins, future registry additions or completed HQTUI ports.
 
-## Decision needed after C++
+## Selected architecture after C++
 
-The user has been asked whether the remaining languages should bind the shared
-C core or each maintain a separate implementation. C-core bindings can preserve
-the native renderer's performance, but must be named and documented as bindings,
-not independent native ports. Do not quietly launch another language's demo or
-replay reference screenshots under a different command name.
+Ruby, PHP and Perl use an in-process C ABI over the C/C++ engine, with batched
+custom widget APIs and shared collectors/demo implementation. The user selected
+the fastest/easiest shared architecture. These are explicitly bindings, not
+independent native ports or subprocess launchers. No reference screenshots are
+replayed. Other languages in this inventory remain pending.

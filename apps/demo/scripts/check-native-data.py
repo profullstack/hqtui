@@ -18,6 +18,9 @@ COMMANDS = {
 }
 if os.environ.get('HQTUI_CPP_DEMO'):
     COMMANDS['cpp'] = [os.environ['HQTUI_CPP_DEMO']]
+if os.environ.get('HQTUI_BINDING_DEMOS'):
+    COMMANDS.update(json.loads(os.environ['HQTUI_BINDING_DEMOS']))
+SHARED = {'cpp', 'ruby', 'php', 'perl'}
 if os.environ.get('HQTUI_NATIVE_LANGUAGES'):
     selected = os.environ['HQTUI_NATIVE_LANGUAGES'].split(',')
     COMMANDS = {language: COMMANDS[language] for language in selected}
@@ -43,7 +46,7 @@ elif name=='docker': print(json.dumps({'Names':'cpp-fixture-container','Image':'
 '''
     with tempfile.TemporaryDirectory(prefix='hqtui-native-data-') as directory:
         utilities = ['who', 'last', 'lastb', 'ss', 'journalctl', 'nvidia-smi']
-        if 'cpp' in COMMANDS:
+        if SHARED.intersection(COMMANDS):
             utilities += ['tail', 'docker']
         for name in utilities:
             path = Path(directory) / name
@@ -55,7 +58,7 @@ elif name=='docker': print(json.dumps({'Names':'cpp-fixture-container','Image':'
             cases = [('dashboard', ['Sensors', 'Test GPU', '25%']),
                      ('traffic', ['HTTPS', 'DNS', 'SSH', 'accepted', 'alice']),
                      ('sessions', ['alice', 'eve', 'still', 'failed'])]
-            if language == 'cpp':
+            if language in SHARED:
                 cases[1][1].extend(['/health', '/missing', '/chat'])
                 cases.append(('services', ['cpp-fixture-container', 'test:local']))
                 cases.append(('network', ['127.0.0.1']))
@@ -67,7 +70,7 @@ elif name=='docker': print(json.dumps({'Names':'cpp-fixture-container','Image':'
                 for label in expected:
                     assert label.lower() in result.stdout.lower(), (language, screen, f'missing {label}')
                 assert 'simulated' not in result.stdout.lower(), (language, screen)
-                if language == 'cpp':
+                if language in SHARED:
                     assert 'token=secret' not in result.stdout, 'HTTP query secret leaked'
                 print(f'{language} {screen}: fixture utilities reached the real collector and rendered rows', flush=True)
 

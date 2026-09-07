@@ -40,7 +40,7 @@ class Updater(unittest.TestCase):
         return subprocess.check_output(["git", *args], cwd=self.repo, stderr=subprocess.DEVNULL, text=True).strip()
 
     def commit(self, label):
-        (self.repo / "mise.toml").write_text('[tools]\nbun = "1.4.0"\npython = "3.12.13"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\ncmake = "4.4.3"\n')
+        (self.repo / "mise.toml").write_text('[tools]\nbun = "1.4.0"\npython = "3.12.13"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\ncmake = "4.4.3"\nruby = "4.0.6"\n"conda:php" = "8.5.9"\nperl = "5.44.0.0"\n')
         (self.repo / ".gitignore").write_text('__pycache__/\n')
         path = self.repo / "ports/python/examples"
         path.mkdir(parents=True, exist_ok=True)
@@ -49,7 +49,7 @@ class Updater(unittest.TestCase):
             'import json, os, sys\n'
             f'print(json.dumps({{"revision": {label!r}, "args": sys.argv[1:], "cwd": os.getcwd(), "tty": os.isatty(0)}}), flush=True)\n'
             'if "--wait" in sys.argv: input()\n')
-        for language in ("rust", "go", "zig", "cpp"):
+        for language in ("rust", "go", "zig", "cpp", "ruby", "php", "perl"):
             (self.repo / "ports" / language).mkdir(exist_ok=True)
             (self.repo / "ports" / language / "source").write_text(label)
         self.git("add", ".")
@@ -115,6 +115,17 @@ if tool=="mise":
     assert args[0:2]==["--no-config","exec"]
     assert args[3]=="--"
     os.execvp(args[4],args[4:])
+elif tool in ("ruby","php","perl"):
+    if args[0]=="-r":
+        if args[1].startswith('echo PHP_VERSION'): print(os.environ.get('UPDATER_PHP_VERSION','8.5.9'))
+        sys.exit(0)
+    if args[0] in ("-rfiddle/import","-MFFI::Platypus=2.11"): sys.exit(0)
+    if args[0]=="-MConfig": print("fixture-perl-abi");sys.exit(0)
+    if args[0]=="-d": args=args[2:]
+    label=(pathlib.Path(args[0]).parents[1]/"source").read_text()
+    print(json.dumps(dict(revision=label,args=args[1:])))
+    sys.exit(0)
+elif tool=="php-config": print(os.environ.get('UPDATER_PHP_CONFIG_VERSION',os.environ.get('UPDATER_PHP_VERSION','8.5.9')));sys.exit(0)
 elif tool=="cargo":
     assert args==["build","--release","--example","dashboard"]
     output=pathlib.Path(os.environ["CARGO_TARGET_DIR"])/"release/examples/dashboard"
@@ -130,6 +141,11 @@ elif tool=="cmake":
         build.mkdir(parents=True,exist_ok=True)
         (build/"source").write_text((source/"source").read_text())
         sys.exit(0)
+    if args[0]=="--build" and args[3] in ("hqtui_bindings","hqtui_php"):
+        build=pathlib.Path(args[1])
+        for name in ('libhqtui_bindings.so','libhqtui_bindings.dylib','hqtui_php.so'):
+            (build/name).write_text('fixture shared library')
+        sys.exit(0)
     assert args[0]=="--build" and args[2:4]==["--target","hqtui-demo-cpp"]
     output=pathlib.Path(args[1])/"hqtui-demo-cpp"
 else: raise AssertionError(tool)
@@ -138,7 +154,7 @@ output.parent.mkdir(parents=True,exist_ok=True)
 output.write_text("#!/usr/bin/env python3\\nimport json,sys\\nprint(json.dumps(dict(revision="+repr(label)+",args=sys.argv[1:])))\\n")
 output.chmod(0o700)
 '''
-        for name in ("mise", "cargo", "go", "zig", "cmake"):
+        for name in ("mise", "cargo", "go", "zig", "cmake", "ruby", "php", "perl", "php-config"):
             path = self.bin / name
             path.write_text(code)
             path.chmod(0o700)
@@ -162,6 +178,47 @@ output.chmod(0o700)
             self.assertEqual(json.loads(result.stdout)["revision"], "second")
         log = [json.loads(line) for line in (self.root / "tools.jsonl").read_text().splitlines()]
         self.assertEqual(sum(row[0] in ("cargo", "go", "zig") or row[:2]==["cmake","--build"] for row in log), 12)
+
+    def test_bindings_update_both_managers_and_keep_builds_outside_source(self):
+        self.stub_compilers()
+        for manager in ('--system', '--mise'):
+            for language in ('ruby', 'php', 'perl'):
+                result=self.run_demo(manager,language,'--snapshot','literal argument')
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual(json.loads(result.stdout),dict(revision='first',args=['--snapshot','literal argument']))
+        def builds():
+            return sum(json.loads(line)[:2]==['cmake','--build'] for line in (self.root/'tools.jsonl').read_text().splitlines())
+        count=builds()
+        self.assertEqual(count,8) # engine × three languages, plus PHP adapter; two managers
+        for language in ('ruby','php','perl'):
+            self.assertEqual(self.run_demo('--mise',language,'--version').returncode,0)
+        self.assertEqual(builds(),count)
+        self.commit('second')
+        for language in ('ruby','php','perl'):
+            result=self.run_demo('--mise',language,'--snapshot')
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(json.loads(result.stdout)['revision'],'second')
+        self.assertEqual(builds(),count+4)
+        self.assertFalse((self.root/'cache/v1/update.lock').exists())
+
+    def test_php_upgrade_rebuilds_adapter_and_mismatched_headers_are_rejected(self):
+        self.stub_compilers()
+        first=self.run_demo('--system','php','--version')
+        self.assertEqual(first.returncode,0,first.stderr)
+        def builds():
+            return sum(json.loads(line)[:2]==['cmake','--build'] for line in
+                       (self.root/'tools.jsonl').read_text().splitlines())
+        self.assertEqual(builds(),2)
+        upgraded={**self.env,'UPDATER_PHP_VERSION':'8.6.0'}
+        result=self.run_demo('--system','php','--version',env=upgraded)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(builds(),4)
+        bad={**upgraded,'UPDATER_PHP_CONFIG_VERSION':'8.5.9'}
+        result=self.run_demo('--system','php','--version',env=bad)
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn('php-config must match',result.stderr)
+        self.assertEqual(result.stdout,'')
+        self.assertEqual(builds(),4)
 
     @unittest.skipUnless(os.name == "posix", "requires a controlling PTY")
     def test_pipe_launcher_reattaches_keyboard_and_releases_build_lock(self):

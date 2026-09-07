@@ -1,0 +1,49 @@
+name: Ruby PHP Perl bindings
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  bindings:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4.3.0
+        with:
+          install: false
+      - name: Install only binding test toolchains
+        run: mise install ruby@4.0.6 conda:php@8.5.9 perl@5.44.0.0 cmake@4.4.3 python@3.12.13
+      - name: Install private Perl dependencies
+        run: mise exec perl@5.44.0.0 -- cpanm --local-lib-contained "${{ runner.temp }}/hqtui-perl" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.11
+      - name: Build optimized binding library and PHP adapter
+        shell: bash
+        run: |
+          mise exec -- cmake -S ports/cpp -B ports/cpp/build-bindings -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON -DHQTUI_LTO=ON -DHQTUI_BUILD_BINDINGS=ON -DHQTUI_PHP_CONFIG="$(mise exec conda:php@8.5.9 -- which php-config)"
+          mise exec -- cmake --build ports/cpp/build-bindings --target hqtui_bindings hqtui_php hqtui_bindings_test --parallel 3
+          mise exec -- ctest --test-dir ports/cpp/build-bindings -R bindings_abi --output-on-failure
+      - name: Check APIs, 360 reference frames, real data and terminal cleanup
+        shell: bash
+        run: |
+          extension=so
+          if [ "$(uname -s)" = Darwin ]; then extension=dylib; fi
+          export HQTUI_NATIVE_LIB="$PWD/ports/cpp/build-bindings/libhqtui_bindings.$extension"
+          export PERL5LIB="${{ runner.temp }}/hqtui-perl/lib/perl5"
+          mise exec -- python ports/bindings/tests/check.py
+      - name: Verify vanilla PHP FFI fallback without the native PHP adapter
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y php-cli php-common
+          export HQTUI_NATIVE_LIB="$PWD/ports/cpp/build-bindings/libhqtui_bindings.so"
+          export HQTUI_BINDING_COMMANDS='{"php":["/usr/bin/php","-d","ffi.enable=true"]}'
+          mise exec -- python ports/bindings/tests/check.py
