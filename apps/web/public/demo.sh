@@ -100,6 +100,16 @@ main() (
     done
     locked=1
     printf '%s\n' "$$" > "$lock/pid"
+    # Compilers (including GCC's LTO subprocesses), Git and dependency installers
+    # need scratch space too. /tmp may have a separate quota even when the build
+    # filesystem has ample room. Keep build scratch on the demo-cache filesystem.
+    caller_tmpdir_set=${TMPDIR+x}
+    caller_tmpdir=${TMPDIR-}
+    TMPDIR=$cache/tmp
+    [ ! -L "$TMPDIR" ] || fail 'Refusing symlinked build scratch directory.'
+    mkdir -p "$TMPDIR" || fail "Cannot create build scratch: $TMPDIR"
+    [ -w "$TMPDIR" ] || fail "Build scratch is not writable: $TMPDIR"
+    export TMPDIR
     repository=https://github.com/profullstack/hqtui.git
     mirror=$cache/repository.git
     [ ! -L "$mirror" ] || fail 'Refusing a symlinked repository cache.'
@@ -146,6 +156,8 @@ main() (
     launch() {
         cleanup; locked=0
         trap - EXIT INT TERM HUP
+        # This is a build setting, not an override of the application's environment.
+        if [ "$caller_tmpdir_set" = x ]; then TMPDIR=$caller_tmpdir; export TMPDIR; else unset TMPDIR; fi
         if [ "$manager" = mise ]; then
             exec mise --no-config exec "$tool_spec@$version" -- "$@"
         else

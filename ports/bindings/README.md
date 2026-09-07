@@ -23,6 +23,8 @@ curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise perl
 Replace `--mise` with `--system` for installed runtimes/build tools. Every launch
 fetches current main and prints the source revision. First builds compile native
 code; later launches reuse that revision. Host GCC/Clang and Make are required.
+Build scratch also lives under the demo cache, so a separate `/tmp` quota does
+not break linking. Failed builds are retried; they never get a ready marker.
 Mise supplies pinned CMake and runtimes; PHP uses `conda:php` prebuilt packages.
 Vanilla additionally requires CMake, Ruby Fiddle, Perl cpanm (if Platypus is missing),
 and PHP development headers/php-config or enabled FFI. Perl dependencies go in a

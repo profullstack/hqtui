@@ -47,7 +47,7 @@ class Updater(unittest.TestCase):
         (path / "__init__.py").write_text("")
         (path / "dashboard.py").write_text(
             'import json, os, sys\n'
-            f'print(json.dumps({{"revision": {label!r}, "args": sys.argv[1:], "cwd": os.getcwd(), "tty": os.isatty(0)}}), flush=True)\n'
+            f'print(json.dumps({{"revision": {label!r}, "args": sys.argv[1:], "cwd": os.getcwd(), "tty": os.isatty(0), "tmpdir": os.environ.get("TMPDIR")}}), flush=True)\n'
             'if "--wait" in sys.argv: input()\n')
         for language in ("rust", "go", "zig", "cpp", "ruby", "php", "perl"):
             (self.repo / "ports" / language).mkdir(exist_ok=True)
@@ -107,10 +107,16 @@ class Updater(unittest.TestCase):
 
     def stub_compilers(self):
         code = '''#!/usr/bin/env python3
-import json, os, pathlib, sys
+import json, os, pathlib, sys, tempfile
 tool=pathlib.Path(sys.argv[0]).name
 args=sys.argv[1:]
 with open(os.environ["UPDATER_TEST_LOG"],"a") as log: log.write(json.dumps([tool,*args])+"\\n")
+if tool in ('cmake','cargo','go','zig'):
+    expected=pathlib.Path(os.environ['HQTUI_DEMO_CACHE'])/'v1/tmp'
+    assert pathlib.Path(os.environ['TMPDIR'])==expected, 'compiler scratch escaped demo cache'
+    with tempfile.TemporaryFile(dir=os.environ['TMPDIR']) as scratch: scratch.write(b'compiler scratch')
+    if os.environ.get('UPDATER_FAIL_BUILD')=='1' and tool=='cmake' and args[0]=='--build':
+        print('fixture linker failure',file=sys.stderr);sys.exit(1)
 if tool=="mise":
     assert args[0:2]==["--no-config","exec"]
     assert args[3]=="--"
@@ -200,6 +206,30 @@ output.chmod(0o700)
             self.assertEqual(json.loads(result.stdout)['revision'],'second')
         self.assertEqual(builds(),count+4)
         self.assertFalse((self.root/'cache/v1/update.lock').exists())
+
+    def test_failed_binding_build_retries_with_private_scratch_without_ready_marker(self):
+        self.stub_compilers()
+        poisoned={**self.env,'TMPDIR':str(self.root/'unusable-global-tmp')}
+        failed=self.run_demo('--mise','ruby','--snapshot',env={**poisoned,'UPDATER_FAIL_BUILD':'1'})
+        self.assertNotEqual(failed.returncode,0)
+        self.assertIn('fixture linker failure',failed.stderr)
+        self.assertEqual(list((self.root/'cache/v1/build').rglob('ready')),[])
+        self.assertFalse((self.root/'cache/v1/update.lock').exists())
+        for manager in ['--mise','--system']:
+            for language in ['ruby','php','perl','cpp','rust','go','zig']:
+                result=self.run_demo(manager,language,'--snapshot',env=poisoned)
+                self.assertEqual(result.returncode,0,result.stderr)
+        self.assertTrue((self.root/'cache/v1/tmp').is_dir())
+        self.assertFalse((self.root/'unusable-global-tmp').exists())
+
+    def test_build_scratch_does_not_change_the_runtime_environment(self):
+        for value in [None,str(self.root/'caller-temp')]:
+            env={**self.env}
+            if value is None: env.pop('TMPDIR',None)
+            else: env['TMPDIR']=value
+            result=self.run_demo('--system','python','--snapshot',env=env)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(json.loads(result.stdout)['tmpdir'],value)
 
     def test_php_upgrade_rebuilds_adapter_and_mismatched_headers_are_rejected(self):
         self.stub_compilers()
