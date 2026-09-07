@@ -269,6 +269,155 @@ void draw_meters(Surface s, const Meters &o) {
   }
 }
 
+/// Bottom-up eighths, for one cell of a sparkline or column chart.
+static uint32_t vertical_glyph(double ratio) {
+  double r = ratio <= 0 ? 0 : ratio >= 1 ? 1 : ratio;
+  static const uint32_t eighths[9] = {' ',    0x2581, 0x2582, 0x2583, 0x2584,
+                                      0x2585, 0x2586, 0x2587, 0x2588};
+  return eighths[iround(r * 8)];
+}
+
+/// The reference's axis extent: a caller's bound wins, otherwise the data's,
+/// and a bound that is not finite falls back to the computed one so every
+/// plotted coordinate stays finite.
+static void extent(const std::vector<double> &values, std::optional<double> min_in,
+                   std::optional<double> max_in, double *min_out, double *max_out) {
+  std::optional<double> min = min_in && std::isfinite(*min_in) ? min_in : std::nullopt;
+  std::optional<double> max = max_in && std::isfinite(*max_in) ? max_in : std::nullopt;
+  if (!min || !max) {
+    double lo = INFINITY, hi = -INFINITY;
+    for (double v : values) {
+      if (!std::isfinite(v))
+        continue;
+      lo = std::min(lo, v);
+      hi = std::max(hi, v);
+    }
+    if (!std::isfinite(lo)) {
+      lo = 0;
+      hi = 1;
+    }
+    if (!min)
+      min = std::min(0., lo);
+    if (!max)
+      max = hi;
+  }
+  if (*max <= *min)
+    max = *min + 1;
+  *min_out = *min;
+  *max_out = *max;
+}
+
+void draw_spark(Surface s, const std::vector<double> &values, const Sparkline &o) {
+  auto &t = theme(s);
+  int w = s.rect().width;
+  if (w <= 0 || s.rect().height <= 0)
+    return;
+  // The scale comes from the window that is actually shown, not the whole
+  // series, so a long history does not flatten the visible part.
+  std::size_t window = std::size_t(std::max(1, w));
+  std::vector<double> shown(values.end() - std::min(window, values.size()), values.end());
+  double min = 0, max = 1;
+  extent(shown, o.min, o.max, &min, &max);
+  double span = max - min;
+  Color color = o.color ? o.color : t.accent;
+
+  int count = int(std::min(values.size(), std::size_t(w)));
+  int start = int(values.size()) - count, offset = w - count;
+  for (int i = 0; i < count; i++) {
+    double v = values[std::size_t(start + i)];
+    if (!std::isfinite(v))
+      continue;
+    double r = ratio((v - min) / span);
+    auto st = Style().foreground(color);
+    if (o.background)
+      st = st.background(*o.background);
+    s.set(offset + i, 0, vertical_glyph(r), st);
+  }
+}
+
+void draw_sparkline(Surface s, const Sparkline &o) {
+  auto &t = theme(s);
+  int w = s.rect().width;
+  if (w <= 0 || s.rect().height <= 0)
+    return;
+  int lw = o.label.empty() ? 0 : int(width(o.label)) + 1;
+  int vw = o.text.empty() ? 0 : int(width(o.text)) + 1;
+  if (lw)
+    text(s, 0, 0, o.label, t.muted, 0, o.background);
+  int bw = w - lw - vw;
+  if (bw > 0)
+    draw_spark(s.sub({lw, 0, bw, 1}), o.values, o);
+  if (vw)
+    text(s, w - vw, 0, fit(o.text, vw, HQ_RIGHT), o.color ? o.color : t.accent,
+         HQ_BOLD, o.background);
+}
+
+void draw_heat_bar(Surface s, const HeatBar &o) {
+  auto &t = theme(s);
+  int surface_width = s.rect().width;
+  if (surface_width <= 0 || s.rect().height <= 0)
+    return;
+  double r = ratio(o.value);
+  int w = std::min(o.width < 0 ? surface_width : o.width, surface_width);
+  int filled = iround(r * w);
+  uint32_t ch = 0x25ae;
+  if (!o.ch.empty()) {
+    unsigned char lead = o.ch[0];
+    std::size_t len = lead < 128 ? 1 : lead < 224 ? 2 : lead < 240 ? 3 : 4;
+    len = std::min(len, o.ch.size());
+    if (len == 1) {
+      ch = lead;
+    } else {
+      ch = lead & (0xffu >> (len + 1));
+      for (std::size_t i = 1; i < len; i++)
+        ch = (ch << 6) | (uint32_t(o.ch[i]) & 0x3f);
+    }
+  }
+  Color off = hq_mix(t.background, t.border, .75);
+  for (int x = 0; x < w; x++) {
+    bool on = x < filled;
+    Color fg = on ? (o.color ? o.color : hq_heat(&t, w <= 1 ? r : double(x) / (w - 1)))
+                  : off;
+    auto st = Style().foreground(fg);
+    if (o.background)
+      st = st.background(*o.background);
+    s.set(x, 0, ch, st);
+  }
+}
+
+void draw_columns(Surface s, const Columns &o) {
+  auto &t = theme(s);
+  int w = s.rect().width, h = s.rect().height;
+  if (w <= 0 || h <= 0 || o.values.empty())
+    return;
+  double max = 1;
+  if (o.max) {
+    max = *o.max;
+  } else {
+    for (double v : o.values)
+      max = std::max(max, v);
+  }
+  Color color = o.color ? o.color : t.primary;
+
+  int count = int(std::min(o.values.size(), std::size_t(w)));
+  int start = int(o.values.size()) - count;
+  for (int i = 0; i < count; i++) {
+    double r = ratio(o.values[std::size_t(start + i)] / max);
+    double filled = r * h;
+    int full = int(std::floor(filled));
+    auto st = Style().foreground(color);
+    if (o.background)
+      st = st.background(*o.background);
+    for (int k = 0; k < full; k++)
+      s.set(i, h - 1 - k, 0x2588, st);
+    if (full < h) {
+      uint32_t glyph = vertical_glyph(filled - full);
+      if (glyph != ' ')
+        s.set(i, h - 1 - full, glyph, st);
+    }
+  }
+}
+
 void draw_progress(Surface s, const Progress &o) {
   auto &t = theme(s);
   Meter m;

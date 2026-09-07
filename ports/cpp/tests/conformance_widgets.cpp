@@ -108,6 +108,22 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_bar(s, Bar{.value = 0.63, .style = HQ_BAR_ASCII});
     return true;
   }
+  if (name == "sparkline") {
+    draw_spark(s, kSeries);
+    return true;
+  }
+  if (name == "sparkline-widget") {
+    draw_sparkline(s, Sparkline{.values = kSeries, .label = "net", .text = "1.2M"});
+    return true;
+  }
+  if (name == "heat-bar") {
+    draw_heat_bar(s, HeatBar{.value = 0.6});
+    return true;
+  }
+  if (name == "columns") {
+    draw_columns(s, Columns{.values = kSeries});
+    return true;
+  }
   if (name == "gauge") {
     draw_gauge(s, 0.7, "70%");
     return true;

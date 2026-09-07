@@ -269,6 +269,38 @@ struct Meters {
 };
 void draw_meters(Surface, const Meters &);
 
+/// One row, one glyph per sample, scaled to the window it is given.
+struct Sparkline {
+  std::vector<double> values;
+  Color color = 0;
+  std::optional<double> min, max;
+  std::string label, text;
+  std::optional<Color> background;
+};
+/// The bare row of glyphs; `draw_sparkline` adds the label and readout.
+void draw_spark(Surface, const std::vector<double> &, const Sparkline & = {});
+void draw_sparkline(Surface, const Sparkline &);
+
+/// A segmented bar coloured along the theme's heat ramp, like btop's
+/// temperatures. No label, no readout: the colour is the information.
+struct HeatBar {
+  double value = 0;
+  int width = -1;
+  Color color = 0;
+  std::string ch;
+  std::optional<Color> background;
+};
+void draw_heat_bar(Surface, const HeatBar &);
+
+/// Block columns. Cheaper than Braille and reads well when short.
+struct Columns {
+  std::vector<double> values;
+  Color color = 0;
+  std::optional<double> max;
+  std::optional<Color> background;
+};
+void draw_columns(Surface, const Columns &);
+
 struct Progress {
   double value = 0;
   double max = 1;
