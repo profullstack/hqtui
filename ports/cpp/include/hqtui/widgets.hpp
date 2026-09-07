@@ -249,22 +249,38 @@ class UI {
   struct Node {
     Constraint size;
     Paint draw;
+    /// True when this child draws a border of its own. Only bordered siblings
+    /// collapse into each other: a table pressed against a panel edge should
+    /// not grow junctions out of its rows.
+    bool bordered = false;
   };
   Surface surface_;
   bool horizontal_;
   int gap_;
   std::vector<Node> nodes_;
+  bool collapse_ = false;
 
 public:
   std::vector<Region> *regions;
   UI(Surface s, bool horizontal = false, int gap = 0,
-     std::vector<Region> *regions = nullptr)
-      : surface_(s), horizontal_(horizontal), gap_(gap), regions(regions) {}
+     std::vector<Region> *regions = nullptr, bool collapse = false)
+      : surface_(s), horizontal_(horizontal), gap_(gap), collapse_(collapse),
+        regions(regions) {}
+
+  /// Merge the borders of adjacent panels into shared lines, the way CSS
+  /// collapses table borders. Inherited by nested containers.
+  void collapse_borders(bool value) { collapse_ = value; }
+  bool collapse_borders() const { return collapse_; }
   int width() const { return surface_.rect().width; }
   int height() const { return surface_.rect().height; }
   const hq_theme &t() const { return theme(surface_); }
   void draw(Paint fn, Constraint size = fr()) {
-    nodes_.push_back({size, std::move(fn)});
+    nodes_.push_back({size, std::move(fn), false});
+  }
+
+  /// As `draw`, for a child that draws its own border.
+  void draw_bordered(Paint fn, Constraint size, bool bordered) {
+    nodes_.push_back({size, std::move(fn), bordered});
   }
   void flush() {
     if (width() <= 0 || height() <= 0 || nodes_.empty())
@@ -273,8 +289,16 @@ public:
     for (auto &n : nodes_)
       sizes.push_back(n.size);
     std::vector<Rect> rects(nodes_.size());
-    if (!hq_stack(surface_.rect(), sizes.data(), sizes.size(), horizontal_,
-                  gap_, rects.data()))
+    // The gap at each seam. Ordinarily `gap_` repeated, but where collapsing is
+    // on and two bordered siblings meet with no gap between them, the seam is
+    // minus one so their borders land in the same column and merge.
+    std::vector<int> seams(nodes_.empty() ? 0 : nodes_.size() - 1, gap_);
+    if (collapse_ && gap_ == 0)
+      for (std::size_t i = 0; i + 1 < nodes_.size(); i++)
+        if (nodes_[i].bordered && nodes_[i + 1].bordered)
+          seams[i] = -1;
+    if (!hq_stack_gaps(surface_.rect(), sizes.data(), sizes.size(), horizontal_,
+                       seams.empty() ? nullptr : seams.data(), rects.data()))
       throw std::runtime_error("hqtui: invalid layout");
     for (std::size_t i = 0; i < nodes_.size(); i++)
       if (rects[i].width > 0 && rects[i].height > 0)
@@ -283,9 +307,10 @@ public:
   void group(Constraint size, int gap, bool horizontal,
              std::function<void(UI &)> body) {
     auto regions_ = regions;
+    auto collapse = collapse_;
     draw(
         [=](Surface s) {
-          UI p(s, horizontal, gap, regions_);
+          UI p(s, horizontal, gap, regions_, collapse);
           body(p);
           p.flush();
         },
@@ -302,9 +327,11 @@ public:
              Color border = 0, std::optional<Color> bg = {},
              Color subtitle_color = 0) {
     auto regions_ = regions;
-    draw(
+    auto collapse = collapse_;
+    draw_bordered(
         [=](Surface s) {
           hq_box_options o{};
+          o.collapse = collapse ? 1 : 0;
           o.title = title.empty() ? nullptr : title.c_str();
           o.subtitle = subtitle.empty() ? nullptr : subtitle.c_str();
           if (border)
@@ -318,11 +345,11 @@ public:
           auto inner = s.box(o);
           inner = inner.sub(
               {1, 0, std::max(0, inner.rect().width - 2), inner.rect().height});
-          UI p(inner, false, 0, regions_);
+          UI p(inner, false, 0, regions_, collapse);
           body(p);
           p.flush();
         },
-        size);
+        size, true);
   }
   void spacer(Constraint size = fr()) {
     draw([](Surface) {}, size);

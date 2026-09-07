@@ -91,7 +91,7 @@ struct State {
   Json data;
   bool real = false, paused = false, help = false, modal = false,
        palette = false, filtering = false, editing = false, toggle = true,
-       checkbox = true, select_open = false;
+       checkbox = true, select_open = false, collapse = false;
   int screen = 0, theme_index = 0, sort = 0, select_index = 0,
       palette_index = 0;
   double slider = .7, fps = 0, render_ms = 0;
