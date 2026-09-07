@@ -40,8 +40,12 @@ class Updater(unittest.TestCase):
         return subprocess.check_output(["git", *args], cwd=self.repo, stderr=subprocess.DEVNULL, text=True).strip()
 
     def commit(self, label):
-        (self.repo / "mise.toml").write_text('[tools]\nbun = "1.4.0"\npython = "3.12.13"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\ncmake = "4.4.3"\nruby = "4.0.6"\n"conda:php" = "8.5.9"\nperl = "5.44.0.0"\n')
-        (self.repo / ".gitignore").write_text('__pycache__/\n')
+        # The Python demo runs the caller's own python3, so pin that exact
+        # version: these tests cover updating and caching, not the version gate,
+        # and must not depend on how new the host interpreter happens to be.
+        host = subprocess.check_output(["python3", "--version"], text=True).split()[-1]
+        (self.repo / "mise.toml").write_text(f'[tools]\nbun = "1.4.0"\npython = "{host}"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\ncmake = "4.4.3"\nruby = "4.0.6"\n"conda:php" = "8.5.9"\nperl = "5.44.0.0"\n')
+        (self.repo / ".gitignore").write_text('__pycache__/\ndist/\n')
         path = self.repo / "ports/python/examples"
         path.mkdir(parents=True, exist_ok=True)
         (path / "__init__.py").write_text("")
@@ -49,7 +53,7 @@ class Updater(unittest.TestCase):
             'import json, os, sys\n'
             f'print(json.dumps({{"revision": {label!r}, "args": sys.argv[1:], "cwd": os.getcwd(), "tty": os.isatty(0), "tmpdir": os.environ.get("TMPDIR")}}), flush=True)\n'
             'if "--wait" in sys.argv: input()\n')
-        for language in ("rust", "go", "zig", "cpp", "ruby", "php", "perl"):
+        for language in ("typescript", "rust", "go", "zig", "cpp", "ruby", "php", "perl"):
             (self.repo / "ports" / language).mkdir(exist_ok=True)
             (self.repo / "ports" / language / "source").write_text(label)
         self.git("add", ".")
@@ -111,6 +115,17 @@ import json, os, pathlib, sys, tempfile
 tool=pathlib.Path(sys.argv[0]).name
 args=sys.argv[1:]
 with open(os.environ["UPDATER_TEST_LOG"],"a") as log: log.write(json.dumps([tool,*args])+"\\n")
+pins={'bun':'1.4.0','cargo':'1.97.1','go':'1.26.0','zig':'0.16.0','cmake':'4.4.3','ruby':'4.0.6','perl':'5.44.0.0'}
+reported=os.environ.get('UPDATER_'+tool.upper()+'_VERSION',pins.get(tool,''))
+# The launcher probes each system tool before building. Answer in the shape the
+# real tool answers: a bare number, or a number buried in a sentence.
+if tool!='php-config' and (args[:1]==['--version'] or (tool in ('go','zig') and args[:1]==['version'])):
+    print({'cargo':'cargo %s (fixture 2026-01-01)','go':'go version go%s linux/amd64',
+           'cmake':'cmake version %s','ruby':'ruby %s (fixture revision)'}.get(tool,'%s')%reported)
+    sys.exit(0)
+if tool=='perl' and args[:1]==['-e'] and '$^V' in args[1]:
+    print('.'.join(reported.split('.')[:3]),end='') # Perl reports three fields; mise pins four.
+    sys.exit(0)
 if tool in ('cmake','cargo','go','zig'):
     expected=pathlib.Path(os.environ['HQTUI_DEMO_CACHE'])/'v1/tmp'
     assert pathlib.Path(os.environ['TMPDIR'])==expected, 'compiler scratch escaped demo cache'
@@ -132,6 +147,21 @@ elif tool in ("ruby","php","perl"):
     print(json.dumps(dict(revision=label,args=args[1:])))
     sys.exit(0)
 elif tool=="php-config": print(os.environ.get('UPDATER_PHP_CONFIG_VERSION',os.environ.get('UPDATER_PHP_VERSION','8.5.9')));sys.exit(0)
+elif tool=="bun":
+    scratch=pathlib.Path(os.environ['HQTUI_DEMO_CACHE'])/'v1/tmp'
+    if args[0]=="install":
+        assert args==["install","--frozen-lockfile","--ignore-scripts"]
+        assert pathlib.Path(os.environ['TMPDIR'])==scratch, 'install scratch escaped demo cache'
+        sys.exit(0)
+    if args[0]=="run":
+        assert args==["run","--bun","build"]
+        assert pathlib.Path(os.environ['TMPDIR'])==scratch, 'build scratch escaped demo cache'
+        built=pathlib.Path("apps/demo/dist/main.js")
+        built.parent.mkdir(parents=True,exist_ok=True)
+        built.write_text(pathlib.Path("ports/typescript/source").read_text())
+        sys.exit(0)
+    print(json.dumps(dict(revision=pathlib.Path(args[0]).read_text(),args=args[1:])))
+    sys.exit(0)
 elif tool=="cargo":
     assert args==["build","--release","--example","dashboard"]
     output=pathlib.Path(os.environ["CARGO_TARGET_DIR"])/"release/examples/dashboard"
@@ -160,7 +190,7 @@ output.parent.mkdir(parents=True,exist_ok=True)
 output.write_text("#!/usr/bin/env python3\\nimport json,sys\\nprint(json.dumps(dict(revision="+repr(label)+",args=sys.argv[1:])))\\n")
 output.chmod(0o700)
 '''
-        for name in ("mise", "cargo", "go", "zig", "cmake", "ruby", "php", "perl", "php-config"):
+        for name in ("mise", "bun", "cargo", "go", "zig", "cmake", "ruby", "php", "perl", "php-config"):
             path = self.bin / name
             path.write_text(code)
             path.chmod(0o700)
@@ -174,7 +204,7 @@ output.chmod(0o700)
                 self.assertEqual(json.loads(result.stdout)["revision"], "first")
                 self.assertEqual(json.loads(result.stdout)["args"][-1], "argument with spaces")
         log = [json.loads(line) for line in (self.root / "tools.jsonl").read_text().splitlines()]
-        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") or row[:2]==["cmake","--build"] for row in log), 8)
+        self.assertEqual(sum(row[:2] in (["cargo","build"],["go","build"],["zig","build"],["cmake","--build"]) for row in log), 8)
         for language in ("rust", "go", "zig", "cpp"):
             self.assertEqual(self.run_demo("--mise", language, "--snapshot").returncode, 0)
         self.commit("second")
@@ -183,7 +213,52 @@ output.chmod(0o700)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout)["revision"], "second")
         log = [json.loads(line) for line in (self.root / "tools.jsonl").read_text().splitlines()]
-        self.assertEqual(sum(row[0] in ("cargo", "go", "zig") or row[:2]==["cmake","--build"] for row in log), 12)
+        self.assertEqual(sum(row[:2] in (["cargo","build"],["go","build"],["zig","build"],["cmake","--build"]) for row in log), 12)
+
+    def test_typescript_installs_and_builds_once_per_revision(self):
+        self.stub_compilers()
+        def installs():
+            return sum(json.loads(line)[:2] == ["bun", "install"]
+                       for line in (self.root / "tools.jsonl").read_text().splitlines())
+        for manager in ("--system", "--mise"):
+            result = self.run_demo(manager, "typescript", "--snapshot", "literal argument")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout),
+                             dict(revision="first", args=["--snapshot", "literal argument"]))
+        self.assertEqual(installs(), 2)
+        self.assertEqual(self.run_demo("--mise", "typescript", "--snapshot").returncode, 0)
+        self.assertEqual(installs(), 2) # Same revision: the earlier build is reused.
+        self.commit("second")
+        result = self.run_demo("--mise", "typescript", "--snapshot")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["revision"], "second")
+        self.assertEqual(installs(), 3)
+
+    def test_system_tool_older_than_the_pin_fails_before_any_build(self):
+        self.stub_compilers()
+        # Each entry is a different probe shape: `bun --version`, `go version`,
+        # and Perl's own $^V. Bun 1.3 is the real case: it cannot read this
+        # repository's lockfile and would otherwise report frozen-lockfile drift.
+        for language, tool, old, pinned in (("typescript", "BUN", "1.3.14", "bun 1.4.0"),
+                                            ("go", "GO", "1.20.0", "go 1.26.0"),
+                                            ("perl", "PERL", "5.40.0.0", "perl 5.44.0.0")):
+            result = self.run_demo("--system", language, "--snapshot",
+                                   env={**self.env, f"UPDATER_{tool}_VERSION": old})
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(f"pins {pinned}", result.stderr)
+            self.assertIn(f"is {old.rsplit('.', 1)[0] if tool == 'PERL' else old}", result.stderr)
+            self.assertIn("--mise", result.stderr)
+            self.assertEqual(result.stdout, "")
+        log = (self.root / "tools.jsonl").read_text()
+        self.assertNotIn('"install"', log)
+        self.assertNotIn('"build"', log)
+        # A newer system tool is fine, and --mise remains the documented way out.
+        newer = self.run_demo("--system", "typescript", "--snapshot",
+                              env={**self.env, "UPDATER_BUN_VERSION": "1.5.0"})
+        self.assertEqual(newer.returncode, 0, newer.stderr)
+        pinned = self.run_demo("--mise", "typescript", "--snapshot",
+                               env={**self.env, "UPDATER_BUN_VERSION": "1.3.14"})
+        self.assertEqual(pinned.returncode, 0, pinned.stderr)
 
     def test_bindings_update_both_managers_and_keep_builds_outside_source(self):
         self.stub_compilers()

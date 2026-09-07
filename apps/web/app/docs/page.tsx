@@ -119,7 +119,8 @@ export default async function Docs() {
           </P>
           <P>
             Vanilla commands require Git, curl and the language&apos;s installed toolchain
-            (Bun for TypeScript). The <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>
+            (Bun for TypeScript), at least as new as the version that revision pins; the launcher
+            compares the two before building and names both if yours is older. The <a href="https://mise.jdx.dev/" className="text-[#5fff87] underline underline-offset-4">mise</a>
             alternatives install/use the selected pinned runtime and required build tools without loading project
             hooks. The launcher prints the full Git revision, reuses completed builds for that
             revision, and fails rather than silently launching stale code if fetching fails.
