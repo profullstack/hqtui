@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
+import { focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
 import { bytes, num, percent } from "../format.ts";
 
 function rate(value: number): string {
@@ -9,6 +9,7 @@ function rate(value: number): string {
 
 /** Services, containers, kernel counters, filesystems and hardware sensors. */
 export function servicesScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   const t = state.sample.telemetry;
   const failed = t.services.filter((s) => s.active === "failed");
 
@@ -49,7 +50,7 @@ export function servicesScreen(ui: Container, state: DemoState, theme: Theme): v
       });
     });
 
-    row.column({ width: "0.85fr", gap: 1 }, (column) => {
+    row.column({ width: "0.85fr", gap }, (column) => {
       column.panel({ title: "Kernel", size: 11, borderColor: theme.accent }, (p) => {
         const k = t.kernel;
         p.keyValues([

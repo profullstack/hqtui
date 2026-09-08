@@ -1,13 +1,13 @@
-import type { Container, Theme } from "@profullstack/hqtui";
+import type { Container, Size, Theme } from "@profullstack/hqtui";
 import { heatColor } from "@profullstack/hqtui";
-import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
+import { focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
 import { bitRate, byteRate, bytes, clock, duration, num, percent } from "../format.ts";
 
 const TIME_LABELS = ["60s", "45s", "30s", "15s", "0s"];
 
-function cpuPanel(ui: Container, state: DemoState, theme: Theme, coreColumns: number): void {
+function cpuPanel(ui: Container, state: DemoState, theme: Theme, coreColumns: number, width?: Size): void {
   const cpu = state.sample.cpu;
-  ui.panel({ title: "CPU Overview", subtitle: percent(cpu.total) }, (p) => {
+  ui.panel({ title: "CPU Overview", subtitle: percent(cpu.total), width }, (p) => {
     p.label(`${cpu.model}   ${num(cpu.frequencyGhz, 1)} GHz`, { size: 1 });
     p.graph({ values: cpu.history, min: 0, max: 100, fill: true, color: theme.success, size: "1fr" });
     p.meters(
@@ -26,11 +26,11 @@ function cpuPanel(ui: Container, state: DemoState, theme: Theme, coreColumns: nu
   });
 }
 
-function memoryPanel(ui: Container, state: DemoState, theme: Theme): void {
+function memoryPanel(ui: Container, state: DemoState, theme: Theme, width?: Size): void {
   const memory = state.sample.memory;
   const used = memory.used / Math.max(1, memory.total);
   const swap = memory.swapTotal > 0 ? memory.swapUsed / memory.swapTotal : 0;
-  ui.panel({ title: "Memory & Swap" }, (p) => {
+  ui.panel({ title: "Memory & Swap", width }, (p) => {
     p.text(`Memory${" ".repeat(6)}${bytes(memory.used)} / ${bytes(memory.total)} (${percent(used)})`, {
       fg: theme.foreground,
       size: 1,
@@ -58,9 +58,9 @@ function memoryPanel(ui: Container, state: DemoState, theme: Theme): void {
   });
 }
 
-function disksPanel(ui: Container, state: DemoState, theme: Theme): void {
+function disksPanel(ui: Container, state: DemoState, theme: Theme, width?: Size): void {
   const disks = state.sample.disks;
-  ui.panel({ title: "Disks" }, (p) => {
+  ui.panel({ title: "Disks", width }, (p) => {
     if (disks.length === 0) {
       p.label("No disks reported");
       return;
@@ -87,9 +87,9 @@ function disksPanel(ui: Container, state: DemoState, theme: Theme): void {
   });
 }
 
-function systemPanel(ui: Container, state: DemoState, theme: Theme): void {
+function systemPanel(ui: Container, state: DemoState, theme: Theme, width?: Size): void {
   const s = state.sample;
-  ui.panel({ title: "System" }, (p) => {
+  ui.panel({ title: "System", width }, (p) => {
     p.row({ size: 6, gap: 2, min: 6 }, (r) => {
       r.keyValues([
         { label: "OS:", value: s.system.os },
@@ -147,12 +147,13 @@ function systemPanel(ui: Container, state: DemoState, theme: Theme): void {
   });
 }
 
-function processesPanel(ui: Container, state: DemoState, theme: Theme): void {
+function processesPanel(ui: Container, state: DemoState, theme: Theme, width?: Size): void {
   const rows = visibleProcesses(state);
   ui.panel({
     title: `Processes (sorted by ${state.sort.toUpperCase()})`,
     subtitle: state.filter ? `filter: ${state.filter}` : undefined,
     focusable: true,
+    width,
   }, (p) => {
     const procs = pane(state, "dashboard.processes", rows.length);
     p.table({
@@ -179,9 +180,9 @@ function processesPanel(ui: Container, state: DemoState, theme: Theme): void {
   });
 }
 
-function networkPanel(ui: Container, state: DemoState, theme: Theme): void {
+function networkPanel(ui: Container, state: DemoState, theme: Theme, width?: Size): void {
   const net = state.sample.network;
-  ui.panel({ title: "Network" }, (p) => {
+  ui.panel({ title: "Network", width }, (p) => {
     p.row({ size: 1 }, (r) => {
       r.text(`Download: ${bitRate(net.downRate)}`, { fg: theme.primary });
       r.text(`Upload: ${bitRate(net.upRate)}`, { fg: theme.secondary, align: "right" });
@@ -204,9 +205,9 @@ function networkPanel(ui: Container, state: DemoState, theme: Theme): void {
   });
 }
 
-function diskUsagePanel(ui: Container, state: DemoState, theme: Theme): void {
+function diskUsagePanel(ui: Container, state: DemoState, theme: Theme, width?: Size): void {
   const disks = state.sample.disks;
-  ui.panel({ title: "Disk Usage", subtitle: disks[0]?.device }, (p) => {
+  ui.panel({ title: "Disk Usage", subtitle: disks[0]?.device, width }, (p) => {
     disks.forEach((disk) => {
       const used = disk.total > 0 ? disk.used / disk.total : 0;
       p.meter({
@@ -268,8 +269,8 @@ function sensorsPanel(ui: Container, state: DemoState, theme: Theme): void {
   });
 }
 
-function logsPanel(ui: Container, state: DemoState): void {
-  ui.panel({ title: "Logs" }, (p) => {
+function logsPanel(ui: Container, state: DemoState, width?: Size): void {
+  ui.panel({ title: "Logs", width }, (p) => {
     const logs = pane(state, "dashboard.logs", state.sample.logs.length, "log");
     p.log({
       entries: state.sample.logs.map((l) => ({
@@ -304,51 +305,59 @@ export function visibleProcesses(state: DemoState): DemoState["sample"]["process
   return sorted;
 }
 
-/** The reference dashboard. Three layouts, chosen by terminal width. */
+/**
+ * The reference dashboard. Three layouts, chosen by terminal width.
+ *
+ * Panels go straight into their row rather than each inside a sizing column.
+ * A column is not a bordered child, so a row of them has no seam to merge and
+ * [c] could never change this screen; `width` on the panel does the same job
+ * and leaves the borders adjacent to each other.
+ */
 export function dashboardScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   ui.responsive({
     150: (wide) => {
       // The System column holds nested panels, so it gets the extra width —
       // and extra height whenever the terminal is tall enough to spare it.
-      wide.row({ size: wide.height >= 44 ? 19 : 16, gap: 1 }, (r) => {
-        r.column({ width: "1fr" }, (c) => cpuPanel(c, state, theme, 2));
-        r.column({ width: "0.95fr" }, (c) => memoryPanel(c, state, theme));
-        r.column({ width: "0.95fr" }, (c) => disksPanel(c, state, theme));
-        r.column({ width: "1.35fr" }, (c) => systemPanel(c, state, theme));
+      wide.row({ size: wide.height >= 44 ? 19 : 16, gap }, (r) => {
+        cpuPanel(r, state, theme, 2, "1fr");
+        memoryPanel(r, state, theme, "0.95fr");
+        disksPanel(r, state, theme, "0.95fr");
+        systemPanel(r, state, theme, "1.35fr");
       });
-      wide.row({ size: "1fr", gap: 1 }, (r) => {
-        r.column({ width: "2fr" }, (c) => processesPanel(c, state, theme));
-        r.column({ width: "1.2fr" }, (c) => networkPanel(c, state, theme));
-        r.column({ width: "1.2fr" }, (c) => diskUsagePanel(c, state, theme));
+      wide.row({ size: "1fr", gap }, (r) => {
+        processesPanel(r, state, theme, "2fr");
+        networkPanel(r, state, theme, "1.2fr");
+        diskUsagePanel(r, state, theme, "1.2fr");
       });
-      wide.row({ size: 12, gap: 1 }, (r) => {
+      wide.row({ size: 12, gap }, (r) => {
         temperaturesPanel(r, state, theme);
         sensorsPanel(r, state, theme);
-        r.column({ width: "1.6fr" }, (c) => logsPanel(c, state));
+        logsPanel(r, state, "1.6fr");
       });
     },
     100: (medium) => {
-      medium.row({ size: 14, gap: 1 }, (r) => {
+      medium.row({ size: 14, gap }, (r) => {
         cpuPanel(r, state, theme, 2);
         memoryPanel(r, state, theme);
         systemPanel(r, state, theme);
       });
-      medium.row({ size: "1fr", gap: 1 }, (r) => {
-        r.column({ width: "1.6fr" }, (c) => processesPanel(c, state, theme));
-        r.column({}, (c) => networkPanel(c, state, theme));
+      medium.row({ size: "1fr", gap }, (r) => {
+        processesPanel(r, state, theme, "1.6fr");
+        networkPanel(r, state, theme);
       });
-      medium.row({ size: 10, gap: 1 }, (r) => {
+      medium.row({ size: 10, gap }, (r) => {
         temperaturesPanel(r, state, theme);
         logsPanel(r, state);
       });
     },
     0: (compact) => {
-      compact.row({ size: 10, gap: 1 }, (r) => {
+      compact.row({ size: 10, gap }, (r) => {
         cpuPanel(r, state, theme, 1);
         memoryPanel(r, state, theme);
       });
       compact.column({ size: "1fr" }, (c) => processesPanel(c, state, theme));
-      compact.row({ size: 8, gap: 1 }, (r) => networkPanel(r, state, theme));
+      compact.row({ size: 8, gap }, (r) => networkPanel(r, state, theme));
     },
   });
 }

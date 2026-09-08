@@ -1,12 +1,13 @@
 import type { Container, Theme } from "@profullstack/hqtui";
 import { gradient } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { panelGap, type DemoState } from "../state.ts";
 import { num } from "../format.ts";
 
 /** Every cell changes every frame — the worst case for a differential renderer. */
 export function stressScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   const t = state.sample.time;
-  ui.row({ size: 3, gap: 1 }, (r) => {
+  ui.row({ size: 3, gap }, (r) => {
     r.panel({ title: "Render" }, (p) => {
       p.text(`${num(state.renderMs, 2)} ms/frame`, { fg: theme.success });
     });

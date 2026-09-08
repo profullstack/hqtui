@@ -26,6 +26,13 @@ export interface DemoState {
   /** Which pane the arrow keys drive, per screen. Clicking a pane sets it. */
   focused: Partial<Record<ScreenName, string>>;
   sort: "cpu" | "mem" | "pid" | "name";
+  /**
+   * Whether the [c] key has merged adjacent panel borders. Collapsing only
+   * happens where two bordered siblings actually touch, so the screens read
+   * this to lay out at a gap of zero; leaving them at one meant the key
+   * toggled a flag that could never reach a seam and nothing moved.
+   */
+  collapsed: boolean;
   filter: string;
   filtering: boolean;
   showHelp: boolean;
@@ -49,6 +56,11 @@ export interface DemoState {
   renderMs: number;
   changedCells: number;
   bytes: number;
+}
+
+/** The seam between panels: zero while collapsed, so their borders can merge. */
+export function panelGap(state: DemoState): number {
+  return state.collapsed ? 0 : 1;
 }
 
 export interface Pane {
@@ -129,6 +141,7 @@ export function createState(
     panes: {},
     focused: {},
     sort: "cpu",
+    collapsed: false,
     filter: "",
     filtering: false,
     showHelp: false,

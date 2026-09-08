@@ -1,6 +1,6 @@
 import type { Container, Theme } from "@profullstack/hqtui";
 import { seriesColor } from "@profullstack/hqtui";
-import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
+import { focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
 import { num, percent } from "../format.ts";
 
 function rate(value: number): string {
@@ -19,11 +19,12 @@ const STATUS_COLORS = (theme: Theme): Record<string, number> => ({
 
 /** Every protocol in and out of this host: sockets, TCP counters, SSH, HTTP. */
 export function trafficScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   const t = state.sample.telemetry;
   const net = t.net;
   const http = t.http;
 
-  ui.row({ size: 13, gap: 1 }, (row) => {
+  ui.row({ size: 13, gap }, (row) => {
     row.panel({
       title: "Protocols",
       subtitle: `${t.inboundConnections} in / ${t.outboundConnections} out`,
@@ -86,7 +87,7 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
   });
 
   ui.row({ size: "1fr", gap: 1 }, (row) => {
-    row.column({ gap: 1 }, (column) => {
+    row.column({ gap }, (column) => {
       column.panel({
         title: "HTTP",
         subtitle: http ? `${num(http.requestsPerSecond, 1)} req/s` : "no access log",
@@ -135,7 +136,7 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
       });
     });
 
-    row.column({ width: "0.85fr", gap: 1 }, (column) => {
+    row.column({ width: "0.85fr", gap }, (column) => {
       column.panel({ title: "SSH Activity", subtitle: String(t.ssh.length), borderColor: theme.warning }, (p) => {
         if (t.ssh.length === 0) {
           p.label("No sshd events in the journal.");

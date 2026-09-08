@@ -1,6 +1,6 @@
 import type { Container, Theme } from "@profullstack/hqtui";
 import { gradientSteps } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { panelGap, type DemoState } from "../state.ts";
 
 function wave(count: number, phase: number, freq: number): number[] {
   return Array.from({ length: count }, (_, i) => Math.sin(i / freq + phase) * 50 + 50);
@@ -8,13 +8,14 @@ function wave(count: number, phase: number, freq: number): number[] {
 
 /** Rendering-mode comparison: braille vs block vs ascii, plus raw canvas access. */
 export function graphicsScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   const t = state.sample.time;
   const a = wave(240, t / 3, 9);
   const b = wave(240, t / 3 + 2, 5);
   const c = wave(240, t / 2, 17);
 
   ui.row({ size: "1fr", gap: 1 }, (row) => {
-    row.column({ gap: 1 }, (left) => {
+    row.column({ gap }, (left) => {
       left.panel({ title: "Braille (2×4 pixels per cell)" }, (p) => {
         p.graph({ values: a, min: 0, max: 100, fill: true, color: theme.accent, grid: true });
       });
@@ -26,7 +27,7 @@ export function graphicsScreen(ui: Container, state: DemoState, theme: Theme): v
       });
     });
 
-    row.column({ gap: 1 }, (right) => {
+    row.column({ gap }, (right) => {
       right.panel({ title: "Multi-series" }, (p) => {
         p.multiGraph(
           [

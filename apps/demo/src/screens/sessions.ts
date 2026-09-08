@@ -1,11 +1,12 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
+import { focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
 
 /** Who is on this machine, who has been, and who failed to get in. */
 export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   const t = state.sample.telemetry;
 
-  ui.row({ size: 9, gap: 1 }, (row) => {
+  ui.row({ size: 9, gap }, (row) => {
     row.panel({ title: "Active Sessions", subtitle: String(t.sessions.length), borderColor: theme.success }, (p) => {
       if (t.sessions.length === 0) {
         p.label("No interactive sessions.");
@@ -74,7 +75,7 @@ export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): v
       });
     });
 
-    row.column({ width: "0.8fr", gap: 1 }, (column) => {
+    row.column({ width: "0.8fr", gap }, (column) => {
       column.panel({ title: "Failed Logins", borderColor: theme.danger }, (p) => {
         if (t.failedLogins.length === 0) {
           p.label("None recorded.");
