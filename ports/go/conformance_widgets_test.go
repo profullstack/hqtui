@@ -82,6 +82,36 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 			Year: 2026, Month: 9, Selected: &eighth,
 			Marks: []CalendarMark{{Day: 15}, {Day: 22, Bold: true}},
 		})
+	case "canvas-line":
+		DrawCanvas(s, CanvasOptions{
+			Shapes: []Shape{{Kind: ShapeLine, X1: 0, Y1: 0, X2: 10, Y2: 10}},
+			X:      &Bounds{0, 10}, Y: &Bounds{0, 10},
+		})
+	case "canvas-shapes":
+		DrawCanvas(s, CanvasOptions{
+			Shapes: []Shape{
+				{Kind: ShapeRect, X1: 1, Y1: 1, Width: 4, Height: 4},
+				{Kind: ShapeCircle, X1: 7, Y1: 5, Radius: 2},
+				{Kind: ShapePolyline, Points: []Point{{0, 8}, {3, 9}, {6, 7}, {9, 9}}},
+				{Kind: ShapePoints, Points: []Point{{1, 9}, {9, 1}}},
+			},
+			X: &Bounds{0, 10}, Y: &Bounds{0, 10},
+		})
+	case "canvas-filled":
+		DrawCanvas(s, CanvasOptions{
+			Shapes: []Shape{{Kind: ShapeRect, X1: 2, Y1: 2, Width: 6, Height: 6, Fill: true}},
+			X:      &Bounds{0, 10}, Y: &Bounds{0, 10},
+		})
+	case "canvas-bounds":
+		DrawCanvas(s, CanvasOptions{
+			Shapes: []Shape{{Kind: ShapeLine, X1: 0, Y1: 0, X2: 10, Y2: 10}},
+			X:      &Bounds{0, 40}, Y: &Bounds{0, 40},
+		})
+	case "canvas-grid":
+		DrawCanvas(s, CanvasOptions{
+			Shapes: []Shape{{Kind: ShapePoints, Points: []Point{{5, 5}}}},
+			X:      &Bounds{0, 10}, Y: &Bounds{0, 10}, Grid: true,
+		})
 	case "badge":
 		DrawBadge(s, BadgeOptions{Text: "LIVE"})
 	case "badge-outline":

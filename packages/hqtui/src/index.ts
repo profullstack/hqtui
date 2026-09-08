@@ -70,10 +70,10 @@ export { BrailleCanvas } from "./graphics/braille.ts";
 export {
   plot, blit, sparkline, bar, gauge, donut, histogram,
   verticalGlyph, horizontalGlyph, shadeGlyph, bestMode,
-  plotPoints, domainOf,
+  plotPoints, domainOf, drawCanvas, projection,
   type Series, type PlotOptions, type FillMode,
   type Point, type MarkType, type ChartSeries, type AxisOptions, type ChartPlotOptions,
-  type Domain,
+  type Domain, type Shape, type Bounds, type CanvasOptions, type Projection,
 } from "./graphics/index.ts";
 
 // Widgets (for drawing straight onto a Surface)

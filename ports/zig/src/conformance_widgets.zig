@@ -83,6 +83,45 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
             .selected = 8,
             .marks = &.{ .{ .day = 15 }, .{ .day = 22, .bold = true } },
         });
+    } else if (eq(u8, name, "canvas-line")) {
+        try graphics.drawCanvas(allocator, s, .{
+            .shapes = &.{.{ .kind = .line, .x1 = 0, .y1 = 0, .x2 = 10, .y2 = 10 }},
+            .x = .{ .min = 0, .max = 10 },
+            .y = .{ .min = 0, .max = 10 },
+        });
+    } else if (eq(u8, name, "canvas-shapes")) {
+        try graphics.drawCanvas(allocator, s, .{
+            .shapes = &.{
+                .{ .kind = .rect, .x1 = 1, .y1 = 1, .width = 4, .height = 4 },
+                .{ .kind = .circle, .x1 = 7, .y1 = 5, .radius = 2 },
+                .{ .kind = .polyline, .points = &.{
+                    .{ .x = 0, .y = 8 }, .{ .x = 3, .y = 9 },
+                    .{ .x = 6, .y = 7 }, .{ .x = 9, .y = 9 },
+                } },
+                .{ .kind = .points, .points = &.{ .{ .x = 1, .y = 9 }, .{ .x = 9, .y = 1 } } },
+            },
+            .x = .{ .min = 0, .max = 10 },
+            .y = .{ .min = 0, .max = 10 },
+        });
+    } else if (eq(u8, name, "canvas-filled")) {
+        try graphics.drawCanvas(allocator, s, .{
+            .shapes = &.{.{ .kind = .rect, .x1 = 2, .y1 = 2, .width = 6, .height = 6, .fill = true }},
+            .x = .{ .min = 0, .max = 10 },
+            .y = .{ .min = 0, .max = 10 },
+        });
+    } else if (eq(u8, name, "canvas-bounds")) {
+        try graphics.drawCanvas(allocator, s, .{
+            .shapes = &.{.{ .kind = .line, .x1 = 0, .y1 = 0, .x2 = 10, .y2 = 10 }},
+            .x = .{ .min = 0, .max = 40 },
+            .y = .{ .min = 0, .max = 40 },
+        });
+    } else if (eq(u8, name, "canvas-grid")) {
+        try graphics.drawCanvas(allocator, s, .{
+            .shapes = &.{.{ .kind = .points, .points = &.{.{ .x = 5, .y = 5 }} }},
+            .x = .{ .min = 0, .max = 10 },
+            .y = .{ .min = 0, .max = 10 },
+            .grid = true,
+        });
     } else if (eq(u8, name, "badge")) {
         _ = w.drawBadge(s, .{ .text = "LIVE" });
     } else if (eq(u8, name, "badge-outline")) {

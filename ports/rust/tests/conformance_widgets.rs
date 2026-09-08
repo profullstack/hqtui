@@ -14,6 +14,7 @@ use hqtui::graphics::plot::{
     GaugeOptions, PlotOptions, Series,
 };
 use hqtui::graphics::chart::{AxisOptions, ChartPlotOptions, ChartSeries, MarkType};
+use hqtui::graphics::{draw_canvas, Bounds, CanvasOptions, Shape};
 use hqtui::graphics::FillMode;
 use hqtui::surface::Surface;
 use hqtui::unicode::Align;
@@ -85,6 +86,64 @@ fn draw_scene(name: &str, s: &Surface) {
                     CalendarMark { day: 22, bold: true, ..Default::default() },
                 ],
                 ..CalendarOptions::new(2026, 9)
+            },
+        ),
+        "canvas-line" => draw_canvas(
+            s,
+            &CanvasOptions {
+                shapes: vec![Shape::Line { x1: 0.0, y1: 0.0, x2: 10.0, y2: 10.0, color: None }],
+                x: Some(Bounds::new(0.0, 10.0)),
+                y: Some(Bounds::new(0.0, 10.0)),
+                ..Default::default()
+            },
+        ),
+        "canvas-shapes" => draw_canvas(
+            s,
+            &CanvasOptions {
+                shapes: vec![
+                    Shape::Rect {
+                        x: 1.0, y: 1.0, width: 4.0, height: 4.0, fill: false, color: None,
+                    },
+                    Shape::Circle { x: 7.0, y: 5.0, radius: 2.0, color: None },
+                    Shape::Polyline {
+                        points: vec![(0.0, 8.0), (3.0, 9.0), (6.0, 7.0), (9.0, 9.0)],
+                        color: None,
+                    },
+                    Shape::Points { points: vec![(1.0, 9.0), (9.0, 1.0)], color: None },
+                ],
+                x: Some(Bounds::new(0.0, 10.0)),
+                y: Some(Bounds::new(0.0, 10.0)),
+                ..Default::default()
+            },
+        ),
+        "canvas-filled" => draw_canvas(
+            s,
+            &CanvasOptions {
+                shapes: vec![Shape::Rect {
+                    x: 2.0, y: 2.0, width: 6.0, height: 6.0, fill: true, color: None,
+                }],
+                x: Some(Bounds::new(0.0, 10.0)),
+                y: Some(Bounds::new(0.0, 10.0)),
+                ..Default::default()
+            },
+        ),
+        "canvas-bounds" => draw_canvas(
+            s,
+            &CanvasOptions {
+                shapes: vec![Shape::Line { x1: 0.0, y1: 0.0, x2: 10.0, y2: 10.0, color: None }],
+                x: Some(Bounds::new(0.0, 40.0)),
+                y: Some(Bounds::new(0.0, 40.0)),
+                ..Default::default()
+            },
+        ),
+        "canvas-grid" => draw_canvas(
+            s,
+            &CanvasOptions {
+                shapes: vec![Shape::Points { points: vec![(5.0, 5.0)], color: None }],
+                x: Some(Bounds::new(0.0, 10.0)),
+                y: Some(Bounds::new(0.0, 10.0)),
+                grid: true,
+                ..Default::default()
             },
         ),
         "badge" => {

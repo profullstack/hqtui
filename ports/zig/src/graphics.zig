@@ -3,6 +3,7 @@
 
 pub const blocks = @import("graphics/blocks.zig");
 pub const braille = @import("graphics/braille.zig");
+pub const canvas_mod = @import("graphics/canvas.zig");
 pub const chart_mod = @import("graphics/chart.zig");
 pub const plot_mod = @import("graphics/plot.zig");
 
@@ -33,6 +34,12 @@ pub const donut = plot_mod.donut;
 pub const gauge = plot_mod.gauge;
 pub const histogram = plot_mod.histogram;
 pub const plot = plot_mod.plot;
+pub const Bounds = canvas_mod.Bounds;
+pub const CanvasOptions = canvas_mod.CanvasOptions;
+pub const Shape = canvas_mod.Shape;
+pub const ShapeKind = canvas_mod.ShapeKind;
+pub const drawCanvas = canvas_mod.drawCanvas;
+pub const canvasProjection = canvas_mod.projection;
 pub const AxisOptions = chart_mod.AxisOptions;
 pub const ChartPlotOptions = chart_mod.ChartPlotOptions;
 pub const ChartSeries = chart_mod.ChartSeries;

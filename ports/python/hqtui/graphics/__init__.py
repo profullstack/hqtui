@@ -15,6 +15,15 @@ from .blocks import (
     vertical_glyph,
 )
 from .braille import BrailleCanvas
+from .canvas import (
+    Bounds,
+    CanvasOptions,
+    Projection,
+    Shape,
+    ShapeKind,
+    draw_canvas,
+    projection,
+)
 from .chart import (
     AxisOptions,
     ChartPlotOptions,
@@ -45,6 +54,13 @@ from .plot import (
 )
 
 __all__ = [
+    "Bounds",
+    "CanvasOptions",
+    "Projection",
+    "Shape",
+    "ShapeKind",
+    "draw_canvas",
+    "projection",
     "AxisOptions",
     "ChartPlotOptions",
     "ChartSeries",
