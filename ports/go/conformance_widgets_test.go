@@ -104,6 +104,16 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 		})
 	case "graph-timeaxis":
 		DrawGraph(s, GraphOptions{Values: series(), TimeAxis: []string{"60s", "30s", "0s"}})
+	// Both axes together. Each was covered alone, which is how the y-axis
+	// minimum came to be drawn onto the time-axis row with no fixture noticing.
+	case "graph-axis-timeaxis":
+		axisMin, axisMax := 0.0, 100.0
+		DrawGraph(s, GraphOptions{
+			Values:   series(),
+			Axis:     true,
+			Plot:     PlotOptions{Min: &axisMin, Max: &axisMax},
+			TimeAxis: []string{"60s", "30s", "0s"},
+		})
 	case "sparkline-widget":
 		DrawSparkline(s, SparklineWidgetOptions{Values: series(), Label: "net", Text: "1.2M"})
 	case "table":

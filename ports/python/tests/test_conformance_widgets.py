@@ -134,6 +134,18 @@ def draw_scene(case, name: str, s: Surface) -> None:
         )
     elif name == "graph-timeaxis":
         w.draw_graph(s, w.GraphOptions(values=SERIES, time_axis=["60s", "30s", "0s"]))
+    # Both axes together. Each was covered alone, which is how the y-axis
+    # minimum came to be drawn onto the time-axis row with no fixture noticing.
+    elif name == "graph-axis-timeaxis":
+        w.draw_graph(
+            s,
+            w.GraphOptions(
+                values=SERIES,
+                axis=True,
+                plot=PlotOptions(min=0, max=100),
+                time_axis=["60s", "30s", "0s"],
+            ),
+        )
     elif name == "sparkline-widget":
         w.draw_sparkline(
             s, w.SparklineWidgetOptions(values=SERIES, label="net", text="1.2M")

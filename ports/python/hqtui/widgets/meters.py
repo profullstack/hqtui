@@ -259,6 +259,13 @@ def draw_graph(surface: Surface, options: GraphOptions) -> None:
     plot_surface = surface
     axis_color = options.axis_color if options.axis_color is not None else theme.muted
 
+    # Whether the bottom row belongs to the time axis rather than the plot.
+    # Decided before the y-axis labels are written: the minimum marks the bottom
+    # of the *plot*, and the time axis takes that row away. Writing it at
+    # height - 1 regardless put it against the first time label, so "$0" and
+    # "08-10" rendered as "$008-10".
+    time_axis_row = bool(options.time_axis) and surface.height > 2
+
     if options.axis:
         # Match the window the plot itself will use, so the labels stay truthful.
         columns = surface.width * 2 if options.plot.mode == FillMode.BRAILLE else surface.width
@@ -277,8 +284,9 @@ def draw_graph(surface: Surface, options: GraphOptions) -> None:
             0, 0, fit(fmt(maximum), label_width, Align.RIGHT), TextOptions(fg=axis_color)
         )
         if surface.height > 1:
+            bottom = surface.height - 2 if time_axis_row else surface.height - 1
             surface.text(
-                0, surface.height - 1, fit(fmt(minimum), label_width, Align.RIGHT),
+                0, bottom, fit(fmt(minimum), label_width, Align.RIGHT),
                 TextOptions(fg=axis_color),
             )
         plot_surface = surface.sub(

@@ -160,6 +160,16 @@ export function drawGraph(surface: Surface, options: GraphOptions): void {
   let plotSurface = surface;
   const axisColor = options.axisColor ?? theme.muted;
 
+  /**
+   * Whether a row at the bottom belongs to the time axis rather than the plot.
+   *
+   * Decided before the y-axis labels are written, because the minimum marks the
+   * bottom of the *plot* and the time axis takes that row away. Writing it at
+   * `height - 1` regardless put it on the time-axis row, immediately left of the
+   * first time label and against it: "$0" and "08-10" rendered as "$008-10".
+   */
+  const timeAxisRow = Boolean(options.timeAxis) && surface.height > 2;
+
   if (options.axis) {
     // Match the window the plot itself will use, so the labels stay truthful.
     const columns = (options.mode ?? "braille") === "braille" ? surface.width * 2 : surface.width;
@@ -172,7 +182,8 @@ export function drawGraph(surface: Surface, options: GraphOptions): void {
     const labelWidth = Math.max(stringWidth(format(max)), stringWidth(format(min))) + 1;
     surface.text(0, 0, fit(format(max), labelWidth, "right"), { fg: axisColor });
     if (surface.height > 1) {
-      surface.text(0, surface.height - 1, fit(format(min), labelWidth, "right"), { fg: axisColor });
+      const bottom = timeAxisRow ? surface.height - 2 : surface.height - 1;
+      surface.text(0, bottom, fit(format(min), labelWidth, "right"), { fg: axisColor });
     }
     plotSurface = surface.sub(labelWidth, 0, surface.width - labelWidth, surface.height);
   }

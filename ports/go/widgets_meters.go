@@ -230,6 +230,8 @@ func DrawGraph(s Surface, o GraphOptions) {
 	}
 
 	plotSurface := s
+	// Decided before the y-axis labels are written; see the minimum below.
+	timeAxisRow := len(o.TimeAxis) > 0 && s.Height() > 2
 	axisColor := theme.Muted
 	if o.AxisColor != nil {
 		axisColor = *o.AxisColor
@@ -269,7 +271,14 @@ func DrawGraph(s Surface, o GraphOptions) {
 		labelWidth := max(StringWidth(format(maxV)), StringWidth(format(minV))) + 1
 		s.Text(0, 0, Fit(format(maxV), labelWidth, AlignRight), TextOptions{Fg: &axisColor})
 		if s.Height() > 1 {
-			s.Text(0, s.Height()-1, Fit(format(minV), labelWidth, AlignRight),
+			// The minimum marks the bottom of the plot, and a time axis takes
+			// that row away. Writing it at Height()-1 regardless put it against
+			// the first time label, so "$0" and "08-10" rendered as "$008-10".
+			bottom := s.Height() - 1
+			if timeAxisRow {
+				bottom = s.Height() - 2
+			}
+			s.Text(0, bottom, Fit(format(minV), labelWidth, AlignRight),
 				TextOptions{Fg: &axisColor})
 		}
 		plotSurface = s.Sub(labelWidth, 0, max(0, s.Width()-labelWidth), s.Height())

@@ -161,6 +161,16 @@ fn draw_scene(name: &str, s: &Surface) {
                 ..GraphOptions::new(series())
             },
         ),
+        // Both axes together. Each was covered alone, which is how the y-axis
+        // minimum came to be drawn onto the time-axis row without any fixture
+        // noticing.
+        "graph-axis-timeaxis" => {
+            let mut options = GraphOptions::new(series()).with_axis();
+            options.plot.min = Some(0.0);
+            options.plot.max = Some(100.0);
+            options.time_axis = Some(vec!["60s".into(), "30s".into(), "0s".into()]);
+            draw_graph(s, &options)
+        }
         "sparkline-widget" => draw_sparkline(
             s,
             &SparklineWidgetOptions {
