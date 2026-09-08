@@ -1,11 +1,35 @@
 {
+  "threatcrush": {
+    "width": 2301,
+    "height": 1266
+  },
+  "myna": {
+    "width": 2316,
+    "height": 1209
+  },
   "r3q": {
     "width": 2301,
     "height": 1200
   },
+  "tsbb": {
+    "width": 2349,
+    "height": 1209
+  },
   "g1tz": {
     "width": 2301,
     "height": 1200
+  },
+  "logicsrc": {
+    "width": 2388,
+    "height": 1067
+  },
+  "diskpush": {
+    "width": 2301,
+    "height": 1200
+  },
+  "coinpay": {
+    "width": 2236,
+    "height": 1242
   },
   "nixamp": {
     "width": 2301,
