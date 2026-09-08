@@ -283,7 +283,12 @@ output.chmod(0o700)
         that cannot succeed.
         """
         launcher = LAUNCHER.read_text()
-        declared = dict(re.findall(r"^\s+(\w+)\) minimum=([0-9.]+) ;;", launcher, re.M))
+        # A case arm may name several languages that share a floor, e.g.
+        # `typescript|cobol)`, because COBOL's toolchain is the adapter's.
+        declared = {}
+        for names, floor in re.findall(r"^\s+([\w|]+)\) minimum=([0-9.]+) ;;", launcher, re.M):
+            for name in names.split("|"):
+                declared[name] = floor
         manifests = {
             "go": (ROOT / "ports/go/go.mod", r"^go\s+([0-9.]+)"),
             "rust": (ROOT / "ports/rust/Cargo.toml", r'rust-version\s*=\s*"([0-9.]+)"'),
@@ -307,6 +312,9 @@ output.chmod(0o700)
         # Bun's floor is not a preference; it is what can read a v2 lockfile.
         self.assertEqual(declared.get("typescript"), "1.4.0")
         self.assertIn('"lockfileVersion": 2', (ROOT / "bun.lock").read_text())
+        # COBOL renders through the TypeScript adapter, so it needs that same
+        # Bun rather than a floor of its own.
+        self.assertEqual(declared.get("cobol"), declared.get("typescript"))
 
     def test_bindings_update_both_managers_and_keep_builds_outside_source(self):
         self.stub_compilers()

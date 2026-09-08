@@ -7,13 +7,25 @@ import { LANGUAGES, PORTS, LAUNCHER, latestDemo } from "../lib/languages.ts";
 const root = resolve(import.meta.dirname, "../../..");
 
 test("every supported language has latest-source vanilla and mise demo commands", () => {
-  assert.deepEqual(LANGUAGES.map(({ id }) => id), ["ruby", "php", "perl", "cpp", "typescript", "rust", "go", "python", "zig"]);
+  assert.deepEqual(LANGUAGES.map(({ id }) => id),
+    ["ruby", "php", "perl", "cpp", "typescript", "rust", "go", "python", "zig", "cobol"]);
   for (const language of LANGUAGES) {
     assert.ok(language.interactiveDemo.length > 0, language.id);
     assert.ok(language.interactiveDemo.startsWith(`curl -fsSL ${LAUNCHER} | sh -s -- --system ${language.id}`));
-    assert.ok(language.miseDemo.startsWith(`curl -fsSL ${LAUNCHER} | sh -s -- --mise ${language.id}`));
     assert.ok(!language.interactiveDemo.includes("screenshot"));
+    if (language.bridge) {
+      // No mise package provides a COBOL compiler, so there is no pinned form
+      // to offer. Printing a --mise command would be advice that cannot work.
+      assert.equal(language.miseDemo, language.interactiveDemo, language.id);
+      continue;
+    }
+    assert.ok(language.miseDemo.startsWith(`curl -fsSL ${LAUNCHER} | sh -s -- --mise ${language.id}`));
   }
+});
+
+test("the bridge is the only language without a pinned toolchain", () => {
+  const bridges = LANGUAGES.filter((language) => language.bridge).map(({ id }) => id);
+  assert.deepEqual(bridges, ["cobol"]);
 });
 
 test("native updater commands retain full-dashboard source entrypoints", () => {
