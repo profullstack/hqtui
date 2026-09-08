@@ -1,9 +1,10 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { panelGap, type DemoState } from "../state.ts";
 
 /** Keyboard and mouse event visualizer — useful when debugging bindings. */
 export function inputScreen(ui: Container, state: DemoState, theme: Theme): void {
-  ui.row({ size: "1fr", gap: 1 }, (row) => {
+  const gap = panelGap(state);
+  ui.row({ size: "1fr", gap }, (row) => {
     row.panel({ title: "Last Events" }, (p) => {
       p.keyValues([
         { label: "Key", value: state.lastKey, color: theme.accent },

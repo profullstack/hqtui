@@ -1,14 +1,15 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
+import { focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
 import { byteRate, bytes } from "../format.ts";
 
 /** Interfaces, live throughput, open connections and listening ports. */
 export function networkScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   const t = state.sample.telemetry;
   const active = t.interfaces.filter((i) => i.rxTotal > 0 || i.state === "up");
   const shown = (active.length ? active : t.interfaces).slice(0, 3);
 
-  ui.row({ size: 13, gap: 1 }, (row) => {
+  ui.row({ size: 13, gap }, (row) => {
     if (shown.length === 0) {
       row.panel({ title: "Interfaces" }, (p) => p.label("No interfaces reported."));
       return;
@@ -74,7 +75,7 @@ export function networkScreen(ui: Container, state: DemoState, theme: Theme): vo
       });
     });
 
-    row.column({ width: "0.7fr", gap: 1 }, (column) => {
+    row.column({ width: "0.7fr", gap }, (column) => {
       column.panel({ title: "Listening Ports", subtitle: String(t.listeners.length), borderColor: theme.warning }, (p) => {
         const listeners = pane(state, "network.listeners", t.listeners.length);
         p.table({

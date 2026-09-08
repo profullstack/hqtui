@@ -105,6 +105,12 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: bun install --frozen-lockfile
+      # Same reason the `test` job typechecks first: apps/demo imports
+      # `@profullstack/hqtui` by name, and the package resolves to dist. Without
+      # this, any demo test that touches a screen fails to load — and a test
+      # that cannot load is not a test that passed.
+      - name: Build
+        run: bun run build
       - name: Test under Node
         run: node --test packages/hqtui/test/*.test.ts apps/demo/test/*.test.ts apps/web/test/*.test.ts
 

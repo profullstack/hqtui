@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { focusPane, pane, scrollPane, type DemoState } from "../state.ts";
+import { focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
 import { bytes, percent } from "../format.ts";
 
 const FILES = [
@@ -39,8 +39,9 @@ const TREE = [
 
 /** Every widget in the library, in one screen. Also the interaction sandbox. */
 export function componentsScreen(ui: Container, state: DemoState, theme: Theme): void {
+  const gap = panelGap(state);
   ui.row({ size: "1fr", gap: 1 }, (row) => {
-    row.column({ gap: 1 }, (left) => {
+    row.column({ gap }, (left) => {
       left.panel({ title: "Buttons & Inputs", size: 13 }, (p) => {
         p.row({ size: 1, gap: 1 }, (r) => {
           r.button({ label: "Primary", width: 11, size: 11, onPress: () => { state.showModal = true; } });
@@ -115,7 +116,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
       });
     });
 
-    row.column({ gap: 1 }, (right) => {
+    row.column({ gap }, (right) => {
       right.panel({ title: "Process Tree", size: 13 }, (p) => {
         p.row({ size: 1 }, (r) => {
           r.text("Name", { fg: theme.muted, bold: true });

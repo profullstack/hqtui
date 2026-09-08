@@ -212,8 +212,12 @@ async function main(): Promise<void> {
       case "f3": state.filtering = true; return;
       case "c":
         // Shows what collapseBorders does, live. Worth a key because the
-        // difference is only visible when panels sit next to each other.
-        app.setCollapseBorders(!app.collapseBorders);
+        // difference is only visible when panels sit next to each other —
+        // which is also why the screens have to close their one-column gaps
+        // at the same time. The library only merges a seam where two bordered
+        // siblings already touch, so toggling the flag alone moved nothing.
+        state.collapsed = !state.collapsed;
+        app.setCollapseBorders(state.collapsed);
         return;
       case "f6": {
         const order = ["cpu", "mem", "pid", "name"] as const;
