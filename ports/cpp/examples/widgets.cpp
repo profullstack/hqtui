@@ -84,6 +84,21 @@ void widget_log(Surface s) {
 }
 // @end
 
+// @widget scrollbar
+void widget_scrollbar(Surface s) {
+  // The bar is over state you own, so it works beside anything that scrolls:
+  // wrapped prose, a canvas, a draw() of your own. Here it takes the rightmost
+  // column and the prose takes the rest.
+  int w = s.rect().width, h = s.rect().height;
+  const auto &t = theme(s);
+  draw_text(s.sub({0, 0, w - 2, h}),
+            "A scrollbar you drive yourself. It has no idea what is beside it, "
+            "only how much there is, how much fits, and where you are.",
+            TextStyle{t.foreground, std::nullopt, HQ_LEFT, 0, true});
+  draw_scrollbar(s.sub({w - 1, 0, 1, h}), Scrollbar{40, 5, 12, HQ_SCROLLBAR_RIGHT});
+}
+// @end
+
 // @widget meter
 void widget_meter(Surface s) {
   const int width = s.rect().width;
@@ -492,6 +507,7 @@ int main() {
       {"list", widget_list},
       {"tree", widget_tree},
       {"log", widget_log},
+      {"scrollbar", widget_scrollbar},
       {"meter", widget_meter},
       {"meters", widget_meters},
       {"progress", widget_progress},

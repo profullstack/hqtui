@@ -22,6 +22,7 @@ const Constraint = layout.Constraint;
 const Style = buffer_mod.Style;
 const Surface = surface_mod.Surface;
 const roundHalfUp = color_mod.roundHalfUp;
+const drawScrollbar = @import("scrollbar.zig").drawScrollbar;
 
 pub const TableColumn = struct {
     title: []const u8 = "",
@@ -200,39 +201,6 @@ pub fn drawTable(allocator: std.mem.Allocator, s: Surface, options: TableOptions
             capacity,
             options.rows.len,
             offset,
-        );
-    }
-}
-
-/// A one-column scrollbar. Thumb size reflects the visible fraction.
-pub fn drawScrollbar(
-    s: Surface,
-    x: isize,
-    y: isize,
-    height: usize,
-    total: usize,
-    offset: usize,
-) void {
-    const theme = s.theme;
-    const track = theme.background.mix(theme.border, 0.7);
-    const fh: f64 = @floatFromInt(height);
-    const thumb_size: i64 = @max(1, @as(i64, @intFromFloat(
-        roundHalfUp(fh / @as(f64, @floatFromInt(total)) * fh),
-    )));
-    const max_offset: usize = @max(1, total -| height);
-    const thumb_pos: i64 = @intFromFloat(roundHalfUp(
-        @as(f64, @floatFromInt(offset)) / @as(f64, @floatFromInt(max_offset)) *
-            (fh - @as(f64, @floatFromInt(thumb_size))),
-    ));
-
-    for (0..height) |i| {
-        const at: i64 = @intCast(i);
-        const in_thumb = at >= thumb_pos and at < thumb_pos + thumb_size;
-        s.glyph(
-            x,
-            y + @as(isize, @intCast(i)),
-            if (in_thumb) '█' else '│',
-            .{ .fg = if (in_thumb) theme.accent else track },
         );
     }
 }

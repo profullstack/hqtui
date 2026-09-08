@@ -176,6 +176,21 @@ export function log(ui: Container, _theme: Theme): void {
 }
 // @end
 
+// @widget scrollbar
+export function scrollbar(ui: Container, theme: Theme): void {
+  // The bar is over state you own, so it works beside anything that scrolls:
+  // wrapped prose, a canvas, a draw() of your own.
+  ui.row({ gap: 1 }, (r) => {
+    r.text(
+      "A scrollbar you drive yourself. It has no idea what is beside it, only " +
+        "how much there is, how much fits, and where you are.",
+      { wrap: true, fg: theme.foreground },
+    );
+    r.scrollbar({ total: 40, viewport: 5, offset: 12, size: 1 });
+  });
+}
+// @end
+
 // ----------------------------------------------------------------- meters
 
 // @widget meter

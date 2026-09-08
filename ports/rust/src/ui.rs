@@ -682,6 +682,22 @@ impl<'a> Container<'a> {
         })
     }
 
+    /// A scrollbar over state you own, for anything that scrolls and is not a
+    /// table: wrapped prose, a canvas, a `draw` of your own. A vertical bar
+    /// fills the space it is given; a horizontal one is a single row.
+    pub fn scrollbar(&mut self, options: w::ScrollbarOptions, id: &str) -> &mut Self {
+        let constraint =
+            if options.orientation.is_vertical() { self.filling() } else { self.leaf(1) };
+        let ctx = self.ctx.clone();
+        let id = id.to_string();
+        self.add(constraint, move |s| {
+            w::draw_scrollbar_widget(&s, &options);
+            if !id.is_empty() {
+                ctx.hit(&id, s.hit_rect(), 0);
+            }
+        })
+    }
+
     pub fn tree(&mut self, options: w::TreeOptions, id: &str) -> &mut Self {
         let constraint = self.filling();
         let ctx = self.ctx.clone();

@@ -79,7 +79,7 @@ void validate(const Json &n, int depth, int &count) {
       "badge",    "progress", "sparkline", "heatbar",   "columns", "donut",
       "list",     "tree",     "button",    "checkbox",  "select",  "input",
       "tabs",     "statusbar", "label",     "heading",   "meters",  "modal",
-      "commandpalette",        "tooltip"};
+      "commandpalette",        "tooltip",   "scrollbar"};
   if (std::find(types.begin(), types.end(), type) == types.end())
     throw std::runtime_error("unknown widget: " + type);
   if (!n["children"].null() &&
@@ -271,6 +271,17 @@ void node(UI &ui, const Json &n, std::vector<PendingOverlay> &overlays) {
     if (d.segments.size() > 64)
       throw std::runtime_error("too many donut segments");
     ui.donut(d, size(n));
+  } else if (type == "scrollbar") {
+    Scrollbar bar;
+    bar.total = integer(n["total"], 0, 0, 1000000);
+    bar.viewport = integer(n["viewport"], 0, 0, 1000000);
+    bar.offset = integer(n["offset"], 0, 0, 1000000);
+    auto edge = n["orientation"].s("right");
+    bar.orientation = edge == "left"     ? HQ_SCROLLBAR_LEFT
+                      : edge == "bottom" ? HQ_SCROLLBAR_BOTTOM
+                      : edge == "top"    ? HQ_SCROLLBAR_TOP
+                                         : HQ_SCROLLBAR_RIGHT;
+    ui.scrollbar(bar, n["id"].s(""));
   } else if (type == "list") {
     List l;
     for (auto &item : n["items"].array())

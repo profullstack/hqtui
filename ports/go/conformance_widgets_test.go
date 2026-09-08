@@ -161,6 +161,20 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 		}})
 	case "scrollbar":
 		DrawScrollbar(s, 1, 0, 8, 40, 12)
+	case "scrollbar-right":
+		DrawScrollbarWidget(s, ScrollbarOptions{Total: 40, Viewport: 8, Offset: 12})
+	case "scrollbar-left":
+		DrawScrollbarWidget(s, ScrollbarOptions{Total: 40, Viewport: 8, Offset: 12, Orientation: ScrollbarLeft})
+	case "scrollbar-bottom":
+		DrawScrollbarWidget(s, ScrollbarOptions{Total: 80, Viewport: 20, Offset: 30, Orientation: ScrollbarBottom})
+	case "scrollbar-top":
+		DrawScrollbarWidget(s, ScrollbarOptions{Total: 80, Viewport: 20, Offset: 30, Orientation: ScrollbarTop})
+	case "scrollbar-fits":
+		DrawScrollbarWidget(s, ScrollbarOptions{Total: 5, Viewport: 8, Offset: 0})
+	case "scrollbar-viewport":
+		DrawScrollbarWidget(s, ScrollbarOptions{Total: 120, Viewport: 8, Offset: 36})
+	case "scrollbar-viewport-wide":
+		DrawScrollbarWidget(s, ScrollbarOptions{Total: 120, Viewport: 8, Offset: 36, Orientation: ScrollbarBottom})
 	case "button":
 		DrawButton(s, ButtonOptions{Label: "OK"})
 	case "button-focused":

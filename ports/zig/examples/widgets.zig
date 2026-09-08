@@ -171,6 +171,22 @@ fn log(ui: *Container) anyerror!void {
 
 // ----------------------------------------------------------------- meters
 
+// @widget scrollbar
+fn scrollbar(ui: *Container) anyerror!void {
+    // The bar is over state you own, so it works beside anything that scrolls:
+    // wrapped prose, a canvas, a `draw` of your own.
+    try ui.row(.{ .layout = .{ .gap = 1 } }, hqtui.Body.plain(scrollbarRow));
+}
+
+fn scrollbarRow(r: *Container) anyerror!void {
+    try r.text(
+        "A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.",
+        .{ .wrap = true },
+    );
+    try r.scrollbar(.{ .total = 40, .viewport = 5, .offset = 12 }, "");
+}
+// @end
+
 // @widget meter
 fn meter(ui: *Container) anyerror!void {
     try ui.meter(.{ .value = 0.62, .label = "CPU" });
@@ -358,6 +374,7 @@ const examples = [_]Example{
     .{ .name = "list", .body = hqtui.Body.plain(list) },
     .{ .name = "tree", .body = hqtui.Body.plain(tree) },
     .{ .name = "log", .body = hqtui.Body.plain(log) },
+    .{ .name = "scrollbar", .body = hqtui.Body.plain(scrollbar) },
     .{ .name = "meter", .body = hqtui.Body.plain(meter) },
     .{ .name = "meters", .body = hqtui.Body.plain(meters) },
     .{ .name = "progress", .body = hqtui.Body.plain(progress) },

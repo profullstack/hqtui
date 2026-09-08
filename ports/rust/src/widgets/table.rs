@@ -10,6 +10,7 @@ use crate::buffer::{Attrs, Style};
 use crate::color::Color;
 use crate::layout::{solve, Constraint, Size};
 use crate::surface::{Surface, TextOptions};
+use crate::widgets::scrollbar::draw_scrollbar;
 use crate::theme::elevate;
 use crate::unicode::{fit, string_width, truncate, Align};
 
@@ -263,35 +264,6 @@ pub fn draw_table(surface: &Surface, options: &TableOptions) {
             capacity,
             options.rows.len(),
             offset,
-        );
-    }
-}
-
-/// A one-column scrollbar. Thumb size reflects the visible fraction.
-pub fn draw_scrollbar(
-    surface: &Surface,
-    x: isize,
-    y: isize,
-    height: usize,
-    total: usize,
-    offset: usize,
-) {
-    use crate::color::round_half_up;
-    let theme = surface.theme.clone();
-    let track = theme.background.mix(theme.border, 0.7);
-    let thumb_size =
-        (round_half_up(height as f64 / total as f64 * height as f64) as i64).max(1);
-    let max_offset = total.saturating_sub(height).max(1);
-    let thumb_pos = round_half_up(
-        offset as f64 / max_offset as f64 * (height as f64 - thumb_size as f64),
-    ) as i64;
-    for i in 0..height as i64 {
-        let in_thumb = i >= thumb_pos && i < thumb_pos + thumb_size;
-        surface.glyph(
-            x,
-            y + i as isize,
-            if in_thumb { '█' } else { '│' },
-            &Style::new().with_fg(if in_thumb { theme.accent } else { track }),
         );
     }
 }

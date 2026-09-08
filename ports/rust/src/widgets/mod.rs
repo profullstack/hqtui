@@ -4,6 +4,7 @@
 
 pub mod controls;
 pub mod meters;
+pub mod scrollbar;
 pub mod table;
 pub mod text;
 
@@ -19,8 +20,12 @@ pub use meters::{
     DonutSegment, GaugeOptions, GraphOptions, HeatBarOptions, MeterItem, MeterOptions,
     MetersOptions, ProgressOptions, SparklineWidgetOptions,
 };
+pub use scrollbar::{
+    draw_scrollbar, draw_scrollbar_widget, offset_for_position, thumb, thumb_of, ScrollbarOptions,
+    ScrollbarOrientation,
+};
 pub use table::{
-    draw_list, draw_log, draw_scrollbar, draw_table, draw_tree, resolve_offset, TableColumn,
+    draw_list, draw_log, draw_table, draw_tree, resolve_offset, TableColumn,
     ListItem, ListOptions, LogEntry, LogOptions, TableOptions, TableRow, TreeNode, TreeOptions,
     TreeValue,
 };
