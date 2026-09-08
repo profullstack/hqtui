@@ -250,6 +250,10 @@
         "perl": {
           "code": "sub widget_badge {\n    my ($ui) = @_;\n    $ui->badge('active');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "BADGE-WIDGET.\n    MOVE \"badge\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"BADGE\" TO SR-VERB\n    MOVE \"active\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -411,6 +415,10 @@
         "perl": {
           "code": "sub widget_status_bar {\n    my ($ui) = @_;\n    $ui->statusbar([{ key => 'F1', label => 'Help' }, { key => 'q', label => 'Quit' }],\n                   right => [{ label => '0.41ms' }]);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "STATUSBAR-WIDGET.\n    MOVE \"statusBar\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"STATUS\" TO SR-VERB\n    MOVE \"F1\" TO SR-KEY\n    MOVE \"Help\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"STATUS\" TO SR-VERB\n    MOVE \"q\" TO SR-KEY\n    MOVE \"Quit\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -517,6 +525,10 @@
         "perl": {
           "code": "sub widget_list {\n    my ($ui) = @_;\n    $ui->list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], selected => 0, bullet => '▸');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "LIST-WIDGET.\n    MOVE \"list\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"ITEM\" TO SR-VERB\n    MOVE \"apps/demo\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ITEM\" TO SR-VERB\n    MOVE \"packages/hqtui\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ITEM\" TO SR-VERB\n    MOVE \"apps/web\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"ITEM\" TO SR-VERB\n    MOVE \"docs\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -568,6 +580,10 @@
         "perl": {
           "code": "sub widget_tree {\n    my ($ui) = @_;\n    $ui->tree([{ label => 'systemd', children => [{ label => 'bash' }, { label => 'postgres' }] }],\n              selected => 1);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "TREE-WIDGET.\n    MOVE \"tree\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> CHILD attaches to the NODE most recently declared, so a flat record\n    *> stream can still describe a hierarchy.\n    MOVE \"NODE\" TO SR-VERB\n    MOVE \"systemd\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"CHILD\" TO SR-VERB\n    MOVE \"bash\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"CHILD\" TO SR-VERB\n    MOVE \"postgres\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -768,6 +784,10 @@
         "perl": {
           "code": "sub widget_progress {\n    my ($ui) = @_;\n    $ui->progress(37, max => 120, label => 'Indexing', count => \\1);\n    $ui->progress(0.82, label => 'Upload');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "PROGRESS-WIDGET.\n    MOVE \"progress\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> SR-TEXT carries the maximum, which also asks for a count readout.\n    MOVE \"PROGRESS\" TO SR-VERB\n    MOVE \"Indexing\" TO SR-KEY\n    MOVE \"120\" TO SR-TEXT\n    MOVE \"37\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"PROGRESS\" TO SR-VERB\n    MOVE \"Upload\" TO SR-KEY\n    MOVE \"0.82\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -874,6 +894,10 @@
         "perl": {
           "code": "sub widget_sparkline {\n    my ($ui) = @_;\n    $ui->sparkline(\\@cpu_history, label => 'CPU ', text => '44%');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "SPARKLINE-WIDGET.\n    MOVE \"sparkline\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> One sample per record, straight out of a table, exactly as a nightly\n    *> batch job already produces them.\n    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 20\n        MOVE \"SPARKPT\" TO SR-VERB\n        MOVE CPU-POINT(I) TO SR-NUM\n        PERFORM EMIT-RECORD\n    END-PERFORM.",
+          "syntax": "cobol"
         }
       }
     },
@@ -976,6 +1000,10 @@
         "perl": {
           "code": "sub widget_heat_bar {\n    my ($ui) = @_;\n    $ui->heatbar(0.28);\n    $ui->heatbar(0.64);\n    $ui->heatbar(0.91);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "HEATBAR-WIDGET.\n    MOVE \"heatBar\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"HEATBAR\" TO SR-VERB\n    MOVE \"0.28\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"HEATBAR\" TO SR-VERB\n    MOVE \"0.64\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"HEATBAR\" TO SR-VERB\n    MOVE \"0.91\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1082,6 +1110,10 @@
         "perl": {
           "code": "sub widget_donut {\n    my ($ui) = @_;\n    $ui->donut([{ value => 4.65, label => 'Used' }, { value => 10.96, label => 'Free' }]);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "DONUT-WIDGET.\n    MOVE \"donut\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"SEGMENT\" TO SR-VERB\n    MOVE \"Used\" TO SR-TEXT\n    MOVE \"4.65\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"SEGMENT\" TO SR-VERB\n    MOVE \"Free\" TO SR-TEXT\n    MOVE \"10.96\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1133,6 +1165,10 @@
         "perl": {
           "code": "sub widget_button {\n    my ($ui) = @_;\n    # variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n    $ui->button('Primary');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "BUTTON-WIDGET.\n    MOVE \"button\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"BUTTON\" TO SR-VERB\n    MOVE \"Primary\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1184,6 +1220,10 @@
         "perl": {
           "code": "sub widget_checkbox {\n    my ($ui) = @_;\n    $ui->checkbox('Toggle', checked => \\1, variant => 1);\n    $ui->checkbox('Checkbox', checked => \\0);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "CHECKBOX-WIDGET.\n    MOVE \"checkbox\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> SR-KEY is ON or OFF: a record layout has no booleans.\n    MOVE \"CHECKBOX\" TO SR-VERB\n    MOVE \"ON\" TO SR-KEY\n    MOVE \"Toggle\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"CHECKBOX\" TO SR-VERB\n    MOVE \"OFF\" TO SR-KEY\n    MOVE \"Checkbox\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1286,6 +1326,10 @@
         "perl": {
           "code": "sub widget_text_input {\n    my ($ui) = @_;\n    $ui->input('postgres', label => 'Search');\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "INPUT-WIDGET.\n    MOVE \"textInput\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"INPUT\" TO SR-VERB\n    MOVE \"Search\" TO SR-KEY\n    MOVE \"postgres\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1337,6 +1381,10 @@
         "perl": {
           "code": "sub widget_tabs {\n    my ($ui) = @_;\n    $ui->tabs(['1 dashboard', '2 traffic', '3 sessions'], active => 1);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "TABS-WIDGET.\n    MOVE \"tabs\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"TAB\" TO SR-VERB\n    MOVE \"1 dashboard\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"TAB\" TO SR-VERB\n    MOVE \"ACTIVE\" TO SR-KEY\n    MOVE \"2 traffic\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"TAB\" TO SR-VERB\n    MOVE \"3 sessions\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },

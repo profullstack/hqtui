@@ -15,10 +15,11 @@
 
 use std::io::Read;
 
-use hqtui::graphics::plot::{GaugeOptions, PlotOptions, Series};
+use hqtui::graphics::plot::{DonutOptions, DonutSegment, GaugeOptions, PlotOptions, Series};
 use hqtui::prelude::*;
 use hqtui::testing::render_to_text;
 use hqtui::unicode::Align;
+use hqtui::widgets::*;
 
 #[derive(Clone, Debug)]
 struct Record {
@@ -77,7 +78,14 @@ fn draw(scene: &Scene, ui: &mut Container) {
     let mut keys: Vec<KeyValueRow> = Vec::new();
     let mut entries: Vec<LogEntry> = Vec::new();
     let mut points: Vec<f64> = Vec::new();
+    let mut bars: Vec<f64> = Vec::new();
+    let mut list_items: Vec<ListItem> = Vec::new();
+    let mut tree_nodes: Vec<TreeNode> = Vec::new();
+    let mut tabs: Vec<String> = Vec::new();
+    let mut status: Vec<StatusItem> = Vec::new();
+    let mut segments: Vec<DonutSegment> = Vec::new();
     let mut selected = 0usize;
+    let mut active_tab = 0usize;
 
     for record in &scene.records {
         match record.verb.as_str() {
@@ -127,10 +135,106 @@ fn draw(scene: &Scene, ui: &mut Container) {
                     ..Default::default()
                 });
             }
+            "BADGE" => {
+                ui.badge(BadgeOptions::new(&record.text));
+            }
+            "PROGRESS" => {
+                let max: Option<f64> = record.text.parse().ok();
+                ui.progress(ProgressOptions {
+                    value: record.num.parse().unwrap_or(0.0),
+                    max,
+                    label: Some(record.key.clone()),
+                    show_count: max.is_some(),
+                    ..Default::default()
+                });
+            }
+            // One sample per record, like GRAPHPT. A batch job emits these in
+            // the order it computed them.
+            "SPARKPT" => bars.push(record.num.parse().unwrap_or(0.0)),
+            "HEATBAR" => {
+                ui.heat_bar(HeatBarOptions {
+                    value: record.num.parse().unwrap_or(0.0),
+                    ..Default::default()
+                });
+            }
+            "SEGMENT" => segments.push(DonutSegment {
+                value: record.num.parse().unwrap_or(0.0),
+                label: if record.text.is_empty() { None } else { Some(record.text.clone()) },
+                color: None,
+            }),
+            "ITEM" => list_items.push(ListItem::from(record.text.as_str())),
+            "NODE" => tree_nodes.push(TreeNode::new(&record.text)),
+            "CHILD" => {
+                // Belongs to the node most recently declared, which is how a
+                // record stream describes a shallow hierarchy without nesting.
+                let parent = tree_nodes
+                    .last_mut()
+                    .unwrap_or_else(|| panic!("CHILD before any NODE in scene {}", scene.id));
+                let child = TreeNode::new(&record.text);
+                *parent = std::mem::replace(parent, TreeNode::new("")).child(child);
+            }
+            "BUTTON" => {
+                ui.button(ButtonOptions::new(&record.text), "cobol-button");
+            }
+            "CHECKBOX" => {
+                ui.checkbox(
+                    CheckboxOptions::new(&record.text, record.key == "ON"),
+                    "cobol-checkbox",
+                );
+            }
+            "INPUT" => {
+                ui.text_input(
+                    TextInputOptions {
+                        label: Some(record.key.clone()),
+                        ..TextInputOptions::new(&record.text)
+                    },
+                    "cobol-input",
+                );
+            }
+            "TAB" => {
+                if record.key == "ACTIVE" {
+                    active_tab = tabs.len();
+                }
+                tabs.push(record.text.clone());
+            }
+            "STATUS" => status.push(if record.key.is_empty() {
+                StatusItem::new(&record.text)
+            } else {
+                StatusItem::new(&record.text).key(&record.key)
+            }),
             other => panic!("unknown verb {other:?} in scene {}", scene.id),
         }
     }
 
+    if !bars.is_empty() {
+        ui.sparkline(SparklineWidgetOptions { values: bars, ..Default::default() });
+    }
+    if !segments.is_empty() {
+        ui.donut(DonutOptions { segments, ..Default::default() });
+    }
+    if !list_items.is_empty() {
+        ui.list(
+            ListOptions {
+                items: list_items,
+                selected: Some(selected),
+                bullet: Some("▸".into()),
+                ..Default::default()
+            },
+            "cobol-list",
+        );
+    }
+    if !tree_nodes.is_empty() {
+        ui.tree(
+            TreeOptions { nodes: tree_nodes, selected: Some(selected), ..Default::default() },
+            "cobol-tree",
+        );
+    }
+    if !tabs.is_empty() {
+        ui.tabs(TabsOptions::new(tabs, active_tab), "cobol-tabs");
+    }
+    if !status.is_empty() {
+        ui.status_bar(StatusBarOptions { items: status, ..Default::default() });
+    }
     if !keys.is_empty() {
         ui.key_values(KeyValueOptions { rows: keys, ..Default::default() });
     }
