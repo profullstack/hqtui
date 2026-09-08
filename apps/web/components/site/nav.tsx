@@ -16,6 +16,7 @@ const LINKS = [
   { href: "/#features", label: "Features" },
   { href: "/widgets", label: "Widgets" },
   { href: "/showcase", label: "Showcase" },
+  { href: "/apps", label: "Apps" },
   { href: "/docs", label: "Docs" },
   { href: "/blog", label: "Blog" },
   { href: "/#themes", label: "Themes" },
@@ -98,6 +99,7 @@ export function SiteFooter({ views }: { views?: number }) {
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui">GitHub</a>
           <a className="hover:text-white" href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a>
           <Link className="hover:text-white" href="/docs">Docs</Link>
+          <Link className="hover:text-white" href="/apps">Apps</Link>
           <Link className="hover:text-white" href="/book">Cookbook</Link>
           <Link className="hover:text-white" href="/blog">Blog</Link>
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui/blob/main/docs/PRD.md">PRD</a>
