@@ -143,9 +143,44 @@ class BoxOptions:
     footer: str = ""
     footer_color: Color | None = None
     collapse: bool = False
+    #: Which edges to draw: None for all four, "none" for no rule, or a
+    #: sequence of "top"/"right"/"bottom"/"left". The interior follows the
+    #: sides actually drawn, so a top-only box costs one row rather than two.
+    sides: object = None
     """Merge this border with one already in the same cell rather than
     overwriting it. Set for you by the container when the app asks for
     collapsed borders; there is no reason to pass it by hand."""
+
+
+#: Which edges of a box to draw. ``None`` means all four, which is what a box
+#: was before this existed; an empty tuple draws no rule and insets nothing,
+#: the same as a border style of "none".
+SIDES = ("top", "right", "bottom", "left")
+
+
+def resolve_sides(sides) -> dict:
+    """Turn whatever the caller gave into four flags."""
+    if sides is None or sides == "all":
+        return {name: True for name in SIDES}
+    if sides == "none":
+        return {name: False for name in SIDES}
+    chosen = set(sides)
+    return {name: name in chosen for name in SIDES}
+
+
+def side_glyph(border: str, bits: int) -> "str | None":
+    """The glyph for a cell where two edges meet, given which are drawn.
+
+    A single edge has no glyph of its own, so the plain rule stands in: that
+    cell is part of a run, not a corner.
+    """
+    if not bits:
+        return None
+    glyph = border_glyph(border, bits)
+    if glyph is not None:
+        return glyph
+    chars = BORDERS[border]
+    return chars.h if bits & (EDGE_LEFT | EDGE_RIGHT) else chars.v
 
 
 class Surface:
@@ -278,7 +313,7 @@ class Surface:
             ch = border_glyph(style, before | after) or ch
         self.char(x, y, ch, cell_style)
 
-    def box(self, options: BoxOptions = BoxOptions()) -> "Surface":
+    def box(self, options: BoxOptions = BoxOptions()) -> "Surface":  # noqa: C901
         """Draw a bordered box with an optional title, and return the interior.
 
         Every panel in the library goes through here.
@@ -290,7 +325,8 @@ class Surface:
         if options.fill and bg is not None:
             self.fill(Style(bg=bg))
 
-        if border == "none":
+        sides = resolve_sides(options.sides)
+        if border == "none" or not any(sides.values()):
             return self.inset(0)
         if self.width < 2 or self.height < 1:
             return self.inset(1)
@@ -316,15 +352,33 @@ class Surface:
             for i in range(length):
                 put(x, y + i, ch)
 
-        put(0, 0, b.tl)
-        put(w - 1, 0, b.tr)
-        put_h(1, 0, w - 2, b.h)
+        # A corner belongs to the two sides that meet there, so it exists only
+        # when both are drawn; where one is, the rule runs straight through the
+        # cell the corner would have occupied.
+        def corner(a: bool, a_bit: int, c: bool, c_bit: int) -> "str | None":
+            return side_glyph(border, (a_bit if a else 0) | (c_bit if c else 0))
+
+        if sides["top"]:
+            put_h(1, 0, w - 2, b.h)
+        tl = corner(sides["top"], EDGE_RIGHT, sides["left"], EDGE_DOWN)
+        tr = corner(sides["top"], EDGE_LEFT, sides["right"], EDGE_DOWN)
+        if tl is not None:
+            put(0, 0, tl)
+        if tr is not None:
+            put(w - 1, 0, tr)
         if h > 1:
-            put(0, h - 1, b.bl)
-            put(w - 1, h - 1, b.br)
-            put_h(1, h - 1, w - 2, b.h)
-            put_v(0, 1, h - 2, b.v)
-            put_v(w - 1, 1, h - 2, b.v)
+            bl = corner(sides["bottom"], EDGE_RIGHT, sides["left"], EDGE_UP)
+            br = corner(sides["bottom"], EDGE_LEFT, sides["right"], EDGE_UP)
+            if sides["bottom"]:
+                put_h(1, h - 1, w - 2, b.h)
+            if bl is not None:
+                put(0, h - 1, bl)
+            if br is not None:
+                put(w - 1, h - 1, br)
+            if sides["left"]:
+                put_v(0, 1, h - 2, b.v)
+            if sides["right"]:
+                put_v(w - 1, 1, h - 2, b.v)
 
         # Measured before the title is drawn: both share the top border row, and
         # the title used to be truncated against the full width and then painted
@@ -376,4 +430,9 @@ class Surface:
                 )
                 self.text(2, h - 1, foot, TextOptions(fg=color, bg=bg))
 
-        return self.sub(1, 1, max(0, w - 2), max(0, h - 2))
+        # The interior follows the sides actually drawn.
+        left = 1 if sides["left"] else 0
+        top = 1 if sides["top"] else 0
+        shrink_x = left + (1 if sides["right"] else 0)
+        shrink_y = top + (1 if sides["bottom"] else 0)
+        return self.sub(left, top, max(0, w - shrink_x), max(0, h - shrink_y))

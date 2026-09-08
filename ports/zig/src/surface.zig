@@ -154,9 +154,66 @@ pub const BoxOptions = struct {
     /// overwriting it. Set for you by the container when the app asks for
     /// collapsed borders; there is no reason to pass it by hand.
     collapse: bool = false,
+    /// Which edges to draw. The interior follows the sides actually drawn, so
+    /// a top-only box costs one row rather than two.
+    sides: Sides = .{},
     footer: []const u8 = "",
     footer_color: ?Color = null,
 };
+
+/// Which edges of a box to draw. The default is all four, which is what a box
+/// was before this existed; `none()` draws no rule and insets nothing, the same
+/// as a border style of `.none`.
+pub const Sides = struct {
+    top: bool = true,
+    right: bool = true,
+    bottom: bool = true,
+    left: bool = true,
+
+    pub fn all() Sides {
+        return .{};
+    }
+
+    pub fn none() Sides {
+        return .{ .top = false, .right = false, .bottom = false, .left = false };
+    }
+
+    pub fn any(self: Sides) bool {
+        return self.top or self.right or self.bottom or self.left;
+    }
+
+    /// The spelling the reference API uses: "all", "none", or a comma-separated
+    /// list of sides.
+    pub fn parse(spec: []const u8) Sides {
+        if (spec.len == 0 or std.mem.eql(u8, spec, "all")) return Sides.all();
+        if (std.mem.eql(u8, spec, "none")) return Sides.none();
+        return .{
+            .top = hasSide(spec, "top"),
+            .right = hasSide(spec, "right"),
+            .bottom = hasSide(spec, "bottom"),
+            .left = hasSide(spec, "left"),
+        };
+    }
+};
+
+fn hasSide(spec: []const u8, name: []const u8) bool {
+    var it = std.mem.splitScalar(u8, spec, ',');
+    while (it.next()) |part| {
+        if (std.mem.eql(u8, std.mem.trim(u8, part, " "), name)) return true;
+    }
+    return false;
+}
+
+/// The glyph for a cell where two edges meet, given which of them are drawn.
+///
+/// A single edge has no glyph of its own, so the plain rule stands in: that
+/// cell is part of a run, not a corner.
+pub fn sideGlyph(style: BorderStyle, bits: u8) ?u21 {
+    if (bits == 0) return null;
+    if (borderGlyph(style, bits)) |glyph| return glyph;
+    const chars = style.chars() orelse return null;
+    return if (bits & (edge_left | edge_right) != 0) chars.h else chars.v;
+}
 
 pub const Surface = struct {
     buffer: *FrameBuffer,
@@ -345,7 +402,9 @@ pub const Surface = struct {
             if (bg) |v| self.fill(.{ .bg = v });
         }
 
+        const sides = options.sides;
         const chars = options.border.chars() orelse return self.inset(.none);
+        if (!sides.any()) return self.inset(.none);
         if (self.width() < 2 or self.height() < 1) return self.inset(Padding.all(1));
 
         const w = self.width();
@@ -361,15 +420,40 @@ pub const Surface = struct {
             }
         }.call;
 
-        put(self, options.collapse, options.border, border_style, 0, 0, chars.tl);
-        put(self, options.collapse, options.border, border_style, @intCast(w - 1), 0, chars.tr);
-        for (0..w - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(1 + i), 0, chars.h);
+        // A corner belongs to the two sides that meet there, so it exists only
+        // when both are drawn; where one is, the rule runs straight through the
+        // cell the corner would have occupied.
+        const corner = struct {
+            fn call(style: BorderStyle, a: bool, a_bit: u8, b: bool, b_bit: u8) ?u21 {
+                return sideGlyph(style, (if (a) a_bit else 0) | (if (b) b_bit else 0));
+            }
+        }.call;
+
+        if (sides.top) {
+            for (0..w - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(1 + i), 0, chars.h);
+        }
+        if (corner(options.border, sides.top, edge_right, sides.left, edge_down)) |ch| {
+            put(self, options.collapse, options.border, border_style, 0, 0, ch);
+        }
+        if (corner(options.border, sides.top, edge_left, sides.right, edge_down)) |ch| {
+            put(self, options.collapse, options.border, border_style, @intCast(w - 1), 0, ch);
+        }
         if (h > 1) {
-            put(self, options.collapse, options.border, border_style, 0, @intCast(h - 1), chars.bl);
-            put(self, options.collapse, options.border, border_style, @intCast(w - 1), @intCast(h - 1), chars.br);
-            for (0..w - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(1 + i), @intCast(h - 1), chars.h);
-            for (0..h - 2) |i| put(self, options.collapse, options.border, border_style, 0, @intCast(1 + i), chars.v);
-            for (0..h - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(w - 1), @intCast(1 + i), chars.v);
+            if (sides.bottom) {
+                for (0..w - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(1 + i), @intCast(h - 1), chars.h);
+            }
+            if (corner(options.border, sides.bottom, edge_right, sides.left, edge_up)) |ch| {
+                put(self, options.collapse, options.border, border_style, 0, @intCast(h - 1), ch);
+            }
+            if (corner(options.border, sides.bottom, edge_left, sides.right, edge_up)) |ch| {
+                put(self, options.collapse, options.border, border_style, @intCast(w - 1), @intCast(h - 1), ch);
+            }
+            if (sides.left) {
+                for (0..h - 2) |i| put(self, options.collapse, options.border, border_style, 0, @intCast(1 + i), chars.v);
+            }
+            if (sides.right) {
+                for (0..h - 2) |i| put(self, options.collapse, options.border, border_style, @intCast(w - 1), @intCast(1 + i), chars.v);
+            }
         }
 
         // Measured before the title is drawn: both share the top border row, and
@@ -435,6 +519,11 @@ pub const Surface = struct {
             }
         }
 
-        return self.sub(1, 1, w -| 2, h -| 2);
+        // The interior follows the sides actually drawn.
+        const left: usize = if (sides.left) 1 else 0;
+        const top: usize = if (sides.top) 1 else 0;
+        const shrink_x = left + @as(usize, if (sides.right) 1 else 0);
+        const shrink_y = top + @as(usize, if (sides.bottom) 1 else 0);
+        return self.sub(@intCast(left), @intCast(top), w -| shrink_x, h -| shrink_y);
     }
 };

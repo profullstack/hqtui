@@ -144,8 +144,22 @@ enum { HQ_EDGE_UP = 1, HQ_EDGE_RIGHT = 2, HQ_EDGE_DOWN = 4, HQ_EDGE_LEFT = 8 };
 int hq_border_bits(uint32_t cp);
 /* The glyph in `border` with exactly these edges, or 0 if there is none. */
 uint32_t hq_border_glyph(int border,int bits);
+/* Which edges of a box to draw, as a mask. Zero means all four, so a caller
+ * that has never heard of this gets the box it always got. HQ_SIDES_NONE draws
+ * no rule and insets nothing, the same as a border of HQ_NO_BORDER. */
+enum {
+  HQ_SIDE_TOP = 1,
+  HQ_SIDE_RIGHT = 2,
+  HQ_SIDE_BOTTOM = 4,
+  HQ_SIDE_LEFT = 8,
+  HQ_SIDES_ALL = 15,
+  HQ_SIDES_NONE = 16
+};
+
 typedef struct {
     int border, title_align, no_fill;
+    /* A mask of HQ_SIDE_*, or 0 for all four. */
+    int sides;
     /* Merge this border with one already in the same cell rather than
      * overwriting it. Zero unless the caller asks for collapsed borders. */
     int collapse;

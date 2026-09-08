@@ -1,6 +1,9 @@
 package hqtui
 
-import "unicode/utf8"
+import (
+	"strings"
+	"unicode/utf8"
+)
 
 // A clipped, translated view onto the framebuffer. Widgets only ever see a
 // Surface, so nothing can draw outside the rectangle it was given.
@@ -175,6 +178,10 @@ type BoxOptions struct {
 	// rather than overwriting it. Set for you by the container when the app
 	// asks for collapsed borders; there is no reason to pass it by hand.
 	Collapse bool
+	// Sides says which edges to draw. The zero value is all four, and the
+	// interior follows the sides actually drawn, so a top-only box costs one
+	// row rather than two.
+	Sides Sides
 	// NoFill skips painting the interior with Bg before drawing.
 	NoFill      bool
 	Footer      string
@@ -338,6 +345,79 @@ func (s Surface) mergeBorder(x, y int, ch rune, style BorderStyle, cellStyle Sty
 	s.Glyph(x, y, ch, cellStyle)
 }
 
+// Sides says which edges of a box to draw. The zero value is all four, so a
+// caller that has never heard of this gets the box it always got.
+type Sides struct {
+	Top, Right, Bottom, Left bool
+	// None draws no rule and insets nothing, the same as a border of BorderNone.
+	// A struct of four falses would otherwise be indistinguishable from the
+	// zero value, which has to mean "all".
+	None bool
+}
+
+// AllSides is what a box was before partial borders existed.
+func AllSides() Sides { return Sides{Top: true, Right: true, Bottom: true, Left: true} }
+
+// NoSides draws no rule at all.
+func NoSides() Sides { return Sides{None: true} }
+
+// resolve turns the zero value into all four.
+func (s Sides) resolve() Sides {
+	if s.None {
+		return Sides{}
+	}
+	if !s.Top && !s.Right && !s.Bottom && !s.Left {
+		return AllSides()
+	}
+	return s
+}
+
+func (s Sides) any() bool { return s.Top || s.Right || s.Bottom || s.Left }
+
+// ParseSides reads the spelling the reference API uses: "all", "none", or a
+// comma-separated list of sides.
+func ParseSides(spec string) Sides {
+	switch strings.TrimSpace(spec) {
+	case "", "all":
+		return AllSides()
+	case "none":
+		return NoSides()
+	}
+	has := func(name string) bool {
+		for _, part := range strings.Split(spec, ",") {
+			if strings.TrimSpace(part) == name {
+				return true
+			}
+		}
+		return false
+	}
+	out := Sides{Top: has("top"), Right: has("right"), Bottom: has("bottom"), Left: has("left")}
+	if !out.any() {
+		return NoSides()
+	}
+	return out
+}
+
+// sideGlyph is the glyph for a cell where two edges meet, given which of them
+// are drawn. A single edge has no glyph of its own, so the plain rule stands
+// in: that cell is part of a run, not a corner.
+func sideGlyph(style BorderStyle, bits int) (rune, bool) {
+	if bits == 0 {
+		return 0, false
+	}
+	if glyph, ok := BorderGlyph(style, bits); ok {
+		return glyph, true
+	}
+	chars, ok := style.Chars()
+	if !ok {
+		return 0, false
+	}
+	if bits&(EdgeLeft|EdgeRight) != 0 {
+		return chars.H, true
+	}
+	return chars.V, true
+}
+
 func (s Surface) Box(o BoxOptions) Surface {
 	fg := s.Theme.Border
 	if o.BorderColor != nil {
@@ -349,8 +429,9 @@ func (s Surface) Box(o BoxOptions) Surface {
 		s.Fill(Style{Bg: bg})
 	}
 
+	sides := o.Sides.resolve()
 	chars, hasBorder := o.Border.Chars()
-	if !hasBorder {
+	if !hasBorder || !sides.any() {
 		return s.Inset(Padding{})
 	}
 	if s.Width() < 2 || s.Height() < 1 {
@@ -381,15 +462,45 @@ func (s Surface) Box(o BoxOptions) Surface {
 		}
 	}
 
-	put(0, 0, chars.TL)
-	put(w-1, 0, chars.TR)
-	putH(1, 0, w-2, chars.H)
+	// A corner belongs to the two sides that meet there, so it exists only when
+	// both are drawn; where one is, the rule runs straight through the cell the
+	// corner would have occupied.
+	corner := func(a bool, aBit int, b bool, bBit int) (rune, bool) {
+		bits := 0
+		if a {
+			bits |= aBit
+		}
+		if b {
+			bits |= bBit
+		}
+		return sideGlyph(o.Border, bits)
+	}
+
+	if sides.Top {
+		putH(1, 0, w-2, chars.H)
+	}
+	if ch, ok := corner(sides.Top, EdgeRight, sides.Left, EdgeDown); ok {
+		put(0, 0, ch)
+	}
+	if ch, ok := corner(sides.Top, EdgeLeft, sides.Right, EdgeDown); ok {
+		put(w-1, 0, ch)
+	}
 	if h > 1 {
-		put(0, h-1, chars.BL)
-		put(w-1, h-1, chars.BR)
-		putH(1, h-1, w-2, chars.H)
-		putV(0, 1, h-2, chars.V)
-		putV(w-1, 1, h-2, chars.V)
+		if sides.Bottom {
+			putH(1, h-1, w-2, chars.H)
+		}
+		if ch, ok := corner(sides.Bottom, EdgeRight, sides.Left, EdgeUp); ok {
+			put(0, h-1, ch)
+		}
+		if ch, ok := corner(sides.Bottom, EdgeLeft, sides.Right, EdgeUp); ok {
+			put(w-1, h-1, ch)
+		}
+		if sides.Left {
+			putV(0, 1, h-2, chars.V)
+		}
+		if sides.Right {
+			putV(w-1, 1, h-2, chars.V)
+		}
 	}
 
 	// Measured before the title is drawn: both share the top border row, and
@@ -454,7 +565,22 @@ func (s Surface) Box(o BoxOptions) Surface {
 		}
 	}
 
-	return s.Sub(1, 1, max(0, w-2), max(0, h-2))
+	// The interior follows the sides actually drawn.
+	left, top := 0, 0
+	if sides.Left {
+		left = 1
+	}
+	if sides.Top {
+		top = 1
+	}
+	shrinkX, shrinkY := left, top
+	if sides.Right {
+		shrinkX++
+	}
+	if sides.Bottom {
+		shrinkY++
+	}
+	return s.Sub(left, top, max(0, w-shrinkX), max(0, h-shrinkY))
 }
 
 // firstRune is the reference's `codePointAt(0)` on a one-glyph string.

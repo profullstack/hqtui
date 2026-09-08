@@ -26,7 +26,10 @@ export { detectCapabilities, type Capabilities, type ColorDepth, type Capability
 // Rendering core
 export { FrameBuffer, Attr, type Style, type Attributes } from "./buffer.ts";
 export { Encoder, encodeFull, type EncodeResult } from "./diff.ts";
-export { Surface, createSurface, BORDERS, type BorderStyle, type BoxOptions, type Align } from "./surface.ts";
+export {
+  Surface, createSurface, BORDERS, resolveSides,
+  type BorderStyle, type BoxOptions, type Align, type Side, type Sides,
+} from "./surface.ts";
 export { ansi, stripAnsi, moveTo, setTitle } from "./ansi.ts";
 
 // Color

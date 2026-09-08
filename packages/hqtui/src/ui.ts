@@ -1,4 +1,4 @@
-import type { Surface, BorderStyle, Align, BoxOptions } from "./surface.ts";
+import type { Surface, BorderStyle, Align, BoxOptions, Sides } from "./surface.ts";
 import type { Style } from "./buffer.ts";
 import type { Color } from "./color.ts";
 import type { Theme } from "./theme.ts";
@@ -94,6 +94,12 @@ export interface PanelOptions extends ContainerOptions {
   footer?: string;
   border?: BorderStyle;
   borderColor?: Color;
+  /**
+   * Which edges of the panel to draw. Defaults to all four. Use it for chrome
+   * that is not a box: a header rule, a sidebar rail, a footer that should not
+   * look boxed in.
+   */
+  sides?: Sides;
   /** Draws the focused border color and joins the Tab order. */
   focusable?: boolean;
   focused?: boolean;
@@ -271,6 +277,7 @@ export class Container {
         subtitleColor: options.subtitleColor,
         footer: options.footer,
         border: options.border ?? "rounded",
+        ...(options.sides === undefined ? {} : { sides: options.sides }),
         borderColor: options.borderColor ?? (focused ? this.theme.borderFocused : this.theme.border),
         bg: options.background,
         collapse: this.ctx.collapseBorders,

@@ -44,7 +44,10 @@ class Surface(C.Structure):
     _fields_ = [("buffer", P), ("theme", C.POINTER(Theme)), ("rect", Rect), ("clip", Rect)]
 
 class Box(C.Structure):
-    _fields_ = [("border", I), ("title_align", I), ("no_fill", I)] + [
+    # Mirrors hq_box_options field for field. ctypes passes this by value, so a
+    # field missing here shifts every one after it and the C side reads whatever
+    # happens to be next on the stack.
+    _fields_ = [("border", I), ("title_align", I), ("no_fill", I), ("sides", I), ("collapse", I)] + [
         (k, Style) for k in ("border_style", "title_style", "subtitle_style", "footer_style")] + [
         ("background", U), ("has_background", I), ("title", S), ("subtitle", S), ("footer", S)]
 

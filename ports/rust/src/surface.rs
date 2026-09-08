@@ -96,6 +96,21 @@ pub fn border_bits(ch: char) -> Option<u8> {
 }
 
 /// The glyph in `style` with exactly these edges, or `None` if there is none.
+/// The glyph for a cell where two edges meet, given which of them are drawn.
+///
+/// A single edge has no glyph of its own, so the plain rule stands in: that
+/// cell is part of a run, not a corner.
+pub fn side_glyph(style: BorderStyle, bits: u8) -> Option<char> {
+    if bits == 0 {
+        return None;
+    }
+    if let Some(glyph) = border_glyph(style, bits) {
+        return Some(glyph);
+    }
+    let chars = style.chars()?;
+    Some(if bits & (EDGE_LEFT | EDGE_RIGHT) != 0 { chars.h } else { chars.v })
+}
+
 pub fn border_glyph(style: BorderStyle, bits: u8) -> Option<char> {
     let chars = style.chars()?;
     let parts = chars.parts();
@@ -199,6 +214,55 @@ impl From<Style> for TextOptions {
     }
 }
 
+/// Which edges of a box to draw, as flags. All four is what a box was before
+/// this existed; none draws no rule and insets nothing, the same as a border
+/// style of `None`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Sides {
+    pub top: bool,
+    pub right: bool,
+    pub bottom: bool,
+    pub left: bool,
+}
+
+impl Default for Sides {
+    fn default() -> Self {
+        Sides::all()
+    }
+}
+
+impl Sides {
+    pub fn all() -> Sides {
+        Sides { top: true, right: true, bottom: true, left: true }
+    }
+
+    pub fn none() -> Sides {
+        Sides { top: false, right: false, bottom: false, left: false }
+    }
+
+    pub fn any(&self) -> bool {
+        self.top || self.right || self.bottom || self.left
+    }
+
+    /// Parse the spelling the reference API uses: "all", "none", or a
+    /// comma-separated list of sides.
+    pub fn parse(spec: &str) -> Sides {
+        match spec.trim() {
+            "" | "all" => Sides::all(),
+            "none" => Sides::none(),
+            list => {
+                let has = |name: &str| list.split(',').any(|part| part.trim() == name);
+                Sides {
+                    top: has("top"),
+                    right: has("right"),
+                    bottom: has("bottom"),
+                    left: has("left"),
+                }
+            }
+        }
+    }
+}
+
 /// A bordered box: the workhorse behind every panel in the library.
 #[derive(Clone, Debug, Default)]
 pub struct BoxOptions {
@@ -218,6 +282,9 @@ pub struct BoxOptions {
     /// overwriting it. Set for you by the container when the app asks for
     /// collapsed borders; there is no reason to pass it by hand.
     pub collapse: bool,
+    /// Which edges to draw. The interior follows the sides actually drawn, so a
+    /// top-only box costs one row rather than two.
+    pub sides: Sides,
     pub footer: Option<String>,
     pub footer_color: Option<Color>,
 }
@@ -471,8 +538,10 @@ impl Surface {
             }
         }
 
+        let sides = options.sides;
         let chars = match style_kind.chars() {
-            Some(c) if self.width() >= 2 && self.height() >= 1 => c,
+            Some(c) if sides.any() && self.width() >= 2 && self.height() >= 1 => c,
+            Some(_) if !sides.any() => return self.inset(Padding::None),
             Some(_) => return self.inset(Padding::All(1)),
             None => return self.inset(Padding::None),
         };
@@ -502,15 +571,38 @@ impl Surface {
             }
         };
 
-        put(0, 0, chars.tl);
-        put(w as isize - 1, 0, chars.tr);
-        put_h(1, 0, w - 2, chars.h);
+        // A corner belongs to the two sides that meet there, so it exists only
+        // when both are drawn; where one is, the rule runs straight through the
+        // cell the corner would have occupied.
+        let corner = |a: bool, a_bit: u8, b: bool, b_bit: u8| -> Option<char> {
+            side_glyph(style_kind, (if a { a_bit } else { 0 }) | (if b { b_bit } else { 0 }))
+        };
+
+        if sides.top {
+            put_h(1, 0, w - 2, chars.h);
+        }
+        if let Some(ch) = corner(sides.top, EDGE_RIGHT, sides.left, EDGE_DOWN) {
+            put(0, 0, ch);
+        }
+        if let Some(ch) = corner(sides.top, EDGE_LEFT, sides.right, EDGE_DOWN) {
+            put(w as isize - 1, 0, ch);
+        }
         if h > 1 {
-            put(0, h as isize - 1, chars.bl);
-            put(w as isize - 1, h as isize - 1, chars.br);
-            put_h(1, h as isize - 1, w - 2, chars.h);
-            put_v(0, 1, h - 2, chars.v);
-            put_v(w as isize - 1, 1, h - 2, chars.v);
+            if sides.bottom {
+                put_h(1, h as isize - 1, w - 2, chars.h);
+            }
+            if let Some(ch) = corner(sides.bottom, EDGE_RIGHT, sides.left, EDGE_UP) {
+                put(0, h as isize - 1, ch);
+            }
+            if let Some(ch) = corner(sides.bottom, EDGE_LEFT, sides.right, EDGE_UP) {
+                put(w as isize - 1, h as isize - 1, ch);
+            }
+            if sides.left {
+                put_v(0, 1, h - 2, chars.v);
+            }
+            if sides.right {
+                put_v(w as isize - 1, 1, h - 2, chars.v);
+            }
         }
 
         // Measured before the title is drawn: both share the top border row,
@@ -583,6 +675,11 @@ impl Surface {
             }
         }
 
-        self.sub(1, 1, w.saturating_sub(2), h.saturating_sub(2))
+        // The interior follows the sides actually drawn.
+        let left = usize::from(sides.left);
+        let top = usize::from(sides.top);
+        let shrink_x = left + usize::from(sides.right);
+        let shrink_y = top + usize::from(sides.bottom);
+        self.sub(left as isize, top as isize, w.saturating_sub(shrink_x), h.saturating_sub(shrink_y))
     }
 }
