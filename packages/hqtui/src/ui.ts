@@ -7,6 +7,7 @@ import {
   type Constraint, type Rect, type Padding, type Size, inset, stack, solve, isEmpty,
 } from "./layout.ts";
 import { stringWidth, wrap } from "./unicode.ts";
+import { isRich, toSpanLines, wrapRich, type RichText } from "./richtext.ts";
 import { BrailleCanvas } from "./graphics/braille.ts";
 import * as W from "./widgets/index.ts";
 
@@ -292,18 +293,29 @@ export class Container {
 
   // ------------------------------------------------------------------ text
 
-  text(content: string, options: W.TextOptions & ContainerOptions = {}): this {
-    const lines = options.wrap ? wrap(content, this.crossWidth).length : content.split("\n").length;
+  /**
+   * A line, a paragraph, or styled spans:
+   *
+   *   ui.text("plain");
+   *   ui.text([{ text: "ERROR ", fg: theme.danger, bold: true }, { text: reason }]);
+   *
+   * The intrinsic height is measured the same way for both, so a styled
+   * paragraph reserves the rows it will actually occupy once wrapped.
+   */
+  text(content: RichText, options: W.TextOptions & ContainerOptions = {}): this {
+    const lines = isRich(content)
+      ? (options.wrap ? wrapRich(content, this.crossWidth) : toSpanLines(content)).length
+      : (options.wrap ? wrap(content, this.crossWidth).length : content.split("\n").length);
     return this.add((s) => W.drawText(s, content, options), this.sizeOf(options, "auto", lines));
   }
 
   /** Muted secondary text. */
-  label(content: string, options: W.TextOptions & ContainerOptions = {}): this {
+  label(content: RichText, options: W.TextOptions & ContainerOptions = {}): this {
     return this.text(content, { fg: this.theme.muted, ...options });
   }
 
   /** Bold heading in the theme's title color. */
-  heading(content: string, options: W.TextOptions & ContainerOptions = {}): this {
+  heading(content: RichText, options: W.TextOptions & ContainerOptions = {}): this {
     return this.text(content, { fg: this.theme.title, bold: true, ...options });
   }
 

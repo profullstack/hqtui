@@ -52,6 +52,11 @@ export { InputParser, matchKey, type InputEvent, type KeyEvent, type MouseEvent,
 
 // Text
 export { stringWidth, truncate, fit, wrap, graphemes, charWidth } from "./unicode.ts";
+export {
+  isRich, spanStyle, spanText, spanWidth, toSpanLines,
+  truncateSpans, fitSpans, wrapSpans, wrapRich,
+  type Span, type SpanLine, type RichText,
+} from "./richtext.ts";
 
 // Graphics
 export { BrailleCanvas } from "./graphics/braille.ts";

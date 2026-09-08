@@ -4,6 +4,7 @@ import { Attr } from "../buffer.ts";
 import type { Color } from "../color.ts";
 import { mix } from "../color.ts";
 import { fit, stringWidth, truncate, wrap } from "../unicode.ts";
+import { fitSpans, isRich, toSpanLines, wrapRich, type RichText, type SpanLine } from "../richtext.ts";
 import { elevate } from "../theme.ts";
 
 export interface TextOptions extends Style {
@@ -24,16 +25,29 @@ function attrsOf(o: TextOptions): number {
   return a;
 }
 
-export function drawText(surface: Surface, content: string, options: TextOptions = {}): void {
+export function drawText(surface: Surface, content: RichText, options: TextOptions = {}): void {
   if (surface.empty) return;
   const style: Style = {
     fg: options.fg ?? surface.theme.foreground,
     bg: options.bg,
     attrs: attrsOf(options),
   };
-  const lines = options.wrap ? wrap(content, surface.width) : content.split("\n");
+  // The plain-string path is left exactly as it was rather than routed through
+  // the span code. The two agree — richtext.test.ts holds them to the same
+  // columns over a corpus — but "agree" and "emit identical cells" are not the
+  // same claim, and every committed fixture depends on the second one.
+  if (!isRich(content)) {
+    const lines = options.wrap ? wrap(content, surface.width) : content.split("\n");
+    for (let i = 0; i < lines.length && i < surface.height; i++) {
+      surface.text(0, i, fit(truncate(lines[i], surface.width), surface.width, options.align ?? "left"), style);
+    }
+    return;
+  }
+  const lines = options.wrap
+    ? wrapRich(content, surface.width)
+    : toSpanLines(content);
   for (let i = 0; i < lines.length && i < surface.height; i++) {
-    surface.text(0, i, fit(truncate(lines[i], surface.width), surface.width, options.align ?? "left"), style);
+    surface.spans(0, i, fitSpans(lines[i] as SpanLine, surface.width, options.align ?? "left"), style);
   }
 }
 

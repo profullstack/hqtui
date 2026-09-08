@@ -3,6 +3,7 @@ import { DEFAULT_COLOR, type Color } from "./color.ts";
 import { type Rect, inset, intersect, isEmpty, type Padding } from "./layout.ts";
 import { graphemes, stringWidth, truncate, fit } from "./unicode.ts";
 import type { Theme } from "./theme.ts";
+import { fitSpans, spanStyle, spanWidth, truncateSpans, type SpanLine } from "./richtext.ts";
 
 export type BorderStyle = "rounded" | "single" | "double" | "thick" | "dashed" | "ascii" | "none";
 
@@ -220,6 +221,45 @@ export class Surface {
       }
       cx += g.width;
       written += g.width;
+    }
+    return written;
+  }
+
+  /**
+   * Draw one line of styled spans at local (x, y). Returns columns written.
+   *
+   * The same clipping, truncation and alignment as `text`, but each span paints
+   * with its own colours over the options given here, so a line can carry more
+   * than one style. `text` is the single-span case of this.
+   */
+  spans(x: number, y: number, line: SpanLine, options: TextOptions = {}): number {
+    const ay = this.rect.y + y;
+    const c = this.clip;
+    if (ay < c.y || ay >= c.y + c.height) return 0;
+
+    const limit = Math.min(options.maxWidth ?? this.width - x, this.width - x);
+    if (limit <= 0) return 0;
+    let content = line;
+    if (options.ellipsis !== false && spanWidth(content) > limit) {
+      content = truncateSpans(content, limit);
+    }
+    if (options.align && options.align !== "left") {
+      content = fitSpans(content, limit, options.align);
+    }
+
+    const base: Style = { fg: options.fg, bg: options.bg, attrs: options.attrs };
+    let cx = this.rect.x + x;
+    let written = 0;
+    for (const span of content) {
+      const style = spanStyle(span, base);
+      for (const g of graphemes(span.text)) {
+        if (written + g.width > limit) return written;
+        if (cx >= c.x && cx + g.width <= c.x + c.width) {
+          this.buffer.setCell(cx, ay, g.value, style);
+        }
+        cx += g.width;
+        written += g.width;
+      }
     }
     return written;
   }
