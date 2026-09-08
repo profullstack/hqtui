@@ -489,6 +489,19 @@ func (c *Container) Chart(o ChartOptions, layout ...Layout) *Container {
 	})
 }
 
+// Clear resets a region so an overlay can own it.
+//
+// Anything drawn into a region without clearing it first shows whatever was
+// underneath through the cells it does not touch.
+func (c *Container) Clear(o ClearOptions, layout ...Layout) *Container {
+	return c.add(c.filling(firstLayout(layout)), func(s Surface) { DrawClear(s, o) })
+}
+
+// Fill floods a region with one repeated symbol and style.
+func (c *Container) Fill(o FillOptions, layout ...Layout) *Container {
+	return c.add(c.filling(firstLayout(layout)), func(s Surface) { DrawFill(s, o) })
+}
+
 func (c *Container) Sparkline(o SparklineWidgetOptions, layout ...Layout) *Container {
 	return c.add(c.leaf(firstLayout(layout), 1), func(s Surface) { DrawSparkline(s, o) })
 }

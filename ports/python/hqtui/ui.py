@@ -483,6 +483,26 @@ class Container:
             lambda s: w.draw_chart(s, options),
         )
 
+    def clear(self, options: w.ClearOptions | None = None, layout: Layout | None = None):
+        """Reset a region so an overlay can own it.
+
+        Anything drawn into a region without clearing it first shows whatever
+        was underneath through the cells it does not touch.
+        """
+        chosen = options or w.ClearOptions()
+        return self._add(
+            self._constraint(layout or Layout(), "fill"),
+            lambda s: w.draw_clear(s, chosen),
+        )
+
+    def fill(self, options: w.FillOptions | None = None, layout: Layout | None = None):
+        """Flood a region with one repeated symbol and style."""
+        chosen = options or w.FillOptions()
+        return self._add(
+            self._constraint(layout or Layout(), "fill"),
+            lambda s: w.draw_fill(s, chosen),
+        )
+
     def sparkline(self, options: w.SparklineWidgetOptions, layout: Layout | None = None):
         return self._add(self._leaf(layout or Layout(), 1), lambda s: w.draw_sparkline(s, options))
 

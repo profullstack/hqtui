@@ -25,6 +25,14 @@ pub const TextStyle = struct {
     dim: bool = false,
     italic: bool = false,
     underline: bool = false,
+    /// First line to show, counted after wrapping.
+    ///
+    /// After wrapping is the only place this can be correct: the caller does
+    /// not know how many lines their text became, and pre-slicing the string
+    /// means re-deciding every time the width changes.
+    scroll: usize = 0,
+    /// Columns to shift the text left by, for lines wider than the surface.
+    scroll_x: usize = 0,
 
     fn resolvedAttrs(self: TextStyle) Attrs {
         var a = self.attrs orelse Attrs.none;
@@ -54,12 +62,23 @@ pub fn drawText(
     var scratch: [4096]u8 = undefined;
     var padded: [4096]u8 = undefined;
 
+    var shifted: [4096]u8 = undefined;
+    // A horizontal scroll drops columns from the front of the line before
+    // anything else looks at it, so the truncation still measures what is shown.
+    const shift = struct {
+        fn apply(buf: []u8, line: []const u8, columns: usize) []const u8 {
+            return if (columns == 0) line else unicode.dropColumns(buf, line, columns);
+        }
+    }.apply;
+
     if (style.wrap) {
         const lines = try unicode.wrap(allocator, content, s.width());
         defer unicode.freeWrapped(allocator, lines);
-        for (lines, 0..) |line, i| {
+        const visible = if (style.scroll < lines.len) lines[style.scroll..] else lines[0..0];
+        for (visible, 0..) |line, i| {
             if (i >= s.height()) break;
-            const cut = unicode.truncate(&scratch, line, s.width());
+            const moved = shift(&shifted, line, style.scroll_x);
+            const cut = unicode.truncate(&scratch, moved, s.width());
             const shown = unicode.fit(&padded, cut, s.width(), style.alignment);
             _ = s.text(0, @intCast(i), shown, options);
         }
@@ -67,10 +86,15 @@ pub fn drawText(
     }
 
     var it = std.mem.splitScalar(u8, content, '\n');
+    var skipped: usize = 0;
+    while (skipped < style.scroll) : (skipped += 1) {
+        if (it.next() == null) return;
+    }
     var i: usize = 0;
     while (it.next()) |line| : (i += 1) {
         if (i >= s.height()) break;
-        const cut = unicode.truncate(&scratch, line, s.width());
+        const moved = shift(&shifted, line, style.scroll_x);
+        const cut = unicode.truncate(&scratch, moved, s.width());
         const shown = unicode.fit(&padded, cut, s.width(), style.alignment);
         _ = s.text(0, @intCast(i), shown, options);
     }

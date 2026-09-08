@@ -15,7 +15,7 @@
  */
 import { Attr, type Style } from "./buffer.ts";
 import type { Color } from "./color.ts";
-import { cellText, graphemes, stringWidth } from "./unicode.ts";
+import { cellText, dropColumns, graphemes, stringWidth } from "./unicode.ts";
 
 export interface Span {
   text: string;
@@ -148,6 +148,34 @@ export function truncateSpans(line: SpanLine, max: number, ellipsis = "…"): Sp
 }
 
 /** Pad or truncate a line to exactly `width` columns. */
+/**
+ * A span line with its first `columns` display columns removed.
+ *
+ * The string form of this is `dropColumns`; a styled line has to drop the same
+ * columns without losing the styles of the runs that survive, so it walks the
+ * spans and cuts inside whichever one straddles the offset.
+ */
+export function dropSpanColumns(line: SpanLine, columns: number): SpanLine {
+  if (columns <= 0) return line;
+  const out: Span[] = [];
+  let skipped = 0;
+  for (const span of line) {
+    const width = stringWidth(span.text);
+    if (skipped >= columns) {
+      out.push(span);
+      continue;
+    }
+    if (skipped + width <= columns) {
+      skipped += width;
+      continue;
+    }
+    // The cut lands inside this span: keep its style, drop its first columns.
+    out.push({ ...span, text: dropColumns(span.text, columns - skipped) });
+    skipped = columns;
+  }
+  return out;
+}
+
 export function fitSpans(
   line: SpanLine,
   width: number,

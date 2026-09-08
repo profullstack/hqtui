@@ -759,6 +759,21 @@ impl<'a> Container<'a> {
         self.add(constraint, move |s| w::draw_chart(&s, &options))
     }
 
+    /// Reset a region so an overlay can own it.
+    ///
+    /// Anything drawn into a region without clearing it first shows whatever
+    /// was underneath through the cells it does not touch.
+    pub fn clear(&mut self, options: w::ClearOptions) -> &mut Self {
+        let constraint = self.filling();
+        self.add(constraint, move |s| w::draw_clear(&s, &options))
+    }
+
+    /// Flood a region with one repeated symbol and style.
+    pub fn fill(&mut self, options: w::FillOptions) -> &mut Self {
+        let constraint = self.filling();
+        self.add(constraint, move |s| w::draw_fill(&s, &options))
+    }
+
     pub fn sparkline(&mut self, options: w::SparklineWidgetOptions) -> &mut Self {
         let constraint = self.leaf(1);
         self.add(constraint, move |s| w::draw_sparkline(&s, &options))

@@ -373,6 +373,8 @@ const Node = union(enum) {
     progress: w.ProgressOptions,
     graph: w.GraphOptions,
     chart: w.ChartOptions,
+    clear: w.ClearOptions,
+    fill: w.FillOptions,
     sparkline: w.SparklineWidgetOptions,
     histogram: w.ColumnsOptions,
     gauge: w.GaugeOptions,
@@ -461,6 +463,8 @@ fn drawNode(ctx: *Ctx, s: Surface, node: Node) anyerror!void {
         .progress => |o| w.drawProgress(s, o),
         .graph => |o| try w.drawGraph(allocator, s, o),
         .chart => |o| try w.drawChart(allocator, s, o),
+        .clear => |o| w.drawClear(s, o),
+        .fill => |o| w.drawFill(s, o),
         .sparkline => |o| w.drawSparkline(s, o),
         .histogram => |o| w.drawColumns(s, o),
         .gauge => |o| try w.drawGauge(allocator, s, o),
@@ -847,6 +851,19 @@ pub const Container = struct {
     /// and a point lands where its x says it does.
     pub fn chart(self: *Container, options: w.ChartOptions) !void {
         try self.add(self.filling(), .{ .chart = options });
+    }
+
+    /// Reset a region so an overlay can own it.
+    ///
+    /// Anything drawn into a region without clearing it first shows whatever
+    /// was underneath through the cells it does not touch.
+    pub fn clear(self: *Container, options: w.ClearOptions) !void {
+        try self.add(self.filling(), .{ .clear = options });
+    }
+
+    /// Flood a region with one repeated symbol and style.
+    pub fn fill(self: *Container, options: w.FillOptions) !void {
+        try self.add(self.filling(), .{ .fill = options });
     }
 
     pub fn sparkline(self: *Container, options: w.SparklineWidgetOptions) !void {

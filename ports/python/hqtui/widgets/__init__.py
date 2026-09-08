@@ -66,6 +66,7 @@ from .table import (
     resolve_offset,
 )
 from .chart import ChartOptions, draw_chart
+from .surface import ClearOptions, FillOptions, draw_clear, draw_fill
 from .scrollbar import (
     ScrollbarOptions,
     ScrollbarOrientation,
@@ -106,7 +107,7 @@ __all__ = [
     "draw_columns", "draw_command_palette", "draw_divider", "draw_donut",
     "draw_gauge", "draw_graph", "draw_heat_bar", "draw_key_values", "draw_list",
     "draw_log", "draw_meter", "draw_meters", "draw_modal", "draw_progress",
-    "ChartOptions", "draw_chart",
+    "ChartOptions", "draw_chart", "ClearOptions", "FillOptions", "draw_clear", "draw_fill",
     "ScrollbarOptions", "ScrollbarOrientation", "is_vertical", "offset_for_position",
     "thumb", "draw_scrollbar", "draw_scrollbar_widget", "draw_select", "draw_sparkline", "draw_status_bar",
     "draw_table", "draw_tabs", "draw_text", "draw_text_input", "draw_tooltip",

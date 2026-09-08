@@ -33,6 +33,10 @@ const std::vector<double> kSeries{3, 7, 2, 9, 4, 8, 6, 1, 5, 9,
 
 /// Draws one named scene. Returns false when C++ has no implementation yet.
 
+/// The paragraph every scroll fixture pins.
+static constexpr const char *PROSE =
+    "one two three four five six seven eight nine ten eleven twelve";
+
 /// The axis bounds every chart fixture pins, without the ceremony.
 static Axis axis_of(double min, double max, int ticks) {
   Axis a;
@@ -82,6 +86,49 @@ bool draw_scene(const std::string &name, Surface s) {
     }
     draw_text(s.sub({0, 2, 20, 1}), "right", text_style);
     }
+    return true;
+  }
+  if (name == "text-scrolled") {
+    TextStyle style;
+    style.wrap = true;
+    style.scroll = 2;
+    draw_text(s, PROSE, style);
+    return true;
+  }
+  if (name == "text-scrolled-past") {
+    TextStyle style;
+    style.wrap = true;
+    style.scroll = 99;
+    draw_text(s, PROSE, style);
+    return true;
+  }
+  if (name == "text-scrolled-x") {
+    TextStyle style;
+    style.scroll_x = 6;
+    draw_text(s, "abcdefghijklmnopqrstuvwxyz", style);
+    return true;
+  }
+  if (name == "text-scrolled-wide") {
+    TextStyle style;
+    style.scroll_x = 3;
+    draw_text(s, "日本語です", style);
+    return true;
+  }
+  if (name == "clear") {
+    draw_text(s, "xxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx", {});
+    draw_clear(s.sub({4, 1, 8, 1}), {});
+    return true;
+  }
+  if (name == "fill") {
+    Fill f;
+    f.symbol = "\u00b7";
+    draw_fill(s, f);
+    return true;
+  }
+  if (name == "fill-wide") {
+    Fill f;
+    f.symbol = "\u65e5";
+    draw_fill(s, f);
     return true;
   }
   if (name == "badge") {

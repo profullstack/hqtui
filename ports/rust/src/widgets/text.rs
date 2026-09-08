@@ -4,7 +4,7 @@ use crate::buffer::{Attrs, Style};
 use crate::color::Color;
 use crate::surface::{Surface, TextOptions};
 use crate::theme::elevate;
-use crate::unicode::{fit, string_width, truncate, wrap, Align};
+use crate::unicode::{drop_columns, fit, string_width, truncate, wrap, Align};
 
 #[derive(Clone, Debug, Default)]
 pub struct TextStyle {
@@ -17,6 +17,14 @@ pub struct TextStyle {
     pub dim: bool,
     pub italic: bool,
     pub underline: bool,
+    /// First line to show, counted after wrapping.
+    ///
+    /// After wrapping is the only place this can be correct: the caller does
+    /// not know how many lines their text became, and pre-slicing the string
+    /// means re-deciding every time the width changes.
+    pub scroll: usize,
+    /// Columns to shift the text left by, for lines wider than the surface.
+    pub scroll_x: usize,
 }
 
 impl TextStyle {
@@ -97,7 +105,15 @@ pub fn draw_text(surface: &Surface, content: &str, options: &TextStyle) {
         content.split('\n').map(String::from).collect()
     };
     let align = options.align.unwrap_or(Align::Left);
-    for (i, line) in lines.iter().enumerate().take(surface.height()) {
+    let visible = if options.scroll < lines.len() { &lines[options.scroll..] } else { &[][..] };
+    for (i, line) in visible.iter().enumerate().take(surface.height()) {
+        let shifted;
+        let line = if options.scroll_x > 0 {
+            shifted = drop_columns(line, options.scroll_x);
+            &shifted
+        } else {
+            line
+        };
         let padded = fit(&truncate(line, surface.width()), surface.width(), align);
         surface.text(0, i as isize, &padded, &TextOptions::from(style));
     }

@@ -32,6 +32,36 @@ inline std::string utf8(uint32_t c) {
   }
   return s;
 }
+/// `s` with its first `columns` display columns removed.
+///
+/// For scrolling a line sideways. Slicing by bytes would cut inside a grapheme
+/// and corrupt it, and a scroll that lands in the middle of a wide character
+/// cannot draw half of it -- what is left of that character is a space, which
+/// is what a terminal shows when a double-width cell is clipped.
+inline std::string drop_columns(std::string_view s, int columns) {
+  if (columns <= 0)
+    return std::string(s);
+  std::string out;
+  int skipped = 0;
+  std::size_t i = 0;
+  while (i < s.size()) {
+    unsigned char c = s[i];
+    std::size_t len = c < 128 ? 1 : c < 224 ? 2 : c < 240 ? 3 : 4;
+    len = std::min(len, s.size() - i);
+    auto cell = s.substr(i, len);
+    int cw = int(width(cell));
+    if (skipped >= columns) {
+      out.append(cell);
+    } else {
+      skipped += cw;
+      // A wide character straddling the cut leaves its trailing half behind.
+      if (skipped > columns)
+        out.append(std::size_t(skipped - columns), ' ');
+    }
+    i += len;
+  }
+  return out;
+}
 inline std::string fit(std::string_view s, int columns, int align = HQ_LEFT,
                        bool ellipsis = true) {
   if (columns <= 0)
@@ -97,8 +127,38 @@ struct TextStyle {
   int attrs = 0;
   /// Wrap on the surface width rather than truncating at the edge.
   bool wrap = false;
+  /// First line to show, counted after wrapping.
+  ///
+  /// After wrapping is the only place this can be correct: the caller does not
+  /// know how many lines their text became, and pre-slicing the string means
+  /// re-deciding every time the width changes.
+  int scroll = 0;
+  /// Columns to shift the text left by, for lines wider than the surface.
+  int scroll_x = 0;
 };
 void draw_text(Surface, std::string_view content, const TextStyle & = {});
+
+struct Clear {
+  /// What to leave behind. Zero means the theme's background.
+  Color background = 0;
+};
+/// Reset a region to empty, so an overlay can draw over what was there.
+///
+/// Without this an overlay is drawn *into* whatever it lands on: the cells it
+/// does not touch keep the widget underneath, and a dialog ends up with someone
+/// else's table showing through the gaps between its words.
+void draw_clear(Surface, const Clear & = {});
+
+struct Fill {
+  /// The symbol to repeat. A wide one is stepped over rather than written per
+  /// column, since each glyph owns a continuation cell.
+  std::string symbol = " ";
+  Color fg = 0;
+  std::optional<Color> bg;
+  int attrs = 0;
+};
+/// Flood a region with one repeated symbol and style.
+void draw_fill(Surface, const Fill & = {});
 
 enum BadgeVariant { HQ_BADGE_FILLED, HQ_BADGE_OUTLINE, HQ_BADGE_SUBTLE };
 struct Badge {
@@ -836,6 +896,14 @@ public:
   /// and a point lands where its x says it does.
   void chart(Chart o, Constraint size = fr()) {
     draw([=](Surface s) { draw_chart(s, o); }, size);
+  }
+  /// Reset a region so an overlay can own it.
+  void clear(Clear o = {}, Constraint size = fr()) {
+    draw([=](Surface s) { draw_clear(s, o); }, size);
+  }
+  /// Flood a region with one repeated symbol and style.
+  void fill(Fill o = {}, Constraint size = fr()) {
+    draw([=](Surface s) { draw_fill(s, o); }, size);
   }
   void sparkline(Sparkline o) {
     draw([=](Surface s) { draw_sparkline(s, o); }, cells(1));

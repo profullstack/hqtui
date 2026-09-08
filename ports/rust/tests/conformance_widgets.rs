@@ -19,6 +19,9 @@ use hqtui::surface::Surface;
 use hqtui::unicode::Align;
 use hqtui::widgets::*;
 
+/// The paragraph every scroll fixture pins.
+const PROSE: &str = "one two three four five six seven eight nine ten eleven twelve";
+
 const SERIES: [f64; 20] =
     [3., 7., 2., 9., 4., 8., 6., 1., 5., 9., 3., 7., 8., 2., 6., 4., 9., 1., 5., 7.];
 
@@ -53,6 +56,16 @@ fn draw_scene(name: &str, s: &Surface) {
             draw_text(&s.sub(0, 1, 20, 1), "center", &TextStyle::new().align(Align::Center));
             draw_text(&s.sub(0, 2, 20, 1), "right", &TextStyle::new().align(Align::Right));
         }
+        "text-scrolled" => draw_text(s, PROSE, &TextStyle { wrap: true, scroll: 2, ..Default::default() }),
+        "text-scrolled-past" => draw_text(s, PROSE, &TextStyle { wrap: true, scroll: 99, ..Default::default() }),
+        "text-scrolled-x" => draw_text(s, "abcdefghijklmnopqrstuvwxyz", &TextStyle { scroll_x: 6, ..Default::default() }),
+        "text-scrolled-wide" => draw_text(s, "日本語です", &TextStyle { scroll_x: 3, ..Default::default() }),
+        "clear" => {
+            draw_text(s, "xxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx", &TextStyle::default());
+            draw_clear(&s.sub(4, 1, 8, 1), &ClearOptions::default());
+        }
+        "fill" => draw_fill(s, &FillOptions { symbol: "\u{b7}".into(), ..Default::default() }),
+        "fill-wide" => draw_fill(s, &FillOptions { symbol: "\u{65e5}".into(), ..Default::default() }),
         "badge" => {
             draw_badge(s, &BadgeOptions::new("LIVE"));
         }

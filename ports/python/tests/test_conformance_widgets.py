@@ -34,6 +34,10 @@ from hqtui.surface import Surface
 from .support import assert_buffer, fixture, scene
 
 
+#: The paragraph every scroll fixture pins.
+PROSE = "one two three four five six seven eight nine ten eleven twelve"
+
+
 def _axis(minimum: float, maximum: float, ticks: int = 0) -> g.AxisOptions:
     """The axis bounds every chart fixture pins, without the ceremony."""
     return g.AxisOptions(min=minimum, max=maximum, ticks=ticks)
@@ -59,6 +63,21 @@ def draw_scene(case, name: str, s: Surface) -> None:
         w.draw_text(s.sub(0, 0, 20, 1), "left", w.TextStyle(align="left"))
         w.draw_text(s.sub(0, 1, 20, 1), "center", w.TextStyle(align="center"))
         w.draw_text(s.sub(0, 2, 20, 1), "right", w.TextStyle(align="right"))
+    elif name == "text-scrolled":
+        w.draw_text(s, PROSE, w.TextStyle(wrap=True, scroll=2))
+    elif name == "text-scrolled-past":
+        w.draw_text(s, PROSE, w.TextStyle(wrap=True, scroll=99))
+    elif name == "text-scrolled-x":
+        w.draw_text(s, "abcdefghijklmnopqrstuvwxyz", w.TextStyle(scroll_x=6))
+    elif name == "text-scrolled-wide":
+        w.draw_text(s, "日本語です", w.TextStyle(scroll_x=3))
+    elif name == "clear":
+        w.draw_text(s, "xxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx", w.TextStyle())
+        w.draw_clear(s.sub(4, 1, 8, 1))
+    elif name == "fill":
+        w.draw_fill(s, w.FillOptions(symbol="\u00b7"))
+    elif name == "fill-wide":
+        w.draw_fill(s, w.FillOptions(symbol="\u65e5"))
     elif name == "badge":
         w.draw_badge(s, w.BadgeOptions(text="LIVE"))
     elif name == "badge-outline":

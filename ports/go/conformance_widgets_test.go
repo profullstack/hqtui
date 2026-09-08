@@ -17,6 +17,9 @@ var widgetSeries = []float64{3, 7, 2, 9, 4, 8, 6, 1, 5, 9, 3, 7, 8, 2, 6, 4, 9, 
 
 func series() []float64 { return append([]float64(nil), widgetSeries...) }
 
+// The paragraph every scroll fixture pins.
+const prose = "one two three four five six seven eight nine ten eleven twelve"
+
 // pts builds a point list from flat x, y pairs, which is all a fixture needs.
 func pts(values ...float64) []Point {
 	out := make([]Point, 0, len(values)/2)
@@ -49,6 +52,21 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 		DrawText(s.Sub(0, 0, 20, 1), "left", TextStyle{Align: AlignLeft})
 		DrawText(s.Sub(0, 1, 20, 1), "center", TextStyle{Align: AlignCenter})
 		DrawText(s.Sub(0, 2, 20, 1), "right", TextStyle{Align: AlignRight})
+	case "text-scrolled":
+		DrawText(s, prose, TextStyle{Wrap: true, Scroll: 2})
+	case "text-scrolled-past":
+		DrawText(s, prose, TextStyle{Wrap: true, Scroll: 99})
+	case "text-scrolled-x":
+		DrawText(s, "abcdefghijklmnopqrstuvwxyz", TextStyle{ScrollX: 6})
+	case "text-scrolled-wide":
+		DrawText(s, "日本語です", TextStyle{ScrollX: 3})
+	case "clear":
+		DrawText(s, "xxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx", TextStyle{})
+		DrawClear(s.Sub(4, 1, 8, 1), ClearOptions{})
+	case "fill":
+		DrawFill(s, FillOptions{Symbol: "\u00b7"})
+	case "fill-wide":
+		DrawFill(s, FillOptions{Symbol: "\u65e5"})
 	case "badge":
 		DrawBadge(s, BadgeOptions{Text: "LIVE"})
 	case "badge-outline":
