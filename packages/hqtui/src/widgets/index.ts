@@ -1,6 +1,7 @@
 export * from "./text.ts";
 export * from "./calendar.ts";
 export * from "./chart.ts";
+export * from "./shadow.ts";
 export * from "./surface.ts";
 export * from "./scrollbar.ts";
 export * from "./table.ts";

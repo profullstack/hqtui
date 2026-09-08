@@ -7,6 +7,7 @@ pub mod chart;
 pub mod controls;
 pub mod meters;
 pub mod scrollbar;
+pub mod shadow;
 pub mod surface;
 pub mod table;
 pub mod text;
@@ -32,6 +33,7 @@ pub use scrollbar::{
     draw_scrollbar, draw_scrollbar_widget, offset_for_position, thumb, thumb_of, ScrollbarOptions,
     ScrollbarOrientation,
 };
+pub use shadow::{dim_rect, draw_shadow, ShadowOptions};
 pub use surface::{draw_clear, draw_fill, ClearOptions, FillOptions};
 pub use table::{
     draw_list, draw_log, draw_table, draw_tree, resolve_offset, TableColumn,

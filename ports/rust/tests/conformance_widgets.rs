@@ -16,6 +16,8 @@ use hqtui::graphics::plot::{
 use hqtui::graphics::chart::{AxisOptions, ChartPlotOptions, ChartSeries, MarkType};
 use hqtui::graphics::{draw_canvas, Bounds, CanvasOptions, Shape};
 use hqtui::graphics::FillMode;
+use hqtui::color::Color;
+use hqtui::layout::Rect;
 use hqtui::surface::Surface;
 use hqtui::unicode::Align;
 use hqtui::widgets::*;
@@ -146,6 +148,34 @@ fn draw_scene(name: &str, s: &Surface) {
                 ..Default::default()
             },
         ),
+        "shadow" => {
+            draw_fill(s, &FillOptions { symbol: "x".into(), ..Default::default() });
+            draw_shadow(s, Rect { x: 2, y: 1, width: 6, height: 2 }, &ShadowOptions::default());
+        }
+        "shadow-offset" => {
+            draw_fill(s, &FillOptions { symbol: "x".into(), ..Default::default() });
+            draw_shadow(
+                s,
+                Rect { x: 2, y: 1, width: 6, height: 2 },
+                &ShadowOptions { offset_x: 2, offset_y: 1, ..Default::default() },
+            );
+        }
+        "shadow-back" => {
+            draw_fill(s, &FillOptions { symbol: "x".into(), ..Default::default() });
+            draw_shadow(
+                s,
+                Rect { x: 5, y: 2, width: 6, height: 2 },
+                &ShadowOptions { offset_x: -1, offset_y: -1, ..Default::default() },
+            );
+        }
+        "shadow-solid" => {
+            draw_fill(s, &FillOptions { symbol: "x".into(), ..Default::default() });
+            draw_shadow(
+                s,
+                Rect { x: 2, y: 1, width: 6, height: 2 },
+                &ShadowOptions { color: Some(Color::rgb(0x10, 0x14, 0x18)), ..Default::default() },
+            );
+        }
         "badge" => {
             draw_badge(s, &BadgeOptions::new("LIVE"));
         }

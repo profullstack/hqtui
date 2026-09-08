@@ -11,6 +11,7 @@ const buffer_mod = @import("buffer.zig");
 const conformance = @import("conformance.zig");
 const graphics = @import("graphics.zig");
 const surface_mod = @import("surface.zig");
+const hqtui_color = @import("color.zig");
 const theme_mod = @import("theme.zig");
 const w = @import("widgets.zig");
 
@@ -121,6 +122,20 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
             .x = .{ .min = 0, .max = 10 },
             .y = .{ .min = 0, .max = 10 },
             .grid = true,
+        });
+    } else if (eq(u8, name, "shadow")) {
+        w.drawFill(s, .{ .symbol = "x" });
+        w.drawShadow(s, .{ .x = 2, .y = 1, .width = 6, .height = 2 }, .{});
+    } else if (eq(u8, name, "shadow-offset")) {
+        w.drawFill(s, .{ .symbol = "x" });
+        w.drawShadow(s, .{ .x = 2, .y = 1, .width = 6, .height = 2 }, .{ .offset_x = 2, .offset_y = 1 });
+    } else if (eq(u8, name, "shadow-back")) {
+        w.drawFill(s, .{ .symbol = "x" });
+        w.drawShadow(s, .{ .x = 5, .y = 2, .width = 6, .height = 2 }, .{ .offset_x = -1, .offset_y = -1 });
+    } else if (eq(u8, name, "shadow-solid")) {
+        w.drawFill(s, .{ .symbol = "x" });
+        w.drawShadow(s, .{ .x = 2, .y = 1, .width = 6, .height = 2 }, .{
+            .color = hqtui_color.Color.rgb(0x10, 0x14, 0x18),
         });
     } else if (eq(u8, name, "badge")) {
         _ = w.drawBadge(s, .{ .text = "LIVE" });
