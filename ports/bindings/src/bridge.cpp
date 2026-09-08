@@ -78,7 +78,8 @@ void validate(const Json &n, int depth, int &count) {
       "meter",    "graph",    "gauge",     "table",     "keys",    "log",
       "badge",    "progress", "sparkline", "heatbar",   "columns", "donut",
       "list",     "tree",     "button",    "checkbox",  "select",  "input",
-      "tabs",     "statusbar"};
+      "tabs",     "statusbar", "label",     "heading",   "meters",  "modal",
+      "commandpalette",        "tooltip"};
   if (std::find(types.begin(), types.end(), type) == types.end())
     throw std::runtime_error("unknown widget: " + type);
   if (!n["children"].null() &&
@@ -87,11 +88,22 @@ void validate(const Json &n, int depth, int &count) {
   for (auto &child : n["children"].array())
     validate(child, depth + 1, count);
 }
-void node(UI &ui, const Json &n) {
+/// An overlay drawn after layout, over the whole frame. Collected while the
+/// tree is walked rather than drawn where it appears, because a modal centred
+/// on the node that declared it would land inside that node's rectangle
+/// instead of on the screen.
+struct PendingOverlay {
+  enum Kind { kModal, kPalette, kTooltip } kind;
+  Modal modal;
+  CommandPalette palette;
+  Tooltip tooltip;
+};
+
+void node(UI &ui, const Json &n, std::vector<PendingOverlay> &overlays) {
   auto type = n["type"].s();
-  auto body = [&n](UI &p) {
+  auto body = [&n, &overlays](UI &p) {
     for (auto &child : n["children"].array())
-      node(p, child);
+      node(p, child, overlays);
   };
   int gap = integer(n["gap"], 0, 0, 100);
   auto c = color(n["color"], ui.t(), ui.t().foreground);
@@ -151,6 +163,69 @@ void node(UI &ui, const Json &n) {
           draw_table(s, t);
         },
         size(n));
+  } else if (type == "label") {
+    // Text in the theme's muted colour: captions, and the line under a number
+    // that says what the number is.
+    ui.text(n["text"].s(""), color(n["color"], ui.t(), ui.t().muted),
+            integer(n["align"], HQ_LEFT, 0, 2), size(n, automatic(1)),
+            integer(n["attrs"], 0, 0, 127));
+  } else if (type == "heading") {
+    ui.text(n["text"].s(""), color(n["color"], ui.t(), ui.t().title),
+            integer(n["align"], HQ_LEFT, 0, 2), size(n, automatic(1)),
+            integer(n["attrs"], HQ_BOLD, 0, 127));
+  } else if (type == "meters") {
+    Meters m;
+    for (auto &item : n["items"].array())
+      m.items.push_back({item["label"].s(""), item["value"].n(),
+                         item["max"].n(0), color(item["color"], ui.t(), 0),
+                         item["text"].s("")});
+    if (m.items.size() > 1000)
+      throw std::runtime_error("too many meters");
+    m.columns = integer(n["columns"], 1, 1, 16);
+    m.label_width = integer(n["labelWidth"], -1, -1, 100);
+    m.value_width = integer(n["valueWidth"], -1, -1, 100);
+    m.style = integer(n["style"], HQ_BAR_SMOOTH, 0, 2);
+    m.gap = integer(n["gap"], 2, 0, 100);
+    int rows = (int(m.items.size()) + m.columns - 1) / m.columns;
+    ui.draw([m](Surface s) { draw_meters(s, m); }, size(n, cells(rows)));
+  } else if (type == "modal") {
+    PendingOverlay overlay;
+    overlay.kind = PendingOverlay::kModal;
+    overlay.modal.title = n["title"].s("");
+    overlay.modal.message = n["message"].s("");
+    overlay.modal.width = integer(n["width"], -1, -1, 1000);
+    overlay.modal.height = integer(n["height"], -1, -1, 1000);
+    overlay.modal.backdrop = n["backdrop"].b(true);
+    overlay.modal.align = integer(n["align"], HQ_CENTER, 0, 2);
+    for (auto &button : n["buttons"].array())
+      overlay.modal.buttons.push_back(
+          {button["label"].s(""),
+           integer(button["variant"], HQ_BUTTON_PRIMARY, 0, 4),
+           button["focused"].b(false)});
+    if (overlay.modal.buttons.size() > 16)
+      throw std::runtime_error("too many modal buttons");
+    overlays.push_back(std::move(overlay));
+  } else if (type == "commandpalette") {
+    PendingOverlay overlay;
+    overlay.kind = PendingOverlay::kPalette;
+    overlay.palette.query = n["query"].s("");
+    overlay.palette.placeholder = n["placeholder"].s("");
+    for (auto &item : n["items"].array())
+      overlay.palette.items.push_back({item["label"].s(""), item["hint"].s("")});
+    if (overlay.palette.items.size() > 1000)
+      throw std::runtime_error("too many palette items");
+    overlay.palette.selected = integer(n["selected"], 0, 0, 1000);
+    overlay.palette.width = integer(n["width"], -1, -1, 1000);
+    overlay.palette.height = integer(n["height"], -1, -1, 1000);
+    overlays.push_back(std::move(overlay));
+  } else if (type == "tooltip") {
+    PendingOverlay overlay;
+    overlay.kind = PendingOverlay::kTooltip;
+    overlay.tooltip.text = n["text"].s("");
+    overlay.tooltip.x = integer(n["x"], 0, 0, 10000);
+    overlay.tooltip.y = integer(n["y"], 0, 0, 10000);
+    overlay.tooltip.color = color(n["color"], ui.t(), 0);
+    overlays.push_back(std::move(overlay));
   } else if (type == "badge") {
     Badge b;
     b.text = n["text"].s("");
@@ -325,8 +400,25 @@ struct hqb_scene {
   void paint(const Json &scene) {
     frame.clear(theme->background, theme->foreground);
     UI ui(frame.surface(theme));
-    node(ui, scene);
+    std::vector<PendingOverlay> overlays;
+    node(ui, scene, overlays);
     ui.flush();
+    // Overlays go on after the flush, so a modal covers the laid-out screen
+    // rather than being covered by it.
+    Surface root = frame.surface(theme);
+    for (const auto &overlay : overlays) {
+      switch (overlay.kind) {
+      case PendingOverlay::kModal:
+        draw_modal(root, overlay.modal);
+        break;
+      case PendingOverlay::kPalette:
+        draw_command_palette(root, overlay.palette);
+        break;
+      case PendingOverlay::kTooltip:
+        draw_tooltip(root, overlay.tooltip);
+        break;
+      }
+    }
   }
   const char *finish(const char *format) {
     if (!format)

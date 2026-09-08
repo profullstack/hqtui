@@ -90,10 +90,12 @@ export function WidgetCard({
           </div>
           {active ? <Code className="mt-2" code={active.code} /> : null}
           {missing > 0 ? (
+            // Every language covers every widget, so this is a build guard
+            // rather than an explanation: it fires when a gallery loses a
+            // marker, and it names the gap instead of excusing it.
             <p className="mt-2 text-[12px] text-white/35">
-              Not yet in {absent.map((language) => language.label).join(", ")}. Those reach the
-              library through a narrower native core, or through a bridge whose record layout does
-              not describe this widget.
+              Missing from {absent.map((language) => language.label).join(", ")}. That is a gap in
+              the gallery, not a limit of the port.
             </p>
           ) : null}
         </div>

@@ -72,6 +72,16 @@ fn alignment(key: &str) -> Align {
     }
 }
 
+fn variant(key: &str) -> ButtonVariant {
+    match key {
+        "SUCCESS" => ButtonVariant::Success,
+        "WARNING" => ButtonVariant::Warning,
+        "DANGER" => ButtonVariant::Danger,
+        "GHOST" => ButtonVariant::Ghost,
+        _ => ButtonVariant::Primary,
+    }
+}
+
 fn draw(scene: &Scene, ui: &mut Container) {
     let mut columns: Vec<TableColumn> = Vec::new();
     let mut rows: Vec<TableRow> = Vec::new();
@@ -84,6 +94,17 @@ fn draw(scene: &Scene, ui: &mut Container) {
     let mut tabs: Vec<String> = Vec::new();
     let mut status: Vec<StatusItem> = Vec::new();
     let mut segments: Vec<DonutSegment> = Vec::new();
+    let mut histogram_bars: Vec<f64> = Vec::new();
+    let mut meter_items: Vec<MeterItem> = Vec::new();
+    let mut select_options: Vec<String> = Vec::new();
+    let mut palette_items: Vec<PaletteItem> = Vec::new();
+    let mut modal_buttons: Vec<ModalButton> = Vec::new();
+    let mut modal_lines: Vec<String> = Vec::new();
+    let mut meter_columns = 1usize;
+    let mut dropdown: Option<(String, bool, usize)> = None;
+    let mut modal: Option<(String, usize)> = None;
+    let mut palette: Option<(String, usize)> = None;
+    let mut tooltip: Option<(String, isize, isize)> = None;
     let mut selected = 0usize;
     let mut active_tab = 0usize;
 
@@ -202,12 +223,75 @@ fn draw(scene: &Scene, ui: &mut Container) {
             } else {
                 StatusItem::new(&record.text).key(&record.key)
             }),
+            "HISTBAR" => histogram_bars.push(record.num.parse().unwrap_or(0.0)),
+            "METERS" => meter_columns = record.num.parse().unwrap_or(1),
+            "MITEM" => meter_items.push(MeterItem {
+                label: record.key.clone(),
+                value: record.num.parse().unwrap_or(0.0),
+                ..Default::default()
+            }),
+            "DROPDOWN" => {
+                dropdown =
+                    Some((record.text.clone(), record.key == "OPEN", record.num.parse().unwrap_or(20)))
+            }
+            "OPTION" => select_options.push(record.text.clone()),
+            "MODAL" => modal = Some((record.key.clone(), record.num.parse().unwrap_or(46))),
+            // One line per record, so a message is not capped at the 44 columns
+            // a single record can carry.
+            "MTEXT" => modal_lines.push(record.text.clone()),
+            "MBUTTON" => modal_buttons.push(ModalButton {
+                label: record.text.clone(),
+                variant: variant(&record.key),
+                focused: record.num == "1",
+            }),
+            "PALETTE" => palette = Some((record.key.clone(), record.num.parse().unwrap_or(0))),
+            "PITEM" => palette_items.push(PaletteItem {
+                label: record.text.clone(),
+                hint: if record.key.is_empty() { None } else { Some(record.key.clone()) },
+            }),
+            "TOOLTIP" => {
+                // The anchor is a cell, so it travels as "column|row".
+                let mut parts = record.key.split('|');
+                let x = parts.next().unwrap_or("0").parse().unwrap_or(0);
+                let y = parts.next().unwrap_or("0").parse().unwrap_or(0);
+                tooltip = Some((record.text.clone(), x, y));
+            }
             other => panic!("unknown verb {other:?} in scene {}", scene.id),
         }
     }
 
     if !bars.is_empty() {
         ui.sparkline(SparklineWidgetOptions { values: bars, ..Default::default() });
+    }
+    if !histogram_bars.is_empty() {
+        let accent = ui.theme().accent;
+        ui.histogram(ColumnsOptions {
+            values: histogram_bars,
+            color: Some(accent),
+            ..Default::default()
+        });
+    }
+    if !meter_items.is_empty() {
+        ui.meters(MetersOptions {
+            items: meter_items,
+            columns: Some(meter_columns),
+            label_width: Some(4),
+            value_width: Some(5),
+            ..Default::default()
+        });
+    }
+    if let Some((value, open, width)) = dropdown {
+        ui.select(
+            SelectOptions {
+                value,
+                open,
+                options: select_options,
+                selected_index: Some(selected),
+                width: Some(width),
+                ..Default::default()
+            },
+            "cobol-select",
+        );
     }
     if !segments.is_empty() {
         ui.donut(DonutOptions { segments, ..Default::default() });
@@ -258,6 +342,27 @@ fn draw(scene: &Scene, ui: &mut Container) {
             plot: PlotOptions { min: Some(0.0), max: Some(100.0), ..Default::default() },
             ..GraphOptions::series(vec![Series::new(points).filled()])
         });
+    }
+    // Overlays last, because they draw over whatever the scene already put down.
+    if let Some((title, width)) = modal {
+        ui.modal(ModalOptions {
+            title: Some(title),
+            message: Some(modal_lines.join("\n")),
+            width: Some(width),
+            buttons: modal_buttons,
+            ..Default::default()
+        });
+    }
+    if let Some((query, index)) = palette {
+        ui.command_palette(CommandPaletteOptions {
+            query,
+            items: palette_items,
+            selected: Some(index),
+            ..Default::default()
+        });
+    }
+    if let Some((text, x, y)) = tooltip {
+        ui.tooltip(TooltipOptions { text, x, y, ..Default::default() });
     }
 }
 

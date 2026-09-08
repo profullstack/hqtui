@@ -8,8 +8,8 @@
 # something that runs.
 #
 # Perl, Ruby and PHP all describe a scene as data and hand it to the same
-# native core, so they reach the eight widgets that core draws rather than the
-# twenty-eight the native ports do. The list is honest about that.
+# native core. That core draws all twenty-eight widgets, so this list is the
+# same list the native ports render, not a subset of it.
 #
 # Needs the shared library: build ports/cpp with -DHQTUI_BUILD_BINDINGS=ON, or
 # set HQTUI_NATIVE_LIB to one you already built.
@@ -215,6 +215,79 @@ sub widget_status_bar {
 }
 # @end
 
+# @widget label
+sub widget_label {
+    my ($ui) = @_;
+    # `label` is `text` in the theme's muted color: secondary copy, captions,
+    # the line under a number that says what the number is.
+    $ui->label('cpu · 8 cores · 3.4 GHz');
+    $ui->text('42.1%', color => 'success', attrs => 1);
+    $ui->label('15 minute average');
+}
+# @end
+
+# @widget heading
+sub widget_heading {
+    my ($ui) = @_;
+    # `heading` is `text` in the theme's title color, bold.
+    $ui->heading('Storage');
+    $ui->label('Four volumes, one degraded');
+    $ui->spacer(size => 1);
+    $ui->heading('Network', color => 'accent');
+}
+# @end
+
+# @widget meters
+sub widget_meters {
+    my ($ui) = @_;
+    # One call for a whole bank. `columns` lays them out side by side.
+    my @values = (0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66);
+    my @items = map { { label => "P$_", value => $values[$_] } } 0 .. $#values;
+    $ui->meters(\@items, columns => 2, labelWidth => 4, valueWidth => 5, style => 1);
+}
+# @end
+
+# @widget modal
+sub widget_modal {
+    my ($ui) = @_;
+    # Overlays draw over everything already on the screen, centered.
+    # variant is 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.
+    $ui->modal(
+        title   => 'Confirm Action',
+        width   => 46,
+        height  => 9,
+        message => "Terminate process 4821 (postgres)?\n\nThis cannot be undone.",
+        buttons => [
+            { label => 'Yes', variant => 1, focused => \1 },
+            { label => 'No',  variant => 4 },
+        ],
+    );
+}
+# @end
+
+# @widget commandPalette
+sub widget_command_palette {
+    my ($ui) = @_;
+    $ui->command_palette(
+        query => 'the',
+        items => [
+            { label => 'Toggle theme',     hint => 'F2' },
+            { label => 'Filter processes', hint => 'F3' },
+            { label => 'Sort by memory',   hint => 'F6' },
+        ],
+        selected => 0,
+    );
+}
+# @end
+
+# @widget tooltip
+sub widget_tooltip {
+    my ($ui) = @_;
+    $ui->text('Tooltips are overlays positioned at a cell, for hover and hints.');
+    $ui->tooltip('swap is 87% full', 6, 3);
+}
+# @end
+
 my @examples = (
     ['text',      \&widget_text],
     ['divider',   \&widget_divider],
@@ -238,6 +311,12 @@ my @examples = (
     ['textInput', \&widget_text_input],
     ['tabs', \&widget_tabs],
     ['statusBar', \&widget_status_bar],
+    ['label', \&widget_label],
+    ['heading', \&widget_heading],
+    ['meters', \&widget_meters],
+    ['modal', \&widget_modal],
+    ['commandPalette', \&widget_command_palette],
+    ['tooltip', \&widget_tooltip],
 );
 
 # Renders each widget on its own small screen and prints the lot.

@@ -12,6 +12,11 @@ The full ten-screen example calls the shared C++ demo **inside the language VM**
 including its Linux collectors, responsive layouts, input and terminal loop.
 This explicit reuse is how demo fixes reach all three bindings together.
 
+All twenty-eight widgets cross the ABI, the same list the native ports draw. The
+one thing that does not is a widget whose *content* is another container: a
+scene travels as JSON, so a modal takes a title, a message and buttons rather
+than an arbitrary subtree. See [PROTOCOL.md](PROTOCOL.md) for the field list.
+
 ## Launch latest
 
 ```sh
