@@ -213,25 +213,6 @@ func DrawTable(s Surface, o TableOptions) {
 	}
 }
 
-// DrawScrollbar draws a one-column scrollbar. Thumb size reflects the visible
-// fraction.
-func DrawScrollbar(s Surface, x, y, height, total, offset int) {
-	theme := s.Theme
-	track := theme.Background.Mix(theme.Border, 0.7)
-	thumbSize := max(1, int(roundHalfUp(float64(height)/float64(total)*float64(height))))
-	maxOffset := max(1, total-height)
-	thumbPos := int(roundHalfUp(float64(offset) / float64(maxOffset) * float64(height-thumbSize)))
-	for i := 0; i < height; i++ {
-		inThumb := i >= thumbPos && i < thumbPos+thumbSize
-		ch := '│'
-		color := track
-		if inThumb {
-			ch, color = '█', theme.Accent
-		}
-		s.Glyph(x, y+i, ch, Style{Fg: &color})
-	}
-}
-
 type ListItem struct {
 	Label string
 	Color *Color

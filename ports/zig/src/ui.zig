@@ -380,6 +380,7 @@ const Node = union(enum) {
 
     table: struct { options: w.TableOptions, id: []const u8 },
     list: struct { options: w.ListOptions, id: []const u8 },
+    scrollbar: struct { options: w.ScrollbarOptions, id: []const u8 },
     tree: struct { options: w.TreeOptions, id: []const u8 },
     log: struct { options: w.LogOptions, id: []const u8 },
 
@@ -472,6 +473,10 @@ fn drawNode(ctx: *Ctx, s: Surface, node: Node) anyerror!void {
         },
         .list => |n| {
             w.drawList(s, n.options);
+            if (n.id.len > 0) ctx.hit(n.id, s.hitRect(), 0);
+        },
+        .scrollbar => |n| {
+            w.drawScrollbarWidget(s, n.options);
             if (n.id.len > 0) ctx.hit(n.id, s.hitRect(), 0);
         },
         .tree => |n| {
@@ -792,6 +797,14 @@ pub const Container = struct {
 
     pub fn list(self: *Container, options: w.ListOptions, id: []const u8) !void {
         try self.add(self.filling(), .{ .list = .{ .options = options, .id = id } });
+    }
+
+    /// A scrollbar over state you own, for anything that scrolls and is not a
+    /// table: wrapped prose, a canvas, a `draw` of your own. A vertical bar
+    /// fills the space it is given; a horizontal one is a single row.
+    pub fn scrollbar(self: *Container, options: w.ScrollbarOptions, id: []const u8) !void {
+        const size = if (options.orientation.isVertical()) self.filling() else self.leaf(1);
+        try self.add(size, .{ .scrollbar = .{ .options = options, .id = id } });
     }
 
     pub fn tree(self: *Container, options: w.TreeOptions, id: []const u8) !void {

@@ -675,6 +675,61 @@
       }
     },
     {
+      "id": "scrollbar",
+      "title": "Scrollbar",
+      "category": "Data",
+      "width": 46,
+      "height": 4,
+      "blurb": "A bar over state you own, on any of the four edges, for anything that scrolls.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#c6d0db;background:#05070a\">A scrollbar you drive yourself. It has no    </span><span style=\"color:#1b2430;background:#05070a\">│</span>\n<span style=\"color:#c6d0db;background:#05070a\">idea what is beside it, only how much there  </span><span style=\"color:#56d4dd;background:#05070a\">█</span>\n<span style=\"color:#c6d0db;background:#05070a\">is, how much fits, and where you are.        </span><span style=\"color:#1b2430;background:#05070a\">│</span>\n<span style=\"color:#c6d0db;background:#05070a\">                                             </span><span style=\"color:#1b2430;background:#05070a\">│</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function scrollbar(ui: Container, theme: Theme): void {\n  // The bar is over state you own, so it works beside anything that scrolls:\n  // wrapped prose, a canvas, a draw() of your own.\n  ui.row({ gap: 1 }, (r) => {\n    r.text(\n      \"A scrollbar you drive yourself. It has no idea what is beside it, only \" +\n        \"how much there is, how much fits, and where you are.\",\n      { wrap: true, fg: theme.foreground },\n    );\n    r.scrollbar({ total: 40, viewport: 5, offset: 12, size: 1 });\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function scrollbar(ui, theme) {\n  // The bar is over state you own, so it works beside anything that scrolls:\n  // wrapped prose, a canvas, a draw() of your own.\n  ui.row({ gap: 1 }, (r) => {\n    r.text(\"A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.\", { wrap: true, fg: theme.foreground });\n    r.scrollbar({ total: 40, viewport: 5, offset: 12, size: 1 });\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn scrollbar(ui: &mut Container) {\n    // The bar is over state you own, so it works beside anything that scrolls:\n    // wrapped prose, a canvas, a `draw` of your own.\n    ui.row(Row::new().gap(1), |r| {\n        r.styled_text(\n            \"A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.\",\n            TextStyle::new().wrapped(),\n        );\n        r.scrollbar(\n            ScrollbarOptions { total: 40, viewport: 5, offset: 12, ..Default::default() },\n            \"\",\n        );\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Scrollbar(ui *hqtui.Container) {\n\t// The bar is over state you own, so it works beside anything that scrolls:\n\t// wrapped prose, a canvas, a Draw of your own.\n\tui.Row(hqtui.RowOptions{Layout: hqtui.Layout{Gap: 1}}, func(r *hqtui.Container) {\n\t\tr.StyledText(\n\t\t\t\"A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.\",\n\t\t\thqtui.TextStyle{Wrap: true},\n\t\t)\n\t\tr.Scrollbar(hqtui.ScrollbarOptions{Total: 40, Viewport: 5, Offset: 12}, hqtui.ScrollHandlers{})\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def scrollbar(ui: Container) -> None:\n    # The bar is over state you own, so it works beside anything that scrolls:\n    # wrapped prose, a canvas, a ``draw`` of your own.\n    def row(r: Container) -> None:\n        r.text(\n            \"A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.\",\n            w.TextStyle(wrap=True),\n        )\n        r.scrollbar(w.ScrollbarOptions(total=40, viewport=5, offset=12))\n\n    ui.row(Layout(gap=1), row)",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn scrollbar(ui: *Container) anyerror!void {\n    // The bar is over state you own, so it works beside anything that scrolls:\n    // wrapped prose, a canvas, a `draw` of your own.\n    try ui.row(.{ .layout = .{ .gap = 1 } }, hqtui.Body.plain(scrollbarRow));\n}\n\nfn scrollbarRow(r: *Container) anyerror!void {\n    try r.text(\n        \"A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.\",\n        .{ .wrap = true },\n    );\n    try r.scrollbar(.{ .total = 40, .viewport = 5, .offset = 12 }, \"\");\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_scrollbar(Surface s) {\n  // The bar is over state you own, so it works beside anything that scrolls:\n  // wrapped prose, a canvas, a draw() of your own. Here it takes the rightmost\n  // column and the prose takes the rest.\n  int w = s.rect().width, h = s.rect().height;\n  const auto &t = theme(s);\n  draw_text(s.sub({0, 0, w - 2, h}),\n            \"A scrollbar you drive yourself. It has no idea what is beside it, \"\n            \"only how much there is, how much fits, and where you are.\",\n            TextStyle{t.foreground, std::nullopt, HQ_LEFT, 0, true});\n  draw_scrollbar(s.sub({w - 1, 0, 1, h}), Scrollbar{40, 5, 12, HQ_SCROLLBAR_RIGHT});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def scrollbar(ui)\n  # The bar is over state you own: it knows how much there is, how much fits\n  # and where you are, and nothing about what it sits beside.\n  ui.text('120 lines, 8 of them on screen, starting at 36.')\n  ui.scrollbar(120, viewport: 8, offset: 36, orientation: 'bottom')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_scrollbar(UI $ui): void\n{\n    // The bar is over state you own: it knows how much there is, how much fits\n    // and where you are, and nothing about what it sits beside.\n    $ui->text('120 lines, 8 of them on screen, starting at 36.');\n    $ui->scrollbar(120, ['viewport' => 8, 'offset' => 36, 'orientation' => 'bottom']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_scrollbar {\n    my ($ui) = @_;\n    # The bar is over state you own: it knows how much there is, how much fits\n    # and where you are, and nothing about what it sits beside.\n    $ui->text('120 lines, 8 of them on screen, starting at 36.');\n    $ui->scrollbar(120, viewport => 8, offset => 36, orientation => 'bottom');\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "SCROLLBAR-WIDGET.\n    MOVE \"scrollbar\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"LEFT\" TO SR-KEY\n    MOVE \"120 lines, 8 of them on screen, starting at 36.\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    *> The bar is over state you own: key is the edge it sits on, num the\n    *> offset, and the text carries total and viewport.\n    MOVE \"SCROLLBAR\" TO SR-VERB\n    MOVE \"BOTTOM\" TO SR-KEY\n    MOVE \"36\" TO SR-NUM\n    MOVE \"120|8\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
       "id": "meter",
       "title": "Meter",
       "category": "Meters",

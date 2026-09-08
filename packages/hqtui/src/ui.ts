@@ -365,6 +365,35 @@ export class Container {
     }, this.sizeOf(options, "fill", options.items.length));
   }
 
+  /**
+   * A scrollbar over state you own, for anything that scrolls and is not a
+   * table: a wrapped paragraph, a canvas, a `draw()` of your own.
+   *
+   * The wheel and a click on the track both arrive as `onScroll`, so the same
+   * handler that drives the content drives the bar. A click reports the delta
+   * that would land the thumb where you clicked, which makes the bar a way to
+   * move rather than a picture of where you are.
+   */
+  scrollbar(options: W.ScrollbarOptions & ContainerOptions & ScrollHandlers): this {
+    const vertical = W.isVertical(options.orientation ?? "right");
+    return this.add((s) => {
+      W.drawScrollbarWidget(s, options);
+      if (!options.onScroll && !options.onFocus) return;
+      const track = vertical ? s.height : s.width;
+      this.ctx.hit({
+        rect: s.hitRect(),
+        onScroll: options.onScroll ? (delta) => options.onScroll?.(delta) : undefined,
+        onClick: (x, y) => {
+          options.onFocus?.();
+          const at = W.offsetForPosition(vertical ? y : x, track, options.total, options.viewport);
+          options.onScroll?.(at - options.offset);
+        },
+      });
+      // A bar is one cell across its short axis; along its long one it takes
+      // whatever it is given.
+    }, this.sizeOf(options, vertical ? "fill" : 1, vertical ? undefined : 1));
+  }
+
   tree(options: W.TreeOptions & ContainerOptions & ScrollHandlers): this {
     return this.add((s) => {
       W.drawTree(s, options);

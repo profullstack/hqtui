@@ -331,7 +331,38 @@ void draw_progress(Surface, const Progress &);
 void draw_graph(Surface, const Graph &);
 void draw_gauge(Surface, double, std::string_view);
 void draw_keys(Surface, const std::vector<KeyValue> &, bool spread = true);
+/// Which edge a scrollbar sits on, and therefore which way it runs.
+enum ScrollbarOrientation {
+  HQ_SCROLLBAR_RIGHT,
+  HQ_SCROLLBAR_LEFT,
+  HQ_SCROLLBAR_BOTTOM,
+  HQ_SCROLLBAR_TOP,
+};
+inline bool is_vertical(ScrollbarOrientation o) {
+  return o == HQ_SCROLLBAR_RIGHT || o == HQ_SCROLLBAR_LEFT;
+}
+/// How much there is, how much of it is visible, and how far through it we are
+/// — the state the caller owns.
+struct Scrollbar {
+  int total = 0;
+  int viewport = 0;
+  int offset = 0;
+  ScrollbarOrientation orientation = HQ_SCROLLBAR_RIGHT;
+};
+/// Where the thumb starts and how long it is, in cells along the track.
+struct Thumb {
+  int start = 0;
+  int size = 0;
+};
+/// The thumb is as long as the visible fraction, so it needs the viewport as
+/// well as the track. For a table those are the same number, which is why
+/// `viewport` defaults to the track.
+Thumb thumb(int track, int total, int offset, int viewport = 0);
 void draw_scrollbar(Surface, int, int, int, int, int);
+/// A scrollbar filling the surface it is given, on whichever edge.
+void draw_scrollbar(Surface, const Scrollbar &);
+/// Which offset a click at `position` along the track means.
+int offset_for_position(int position, int track, int total, int viewport);
 /// Surface tinted one step above the theme's surface, for a control's chrome.
 inline Color elevate(const hq_theme &t, double amount = .06) {
   return hq_mix(t.surface, t.dark ? 0xffffffu : 0x000000u, amount);
@@ -755,6 +786,19 @@ public:
   }
   void donut(Donut o, Constraint size = fr()) {
     draw([=](Surface s) { draw_donut(s, o); }, size);
+  }
+  /// A scrollbar over state you own, for anything that scrolls and is not a
+  /// table. A vertical bar fills the space it is given; a horizontal one is a
+  /// single row.
+  void scrollbar(Scrollbar o, std::string id = {}) {
+    auto regions_ = regions;
+    draw(
+        [=](Surface s) {
+          draw_scrollbar(s, o);
+          if (regions_ && !id.empty())
+            regions_->push_back({s.rect(), id, 0});
+        },
+        is_vertical(o.orientation) ? fr() : cells(1));
   }
   void list(List o, std::string id = {}) {
     auto regions_ = regions;

@@ -729,18 +729,6 @@ void draw_gauge(Surface s, double value, std::string_view label) {
   if (!label.empty())
     aligned(s, h - 1, label, color, HQ_CENTER, HQ_BOLD);
 }
-void draw_scrollbar(Surface s, int x, int y, int h, int total, int offset) {
-  if (h <= 0 || total <= h)
-    return;
-  auto &t = theme(s);
-  int thumb = std::max(1, iround(double(h) / total * h)),
-      pos = iround(double(offset) / std::max(1, total - h) * (h - thumb));
-  for (int i = 0; i < h; i++)
-    s.set(x, y + i, i >= pos && i < pos + thumb ? 0x2588 : 0x2502,
-          Style().foreground(i >= pos && i < pos + thumb
-                                 ? t.accent
-                                 : hq_mix(t.background, t.border, .7)));
-}
 void draw_table(Surface s, const Table &o) {
   int w = s.rect().width, h = s.rect().height,
       bodyw = std::max(0, w - int(o.scrollbar)),

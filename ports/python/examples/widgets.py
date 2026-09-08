@@ -190,6 +190,21 @@ def log(ui: Container) -> None:
 
 # ----------------------------------------------------------------- meters
 
+# @widget scrollbar
+def scrollbar(ui: Container) -> None:
+    # The bar is over state you own, so it works beside anything that scrolls:
+    # wrapped prose, a canvas, a ``draw`` of your own.
+    def row(r: Container) -> None:
+        r.text(
+            "A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.",
+            w.TextStyle(wrap=True),
+        )
+        r.scrollbar(w.ScrollbarOptions(total=40, viewport=5, offset=12))
+
+    ui.row(Layout(gap=1), row)
+# @end
+
+
 # @widget meter
 def meter(ui: Container) -> None:
     ui.meter(w.MeterOptions(value=0.62, label="CPU"))
@@ -376,6 +391,7 @@ EXAMPLES = [
     ("text", text), ("label", label), ("heading", heading), ("badge", badge),
     ("divider", divider), ("keyValues", key_values), ("statusBar", status_bar),
     ("table", table), ("list", list_), ("tree", tree), ("log", log),
+    ("scrollbar", scrollbar),
     ("meter", meter), ("meters", meters), ("progress", progress), ("graph", graph),
     ("sparkline", sparkline), ("histogram", histogram), ("heatBar", heat_bar),
     ("gauge", gauge), ("donut", donut),

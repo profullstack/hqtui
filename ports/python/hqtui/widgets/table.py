@@ -18,6 +18,7 @@ from ..layout import Constraint, solve
 from ..surface import Surface, TextOptions
 from ..theme import elevate
 from ..unicode import Align, fit, string_width, truncate
+from .scrollbar import draw_scrollbar
 
 __all__ = [
     "ListItem",
@@ -195,23 +196,6 @@ def draw_table(surface: Surface, options: TableOptions) -> None:
     if options.scrollbar and len(options.rows) > capacity and capacity > 0:
         draw_scrollbar(
             surface, surface.width - 1, header_rows, capacity, len(options.rows), offset
-        )
-
-
-def draw_scrollbar(
-    surface: Surface, x: int, y: int, height: int, total: int, offset: int
-) -> None:
-    """A one-column scrollbar. Thumb size reflects the visible fraction."""
-    theme = surface.theme
-    track = theme.background.mix(theme.border, 0.7)
-    thumb_size = max(1, int(round_half_up(height / total * height)))
-    max_offset = max(1, total - height)
-    thumb_pos = int(round_half_up(offset / max_offset * (height - thumb_size)))
-    for i in range(height):
-        in_thumb = thumb_pos <= i < thumb_pos + thumb_size
-        surface.char(
-            x, y + i, "█" if in_thumb else "│",
-            Style(fg=theme.accent if in_thumb else track),
         )
 
 

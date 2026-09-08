@@ -77,6 +77,15 @@ def log(ui)
 end
 # @end
 
+# @widget scrollbar
+def scrollbar(ui)
+  # The bar is over state you own: it knows how much there is, how much fits
+  # and where you are, and nothing about what it sits beside.
+  ui.text('120 lines, 8 of them on screen, starting at 36.')
+  ui.scrollbar(120, viewport: 8, offset: 36, orientation: 'bottom')
+end
+# @end
+
 # @widget meter
 def meter(ui)
   ui.meter(0.62, label: 'CPU')
@@ -264,6 +273,7 @@ EXAMPLES = {
   'keyValues' => method(:key_values),
   'table' => method(:table),
   'log' => method(:log),
+  'scrollbar' => method(:scrollbar),
   'meter' => method(:meter),
   'graph' => method(:graph),
   'gauge' => method(:gauge),

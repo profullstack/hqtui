@@ -218,6 +218,28 @@ def draw_scene(case, name: str, s: Surface) -> None:
         )
     elif name == "scrollbar":
         w.draw_scrollbar(s, 1, 0, 8, 40, 12)
+    elif name == "scrollbar-right":
+        w.draw_scrollbar_widget(s, w.ScrollbarOptions(total=40, viewport=8, offset=12))
+    elif name == "scrollbar-left":
+        w.draw_scrollbar_widget(
+            s, w.ScrollbarOptions(total=40, viewport=8, offset=12, orientation="left")
+        )
+    elif name == "scrollbar-bottom":
+        w.draw_scrollbar_widget(
+            s, w.ScrollbarOptions(total=80, viewport=20, offset=30, orientation="bottom")
+        )
+    elif name == "scrollbar-top":
+        w.draw_scrollbar_widget(
+            s, w.ScrollbarOptions(total=80, viewport=20, offset=30, orientation="top")
+        )
+    elif name == "scrollbar-fits":
+        w.draw_scrollbar_widget(s, w.ScrollbarOptions(total=5, viewport=8, offset=0))
+    elif name == "scrollbar-viewport":
+        w.draw_scrollbar_widget(s, w.ScrollbarOptions(total=120, viewport=8, offset=36))
+    elif name == "scrollbar-viewport-wide":
+        w.draw_scrollbar_widget(
+            s, w.ScrollbarOptions(total=120, viewport=8, offset=36, orientation="bottom")
+        )
     elif name == "button":
         w.draw_button(s, w.ButtonOptions(label="OK"))
     elif name == "button-focused":

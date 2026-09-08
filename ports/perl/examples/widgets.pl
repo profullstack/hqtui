@@ -84,6 +84,16 @@ sub widget_log {
 }
 # @end
 
+# @widget scrollbar
+sub widget_scrollbar {
+    my ($ui) = @_;
+    # The bar is over state you own: it knows how much there is, how much fits
+    # and where you are, and nothing about what it sits beside.
+    $ui->text('120 lines, 8 of them on screen, starting at 36.');
+    $ui->scrollbar(120, viewport => 8, offset => 36, orientation => 'bottom');
+}
+# @end
+
 # @widget meter
 sub widget_meter {
     my ($ui) = @_;
@@ -294,6 +304,7 @@ my @examples = (
     ['keyValues', \&widget_key_values],
     ['table',     \&widget_table],
     ['log',       \&widget_log],
+    ['scrollbar', \&widget_scrollbar],
     ['meter',     \&widget_meter],
     ['graph',     \&widget_graph],
     ['gauge',     \&widget_gauge],

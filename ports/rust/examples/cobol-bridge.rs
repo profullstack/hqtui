@@ -148,6 +148,24 @@ fn draw(scene: &Scene, ui: &mut Container) {
             "METER" => {
                 ui.meter(MeterOptions::new(record.num.parse().unwrap_or(0.0)).label(&record.key));
             }
+            "SCROLLBAR" => {
+                // key is the edge, num the offset, text "total|viewport".
+                let mut parts = record.text.split('|');
+                ui.scrollbar(
+                    ScrollbarOptions {
+                        total: parts.next().unwrap_or("").parse().unwrap_or(0),
+                        viewport: parts.next().unwrap_or("").parse().unwrap_or(0),
+                        offset: record.num.parse().unwrap_or(0),
+                        orientation: match record.key.as_str() {
+                            "LEFT" => ScrollbarOrientation::Left,
+                            "BOTTOM" => ScrollbarOrientation::Bottom,
+                            "TOP" => ScrollbarOrientation::Top,
+                            _ => ScrollbarOrientation::Right,
+                        },
+                    },
+                    "",
+                );
+            }
             "GRAPHPT" => points.push(record.num.parse().unwrap_or(0.0)),
             "GAUGE" => {
                 ui.gauge(GaugeOptions {

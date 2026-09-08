@@ -413,6 +413,23 @@ pub fn tooltip(ui: &mut Container) {
 }
 // @end
 
+// @widget scrollbar
+pub fn scrollbar(ui: &mut Container) {
+    // The bar is over state you own, so it works beside anything that scrolls:
+    // wrapped prose, a canvas, a `draw` of your own.
+    ui.row(Row::new().gap(1), |r| {
+        r.styled_text(
+            "A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.",
+            TextStyle::new().wrapped(),
+        );
+        r.scrollbar(
+            ScrollbarOptions { total: 40, viewport: 5, offset: 12, ..Default::default() },
+            "",
+        );
+    });
+}
+// @end
+
 /// Renders each widget on its own small screen and prints the lot.
 fn main() {
     let examples: Vec<(&str, fn(&mut Container))> = vec![
@@ -427,6 +444,7 @@ fn main() {
         ("list", list),
         ("tree", tree),
         ("log", log),
+        ("scrollbar", scrollbar),
         ("meter", meter),
         ("meters", meters),
         ("progress", progress),

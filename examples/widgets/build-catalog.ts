@@ -95,6 +95,8 @@ export const WIDGETS: WidgetSpec[] = [
     blurb: "Nested rows with expand state and per-node value columns." },
   { id: "log", title: "Log", category: "Data", width: 62, height: 5,
     blurb: "Levelled log lines that tail by default and scroll back from the end." },
+  { id: "scrollbar", title: "Scrollbar", category: "Data", width: 46, height: 4,
+    blurb: "A bar over state you own, on any of the four edges, for anything that scrolls." },
 
   { id: "meter", title: "Meter", category: "Meters", width: 48, height: 3,
     blurb: "A labelled bar. Smooth or segmented, heat-colored by default." },

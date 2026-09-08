@@ -248,6 +248,54 @@ fn draw_scene(name: &str, s: &Surface) {
             },
         ),
         "scrollbar" => draw_scrollbar(s, 1, 0, 8, 40, 12),
+        "scrollbar-right" => draw_scrollbar_widget(
+            s,
+            &ScrollbarOptions { total: 40, viewport: 8, offset: 12, ..Default::default() },
+        ),
+        "scrollbar-left" => draw_scrollbar_widget(
+            s,
+            &ScrollbarOptions {
+                total: 40,
+                viewport: 8,
+                offset: 12,
+                orientation: ScrollbarOrientation::Left,
+            },
+        ),
+        "scrollbar-bottom" => draw_scrollbar_widget(
+            s,
+            &ScrollbarOptions {
+                total: 80,
+                viewport: 20,
+                offset: 30,
+                orientation: ScrollbarOrientation::Bottom,
+            },
+        ),
+        "scrollbar-top" => draw_scrollbar_widget(
+            s,
+            &ScrollbarOptions {
+                total: 80,
+                viewport: 20,
+                offset: 30,
+                orientation: ScrollbarOrientation::Top,
+            },
+        ),
+        "scrollbar-fits" => draw_scrollbar_widget(
+            s,
+            &ScrollbarOptions { total: 5, viewport: 8, offset: 0, ..Default::default() },
+        ),
+        "scrollbar-viewport" => draw_scrollbar_widget(
+            s,
+            &ScrollbarOptions { total: 120, viewport: 8, offset: 36, ..Default::default() },
+        ),
+        "scrollbar-viewport-wide" => draw_scrollbar_widget(
+            s,
+            &ScrollbarOptions {
+                total: 120,
+                viewport: 8,
+                offset: 36,
+                orientation: ScrollbarOrientation::Bottom,
+            },
+        ),
         "button" => {
             draw_button(s, &ButtonOptions::new("OK"));
         }

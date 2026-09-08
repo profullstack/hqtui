@@ -224,6 +224,34 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_scrollbar(s, 1, 0, 8, 40, 12);
     return true;
   }
+  if (name == "scrollbar-right") {
+    draw_scrollbar(s, Scrollbar{40, 8, 12, HQ_SCROLLBAR_RIGHT});
+    return true;
+  }
+  if (name == "scrollbar-left") {
+    draw_scrollbar(s, Scrollbar{40, 8, 12, HQ_SCROLLBAR_LEFT});
+    return true;
+  }
+  if (name == "scrollbar-bottom") {
+    draw_scrollbar(s, Scrollbar{80, 20, 30, HQ_SCROLLBAR_BOTTOM});
+    return true;
+  }
+  if (name == "scrollbar-top") {
+    draw_scrollbar(s, Scrollbar{80, 20, 30, HQ_SCROLLBAR_TOP});
+    return true;
+  }
+  if (name == "scrollbar-fits") {
+    draw_scrollbar(s, Scrollbar{5, 8, 0, HQ_SCROLLBAR_RIGHT});
+    return true;
+  }
+  if (name == "scrollbar-viewport") {
+    draw_scrollbar(s, Scrollbar{120, 8, 36, HQ_SCROLLBAR_RIGHT});
+    return true;
+  }
+  if (name == "scrollbar-viewport-wide") {
+    draw_scrollbar(s, Scrollbar{120, 8, 36, HQ_SCROLLBAR_BOTTOM});
+    return true;
+  }
   if (name == "table") {
     Table table;
     table.columns = {{"PID", -1, 1, 0, HQ_RIGHT}, {"NAME"}, {"CPU%", -1, 1, 0, HQ_RIGHT}};

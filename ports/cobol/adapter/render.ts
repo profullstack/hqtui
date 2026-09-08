@@ -67,6 +67,9 @@ export function parseScenes(input: string): Scene[] {
 
 const ALIGN: Record<string, Align> = { LEFT: "left", CENTER: "center", RIGHT: "right" };
 
+type Edge = "right" | "left" | "bottom" | "top";
+const EDGE: Record<string, Edge> = { RIGHT: "right", LEFT: "left", BOTTOM: "bottom", TOP: "top" };
+
 type ButtonVariant = "primary" | "success" | "warning" | "danger" | "ghost";
 const VARIANT: Record<string, ButtonVariant> = {
   PRIMARY: "primary",
@@ -136,6 +139,17 @@ export function draw(scene: Scene, ui: Container, theme: Theme): void {
       case "SELECT":
         selected = Number(record.num) || 0;
         break;
+      case "SCROLLBAR": {
+        // key is the edge, num the offset, text "total|viewport".
+        const [total = "", viewport = ""] = record.text.split("|");
+        ui.scrollbar({
+          total: Number(total) || 0,
+          viewport: Number(viewport) || 0,
+          offset: Number(record.num) || 0,
+          orientation: EDGE[record.key] ?? "right",
+        });
+        break;
+      }
       case "LOG": {
         const [time = "", message = "", meta = ""] = record.text.split("|");
         entries.push({ time, level: record.key.toLowerCase(), message, meta: meta || undefined });

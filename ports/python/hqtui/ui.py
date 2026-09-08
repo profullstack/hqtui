@@ -412,6 +412,22 @@ class Container:
 
         return self._add(self._constraint(layout or Layout(), "fill", len(options.items)), draw)
 
+    def scrollbar(
+        self, options: w.ScrollbarOptions, handlers: ScrollHandlers | None = None,
+        layout: Layout | None = None,
+    ):
+        """A scrollbar over state you own, for anything that scrolls and is not
+        a table: wrapped prose, a canvas, a ``draw`` of your own. A vertical bar
+        fills the space it is given; a horizontal one is a single row."""
+        h = handlers or ScrollHandlers()
+
+        def draw(s: Surface) -> None:
+            w.draw_scrollbar_widget(s, options)
+            self._attach_scroll(s, h)
+
+        fallback = "fill" if w.is_vertical(options.orientation) else 1
+        return self._add(self._constraint(layout or Layout(), fallback), draw)
+
     def tree(
         self, options: w.TreeOptions, handlers: ScrollHandlers | None = None,
         layout: Layout | None = None,

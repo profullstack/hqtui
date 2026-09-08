@@ -68,6 +68,7 @@ MAIN-PARAGRAPH.
     PERFORM HEATBAR-WIDGET
     PERFORM DONUT-WIDGET
     PERFORM LIST-WIDGET
+    PERFORM SCROLLBAR-WIDGET
     PERFORM TREE-WIDGET
     PERFORM BUTTON-WIDGET
     PERFORM CHECKBOX-WIDGET
@@ -380,6 +381,25 @@ LIST-WIDGET.
 
     MOVE "ITEM" TO SR-VERB
     MOVE "docs" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget scrollbar
+SCROLLBAR-WIDGET.
+    MOVE "scrollbar" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "TEXT" TO SR-VERB
+    MOVE "LEFT" TO SR-KEY
+    MOVE "120 lines, 8 of them on screen, starting at 36." TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    *> The bar is over state you own: key is the edge it sits on, num the
+    *> offset, and the text carries total and viewport.
+    MOVE "SCROLLBAR" TO SR-VERB
+    MOVE "BOTTOM" TO SR-KEY
+    MOVE "36" TO SR-NUM
+    MOVE "120|8" TO SR-TEXT
     PERFORM EMIT-RECORD.
 *> @end
 

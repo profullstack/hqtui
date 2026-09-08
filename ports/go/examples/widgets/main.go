@@ -189,6 +189,21 @@ func Log(ui *hqtui.Container) {
 
 // ----------------------------------------------------------------- meters
 
+// @widget scrollbar
+func Scrollbar(ui *hqtui.Container) {
+	// The bar is over state you own, so it works beside anything that scrolls:
+	// wrapped prose, a canvas, a Draw of your own.
+	ui.Row(hqtui.RowOptions{Layout: hqtui.Layout{Gap: 1}}, func(r *hqtui.Container) {
+		r.StyledText(
+			"A scrollbar you drive yourself. It has no idea what is beside it, only how much there is, how much fits, and where you are.",
+			hqtui.TextStyle{Wrap: true},
+		)
+		r.Scrollbar(hqtui.ScrollbarOptions{Total: 40, Viewport: 5, Offset: 12}, hqtui.ScrollHandlers{})
+	})
+}
+
+// @end
+
 // @widget meter
 func Meter(ui *hqtui.Container) {
 	ui.Meter(hqtui.MeterOptions{Value: 0.62, Label: "CPU"})
@@ -391,6 +406,7 @@ func main() {
 		{"text", Text}, {"label", Label}, {"heading", Heading}, {"badge", Badge},
 		{"divider", Divider}, {"keyValues", KeyValues}, {"statusBar", StatusBar},
 		{"table", Table}, {"list", List}, {"tree", Tree}, {"log", Log},
+		{"scrollbar", Scrollbar},
 		{"meter", Meter}, {"meters", Meters}, {"progress", Progress}, {"graph", Graph},
 		{"sparkline", Sparkline}, {"histogram", Histogram}, {"heatBar", HeatBar},
 		{"gauge", Gauge}, {"donut", Donut},

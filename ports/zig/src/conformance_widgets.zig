@@ -188,6 +188,20 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
         } });
     } else if (eq(u8, name, "scrollbar")) {
         w.drawScrollbar(s, 1, 0, 8, 40, 12);
+    } else if (eq(u8, name, "scrollbar-right")) {
+        w.drawScrollbarWidget(s, .{ .total = 40, .viewport = 8, .offset = 12 });
+    } else if (eq(u8, name, "scrollbar-left")) {
+        w.drawScrollbarWidget(s, .{ .total = 40, .viewport = 8, .offset = 12, .orientation = .left });
+    } else if (eq(u8, name, "scrollbar-bottom")) {
+        w.drawScrollbarWidget(s, .{ .total = 80, .viewport = 20, .offset = 30, .orientation = .bottom });
+    } else if (eq(u8, name, "scrollbar-top")) {
+        w.drawScrollbarWidget(s, .{ .total = 80, .viewport = 20, .offset = 30, .orientation = .top });
+    } else if (eq(u8, name, "scrollbar-fits")) {
+        w.drawScrollbarWidget(s, .{ .total = 5, .viewport = 8, .offset = 0 });
+    } else if (eq(u8, name, "scrollbar-viewport")) {
+        w.drawScrollbarWidget(s, .{ .total = 120, .viewport = 8, .offset = 36 });
+    } else if (eq(u8, name, "scrollbar-viewport-wide")) {
+        w.drawScrollbarWidget(s, .{ .total = 120, .viewport = 8, .offset = 36, .orientation = .bottom });
     } else if (eq(u8, name, "button")) {
         _ = w.drawButton(s, .{ .label = "OK" });
     } else if (eq(u8, name, "button-focused")) {

@@ -3,6 +3,11 @@ import { Attr, type Style } from "../buffer.ts";
 import type { Color } from "../color.ts";
 import { mix } from "../color.ts";
 import { fit, stringWidth, truncate } from "../unicode.ts";
+import { drawScrollbar } from "./scrollbar.ts";
+
+// Re-exported: it was part of this module's surface before it had one of
+// its own, and the widgets here still draw with it.
+export { drawScrollbar } from "./scrollbar.ts";
 import { solve } from "../layout.ts";
 import { elevate } from "../theme.ts";
 
@@ -145,26 +150,6 @@ export function drawTable<Row>(surface: Surface, options: TableOptions<Row>): vo
 
   if (scrollbar && options.rows.length > capacity && capacity > 0) {
     drawScrollbar(surface, surface.width - 1, headerRows, capacity, options.rows.length, offset);
-  }
-}
-
-/** A one-column scrollbar. Thumb size reflects the visible fraction. */
-export function drawScrollbar(
-  surface: Surface,
-  x: number,
-  y: number,
-  height: number,
-  total: number,
-  offset: number,
-): void {
-  const theme = surface.theme;
-  const track = mix(theme.background, theme.border, 0.7);
-  const thumbSize = Math.max(1, Math.round((height / total) * height));
-  const maxOffset = Math.max(1, total - height);
-  const thumbPos = Math.round((offset / maxOffset) * (height - thumbSize));
-  for (let i = 0; i < height; i++) {
-    const inThumb = i >= thumbPos && i < thumbPos + thumbSize;
-    surface.char(x, y + i, inThumb ? "█" : "│", { fg: inThumb ? theme.accent : track });
   }
 }
 

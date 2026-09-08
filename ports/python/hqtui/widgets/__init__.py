@@ -61,10 +61,18 @@ from .table import (
     TreeValue,
     draw_list,
     draw_log,
-    draw_scrollbar,
     draw_table,
     draw_tree,
     resolve_offset,
+)
+from .scrollbar import (
+    ScrollbarOptions,
+    ScrollbarOrientation,
+    draw_scrollbar,
+    draw_scrollbar_widget,
+    is_vertical,
+    offset_for_position,
+    thumb,
 )
 from .text import (
     BadgeOptions,
@@ -97,7 +105,8 @@ __all__ = [
     "draw_columns", "draw_command_palette", "draw_divider", "draw_donut",
     "draw_gauge", "draw_graph", "draw_heat_bar", "draw_key_values", "draw_list",
     "draw_log", "draw_meter", "draw_meters", "draw_modal", "draw_progress",
-    "draw_scrollbar", "draw_select", "draw_sparkline", "draw_status_bar",
+    "ScrollbarOptions", "ScrollbarOrientation", "is_vertical", "offset_for_position",
+    "thumb", "draw_scrollbar", "draw_scrollbar_widget", "draw_select", "draw_sparkline", "draw_status_bar",
     "draw_table", "draw_tabs", "draw_text", "draw_text_input", "draw_tooltip",
     "draw_tree", "nice_label", "resolve_offset",
 ]

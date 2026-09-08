@@ -426,6 +426,20 @@ func (c *Container) List(o ListOptions, h ScrollHandlers, layout ...Layout) *Con
 	})
 }
 
+// Scrollbar draws a bar over state you own, for anything that scrolls and is
+// not a table: wrapped prose, a canvas, a Draw of your own. A vertical bar
+// fills the space it is given; a horizontal one is a single row.
+func (c *Container) Scrollbar(o ScrollbarOptions, h ScrollHandlers, layout ...Layout) *Container {
+	fallback := Fill()
+	if !o.Orientation.IsVertical() {
+		fallback = Cells(1)
+	}
+	return c.add(c.constraintOfLayout(firstLayout(layout), fallback, nil), func(s Surface) {
+		DrawScrollbarWidget(s, o)
+		c.attachScroll(s, h, 0)
+	})
+}
+
 func (c *Container) Tree(o TreeOptions, h ScrollHandlers, layout ...Layout) *Container {
 	return c.add(c.filling(firstLayout(layout)), func(s Surface) {
 		DrawTree(s, o)

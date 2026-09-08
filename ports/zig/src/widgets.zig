@@ -4,6 +4,7 @@
 
 pub const controls = @import("widgets/controls.zig");
 pub const meters = @import("widgets/meters.zig");
+pub const scrollbar = @import("widgets/scrollbar.zig");
 pub const table = @import("widgets/table.zig");
 pub const text = @import("widgets/text.zig");
 
@@ -58,7 +59,12 @@ pub const TreeOptions = table.TreeOptions;
 pub const TreeValue = table.TreeValue;
 pub const drawList = table.drawList;
 pub const drawLog = table.drawLog;
-pub const drawScrollbar = table.drawScrollbar;
+pub const ScrollbarOptions = scrollbar.ScrollbarOptions;
+pub const ScrollbarOrientation = scrollbar.ScrollbarOrientation;
+pub const drawScrollbar = scrollbar.drawScrollbar;
+pub const drawScrollbarWidget = scrollbar.drawScrollbarWidget;
+pub const offsetForPosition = scrollbar.offsetForPosition;
+pub const scrollbarThumb = scrollbar.thumb;
 pub const drawTable = table.drawTable;
 pub const drawTree = table.drawTree;
 pub const resolveOffset = table.resolveOffset;
