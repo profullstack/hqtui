@@ -2,6 +2,7 @@
 //! builder in [`ui`](crate::ui) wraps every one of these with layout, so reach
 //! for these directly only when you are drawing inside a `draw` escape hatch.
 
+pub mod calendar;
 pub mod chart;
 pub mod controls;
 pub mod meters;
@@ -21,6 +22,10 @@ pub use meters::{
     draw_meters, draw_progress, draw_sparkline, nice_label, ColumnsOptions, DonutOptions,
     DonutSegment, GaugeOptions, GraphOptions, HeatBarOptions, MeterItem, MeterOptions,
     MetersOptions, ProgressOptions, SparklineWidgetOptions,
+};
+pub use calendar::{
+    calendar_height, day_of_week, days_in_month, draw_calendar, is_leap_year, CalendarMark,
+    CalendarOptions,
 };
 pub use chart::{draw_chart, ChartOptions};
 pub use scrollbar::{

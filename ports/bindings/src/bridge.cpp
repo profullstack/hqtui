@@ -79,7 +79,7 @@ void validate(const Json &n, int depth, int &count) {
       "badge",    "progress", "sparkline", "heatbar",   "columns", "donut",
       "list",     "tree",     "button",    "checkbox",  "select",  "input",
       "tabs",     "statusbar", "label",     "heading",   "meters",  "modal",
-      "commandpalette",        "tooltip",   "scrollbar", "chart"};
+      "commandpalette",        "tooltip",   "scrollbar", "chart",     "calendar"};
   if (std::find(types.begin(), types.end(), type) == types.end())
     throw std::runtime_error("unknown widget: " + type);
   if (!n["children"].null() &&
@@ -271,6 +271,25 @@ void node(UI &ui, const Json &n, std::vector<PendingOverlay> &overlays) {
     if (d.segments.size() > 64)
       throw std::runtime_error("too many donut segments");
     ui.donut(d, size(n));
+  } else if (type == "calendar") {
+    Calendar cal;
+    cal.year = integer(n["year"], 1970, -9999, 9999);
+    cal.month = integer(n["month"], 1, 1, 12);
+    cal.selected = integer(n["selected"], 0, 0, 31);
+    cal.week_start = integer(n["weekStart"], 1, 0, 1);
+    if (!n["header"].null())
+      cal.header = n["header"].b(true);
+    if (!n["weekdays"].null())
+      cal.weekdays = n["weekdays"].b(true);
+    for (auto &mj : n["marks"].array()) {
+      CalendarMark mark;
+      mark.day = integer(mj["day"], 0, 0, 31);
+      mark.bold = mj["bold"].b(false);
+      cal.marks.push_back(mark);
+    }
+    if (cal.marks.size() > 64)
+      throw std::runtime_error("too many calendar marks");
+    ui.calendar(cal);
   } else if (type == "chart") {
     Chart chart;
     for (auto &sj : n["series"].array()) {

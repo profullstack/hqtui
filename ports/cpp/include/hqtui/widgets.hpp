@@ -392,6 +392,49 @@ struct Progress {
 void draw_progress(Surface, const Progress &);
 void draw_graph(Surface, const Graph &);
 
+extern const char *const MONTH_NAMES[12];
+/// Two letters each, so a week is exactly as wide as its days.
+extern const char *const WEEKDAY_NAMES[7];
+/// The width a calendar wants, which is the same whatever month it shows.
+constexpr int CALENDAR_WIDTH = 7 * 3 - 1;
+/// The Gregorian leap rule in full: every four years, except centuries, except
+/// every fourth century.
+bool is_leap_year(long year);
+/// How many days a month has. Months are 1-12, as people write them.
+long days_in_month(long year, long month);
+/// Day of the week, 0 = Sunday. Sakamoto's method, so no host calendar is
+/// consulted and every port agrees.
+long day_of_week(long year, long month, long day);
+struct CalendarMark {
+  /// Day of the month, 1-31.
+  long day = 0;
+  Color color = 0;
+  Color background = 0;
+  bool bold = false;
+};
+struct Calendar {
+  long year = 1970;
+  /// 1-12, as people write months.
+  long month = 1;
+  /// Days worth pointing at: holidays, deadlines, days with something on.
+  std::vector<CalendarMark> marks;
+  /// Drawn in the accent colour, as the day the view is about. 0 for none.
+  long selected = 0;
+  /// The month and year above the grid.
+  bool header = true;
+  int header_align = HQ_CENTER;
+  /// The weekday initials above the days.
+  bool weekdays = true;
+  /// 0 for Sunday, 1 for Monday. Most of the world starts on Monday.
+  long week_start = 1;
+  Color color = 0;
+  std::optional<Color> background;
+};
+/// How many rows a month needs, so a caller can size the panel around it.
+int calendar_height(const Calendar &);
+/// A month as a grid, with per-day styling.
+void draw_calendar(Surface, const Calendar &);
+
 /// A point in a chart's own coordinates, not the grid's.
 struct ChartPoint {
   double x = 0, y = 0;
@@ -904,6 +947,11 @@ public:
   /// Flood a region with one repeated symbol and style.
   void fill(Fill o = {}, Constraint size = fr()) {
     draw([=](Surface s) { draw_fill(s, o); }, size);
+  }
+  /// A month as a grid, with per-day styling. Sized to the month it shows.
+  void calendar(Calendar o) {
+    int height = calendar_height(o);
+    draw([=](Surface s) { draw_calendar(s, o); }, cells(height));
   }
   void sparkline(Sparkline o) {
     draw([=](Surface s) { draw_sparkline(s, o); }, cells(1));

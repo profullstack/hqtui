@@ -372,6 +372,7 @@ const Node = union(enum) {
     meters: w.MetersOptions,
     progress: w.ProgressOptions,
     graph: w.GraphOptions,
+    calendar: w.CalendarOptions,
     chart: w.ChartOptions,
     clear: w.ClearOptions,
     fill: w.FillOptions,
@@ -462,6 +463,7 @@ fn drawNode(ctx: *Ctx, s: Surface, node: Node) anyerror!void {
         .meters => |o| w.drawMeters(s, o),
         .progress => |o| w.drawProgress(s, o),
         .graph => |o| try w.drawGraph(allocator, s, o),
+        .calendar => |o| w.drawCalendar(s, o),
         .chart => |o| try w.drawChart(allocator, s, o),
         .clear => |o| w.drawClear(s, o),
         .fill => |o| w.drawFill(s, o),
@@ -864,6 +866,15 @@ pub const Container = struct {
     /// Flood a region with one repeated symbol and style.
     pub fn fill(self: *Container, options: w.FillOptions) !void {
         try self.add(self.filling(), .{ .fill = options });
+    }
+
+    /// A month as a grid, with per-day styling.
+    ///
+    /// Sized to the month it shows: a month spans four, five or six week rows
+    /// depending on where its first day falls, and reserving five leaves some
+    /// months a row short and others a blank row long.
+    pub fn calendar(self: *Container, options: w.CalendarOptions) !void {
+        try self.add(self.leaf(w.calendarHeight(options)), .{ .calendar = options });
     }
 
     pub fn sparkline(self: *Container, options: w.SparklineWidgetOptions) !void {

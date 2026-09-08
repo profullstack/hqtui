@@ -224,6 +224,17 @@ def chart(ui: Container) -> None:
 # @end
 
 
+# @widget calendar
+def calendar(ui: Container) -> None:
+    # The dates are arithmetic, not a host calendar: every port has a different
+    # date type and none of them is consulted.
+    ui.calendar(w.CalendarOptions(
+        year=2026, month=9, selected=8,
+        marks=[w.CalendarMark(day=15), w.CalendarMark(day=22, bold=True)],
+    ))
+# @end
+
+
 # @widget meter
 def meter(ui: Container) -> None:
     ui.meter(w.MeterOptions(value=0.62, label="CPU"))
@@ -410,7 +421,7 @@ EXAMPLES = [
     ("text", text), ("label", label), ("heading", heading), ("badge", badge),
     ("divider", divider), ("keyValues", key_values), ("statusBar", status_bar),
     ("table", table), ("list", list_), ("tree", tree), ("log", log),
-    ("scrollbar", scrollbar), ("chart", chart),
+    ("scrollbar", scrollbar), ("chart", chart), ("calendar", calendar),
     ("meter", meter), ("meters", meters), ("progress", progress), ("graph", graph),
     ("sparkline", sparkline), ("histogram", histogram), ("heatBar", heat_bar),
     ("gauge", gauge), ("donut", donut),

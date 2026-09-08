@@ -774,6 +774,17 @@ impl<'a> Container<'a> {
         self.add(constraint, move |s| w::draw_fill(&s, &options))
     }
 
+    /// A month as a grid, with per-day styling.
+    ///
+    /// Sized to the month it shows: a month spans four, five or six week rows
+    /// depending on where its first day falls, and reserving five leaves some
+    /// months a row short and others a blank row long.
+    pub fn calendar(&mut self, options: w::CalendarOptions) -> &mut Self {
+        let height = w::calendar_height(&options);
+        let constraint = self.leaf(height);
+        self.add(constraint, move |s| w::draw_calendar(&s, &options))
+    }
+
     pub fn sparkline(&mut self, options: w::SparklineWidgetOptions) -> &mut Self {
         let constraint = self.leaf(1);
         self.add(constraint, move |s| w::draw_sparkline(&s, &options))

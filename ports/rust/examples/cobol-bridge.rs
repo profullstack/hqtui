@@ -88,6 +88,8 @@ fn draw(scene: &Scene, ui: &mut Container) {
     let mut rows: Vec<TableRow> = Vec::new();
     let mut keys: Vec<KeyValueRow> = Vec::new();
     let mut chart_series: Vec<(String, Vec<(f64, f64)>)> = Vec::new();
+    let mut calendar_marks: Vec<CalendarMark> = Vec::new();
+    let mut calendar_selected: Option<i64> = None;
     let mut entries: Vec<LogEntry> = Vec::new();
     let mut points: Vec<f64> = Vec::new();
     let mut bars: Vec<f64> = Vec::new();
@@ -149,6 +151,32 @@ fn draw(scene: &Scene, ui: &mut Container) {
             }
             "METER" => {
                 ui.meter(MeterOptions::new(record.num.parse().unwrap_or(0.0)).label(&record.key));
+            }
+            "CALDAY" => {
+                // One marked day per record, like CHARTPT. num is the day; key
+                // says whether it is the selected one.
+                let day: i64 = record.num.parse().unwrap_or(0);
+                if record.key == "SELECTED" {
+                    calendar_selected = Some(day);
+                } else {
+                    calendar_marks.push(CalendarMark {
+                        day,
+                        bold: record.key == "BOLD",
+                        ..Default::default()
+                    });
+                }
+            }
+            "CALENDAR" => {
+                // text is "year|month"; the marks accumulated so far belong to it.
+                let mut parts = record.text.split('|');
+                let year: i64 = parts.next().unwrap_or("").parse().unwrap_or(1970);
+                let month: i64 = parts.next().unwrap_or("").parse().unwrap_or(1);
+                ui.calendar(CalendarOptions {
+                    selected: calendar_selected.take(),
+                    marks: std::mem::take(&mut calendar_marks),
+                    week_start: if record.key == "SUNDAY" { 0 } else { 1 },
+                    ..CalendarOptions::new(year, month)
+                });
             }
             "CHARTPT" => {
                 // One point per record, like GRAPHPT. key names the series it

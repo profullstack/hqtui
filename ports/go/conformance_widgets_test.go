@@ -67,6 +67,21 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 		DrawFill(s, FillOptions{Symbol: "\u00b7"})
 	case "fill-wide":
 		DrawFill(s, FillOptions{Symbol: "\u65e5"})
+	case "calendar":
+		DrawCalendar(s, CalendarOptions{Year: 2026, Month: 9})
+	case "calendar-sunday":
+		sunday := 0
+		DrawCalendar(s, CalendarOptions{Year: 2026, Month: 9, WeekStart: &sunday})
+	case "calendar-leap":
+		DrawCalendar(s, CalendarOptions{Year: 2024, Month: 2})
+	case "calendar-bare":
+		DrawCalendar(s, CalendarOptions{Year: 2026, Month: 9, NoHeader: true, NoWeekdays: true})
+	case "calendar-marked":
+		eighth := 8
+		DrawCalendar(s, CalendarOptions{
+			Year: 2026, Month: 9, Selected: &eighth,
+			Marks: []CalendarMark{{Day: 15}, {Day: 22, Bold: true}},
+		})
 	case "badge":
 		DrawBadge(s, BadgeOptions{Text: "LIVE"})
 	case "badge-outline":

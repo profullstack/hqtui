@@ -70,6 +70,7 @@ MAIN-PARAGRAPH.
     PERFORM LIST-WIDGET
     PERFORM SCROLLBAR-WIDGET
     PERFORM CHART-WIDGET
+    PERFORM CALENDAR-WIDGET
     PERFORM TREE-WIDGET
     PERFORM BUTTON-WIDGET
     PERFORM CHECKBOX-WIDGET
@@ -441,6 +442,35 @@ CHART-WIDGET.
     MOVE "CHART" TO SR-VERB
     MOVE "LINE" TO SR-KEY
     MOVE "0|10|0|10" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget calendar
+CALENDAR-WIDGET.
+    MOVE "calendar" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> CALDAY carries one day; its key says whether that day is the selected
+    *> one, a bold mark, or a plain one. They accumulate until CALENDAR draws.
+    MOVE "CALDAY" TO SR-VERB
+    MOVE "SELECTED" TO SR-KEY
+    MOVE "8" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "CALDAY" TO SR-VERB
+    MOVE "MARK" TO SR-KEY
+    MOVE "15" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "CALDAY" TO SR-VERB
+    MOVE "BOLD" TO SR-KEY
+    MOVE "22" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    *> The text carries the month as "year|month".
+    MOVE "CALENDAR" TO SR-VERB
+    MOVE "MONDAY" TO SR-KEY
+    MOVE "2026|9" TO SR-TEXT
     PERFORM EMIT-RECORD.
 *> @end
 

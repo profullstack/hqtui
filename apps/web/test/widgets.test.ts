@@ -26,7 +26,7 @@ test("every language has a runnable example for every widget", () => {
 });
 
 test("the catalog covers the widgets and languages the site promises", () => {
-  assert.equal(catalog.widgets.length, 30);
+  assert.equal(catalog.widgets.length, 31);
   assert.equal(catalog.languages.length, 11);
   assert.ok(catalog.languages.some((language) => language.id === "cobol"));
 });

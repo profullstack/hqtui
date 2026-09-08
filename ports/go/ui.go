@@ -502,6 +502,18 @@ func (c *Container) Fill(o FillOptions, layout ...Layout) *Container {
 	return c.add(c.filling(firstLayout(layout)), func(s Surface) { DrawFill(s, o) })
 }
 
+// Calendar draws a month as a grid, with per-day styling.
+//
+// Sized to the month it shows: a month spans four, five or six week rows
+// depending on where its first day falls, and reserving five leaves some months
+// a row short and others a blank row long.
+func (c *Container) Calendar(o CalendarOptions, layout ...Layout) *Container {
+	height := CalendarHeight(o)
+	return c.add(c.constraintOfLayout(firstLayout(layout), Cells(height), &height), func(s Surface) {
+		DrawCalendar(s, o)
+	})
+}
+
 func (c *Container) Sparkline(o SparklineWidgetOptions, layout ...Layout) *Container {
 	return c.add(c.leaf(firstLayout(layout), 1), func(s Surface) { DrawSparkline(s, o) })
 }

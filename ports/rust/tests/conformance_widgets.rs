@@ -66,6 +66,27 @@ fn draw_scene(name: &str, s: &Surface) {
         }
         "fill" => draw_fill(s, &FillOptions { symbol: "\u{b7}".into(), ..Default::default() }),
         "fill-wide" => draw_fill(s, &FillOptions { symbol: "\u{65e5}".into(), ..Default::default() }),
+        "calendar" => draw_calendar(s, &CalendarOptions::new(2026, 9)),
+        "calendar-sunday" => draw_calendar(
+            s,
+            &CalendarOptions { week_start: 0, ..CalendarOptions::new(2026, 9) },
+        ),
+        "calendar-leap" => draw_calendar(s, &CalendarOptions::new(2024, 2)),
+        "calendar-bare" => draw_calendar(
+            s,
+            &CalendarOptions { header: false, weekdays: false, ..CalendarOptions::new(2026, 9) },
+        ),
+        "calendar-marked" => draw_calendar(
+            s,
+            &CalendarOptions {
+                selected: Some(8),
+                marks: vec![
+                    CalendarMark { day: 15, ..Default::default() },
+                    CalendarMark { day: 22, bold: true, ..Default::default() },
+                ],
+                ..CalendarOptions::new(2026, 9)
+            },
+        ),
         "badge" => {
             draw_badge(s, &BadgeOptions::new("LIVE"));
         }

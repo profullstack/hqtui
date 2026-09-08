@@ -110,6 +110,8 @@ export function draw(scene: Scene, ui: Container, theme: Theme): void {
   let palette: { query: string; selected: number } | undefined;
   let tooltip: { text: string; x: number; y: number } | undefined;
   const chartSeries = new Map<string, [number, number][]>();
+  let calendarMarks: { day: number; bold: boolean }[] = [];
+  let calendarSelected: number | undefined;
   let selected = 0;
   let activeTab = 0;
 
@@ -143,6 +145,28 @@ export function draw(scene: Scene, ui: Container, theme: Theme): void {
       case "SELECT":
         selected = Number(record.num) || 0;
         break;
+      case "CALDAY": {
+        // One marked day per record, like CHARTPT. num is the day; key says
+        // whether it is the selected one.
+        const day = Number(record.num) || 0;
+        if (record.key === "SELECTED") calendarSelected = day;
+        else calendarMarks.push({ day, bold: record.key === "BOLD" });
+        break;
+      }
+      case "CALENDAR": {
+        // text is "year|month"; the marks accumulated so far belong to it.
+        const [year = "", month = ""] = record.text.split("|");
+        ui.calendar({
+          year: Number(year) || 1970,
+          month: Number(month) || 1,
+          selected: calendarSelected,
+          marks: calendarMarks,
+          weekStart: record.key === "SUNDAY" ? 0 : 1,
+        });
+        calendarMarks = [];
+        calendarSelected = undefined;
+        break;
+      }
       case "CHARTPT": {
         // One point per record, like GRAPHPT. key names the series it joins, so
         // a flat record stream can describe several of them.

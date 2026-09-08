@@ -80,6 +80,7 @@ final class UI implements \JsonSerializable {
     public function list(array $items, array $o = []): self { return $this->add('list', ['items'=>$items, ...$o]); }
     public function scrollbar(int $total, array $o = []): self { return $this->add('scrollbar', ['total'=>$total, ...$o]); }
     public function chart(array $series, array $o = []): self { return $this->add('chart', ['series'=>$series, ...$o]); }
+    public function calendar(int $year, int $month, array $o = []): self { return $this->add('calendar', ['year'=>$year, 'month'=>$month, ...$o]); }
     public function tree(array $nodes, array $o = []): self { return $this->add('tree', ['nodes'=>$nodes, ...$o]); }
     public function button(string $label, array $o = []): self { return $this->add('button', ['label'=>$label, ...$o]); }
     public function checkbox(string $label, array $o = []): self { return $this->add('checkbox', ['label'=>$label, ...$o]); }

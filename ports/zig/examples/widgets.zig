@@ -208,6 +208,19 @@ fn chart(ui: *Container) anyerror!void {
 }
 // @end
 
+// @widget calendar
+fn calendar(ui: *Container) anyerror!void {
+    // The dates are arithmetic, not a host calendar: every port has a different
+    // date type and none of them is consulted.
+    try ui.calendar(.{
+        .year = 2026,
+        .month = 9,
+        .selected = 8,
+        .marks = &.{ .{ .day = 15 }, .{ .day = 22, .bold = true } },
+    });
+}
+// @end
+
 // @widget meter
 fn meter(ui: *Container) anyerror!void {
     try ui.meter(.{ .value = 0.62, .label = "CPU" });
@@ -397,6 +410,7 @@ const examples = [_]Example{
     .{ .name = "log", .body = hqtui.Body.plain(log) },
     .{ .name = "scrollbar", .body = hqtui.Body.plain(scrollbar) },
     .{ .name = "chart", .body = hqtui.Body.plain(chart) },
+    .{ .name = "calendar", .body = hqtui.Body.plain(calendar) },
     .{ .name = "meter", .body = hqtui.Body.plain(meter) },
     .{ .name = "meters", .body = hqtui.Body.plain(meters) },
     .{ .name = "progress", .body = hqtui.Body.plain(progress) },
