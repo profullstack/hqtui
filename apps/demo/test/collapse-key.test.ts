@@ -2,6 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+// By package name, the way the demo itself resolves the library, so the
+// screens and the renderer are one module instance rather than two. That
+// means dist has to exist: CI's Node job builds before it tests.
 import { renderToText } from "@profullstack/hqtui/testing";
 import { createCollector } from "../src/system/index.ts";
 import { createState, type DemoState } from "../src/state.ts";
