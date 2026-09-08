@@ -156,6 +156,10 @@
         "zig": {
           "code": "fn label(ui: *Container) anyerror!void {\n    // `label` is `text` in the theme's muted color: secondary copy, captions,\n    // the line under a number that says what the number is.\n    try ui.label(\"cpu · 8 cores · 3.4 GHz\");\n    try ui.text(\"42.1%\", .{ .bold = true });\n    try ui.label(\"15 minute average\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_label(Surface s) {\n  // Muted secondary copy: captions, and the line under a number that says what\n  // the number is.\n  const auto &t = theme(s);\n  draw_text(s, \"cpu · 8 cores · 3.4 GHz\", TextStyle{.fg = t.muted});\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"42.1%\", TextStyle{.attrs = HQ_BOLD});\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"15 minute average\",\n            TextStyle{.fg = t.muted});\n}",
+          "syntax": "cpp"
         }
       }
     },
@@ -191,6 +195,10 @@
         "zig": {
           "code": "fn heading(ui: *Container) anyerror!void {\n    // `heading` is `text` in the theme's title color, bold.\n    try ui.heading(\"Storage\");\n    try ui.label(\"Four volumes, one degraded\");\n    try ui.spacer(.{ .cells = 1 });\n    try ui.heading(\"Network\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_heading(Surface s) {\n  const auto &t = theme(s);\n  draw_text(s, \"Storage\", TextStyle{.fg = t.title, .attrs = HQ_BOLD});\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"Four volumes, one degraded\",\n            TextStyle{.fg = t.muted});\n}",
+          "syntax": "cpp"
         }
       }
     },
@@ -226,6 +234,22 @@
         "zig": {
           "code": "fn badge(ui: *Container) anyerror!void {\n    try ui.row(.{ .layout = .{ .size = .{ .cells = 1 }, .gap = 1 } }, hqtui.Body.plain(badgeRow));\n}\n\nfn badgeRow(r: *Container) anyerror!void {\n    _ = try r.badge(.{ .text = \"active\" });\n    _ = try r.badge(.{ .text = \"idle\", .variant = .subtle });\n    _ = try r.badge(.{ .text = \"failed\", .variant = .outline });\n    try r.spacer(.fill);\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_badge(Surface s) {\n  const auto &t = theme(s);\n  draw_badge(s.sub(Rect{0, 0, 10, 1}), Badge{.text = \"active\", .color = t.success});\n  draw_badge(s.sub(Rect{10, 0, 10, 1}),\n             Badge{.text = \"idle\", .color = t.warning, .variant = HQ_BADGE_SUBTLE});\n  draw_badge(s.sub(Rect{20, 0, 10, 1}),\n             Badge{.text = \"failed\", .color = t.danger, .variant = HQ_BADGE_OUTLINE});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def badge(ui)\n  ui.badge('active')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_badge(UI $ui): void\n{\n    $ui->badge('active');\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_badge {\n    my ($ui) = @_;\n    $ui->badge('active');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -261,6 +285,10 @@
         "zig": {
           "code": "fn divider(ui: *Container) anyerror!void {\n    try ui.text(\"Above the line\", .{});\n    try ui.divider(.{});\n    try ui.text(\"Below it\", .{});\n    try ui.divider(.{ .label = \"status\", .alignment = .center });\n    try ui.text(\"A labelled divider titles a section without a panel\", .{});\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_divider(Surface s) {\n  draw_text(s, \"Above the line\");\n  draw_divider(s.sub(Rect{0, 1, s.rect().width, 1}));\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"Below it\");\n  draw_divider(s.sub(Rect{0, 3, s.rect().width, 1}),\n               Divider{.label = \"status\", .align = HQ_CENTER});\n}",
+          "syntax": "cpp"
         },
         "ruby": {
           "code": "def divider(ui)\n  ui.text('Above the line')\n  ui.divider\n  ui.text('Below it')\n  ui.divider('status')\n  ui.text('A labelled divider titles a section without spending a panel on it')\nend",
@@ -367,6 +395,22 @@
         "zig": {
           "code": "fn statusBar(ui: *Container) anyerror!void {\n    // Usually the last thing drawn, pinned to the bottom row.\n    try ui.statusBar(.{\n        .items = &.{\n            .{ .key = \"F1\", .label = \"Help\" },\n            .{ .key = \"F2\", .label = \"Theme\" },\n            .{ .key = \"F3\", .label = \"Filter\", .active = true },\n            .{ .key = \"^K\", .label = \"Palette\" },\n            .{ .key = \"q\", .label = \"Quit\" },\n        },\n        .right = &.{.{ .label = \"0.41ms  184 cells\" }},\n    });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_status_bar(Surface s) {\n  // Usually the last thing drawn, pinned to the bottom row.\n  draw_status_bar(s, StatusBar{.items = {{\"F1\", \"Help\"},\n                                         {\"F2\", \"Theme\"},\n                                         {\"F3\", \"Filter\", 0, true},\n                                         {\"q\", \"Quit\"}},\n                               .right = {{\"\", \"0.41ms  184 cells\"}}});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def status_bar(ui)\n  ui.statusbar([{ key: 'F1', label: 'Help' }, { key: 'q', label: 'Quit' }],\n               right: [{ label: '0.41ms' }])\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_status_bar(UI $ui): void\n{\n    $ui->statusbar([['key' => 'F1', 'label' => 'Help'], ['key' => 'q', 'label' => 'Quit']],\n        ['right' => [['label' => '0.41ms']]]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_status_bar {\n    my ($ui) = @_;\n    $ui->statusbar([{ key => 'F1', label => 'Help' }, { key => 'q', label => 'Quit' }],\n                   right => [{ label => '0.41ms' }]);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -457,6 +501,22 @@
         "zig": {
           "code": "fn list(ui: *Container) anyerror!void {\n    try ui.list(.{\n        .items = &.{\n            .{ .label = \"apps/demo\" },\n            .{ .label = \"packages/hqtui\" },\n            .{ .label = \"apps/web\" },\n            .{ .label = \"docs\" },\n        },\n        .selected = 0,\n        .bullet = \"▸\",\n        .scrollbar = true,\n    }, \"paths\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_list(Surface s) {\n  List l;\n  l.items = {{\"apps/demo\"}, {\"packages/hqtui\"}, {\"apps/web\"}, {\"docs\"}};\n  l.selected = 0;\n  l.bullet = \"▸\";\n  l.scrollbar = true;\n  draw_list(s, l);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def list(ui)\n  ui.list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], selected: 0, bullet: '▸')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_list(UI $ui): void\n{\n    $ui->list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], ['selected' => 0, 'bullet' => '▸']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_list {\n    my ($ui) = @_;\n    $ui->list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], selected => 0, bullet => '▸');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -492,6 +552,22 @@
         "zig": {
           "code": "fn tree(ui: *Container) anyerror!void {\n    try ui.tree(.{\n        .nodes = &.{\n            .{ .label = \"systemd\", .expanded = true, .children = &.{\n                .{ .label = \"bash\" },\n                .{ .label = \"bun\", .expanded = true, .children = &.{.{ .label = \"bun:worker\" }} },\n                .{ .label = \"postgres\" },\n            } },\n        },\n        .selected = 2,\n    }, \"procs\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_tree(Surface s) {\n  Tree tree;\n  TreeNode root{.label = \"systemd\"};\n  root.children.push_back(TreeNode{.label = \"bash\"});\n  TreeNode bun{.label = \"bun\"};\n  bun.children.push_back(TreeNode{.label = \"bun:worker\"});\n  root.children.push_back(bun);\n  root.children.push_back(TreeNode{.label = \"postgres\"});\n  tree.nodes.push_back(root);\n  tree.selected = 2;\n  draw_tree(s, tree);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def tree(ui)\n  ui.tree([{ label: 'systemd', children: [{ label: 'bash' }, { label: 'postgres' }] }], selected: 1)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_tree(UI $ui): void\n{\n    $ui->tree([['label' => 'systemd', 'children' => [['label' => 'bash'], ['label' => 'postgres']]]], ['selected' => 1]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_tree {\n    my ($ui) = @_;\n    $ui->tree([{ label => 'systemd', children => [{ label => 'bash' }, { label => 'postgres' }] }],\n              selected => 1);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -637,6 +713,10 @@
         "zig": {
           "code": "fn meters(ui: *Container) anyerror!void {\n    // One call for a whole bank. `columns` lays them out side by side.\n    try ui.meters(.{\n        .items = &.{\n            .{ .label = \"P0\", .value = 0.12 }, .{ .label = \"P1\", .value = 0.44 },\n            .{ .label = \"P2\", .value = 0.71 }, .{ .label = \"P3\", .value = 0.09 },\n            .{ .label = \"P4\", .value = 0.38 }, .{ .label = \"P5\", .value = 0.55 },\n            .{ .label = \"P6\", .value = 0.22 }, .{ .label = \"P7\", .value = 0.66 },\n        },\n        .columns = 2,\n        .style = .segmented,\n    });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_meters(Surface s) {\n  // One call for a whole bank. `columns` lays them out side by side.\n  Meters m;\n  for (int i = 0; i < 8; i++)\n    m.items.push_back({\"P\" + std::to_string(i), (i * 13 % 100) / 100., 0, 0, \"\"});\n  m.columns = 2;\n  m.label_width = 4;\n  m.value_width = 5;\n  m.style = HQ_BAR_SEGMENTED;\n  draw_meters(s, m);\n}",
+          "syntax": "cpp"
         }
       }
     },
@@ -672,6 +752,22 @@
         "zig": {
           "code": "fn progress(ui: *Container) anyerror!void {\n    try ui.progress(.{ .value = 37, .max = 120, .label = \"Indexing\", .show_count = true });\n    try ui.progress(.{ .value = 0.82, .label = \"Upload\" });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_progress(Surface s) {\n  draw_progress(s, Progress{.value = 37, .max = 120, .label = \"Indexing\", .show_count = true});\n  draw_progress(s.sub(Rect{0, 1, s.rect().width, 1}),\n                Progress{.value = 0.82, .label = \"Upload\"});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def progress(ui)\n  ui.progress(37, max: 120, label: 'Indexing', count: true)\n  ui.progress(0.82, label: 'Upload')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_progress(UI $ui): void\n{\n    $ui->progress(37, ['max' => 120, 'label' => 'Indexing', 'count' => true]);\n    $ui->progress(0.82, ['label' => 'Upload']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_progress {\n    my ($ui) = @_;\n    $ui->progress(37, max => 120, label => 'Indexing', count => \\1);\n    $ui->progress(0.82, label => 'Upload');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -762,6 +858,22 @@
         "zig": {
           "code": "fn sparkline(ui: *Container) anyerror!void {\n    try ui.sparkline(.{ .values = &cpu_history, .label = \"CPU \", .text = \"44%\" });\n    try ui.sparkline(.{ .values = &net_history, .label = \"Net \", .text = \"2.4 MB/s\" });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_sparkline(Surface s) {\n  draw_sparkline(s, Sparkline{.values = cpu_history(), .label = \"CPU \", .text = \"44%\"});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def sparkline(ui)\n  ui.sparkline(CPU_HISTORY, label: 'CPU ', text: '44%')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_sparkline(UI $ui): void\n{\n    $ui->sparkline(CPU_HISTORY, ['label' => 'CPU ', 'text' => '44%']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_sparkline {\n    my ($ui) = @_;\n    $ui->sparkline(\\@cpu_history, label => 'CPU ', text => '44%');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -797,6 +909,22 @@
         "zig": {
           "code": "fn histogram(ui: *Container) anyerror!void {\n    // Block columns. Cheaper than Braille and easier to read when short.\n    try ui.histogram(.{ .values = &cpu_history });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_histogram(Surface s) {\n  // Block columns. Cheaper than Braille and easier to read when short.\n  draw_columns(s, Columns{.values = cpu_history()});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def histogram(ui)\n  # Block columns. Cheaper than Braille and easier to read when short.\n  ui.columns(CPU_HISTORY)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_histogram(UI $ui): void\n{\n    // Block columns. Cheaper than Braille and easier to read when short.\n    $ui->columns(CPU_HISTORY);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_histogram {\n    my ($ui) = @_;\n    # Block columns. Cheaper than Braille and easier to read when short.\n    $ui->columns(\\@cpu_history);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -832,6 +960,22 @@
         "zig": {
           "code": "fn heatBar(ui: *Container) anyerror!void {\n    // Segmented bar colored along the theme's heat ramp, like btop's temperatures.\n    try ui.heatBar(.{ .value = 0.28 });\n    try ui.heatBar(.{ .value = 0.64 });\n    try ui.heatBar(.{ .value = 0.91 });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_heat_bar(Surface s) {\n  // Coloured along the theme's heat ramp, like btop's temperatures.\n  draw_heat_bar(s, HeatBar{.value = 0.28});\n  draw_heat_bar(s.sub(Rect{0, 1, s.rect().width, 1}), HeatBar{.value = 0.64});\n  draw_heat_bar(s.sub(Rect{0, 2, s.rect().width, 1}), HeatBar{.value = 0.91});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def heat_bar(ui)\n  ui.heatbar(0.28)\n  ui.heatbar(0.64)\n  ui.heatbar(0.91)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_heat_bar(UI $ui): void\n{\n    $ui->heatbar(0.28);\n    $ui->heatbar(0.64);\n    $ui->heatbar(0.91);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_heat_bar {\n    my ($ui) = @_;\n    $ui->heatbar(0.28);\n    $ui->heatbar(0.64);\n    $ui->heatbar(0.91);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -922,6 +1066,22 @@
         "zig": {
           "code": "fn donut(ui: *Container) anyerror!void {\n    try ui.donut(.{ .segments = &.{\n        .{ .value = 4.65, .label = \"Used\" },\n        .{ .value = 10.96, .label = \"Free\" },\n    } });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_donut(Surface s) {\n  const auto &t = theme(s);\n  Donut d;\n  d.segments = {{4.65, t.primary, \"Used\"}, {10.96, t.warning, \"Free\"}};\n  draw_donut(s, d);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def donut(ui)\n  ui.donut([{ value: 4.65, label: 'Used' }, { value: 10.96, label: 'Free' }])\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_donut(UI $ui): void\n{\n    $ui->donut([['value' => 4.65, 'label' => 'Used'], ['value' => 10.96, 'label' => 'Free']]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_donut {\n    my ($ui) = @_;\n    $ui->donut([{ value => 4.65, label => 'Used' }, { value => 10.96, label => 'Free' }]);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -957,6 +1117,22 @@
         "zig": {
           "code": "fn button(ui: *Container) anyerror!void {\n    // The id is how you ask whether it was pressed: `app.pressed(\"run\")`.\n    try ui.row(.{ .layout = .{ .size = .{ .cells = 1 }, .gap = 1 } }, hqtui.Body.plain(buttonRow));\n}\n\nfn buttonRow(r: *Container) anyerror!void {\n    try r.button(.{ .label = \"Primary\" }, \"primary\");\n    try r.button(.{ .label = \"Success\", .variant = .success }, \"ok\");\n    try r.button(.{ .label = \"Danger\", .variant = .danger }, \"stop\");\n    try r.spacer(.fill);\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_button(Surface s) {\n  draw_button(s.sub(Rect{0, 0, 11, 1}), Button{.label = \"Primary\"});\n  draw_button(s.sub(Rect{12, 0, 11, 1}), Button{.label = \"Success\", .variant = HQ_BUTTON_SUCCESS});\n  draw_button(s.sub(Rect{24, 0, 10, 1}), Button{.label = \"Danger\", .variant = HQ_BUTTON_DANGER});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def button(ui)\n  # variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n  ui.button('Primary')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_button(UI $ui): void\n{\n    // variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n    $ui->button('Primary');\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_button {\n    my ($ui) = @_;\n    # variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n    $ui->button('Primary');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -992,6 +1168,22 @@
         "zig": {
           "code": "fn checkbox(ui: *Container) anyerror!void {\n    try ui.row(.{ .layout = .{ .size = .{ .cells = 1 }, .gap = 2 } }, hqtui.Body.plain(checkboxRow));\n}\n\nfn checkboxRow(r: *Container) anyerror!void {\n    try r.checkbox(.{ .label = \"Toggle\", .checked = true, .variant = .toggle }, \"toggle\");\n    try r.checkbox(.{ .label = \"Checkbox\", .checked = false }, \"checkbox\");\n    try r.spacer(.fill);\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_checkbox(Surface s) {\n  draw_checkbox(s.sub(Rect{0, 0, 14, 1}),\n                Checkbox{.label = \"Toggle\", .checked = true, .variant = HQ_CHECKBOX_TOGGLE});\n  draw_checkbox(s.sub(Rect{16, 0, 14, 1}), Checkbox{.label = \"Checkbox\"});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def checkbox(ui)\n  ui.checkbox('Toggle', checked: true, variant: 1)\n  ui.checkbox('Checkbox', checked: false)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_checkbox(UI $ui): void\n{\n    $ui->checkbox('Toggle', ['checked' => true, 'variant' => 1]);\n    $ui->checkbox('Checkbox', ['checked' => false]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_checkbox {\n    my ($ui) = @_;\n    $ui->checkbox('Toggle', checked => \\1, variant => 1);\n    $ui->checkbox('Checkbox', checked => \\0);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -1027,6 +1219,22 @@
         "zig": {
           "code": "fn select(ui: *Container) anyerror!void {\n    try ui.select(.{\n        .value = \"Dracula\",\n        .open = true,\n        .options = &.{ \"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\" },\n        .selected_index = 1,\n    }, \"theme\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_select(Surface s) {\n  draw_select(s, Select{.value = \"Dracula\",\n                        .open = true,\n                        .options = {\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"},\n                        .selected_index = 1,\n                        .width = 20});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def select(ui)\n  ui.select('Dracula', open: true, options: %w[Dark Dracula Nord], selected: 1)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_select(UI $ui): void\n{\n    $ui->select('Dracula', ['open' => true, 'options' => ['Dark', 'Dracula', 'Nord'], 'selected' => 1]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_select {\n    my ($ui) = @_;\n    $ui->select('Dracula', open => \\1, options => ['Dark', 'Dracula', 'Nord'], selected => 1);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -1062,6 +1270,22 @@
         "zig": {
           "code": "fn textInput(ui: *Container) anyerror!void {\n    try ui.textInput(.{ .value = \"postgres\", .label = \"Search\" }, \"search\");\n    try ui.spacer(.{ .cells = 1 });\n    try ui.textInput(.{ .value = \"\", .label = \"Filter\", .placeholder = \"type to filter…\" }, \"filter\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_text_input(Surface s) {\n  draw_text_input(s, TextInput{.value = \"postgres\", .label = \"Search\"});\n  draw_text_input(s.sub(Rect{0, 2, s.rect().width, 1}),\n                  TextInput{.placeholder = \"type to filter…\", .label = \"Filter\"});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def text_input(ui)\n  ui.input('postgres', label: 'Search')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_text_input(UI $ui): void\n{\n    $ui->input('postgres', ['label' => 'Search']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_text_input {\n    my ($ui) = @_;\n    $ui->input('postgres', label => 'Search');\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -1097,6 +1321,22 @@
         "zig": {
           "code": "fn tabs(ui: *Container) anyerror!void {\n    try ui.tabs(.{\n        .tabs = &.{ \"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\" },\n        .active = 1,\n    }, \"screens\");\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_tabs(Surface s) {\n  draw_tabs(s, Tabs{.tabs = {\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"},\n                    .active = 1});\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def tabs(ui)\n  ui.tabs(['1 dashboard', '2 traffic', '3 sessions'], active: 1)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_tabs(UI $ui): void\n{\n    $ui->tabs(['1 dashboard', '2 traffic', '3 sessions'], ['active' => 1]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_tabs {\n    my ($ui) = @_;\n    $ui->tabs(['1 dashboard', '2 traffic', '3 sessions'], active => 1);\n}",
+          "syntax": "perl"
         }
       }
     },
@@ -1132,6 +1372,10 @@
         "zig": {
           "code": "fn modal(ui: *Container) anyerror!void {\n    // Overlays draw over everything already on the screen, centered.\n    ui.modal(.{\n        .title = \"Confirm Action\",\n        .message = \"Terminate process 4821 (postgres)?\",\n        .buttons = &.{\n            .{ .label = \"Yes\", .focused = true },\n            .{ .label = \"No\", .variant = .ghost },\n        },\n    });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_modal(Surface s) {\n  // Overlays draw over everything already on the screen, centred.\n  Modal modal;\n  modal.title = \"Confirm Action\";\n  modal.message = \"Terminate process 4821 (postgres)?\";\n  modal.width = 46;\n  modal.height = 9;\n  modal.buttons = {{.label = \"Yes\", .variant = HQ_BUTTON_SUCCESS, .focused = true},\n                   {.label = \"No\", .variant = HQ_BUTTON_GHOST}};\n  draw_modal(s, modal);\n}",
+          "syntax": "cpp"
         }
       }
     },
@@ -1167,6 +1411,10 @@
         "zig": {
           "code": "fn commandPalette(ui: *Container) anyerror!void {\n    ui.commandPalette(.{\n        .query = \"the\",\n        .items = &.{\n            .{ .label = \"Toggle theme\", .hint = \"F2\" },\n            .{ .label = \"Filter processes\", .hint = \"F3\" },\n            .{ .label = \"Sort by memory\", .hint = \"F6\" },\n        },\n        .selected = 0,\n    });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_command_palette(Surface s) {\n  CommandPalette palette;\n  palette.query = \"the\";\n  palette.items = {{\"Toggle theme\", \"F2\"}, {\"Filter processes\", \"F3\"}, {\"Sort by memory\", \"F6\"}};\n  draw_command_palette(s, palette);\n}",
+          "syntax": "cpp"
         }
       }
     },
@@ -1202,6 +1450,10 @@
         "zig": {
           "code": "fn tooltip(ui: *Container) anyerror!void {\n    try ui.text(\"Tooltips are overlays positioned at a cell.\", .{});\n    ui.tooltip(.{ .text = \"swap is 87% full\", .x = 6, .y = 3 });\n}",
           "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_tooltip(Surface s) {\n  draw_text(s, \"Tooltips are overlays positioned at a cell.\");\n  draw_tooltip(s, Tooltip{.text = \"swap is 87% full\", .x = 6, .y = 3});\n}",
+          "syntax": "cpp"
         }
       }
     }

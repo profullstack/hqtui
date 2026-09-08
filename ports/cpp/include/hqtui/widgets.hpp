@@ -716,6 +716,63 @@ public:
         regions_->push_back({s.rect(), id, 0});
     });
   }
+
+  // The rest of the library, in the same shape: one row unless the widget
+  // genuinely wants the space.
+  void badge(Badge o) {
+    draw([=](Surface s) { draw_badge(s, o); }, cells(1));
+  }
+  void progress(Progress o) {
+    draw([=](Surface s) { draw_progress(s, o); }, cells(1));
+  }
+  void sparkline(Sparkline o) {
+    draw([=](Surface s) { draw_sparkline(s, o); }, cells(1));
+  }
+  void heat_bar(HeatBar o) {
+    draw([=](Surface s) { draw_heat_bar(s, o); }, cells(1));
+  }
+  void columns(Columns o, Constraint size = fr()) {
+    draw([=](Surface s) { draw_columns(s, o); }, size);
+  }
+  void donut(Donut o, Constraint size = fr()) {
+    draw([=](Surface s) { draw_donut(s, o); }, size);
+  }
+  void list(List o, std::string id = {}) {
+    auto regions_ = regions;
+    draw([=](Surface s) {
+      draw_list(s, o);
+      if (regions_ && !id.empty())
+        regions_->push_back({s.rect(), id, 0});
+    });
+  }
+  void tree(Tree o, std::string id = {}) {
+    auto regions_ = regions;
+    draw([=](Surface s) {
+      draw_tree(s, o);
+      if (regions_ && !id.empty())
+        regions_->push_back({s.rect(), id, 0});
+    });
+  }
+  void button(Button o) {
+    draw([=](Surface s) { draw_button(s, o); }, cells(1));
+  }
+  void checkbox(Checkbox o) {
+    draw([=](Surface s) { draw_checkbox(s, o); }, cells(1));
+  }
+  void select(Select o) {
+    // An open dropdown needs room for its list; a closed one is one row.
+    int rows = o.open ? 1 + int(o.options.size()) : 1;
+    draw([=](Surface s) { draw_select(s, o); }, cells(rows));
+  }
+  void text_input(TextInput o) {
+    draw([=](Surface s) { draw_text_input(s, o); }, cells(1));
+  }
+  void tabs(Tabs o) {
+    draw([=](Surface s) { draw_tabs(s, o); }, cells(1));
+  }
+  void status_bar(StatusBar o) {
+    draw([=](Surface s) { draw_status_bar(s, o); }, cells(1));
+  }
 };
 } // namespace hqtui
 #endif

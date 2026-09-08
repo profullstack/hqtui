@@ -74,8 +74,11 @@ void validate(const Json &n, int depth, int &count) {
         "scene exceeds depth/node limits or node is not an object");
   auto type = n["type"].s("");
   static const std::vector<std::string> types = {
-      "row",   "col",   "panel", "text",  "spacer", "divider",
-      "meter", "graph", "gauge", "table", "keys",   "log"};
+      "row",      "col",      "panel",     "text",      "spacer",  "divider",
+      "meter",    "graph",    "gauge",     "table",     "keys",    "log",
+      "badge",    "progress", "sparkline", "heatbar",   "columns", "donut",
+      "list",     "tree",     "button",    "checkbox",  "select",  "input",
+      "tabs",     "statusbar"};
   if (std::find(types.begin(), types.end(), type) == types.end())
     throw std::runtime_error("unknown widget: " + type);
   if (!n["children"].null() &&
@@ -148,6 +151,127 @@ void node(UI &ui, const Json &n) {
           draw_table(s, t);
         },
         size(n));
+  } else if (type == "badge") {
+    Badge b;
+    b.text = n["text"].s("");
+    b.color = n["color"].null() ? 0 : c;
+    b.variant = integer(n["variant"], HQ_BADGE_FILLED, 0, 2);
+    b.align = integer(n["align"], HQ_LEFT, 0, 2);
+    ui.badge(b);
+  } else if (type == "progress") {
+    Progress p;
+    p.value = n["value"].n();
+    p.max = n["max"].null() ? 1 : n["max"].n();
+    p.label = n["label"].s("");
+    p.color = n["color"].null() ? 0 : c;
+    p.show_count = n["count"].b(false);
+    ui.progress(p);
+  } else if (type == "sparkline") {
+    Sparkline sp;
+    sp.values = demo::numbers(n["values"]);
+    sp.label = n["label"].s("");
+    sp.text = n["text"].s("");
+    sp.color = n["color"].null() ? 0 : c;
+    if (!n["min"].null())
+      sp.min = n["min"].n();
+    if (!n["max"].null())
+      sp.max = n["max"].n();
+    ui.sparkline(sp);
+  } else if (type == "heatbar") {
+    HeatBar hb;
+    hb.value = n["value"].n();
+    hb.color = n["color"].null() ? 0 : c;
+    ui.heat_bar(hb);
+  } else if (type == "columns") {
+    Columns cols;
+    cols.values = demo::numbers(n["values"]);
+    cols.color = n["color"].null() ? 0 : c;
+    if (!n["max"].null())
+      cols.max = n["max"].n();
+    ui.columns(cols, size(n));
+  } else if (type == "donut") {
+    Donut d;
+    for (auto &seg : n["segments"].array())
+      d.segments.push_back({seg["value"].n(), 0, seg["label"].s("")});
+    if (d.segments.size() > 64)
+      throw std::runtime_error("too many donut segments");
+    ui.donut(d, size(n));
+  } else if (type == "list") {
+    List l;
+    for (auto &item : n["items"].array())
+      l.items.push_back({item.s(""), 0});
+    if (l.items.size() > 10000)
+      throw std::runtime_error("list too large");
+    l.selected = integer(n["selected"], -1, -1, 10000);
+    l.offset = integer(n["offset"], 0, 0, 10000);
+    l.bullet = n["bullet"].s("");
+    l.scrollbar = n["scrollbar"].b(false);
+    ui.list(l, n["id"].s(""));
+  } else if (type == "tree") {
+    Tree tree;
+    // One level of nesting, which is what a record-shaped scene can describe:
+    // a node with its children, not an arbitrary depth.
+    for (auto &node_json : n["nodes"].array()) {
+      TreeNode parent;
+      parent.label = node_json["label"].s("");
+      for (auto &child : node_json["children"].array())
+        parent.children.push_back(TreeNode{child["label"].s("")});
+      tree.nodes.push_back(std::move(parent));
+    }
+    tree.selected = integer(n["selected"], -1, -1, 10000);
+    ui.tree(tree, n["id"].s(""));
+  } else if (type == "button") {
+    Button b;
+    b.label = n["label"].s("");
+    b.focused = n["focused"].b(false);
+    b.variant = integer(n["variant"], HQ_BUTTON_PRIMARY, 0, 4);
+    b.disabled = n["disabled"].b(false);
+    ui.button(b);
+  } else if (type == "checkbox") {
+    Checkbox cb;
+    cb.label = n["label"].s("");
+    cb.checked = n["checked"].b(false);
+    cb.focused = n["focused"].b(false);
+    cb.variant = integer(n["variant"], HQ_CHECKBOX_BOX, 0, 2);
+    ui.checkbox(cb);
+  } else if (type == "select") {
+    Select sel;
+    sel.value = n["value"].s("");
+    sel.open = n["open"].b(false);
+    for (auto &option : n["options"].array())
+      sel.options.push_back(option.s(""));
+    if (sel.options.size() > 1000)
+      throw std::runtime_error("too many options");
+    sel.selected_index = integer(n["selected"], 0, 0, 1000);
+    sel.focused = n["focused"].b(false);
+    ui.select(sel);
+  } else if (type == "input") {
+    TextInput input;
+    input.value = n["value"].s("");
+    input.placeholder = n["placeholder"].s("");
+    input.label = n["label"].s("");
+    input.focused = n["focused"].b(false);
+    input.password = n["password"].b(false);
+    ui.text_input(input);
+  } else if (type == "tabs") {
+    Tabs tabs;
+    for (auto &tab : n["tabs"].array())
+      tabs.tabs.push_back(tab.s(""));
+    if (tabs.tabs.size() > 100)
+      throw std::runtime_error("too many tabs");
+    tabs.active = integer(n["active"], 0, 0, 100);
+    tabs.variant = integer(n["variant"], HQ_TAB_FILLED, 0, 1);
+    ui.tabs(tabs);
+  } else if (type == "statusbar") {
+    StatusBar bar;
+    for (auto &item : n["items"].array())
+      bar.items.push_back({item["key"].s(""), item["label"].s(""), 0,
+                           item["active"].b(false)});
+    for (auto &item : n["right"].array())
+      bar.right.push_back({item["key"].s(""), item["label"].s(""), 0, false});
+    if (bar.items.size() + bar.right.size() > 100)
+      throw std::runtime_error("too many status items");
+    ui.status_bar(bar);
   } else if (type == "log") {
     std::vector<LogEntry> entries;
     for (auto &v : n["entries"].array())

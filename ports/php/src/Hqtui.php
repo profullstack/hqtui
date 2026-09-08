@@ -70,6 +70,20 @@ final class UI implements \JsonSerializable {
     public function log(array $entries, array $options = []): self { return $this->add('log', ['entries'=>$entries, ...$options]); }
     public function spacer(array $options = []): self { return $this->add('spacer', $options); }
     public function divider(string $text = ''): self { return $this->add('divider', ['text'=>$text]); }
+    public function badge(string $text, array $o = []): self { return $this->add('badge', ['text'=>$text, ...$o]); }
+    public function progress(float $value, array $o = []): self { return $this->add('progress', ['value'=>$value, ...$o]); }
+    public function sparkline(array $values, array $o = []): self { return $this->add('sparkline', ['values'=>$values, ...$o]); }
+    public function heatbar(float $value, array $o = []): self { return $this->add('heatbar', ['value'=>$value, ...$o]); }
+    public function columns(array $values, array $o = []): self { return $this->add('columns', ['values'=>$values, ...$o]); }
+    public function donut(array $segments, array $o = []): self { return $this->add('donut', ['segments'=>$segments, ...$o]); }
+    public function list(array $items, array $o = []): self { return $this->add('list', ['items'=>$items, ...$o]); }
+    public function tree(array $nodes, array $o = []): self { return $this->add('tree', ['nodes'=>$nodes, ...$o]); }
+    public function button(string $label, array $o = []): self { return $this->add('button', ['label'=>$label, ...$o]); }
+    public function checkbox(string $label, array $o = []): self { return $this->add('checkbox', ['label'=>$label, ...$o]); }
+    public function select(string $value, array $o = []): self { return $this->add('select', ['value'=>$value, ...$o]); }
+    public function input(string $value, array $o = []): self { return $this->add('input', ['value'=>$value, ...$o]); }
+    public function tabs(array $tabs, array $o = []): self { return $this->add('tabs', ['tabs'=>$tabs, ...$o]); }
+    public function statusbar(array $items, array $o = []): self { return $this->add('statusbar', ['items'=>$items, ...$o]); }
 }
 
 final class Scene {

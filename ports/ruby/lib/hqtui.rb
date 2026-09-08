@@ -63,6 +63,20 @@ module Hqtui
     def log(entries, **options) = add('log', entries: entries, **options)
     def spacer(**options) = add('spacer', **options)
     def divider(text = '') = add('divider', text: text)
+    def badge(text, **options) = add('badge', text: text, **options)
+    def progress(value, **options) = add('progress', value: value, **options)
+    def sparkline(values, **options) = add('sparkline', values: values, **options)
+    def heatbar(value, **options) = add('heatbar', value: value, **options)
+    def columns(values, **options) = add('columns', values: values, **options)
+    def donut(segments, **options) = add('donut', segments: segments, **options)
+    def list(items, **options) = add('list', items: items, **options)
+    def tree(nodes, **options) = add('tree', nodes: nodes, **options)
+    def button(label, **options) = add('button', label: label, **options)
+    def checkbox(label, **options) = add('checkbox', label: label, **options)
+    def select(value, **options) = add('select', value: value, **options)
+    def input(value, **options) = add('input', value: value, **options)
+    def tabs(tabs, **options) = add('tabs', tabs: tabs, **options)
+    def statusbar(items, **options) = add('statusbar', items: items, **options)
   end
   class Scene
     def self.finalizer(native, pointer) = proc { native.hqb_destroy(pointer) }

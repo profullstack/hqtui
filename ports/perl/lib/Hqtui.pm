@@ -55,6 +55,20 @@ sub keys { my ($s,$rows,%o)=@_; $s->add('keys',rows=>$rows,%o); }
 sub log { my ($s,$entries,%o)=@_; $s->add('log',entries=>$entries,%o); }
 sub spacer { my ($s,%o)=@_; $s->add('spacer',%o); }
 sub divider { my ($s,$text)=@_; $s->add('divider',text=>$text//''); }
+sub badge { my ($s,$text,%o)=@_; $s->add('badge',text=>$text,%o); }
+sub progress { my ($s,$value,%o)=@_; $s->add('progress',value=>$value,%o); }
+sub sparkline { my ($s,$values,%o)=@_; $s->add('sparkline',values=>$values,%o); }
+sub heatbar { my ($s,$value,%o)=@_; $s->add('heatbar',value=>$value,%o); }
+sub columns { my ($s,$values,%o)=@_; $s->add('columns',values=>$values,%o); }
+sub donut { my ($s,$segments,%o)=@_; $s->add('donut',segments=>$segments,%o); }
+sub list { my ($s,$items,%o)=@_; $s->add('list',items=>$items,%o); }
+sub tree { my ($s,$nodes,%o)=@_; $s->add('tree',nodes=>$nodes,%o); }
+sub button { my ($s,$label,%o)=@_; $s->add('button',label=>$label,%o); }
+sub checkbox { my ($s,$label,%o)=@_; $s->add('checkbox',label=>$label,%o); }
+sub select { my ($s,$value,%o)=@_; $s->add('select',value=>$value,%o); }
+sub input { my ($s,$value,%o)=@_; $s->add('input',value=>$value,%o); }
+sub tabs { my ($s,$tabs,%o)=@_; $s->add('tabs',tabs=>$tabs,%o); }
+sub statusbar { my ($s,$items,%o)=@_; $s->add('statusbar',items=>$items,%o); }
 
 package Hqtui::Scene;
 sub new {
