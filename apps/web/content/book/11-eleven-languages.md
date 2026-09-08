@@ -45,13 +45,13 @@ ui.meter(0.62, label: 'CPU')
 ui.tabs(['dashboard', 'traffic'], active: 0)
 ```
 
-The trade is real and worth stating plainly. C++ draws all twenty-eight, and is
-checked against the same fixtures as every other port. Ruby, PHP and Perl reach
-twenty-two, and what they are missing is not something the core lacks: it is
-what a JSON node cannot express, like a widget whose content is another
-container. If you need a modal with arbitrary contents in Ruby, you need a
-native port. The honest coverage table lives on
-[the widget gallery](/widgets).
+C++ draws all twenty-eight and is checked against the same fixtures as every
+other port, and Ruby, PHP and Perl reach the same twenty-eight through the ABI.
+There is one real limit left, and it is worth stating plainly: a scene crosses
+the ABI as JSON, so a widget's *content* has to be data. `ui.modal` takes a
+title, a message and buttons, which is what a modal is nearly always used for.
+A modal whose body is an arbitrary container of other widgets needs a native
+port. The coverage table lives on [the widget gallery](/widgets).
 
 They also need the shared library built, which the launcher does for you and
 your build will have to do for itself.
@@ -82,8 +82,9 @@ be pointed at a dashboard for the cost of a `DISPLAY` statement.
 
 Repeated records accumulate into one widget, which is how something flat
 describes something with parts: `ITEM` builds a list, `NODE` and `CHILD` a
-shallow tree, `SEGMENT` a donut, `SPARKPT` a sparkline. Twenty of the
-twenty-eight widgets are reachable that way.
+shallow tree, `SEGMENT` a donut, `SPARKPT` a sparkline, `MITEM` a bank of
+meters, `MTEXT` and `MBUTTON` a modal. All twenty-eight widgets are reachable
+that way.
 
 The same trick works for anything that can write a line of text. If you have a
 language with no port and no FFI, you have a bridge already.
@@ -92,8 +93,9 @@ language with no port and no FFI, you have a bridge already.
 
 - The language your project is in has a native port: use it, and you get
   everything.
-- It has an FFI binding: use it if twenty-two widgets cover you.
-- It has neither, but it can print: write records and use an adapter.
+- It has an FFI binding: use it, and you get the same twenty-eight.
+- It has neither, but it can print: write records and use an adapter, which
+  also reaches all twenty-eight.
 - You want the demo without installing anything:
 
 ```

@@ -41,6 +41,16 @@ WORKING-STORAGE SECTION.
 
 01  I             PIC 9(2) VALUE 0.
 
+*> Meters read a 0-1 ratio rather than the 0-100 the graph plots, so they
+*> get their own table.
+01  METER-VALUES.
+    05  FILLER PIC X(32) VALUE
+        "0.120.440.710.090.380.550.220.66".
+01  METER-TABLE REDEFINES METER-VALUES.
+    05  METER-POINT PIC X(4) OCCURS 8 TIMES.
+01  METER-LABEL   PIC X(2) VALUE SPACES.
+01  METER-INDEX   PIC 9    VALUE 0.
+
 PROCEDURE DIVISION.
 
 MAIN-PARAGRAPH.
@@ -64,6 +74,14 @@ MAIN-PARAGRAPH.
     PERFORM INPUT-WIDGET
     PERFORM TABS-WIDGET
     PERFORM STATUSBAR-WIDGET
+    PERFORM LABEL-WIDGET
+    PERFORM HEADING-WIDGET
+    PERFORM METERS-WIDGET
+    PERFORM HISTOGRAM-WIDGET
+    PERFORM SELECT-WIDGET
+    PERFORM MODAL-WIDGET
+    PERFORM PALETTE-WIDGET
+    PERFORM TOOLTIP-WIDGET
     STOP RUN.
 
 *> Emits the current record and clears it, so a paragraph only sets the
@@ -455,5 +473,191 @@ STATUSBAR-WIDGET.
     MOVE "STATUS" TO SR-VERB
     MOVE "q" TO SR-KEY
     MOVE "Quit" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget label
+LABEL-WIDGET.
+    MOVE "label" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> LABEL is TEXT in the theme's muted colour: captions, and the line
+    *> under a number that says what the number is.
+    MOVE "LABEL" TO SR-VERB
+    MOVE "cpu - 8 cores - 3.4 GHz" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "TEXT" TO SR-VERB
+    MOVE "42.1%" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "LABEL" TO SR-VERB
+    MOVE "15 minute average" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget heading
+HEADING-WIDGET.
+    MOVE "heading" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "HEADING" TO SR-VERB
+    MOVE "Storage" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "LABEL" TO SR-VERB
+    MOVE "Four volumes, one degraded" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "HEADING" TO SR-VERB
+    MOVE "Network" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget meters
+METERS-WIDGET.
+    MOVE "meters" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> METERS sets the grid width; each MITEM is one bar in it.
+    MOVE "METERS" TO SR-VERB
+    MOVE "2" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 8
+        COMPUTE METER-INDEX = I - 1
+        MOVE SPACES TO METER-LABEL
+        STRING "P" METER-INDEX INTO METER-LABEL
+        MOVE "MITEM" TO SR-VERB
+        MOVE METER-LABEL TO SR-KEY
+        MOVE METER-POINT(I) TO SR-NUM
+        PERFORM EMIT-RECORD
+    END-PERFORM.
+*> @end
+
+*> @widget histogram
+HISTOGRAM-WIDGET.
+    MOVE "histogram" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> Block columns rather than Braille: one record per column, from the
+    *> same table the graph reads.
+    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 20
+        MOVE "HISTBAR" TO SR-VERB
+        MOVE CPU-POINT(I) TO SR-NUM
+        PERFORM EMIT-RECORD
+    END-PERFORM.
+*> @end
+
+*> @widget select
+SELECT-WIDGET.
+    MOVE "select" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> SR-KEY is OPEN or CLOSED, SR-NUM the width of the box.
+    MOVE "DROPDOWN" TO SR-VERB
+    MOVE "OPEN" TO SR-KEY
+    MOVE "Dracula" TO SR-TEXT
+    MOVE "20" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "OPTION" TO SR-VERB
+    MOVE "Dark" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "OPTION" TO SR-VERB
+    MOVE "Dracula" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "OPTION" TO SR-VERB
+    MOVE "Nord" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "OPTION" TO SR-VERB
+    MOVE "Tokyo Night" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    *> SELECT names the highlighted row, as it does for a list or a table.
+    MOVE "SELECT" TO SR-VERB
+    MOVE "1" TO SR-NUM
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget modal
+MODAL-WIDGET.
+    MOVE "modal" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> An overlay draws over everything the scene already put down, so it is
+    *> declared last no matter where it appears.
+    MOVE "MODAL" TO SR-VERB
+    MOVE "Confirm Action" TO SR-KEY
+    MOVE "46" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    *> One MTEXT per line, so the message is not capped at 44 columns.
+    MOVE "MTEXT" TO SR-VERB
+    MOVE "Terminate process 4821 (postgres)?" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "MTEXT" TO SR-VERB
+    PERFORM EMIT-RECORD
+
+    MOVE "MTEXT" TO SR-VERB
+    MOVE "This cannot be undone." TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    *> SR-NUM is 1 for the focused button: a record layout has no booleans.
+    MOVE "MBUTTON" TO SR-VERB
+    MOVE "SUCCESS" TO SR-KEY
+    MOVE "Yes" TO SR-TEXT
+    MOVE "1" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "MBUTTON" TO SR-VERB
+    MOVE "GHOST" TO SR-KEY
+    MOVE "No" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget commandPalette
+PALETTE-WIDGET.
+    MOVE "commandPalette" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "PALETTE" TO SR-VERB
+    MOVE "the" TO SR-KEY
+    MOVE "0" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "PITEM" TO SR-VERB
+    MOVE "F2" TO SR-KEY
+    MOVE "Toggle theme" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "PITEM" TO SR-VERB
+    MOVE "F3" TO SR-KEY
+    MOVE "Filter processes" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "PITEM" TO SR-VERB
+    MOVE "F6" TO SR-KEY
+    MOVE "Sort by memory" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget tooltip
+TOOLTIP-WIDGET.
+    MOVE "tooltip" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "TEXT" TO SR-VERB
+    MOVE "Tooltips are overlays positioned at a cell." TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    *> The anchor is a cell, so it travels as "column|row".
+    MOVE "TOOLTIP" TO SR-VERB
+    MOVE "6|3" TO SR-KEY
+    MOVE "swap is 87% full" TO SR-TEXT
     PERFORM EMIT-RECORD.
 *> @end

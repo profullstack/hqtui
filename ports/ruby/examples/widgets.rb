@@ -10,8 +10,8 @@
 # something that runs.
 #
 # Ruby, PHP and Perl all describe a scene as data and hand it to the same
-# native core, so they reach the eight widgets that core draws rather than the
-# twenty-eight the native ports do. The list is honest about that.
+# native core. That core draws all twenty-eight widgets, so this list is the
+# same list the native ports render, not a subset of it.
 #
 # Needs the shared library: build ports/cpp with -DHQTUI_BUILD_BINDINGS=ON, or
 # set HQTUI_NATIVE_LIB to one you already built.
@@ -190,6 +190,74 @@ def status_bar(ui)
 end
 # @end
 
+# @widget label
+def label(ui)
+  # `label` is `text` in the theme's muted color: secondary copy, captions,
+  # the line under a number that says what the number is.
+  ui.label('cpu · 8 cores · 3.4 GHz')
+  ui.text('42.1%', color: 'success', attrs: 1)
+  ui.label('15 minute average')
+end
+# @end
+
+# @widget heading
+def heading(ui)
+  # `heading` is `text` in the theme's title color, bold.
+  ui.heading('Storage')
+  ui.label('Four volumes, one degraded')
+  ui.spacer(size: 1)
+  ui.heading('Network', color: 'accent')
+end
+# @end
+
+# @widget meters
+def meters(ui)
+  # One call for a whole bank. `columns` lays them out side by side.
+  ui.meters(
+    [0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66].each_with_index.map { |value, i| { label: "P#{i}", value: value } },
+    columns: 2, labelWidth: 4, valueWidth: 5, style: 1
+  )
+end
+# @end
+
+# @widget modal
+def modal(ui)
+  # Overlays draw over everything already on the screen, centered.
+  # variant is 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.
+  ui.modal(
+    title: 'Confirm Action',
+    width: 46,
+    height: 9,
+    message: "Terminate process 4821 (postgres)?\n\nThis cannot be undone.",
+    buttons: [
+      { label: 'Yes', variant: 1, focused: true },
+      { label: 'No', variant: 4 }
+    ]
+  )
+end
+# @end
+
+# @widget commandPalette
+def command_palette(ui)
+  ui.command_palette(
+    query: 'the',
+    items: [
+      { label: 'Toggle theme', hint: 'F2' },
+      { label: 'Filter processes', hint: 'F3' },
+      { label: 'Sort by memory', hint: 'F6' }
+    ],
+    selected: 0
+  )
+end
+# @end
+
+# @widget tooltip
+def tooltip(ui)
+  ui.text('Tooltips are overlays positioned at a cell, for hover and hints.')
+  ui.tooltip('swap is 87% full', x: 6, y: 3)
+end
+# @end
+
 EXAMPLES = {
   'text' => method(:text),
   'divider' => method(:divider),
@@ -212,7 +280,13 @@ EXAMPLES = {
   'select' => method(:select),
   'textInput' => method(:text_input),
   'tabs' => method(:tabs),
-  'statusBar' => method(:status_bar)
+  'statusBar' => method(:status_bar),
+  'label' => method(:label),
+  'heading' => method(:heading),
+  'meters' => method(:meters),
+  'modal' => method(:modal),
+  'commandPalette' => method(:command_palette),
+  'tooltip' => method(:tooltip)
 }.freeze
 
 # Renders each widget on its own small screen and prints the lot.

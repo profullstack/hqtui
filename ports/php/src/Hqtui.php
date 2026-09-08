@@ -84,6 +84,13 @@ final class UI implements \JsonSerializable {
     public function input(string $value, array $o = []): self { return $this->add('input', ['value'=>$value, ...$o]); }
     public function tabs(array $tabs, array $o = []): self { return $this->add('tabs', ['tabs'=>$tabs, ...$o]); }
     public function statusbar(array $items, array $o = []): self { return $this->add('statusbar', ['items'=>$items, ...$o]); }
+    public function label(string $text, array $o = []): self { return $this->add('label', ['text'=>$text, ...$o]); }
+    public function heading(string $text, array $o = []): self { return $this->add('heading', ['text'=>$text, ...$o]); }
+    public function meters(array $items, array $o = []): self { return $this->add('meters', ['items'=>$items, ...$o]); }
+    // Overlays take the whole screen, so they carry no size and are drawn last.
+    public function modal(array $o = []): self { return $this->add('modal', $o); }
+    public function commandPalette(array $o = []): self { return $this->add('commandpalette', $o); }
+    public function tooltip(string $text, int $x, int $y, array $o = []): self { return $this->add('tooltip', ['text'=>$text, 'x'=>$x, 'y'=>$y, ...$o]); }
 }
 
 final class Scene {

@@ -77,6 +77,13 @@ module Hqtui
     def input(value, **options) = add('input', value: value, **options)
     def tabs(tabs, **options) = add('tabs', tabs: tabs, **options)
     def statusbar(items, **options) = add('statusbar', items: items, **options)
+    def label(text, **options) = add('label', text: text, **options)
+    def heading(text, **options) = add('heading', text: text, **options)
+    def meters(items, **options) = add('meters', items: items, **options)
+    # Overlays take the whole screen, so they carry no size and are drawn last.
+    def modal(**options) = add('modal', **options)
+    def command_palette(**options) = add('commandpalette', **options)
+    def tooltip(text, x:, y:, **options) = add('tooltip', text: text, x: x, y: y, **options)
   end
   class Scene
     def self.finalizer(native, pointer) = proc { native.hqb_destroy(pointer) }

@@ -11,9 +11,11 @@
  *    region of a file that compiles.
  *
  * A language that has no marked region for a widget is reported as not having
- * it. That is the honest answer for C++, Ruby, PHP and Perl, which reach the
- * library through a narrower native core, and for COBOL, which does not link
- * against it at all: it writes 80-column records that an adapter renders.
+ * it. Every language currently marks every widget, including the three that
+ * reach the library through a C ABI and COBOL, which does not link against it
+ * at all: it writes 80-column records that an adapter renders. A gap here is
+ * therefore a missing marker, and the site says so rather than inventing a
+ * reason for it.
  *
  * Run: bun examples/widgets/build-catalog.ts
  */

@@ -165,6 +165,8 @@
   border-radius: 0.25rem;
   padding: 0.1em 0.35em;
 }
+.post-body .code-block { position: relative; margin-top: 1.25rem; }
+.post-body .code-block pre { margin-top: 0; padding-right: 2.75rem; }
 .post-body pre {
   overflow-x: auto;
   border: 1px solid rgb(255 255 255 / 0.1);

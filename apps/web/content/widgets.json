@@ -160,6 +160,22 @@
         "cpp": {
           "code": "void widget_label(Surface s) {\n  // Muted secondary copy: captions, and the line under a number that says what\n  // the number is.\n  const auto &t = theme(s);\n  {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    {\n    TextStyle text_style;\n    text_style.attrs = HQ_BOLD;\n    {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    draw_text(s, \"cpu · 8 cores · 3.4 GHz\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"42.1%\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"15 minute average\",\n            text_style);\n  }\n}",
           "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def label(ui)\n  # `label` is `text` in the theme's muted color: secondary copy, captions,\n  # the line under a number that says what the number is.\n  ui.label('cpu · 8 cores · 3.4 GHz')\n  ui.text('42.1%', color: 'success', attrs: 1)\n  ui.label('15 minute average')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_label(UI $ui): void\n{\n    // `label` is `text` in the theme's muted color: secondary copy, captions,\n    // the line under a number that says what the number is.\n    $ui->label('cpu · 8 cores · 3.4 GHz');\n    $ui->text('42.1%', ['color' => 'success', 'attrs' => 1]);\n    $ui->label('15 minute average');\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_label {\n    my ($ui) = @_;\n    # `label` is `text` in the theme's muted color: secondary copy, captions,\n    # the line under a number that says what the number is.\n    $ui->label('cpu · 8 cores · 3.4 GHz');\n    $ui->text('42.1%', color => 'success', attrs => 1);\n    $ui->label('15 minute average');\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "LABEL-WIDGET.\n    MOVE \"label\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> LABEL is TEXT in the theme's muted colour: captions, and the line\n    *> under a number that says what the number is.\n    MOVE \"LABEL\" TO SR-VERB\n    MOVE \"cpu - 8 cores - 3.4 GHz\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"42.1%\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LABEL\" TO SR-VERB\n    MOVE \"15 minute average\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -199,6 +215,22 @@
         "cpp": {
           "code": "void widget_heading(Surface s) {\n  const auto &t = theme(s);\n  {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    {\n    TextStyle text_style;\n    text_style.fg = t.title;\n    text_style.attrs = HQ_BOLD;\n    draw_text(s, \"Storage\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"Four volumes, one degraded\",\n            text_style);\n  }\n}",
           "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def heading(ui)\n  # `heading` is `text` in the theme's title color, bold.\n  ui.heading('Storage')\n  ui.label('Four volumes, one degraded')\n  ui.spacer(size: 1)\n  ui.heading('Network', color: 'accent')\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_heading(UI $ui): void\n{\n    // `heading` is `text` in the theme's title color, bold.\n    $ui->heading('Storage');\n    $ui->label('Four volumes, one degraded');\n    $ui->spacer(['size' => 1]);\n    $ui->heading('Network', ['color' => 'accent']);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_heading {\n    my ($ui) = @_;\n    # `heading` is `text` in the theme's title color, bold.\n    $ui->heading('Storage');\n    $ui->label('Four volumes, one degraded');\n    $ui->spacer(size => 1);\n    $ui->heading('Network', color => 'accent');\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "HEADING-WIDGET.\n    MOVE \"heading\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"HEADING\" TO SR-VERB\n    MOVE \"Storage\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"LABEL\" TO SR-VERB\n    MOVE \"Four volumes, one degraded\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"HEADING\" TO SR-VERB\n    MOVE \"Network\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -733,6 +765,22 @@
         "cpp": {
           "code": "void widget_meters(Surface s) {\n  // One call for a whole bank. `columns` lays them out side by side.\n  Meters m;\n  for (int i = 0; i < 8; i++)\n    m.items.push_back({\"P\" + std::to_string(i), (i * 13 % 100) / 100., 0, 0, \"\"});\n  m.columns = 2;\n  m.label_width = 4;\n  m.value_width = 5;\n  m.style = HQ_BAR_SEGMENTED;\n  draw_meters(s, m);\n}",
           "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def meters(ui)\n  # One call for a whole bank. `columns` lays them out side by side.\n  ui.meters(\n    [0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66].each_with_index.map { |value, i| { label: \"P#{i}\", value: value } },\n    columns: 2, labelWidth: 4, valueWidth: 5, style: 1\n  )\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_meters(UI $ui): void\n{\n    // One call for a whole bank. `columns` lays them out side by side.\n    $items = [];\n    foreach ([0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66] as $i => $value) {\n        $items[] = ['label' => \"P{$i}\", 'value' => $value];\n    }\n    $ui->meters($items, ['columns' => 2, 'labelWidth' => 4, 'valueWidth' => 5, 'style' => 1]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_meters {\n    my ($ui) = @_;\n    # One call for a whole bank. `columns` lays them out side by side.\n    my @values = (0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66);\n    my @items = map { { label => \"P$_\", value => $values[$_] } } 0 .. $#values;\n    $ui->meters(\\@items, columns => 2, labelWidth => 4, valueWidth => 5, style => 1);\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "METERS-WIDGET.\n    MOVE \"meters\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> METERS sets the grid width; each MITEM is one bar in it.\n    MOVE \"METERS\" TO SR-VERB\n    MOVE \"2\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 8\n        COMPUTE METER-INDEX = I - 1\n        MOVE SPACES TO METER-LABEL\n        STRING \"P\" METER-INDEX INTO METER-LABEL\n        MOVE \"MITEM\" TO SR-VERB\n        MOVE METER-LABEL TO SR-KEY\n        MOVE METER-POINT(I) TO SR-NUM\n        PERFORM EMIT-RECORD\n    END-PERFORM.",
+          "syntax": "cobol"
         }
       }
     },
@@ -949,6 +997,10 @@
         "perl": {
           "code": "sub widget_histogram {\n    my ($ui) = @_;\n    # Block columns. Cheaper than Braille and easier to read when short.\n    $ui->columns(\\@cpu_history);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "HISTOGRAM-WIDGET.\n    MOVE \"histogram\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> Block columns rather than Braille: one record per column, from the\n    *> same table the graph reads.\n    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 20\n        MOVE \"HISTBAR\" TO SR-VERB\n        MOVE CPU-POINT(I) TO SR-NUM\n        PERFORM EMIT-RECORD\n    END-PERFORM.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1275,6 +1327,10 @@
         "perl": {
           "code": "sub widget_select {\n    my ($ui) = @_;\n    $ui->select('Dracula', open => \\1, options => ['Dark', 'Dracula', 'Nord'], selected => 1);\n}",
           "syntax": "perl"
+        },
+        "cobol": {
+          "code": "SELECT-WIDGET.\n    MOVE \"select\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> SR-KEY is OPEN or CLOSED, SR-NUM the width of the box.\n    MOVE \"DROPDOWN\" TO SR-VERB\n    MOVE \"OPEN\" TO SR-KEY\n    MOVE \"Dracula\" TO SR-TEXT\n    MOVE \"20\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"OPTION\" TO SR-VERB\n    MOVE \"Dark\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"OPTION\" TO SR-VERB\n    MOVE \"Dracula\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"OPTION\" TO SR-VERB\n    MOVE \"Nord\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"OPTION\" TO SR-VERB\n    MOVE \"Tokyo Night\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    *> SELECT names the highlighted row, as it does for a list or a table.\n    MOVE \"SELECT\" TO SR-VERB\n    MOVE \"1\" TO SR-NUM\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1424,6 +1480,22 @@
         "cpp": {
           "code": "void widget_modal(Surface s) {\n  // Overlays draw over everything already on the screen, centred.\n  Modal modal;\n  modal.title = \"Confirm Action\";\n  modal.message = \"Terminate process 4821 (postgres)?\";\n  modal.width = 46;\n  modal.height = 9;\n  ModalButton yes;\n  yes.label = \"Yes\";\n  yes.variant = HQ_BUTTON_SUCCESS;\n  yes.focused = true;\n  ModalButton no;\n  no.label = \"No\";\n  no.variant = HQ_BUTTON_GHOST;\n  modal.buttons = {yes, no};\n  draw_modal(s, modal);\n}",
           "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def modal(ui)\n  # Overlays draw over everything already on the screen, centered.\n  # variant is 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n  ui.modal(\n    title: 'Confirm Action',\n    width: 46,\n    height: 9,\n    message: \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n    buttons: [\n      { label: 'Yes', variant: 1, focused: true },\n      { label: 'No', variant: 4 }\n    ]\n  )\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_modal(UI $ui): void\n{\n    // Overlays draw over everything already on the screen, centered.\n    // variant is 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n    $ui->modal([\n        'title' => 'Confirm Action',\n        'width' => 46,\n        'height' => 9,\n        'message' => \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n        'buttons' => [\n            ['label' => 'Yes', 'variant' => 1, 'focused' => true],\n            ['label' => 'No', 'variant' => 4],\n        ],\n    ]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_modal {\n    my ($ui) = @_;\n    # Overlays draw over everything already on the screen, centered.\n    # variant is 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n    $ui->modal(\n        title   => 'Confirm Action',\n        width   => 46,\n        height  => 9,\n        message => \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n        buttons => [\n            { label => 'Yes', variant => 1, focused => \\1 },\n            { label => 'No',  variant => 4 },\n        ],\n    );\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "MODAL-WIDGET.\n    MOVE \"modal\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> An overlay draws over everything the scene already put down, so it is\n    *> declared last no matter where it appears.\n    MOVE \"MODAL\" TO SR-VERB\n    MOVE \"Confirm Action\" TO SR-KEY\n    MOVE \"46\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    *> One MTEXT per line, so the message is not capped at 44 columns.\n    MOVE \"MTEXT\" TO SR-VERB\n    MOVE \"Terminate process 4821 (postgres)?\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"MTEXT\" TO SR-VERB\n    PERFORM EMIT-RECORD\n\n    MOVE \"MTEXT\" TO SR-VERB\n    MOVE \"This cannot be undone.\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    *> SR-NUM is 1 for the focused button: a record layout has no booleans.\n    MOVE \"MBUTTON\" TO SR-VERB\n    MOVE \"SUCCESS\" TO SR-KEY\n    MOVE \"Yes\" TO SR-TEXT\n    MOVE \"1\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"MBUTTON\" TO SR-VERB\n    MOVE \"GHOST\" TO SR-KEY\n    MOVE \"No\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1463,6 +1535,22 @@
         "cpp": {
           "code": "void widget_command_palette(Surface s) {\n  CommandPalette palette;\n  palette.query = \"the\";\n  palette.items = {{\"Toggle theme\", \"F2\"}, {\"Filter processes\", \"F3\"}, {\"Sort by memory\", \"F6\"}};\n  draw_command_palette(s, palette);\n}",
           "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def command_palette(ui)\n  ui.command_palette(\n    query: 'the',\n    items: [\n      { label: 'Toggle theme', hint: 'F2' },\n      { label: 'Filter processes', hint: 'F3' },\n      { label: 'Sort by memory', hint: 'F6' }\n    ],\n    selected: 0\n  )\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_command_palette(UI $ui): void\n{\n    $ui->commandPalette([\n        'query' => 'the',\n        'items' => [\n            ['label' => 'Toggle theme', 'hint' => 'F2'],\n            ['label' => 'Filter processes', 'hint' => 'F3'],\n            ['label' => 'Sort by memory', 'hint' => 'F6'],\n        ],\n        'selected' => 0,\n    ]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_command_palette {\n    my ($ui) = @_;\n    $ui->command_palette(\n        query => 'the',\n        items => [\n            { label => 'Toggle theme',     hint => 'F2' },\n            { label => 'Filter processes', hint => 'F3' },\n            { label => 'Sort by memory',   hint => 'F6' },\n        ],\n        selected => 0,\n    );\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "PALETTE-WIDGET.\n    MOVE \"commandPalette\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"PALETTE\" TO SR-VERB\n    MOVE \"the\" TO SR-KEY\n    MOVE \"0\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"PITEM\" TO SR-VERB\n    MOVE \"F2\" TO SR-KEY\n    MOVE \"Toggle theme\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"PITEM\" TO SR-VERB\n    MOVE \"F3\" TO SR-KEY\n    MOVE \"Filter processes\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"PITEM\" TO SR-VERB\n    MOVE \"F6\" TO SR-KEY\n    MOVE \"Sort by memory\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     },
@@ -1502,6 +1590,22 @@
         "cpp": {
           "code": "void widget_tooltip(Surface s) {\n  draw_text(s, \"Tooltips are overlays positioned at a cell.\");\n  {\n    Tooltip tooltip;\n    tooltip.text = \"swap is 87% full\";\n    tooltip.x = 6;\n    tooltip.y = 3;\n    draw_tooltip(s, tooltip);\n  }\n}",
           "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def tooltip(ui)\n  ui.text('Tooltips are overlays positioned at a cell, for hover and hints.')\n  ui.tooltip('swap is 87% full', x: 6, y: 3)\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_tooltip(UI $ui): void\n{\n    $ui->text('Tooltips are overlays positioned at a cell, for hover and hints.');\n    $ui->tooltip('swap is 87% full', 6, 3);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_tooltip {\n    my ($ui) = @_;\n    $ui->text('Tooltips are overlays positioned at a cell, for hover and hints.');\n    $ui->tooltip('swap is 87% full', 6, 3);\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "TOOLTIP-WIDGET.\n    MOVE \"tooltip\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    MOVE \"TEXT\" TO SR-VERB\n    MOVE \"Tooltips are overlays positioned at a cell.\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    *> The anchor is a cell, so it travels as \"column|row\".\n    MOVE \"TOOLTIP\" TO SR-VERB\n    MOVE \"6|3\" TO SR-KEY\n    MOVE \"swap is 87% full\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
         }
       }
     }

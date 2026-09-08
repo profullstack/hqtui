@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { recordView } from "@/lib/db";
 import { formatDate, postBySlug, renderMarkdown } from "@/lib/blog";
+import { ProseBody } from "@/components/site/prose-body";
 
 export const dynamic = "force-dynamic";
 
@@ -54,9 +55,7 @@ export default async function BlogPost({ params }: Params) {
             <h1 className="mt-2 text-4xl font-bold tracking-tight">{post.title}</h1>
             <p className="mt-3 text-sm text-white/50">{post.author}</p>
           </header>
-          {/* The body is rendered by lib/blog.ts from files in this repository,
-              never from user input, and every text node in it is escaped there. */}
-          <div className="post-body mt-8" dangerouslySetInnerHTML={{ __html: renderMarkdown(post.body) }} />
+          <ProseBody className="post-body mt-8" html={renderMarkdown(post.body)} />
         </article>
         <p className="mt-12 border-t border-white/10 pt-6 text-sm text-white/50">
           Comments live on{" "}

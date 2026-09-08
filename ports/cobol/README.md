@@ -52,10 +52,31 @@ scene until the next `WIDGET`.
 | `METER`    | label            |                                 | 0-1 ratio |
 | `GRAPHPT`  |                  |                                 | one point |
 | `GAUGE`    |                  | label                           | 0-1 ratio |
+| `LABEL`    |                  | the line, in the muted colour   |           |
+| `HEADING`  |                  | the line, in the title colour   |           |
+| `HISTBAR`  |                  |                                 | one column |
+| `METERS`   |                  |                                 | grid columns |
+| `MITEM`    | label            |                                 | 0-1 ratio |
+| `DROPDOWN` | `OPEN`/`CLOSED`  | the current value               | box width |
+| `OPTION`   |                  | one choice                      |           |
+| `MODAL`    | title            |                                 | box width |
+| `MTEXT`    |                  | one line of the message         |           |
+| `MBUTTON`  | variant          | label                           | 1 if focused |
+| `PALETTE`  | query            |                                 | selected row |
+| `PITEM`    | hint             | label                           |           |
+| `TOOLTIP`  | anchor `col\|row` | the text                       |           |
 
 An unknown verb is an error rather than a silently skipped line, because a
 batch job that quietly drops a record is how you end up trusting a wrong
 screen.
+
+`MODAL`, `PALETTE` and `TOOLTIP` are overlays: they draw over everything the
+scene already put down, whatever order the records arrive in. `MBUTTON` uses
+`1` for the focused button and `MITEM` a `0-1` ratio, because a fixed-width
+record has no booleans and no floats — only text you agree how to read.
+
+All twenty-eight widgets are reachable this way. Nothing here is a subset of
+the library; it is the whole of it, described by a record.
 
 ## Why this is not a toy
 

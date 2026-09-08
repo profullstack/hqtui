@@ -98,6 +98,7 @@ export function SiteFooter({ views }: { views?: number }) {
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui">GitHub</a>
           <a className="hover:text-white" href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a>
           <Link className="hover:text-white" href="/docs">Docs</Link>
+          <Link className="hover:text-white" href="/book">Cookbook</Link>
           <Link className="hover:text-white" href="/blog">Blog</Link>
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui/blob/main/docs/PRD.md">PRD</a>
         </div>

@@ -69,6 +69,13 @@ sub select { my ($s,$value,%o)=@_; $s->add('select',value=>$value,%o); }
 sub input { my ($s,$value,%o)=@_; $s->add('input',value=>$value,%o); }
 sub tabs { my ($s,$tabs,%o)=@_; $s->add('tabs',tabs=>$tabs,%o); }
 sub statusbar { my ($s,$items,%o)=@_; $s->add('statusbar',items=>$items,%o); }
+sub label { my ($s,$text,%o)=@_; $s->add('label',text=>$text,%o); }
+sub heading { my ($s,$text,%o)=@_; $s->add('heading',text=>$text,%o); }
+sub meters { my ($s,$items,%o)=@_; $s->add('meters',items=>$items,%o); }
+# Overlays take the whole screen, so they carry no size and are drawn last.
+sub modal { my ($s,%o)=@_; $s->add('modal',%o); }
+sub command_palette { my ($s,%o)=@_; $s->add('commandpalette',%o); }
+sub tooltip { my ($s,$text,$x,$y,%o)=@_; $s->add('tooltip',text=>$text,x=>$x,y=>$y,%o); }
 
 package Hqtui::Scene;
 sub new {
