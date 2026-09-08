@@ -1,5 +1,23 @@
 use super::*;
+use hqtui::testing::render_collapsed_to_screen;
 use serde_json::json;
+
+/// One screen by name, so both render helpers can share the dispatch.
+fn draw_reference_screen<'a>(ui: &mut Container<'a>, screen: &str, s: &'a State) {
+    match screen {
+        "dashboard" => dashboard::render(ui, s),
+        "graphics" => showcase::graphics(ui, s),
+        "themes" => showcase::themes(ui, s),
+        "input" => showcase::input(ui, s),
+        "stress" => showcase::stress(ui, s),
+        "traffic" => telemetry::traffic(ui, s),
+        "sessions" => telemetry::sessions(ui, s),
+        "network" => telemetry::network(ui, s),
+        "services" => telemetry::services(ui, s),
+        "components" => components::render(ui, s),
+        _ => panic!("unknown reference screen"),
+    }
+}
 
 #[test]
 fn screens_match_typescript_cells() {
@@ -13,20 +31,16 @@ fn screens_match_typescript_cells() {
         let mut s = State::new(false, 1337);
         s.sample = model::sample(false);
         s.theme = THEMES.iter().position(|v| *v == theme).unwrap();
+        s.collapse = case["collapsed"].as_bool().unwrap_or(false);
         let screen = case["screen"].as_str().unwrap();
-        let f = render_to_screen(w, h, theme, |ui| match screen {
-            "dashboard" => dashboard::render(ui, &s),
-            "graphics" => showcase::graphics(ui, &s),
-            "themes" => showcase::themes(ui, &s),
-            "input" => showcase::input(ui, &s),
-            "stress" => showcase::stress(ui, &s),
-            "traffic" => telemetry::traffic(ui, &s),
-            "sessions" => telemetry::sessions(ui, &s),
-            "network" => telemetry::network(ui, &s),
-            "services" => telemetry::services(ui, &s),
-            "components" => components::render(ui, &s),
-            _ => panic!("unknown reference screen"),
-        });
+        // Two calls rather than one on a stored function: each render helper
+        // infers its own closure lifetime, and binding either to a variable
+        // makes the signature not general enough.
+        let f = if s.collapse {
+            render_collapsed_to_screen(w, h, theme, |ui| draw_reference_screen(ui, screen, &s))
+        } else {
+            render_to_screen(w, h, theme, |ui| draw_reference_screen(ui, screen, &s))
+        };
         let mut mismatch = Vec::new();
         for y in 0..h {
             let mut hash = 2166136261u32;

@@ -9,9 +9,10 @@ use hqtui::{
 };
 
 pub fn graphics<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     let time = n(&s.sample["time"]);
     ui.row(Row::new().gap(1), move |r| {
-        r.column(Column::new().gap(1), move |left| {
+        r.column(Column::new().gap(gap), move |left| {
             for (title, mode) in [
                 ("Braille (2×4 pixels per cell)", FillMode::Braille),
                 ("Block elements", FillMode::Block),
@@ -35,7 +36,7 @@ pub fn graphics<'a>(ui: &mut Container<'a>, s: &'a State) {
                 });
             }
         });
-        r.column(Column::new().gap(1), move |right| {
+        r.column(Column::new().gap(gap), move |right| {
             right.panel(Panel::new().title("Multi-series"), move |p| {
                 let t = p.theme();
                 let mut o = GraphOptions::series(vec![
@@ -148,7 +149,8 @@ pub fn themes<'a>(ui: &mut Container<'a>, s: &'a State) {
     );
 }
 pub fn input<'a>(ui: &mut Container<'a>, s: &'a State) {
-    ui.row(Row::new().gap(1), move |r| {
+    let gap = s.panel_gap();
+    ui.row(Row::new().gap(gap), move |r| {
         r.panel(Panel::new().title("Last Events"), move |p| {
             kv(
                 p,
@@ -229,7 +231,8 @@ pub fn input<'a>(ui: &mut Container<'a>, s: &'a State) {
     });
 }
 pub fn stress<'a>(ui: &mut Container<'a>, s: &'a State) {
-    ui.row(Row::new().size(3).gap(1), move |r| {
+    let gap = s.panel_gap();
+    ui.row(Row::new().size(3).gap(gap), move |r| {
         for (title, value, color) in [
             (
                 "Render",

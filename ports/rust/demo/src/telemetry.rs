@@ -177,6 +177,7 @@ fn status_color(t: &hqtui::theme::Theme, class: &str) -> Color {
     }
 }
 pub fn services<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     let d = &s.sample["telemetry"];
     ui.row(Row::new().gap(1), move |r| {
         let failed = array(&d["services"])
@@ -223,7 +224,7 @@ pub fn services<'a>(ui: &mut Container<'a>, s: &'a State) {
                 true,
             );
         });
-        r.column(Column::new().size("0.85fr").gap(1), move |c| {
+        r.column(Column::new().size("0.85fr").gap(gap), move |c| {
             c.panel(panel("Kernel", c.theme().accent).size(11), move |p| {
                 let t = p.theme().clone();
                 let k = &d["kernel"];
@@ -387,13 +388,14 @@ pub fn services<'a>(ui: &mut Container<'a>, s: &'a State) {
     );
 }
 pub fn traffic<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     if s.real {
         ui.label("Protocol/direction: port-based estimates; HTTP rate: estimated from log growth");
     }
     let d = &s.sample["telemetry"];
     let net = &d["net"];
     let http = &d["http"];
-    ui.row(Row::new().size(13).gap(1), move |r| {
+    ui.row(Row::new().size(13).gap(gap), move |r| {
         r.panel(
             panel("Protocols", r.theme().accent).subtitle(format!(
                 "{} in / {} out",
@@ -514,7 +516,7 @@ pub fn traffic<'a>(ui: &mut Container<'a>, s: &'a State) {
         );
     });
     ui.row(Row::new().gap(1), move |r| {
-        r.column(Column::new().gap(1), move |c| {
+        r.column(Column::new().gap(gap), move |c| {
             c.panel(
                 panel("HTTP", c.theme().success).subtitle(if http.is_object() {
                     format!("{:.1} req/s", n(&http["requestsPerSecond"]))
@@ -584,7 +586,7 @@ pub fn traffic<'a>(ui: &mut Container<'a>, s: &'a State) {
                 },
             );
         });
-        r.column(Column::new().size("0.85fr").gap(1), move |c| {
+        r.column(Column::new().size("0.85fr").gap(gap), move |c| {
             c.panel(
                 panel("SSH Activity", c.theme().warning)
                     .subtitle(array(&d["ssh"]).len().to_string()),
@@ -665,8 +667,9 @@ pub fn traffic<'a>(ui: &mut Container<'a>, s: &'a State) {
     }
 }
 pub fn sessions<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     let d = &s.sample["telemetry"];
-    ui.row(Row::new().size(9).gap(1), move |r| {
+    ui.row(Row::new().size(9).gap(gap), move |r| {
         r.panel(
             panel("Active Sessions", r.theme().success)
                 .subtitle(array(&d["sessions"]).len().to_string()),
@@ -748,7 +751,7 @@ pub fn sessions<'a>(ui: &mut Container<'a>, s: &'a State) {
                 );
             },
         );
-        r.column(Column::new().size("0.8fr").gap(1), move |c| {
+        r.column(Column::new().size("0.8fr").gap(gap), move |c| {
             c.panel(panel("Failed Logins", c.theme().danger), move |p| {
                 if array(&d["failedLogins"]).is_empty() {
                     p.label("None recorded.");
@@ -782,8 +785,9 @@ pub fn sessions<'a>(ui: &mut Container<'a>, s: &'a State) {
     });
 }
 pub fn network<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     let d = &s.sample["telemetry"];
-    ui.row(Row::new().size(13).gap(1), move |r| {
+    ui.row(Row::new().size(13).gap(gap), move |r| {
         let all = array(&d["interfaces"]);
         let active: Vec<_> = all
             .iter()
@@ -880,7 +884,7 @@ pub fn network<'a>(ui: &mut Container<'a>, s: &'a State) {
                 );
             },
         );
-        r.column(Column::new().size("0.7fr").gap(1), move |c| {
+        r.column(Column::new().size("0.7fr").gap(gap), move |c| {
             c.panel(
                 panel("Listening Ports", c.theme().warning)
                     .subtitle(array(&d["listeners"]).len().to_string()),
