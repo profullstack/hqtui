@@ -11,6 +11,7 @@ from __future__ import annotations
 import math
 import unittest
 
+import hqtui.graphics.canvas as gc
 import hqtui.graphics.chart as g
 import hqtui.widgets as w
 from hqtui.graphics import (
@@ -92,6 +93,36 @@ def draw_scene(case, name: str, s: Surface) -> None:
         w.draw_calendar(s, w.CalendarOptions(
             year=2026, month=9, selected=8,
             marks=[w.CalendarMark(day=15), w.CalendarMark(day=22, bold=True)],
+        ))
+    elif name == "canvas-line":
+        gc.draw_canvas(s, gc.CanvasOptions(
+            shapes=[gc.Shape(kind="line", x1=0, y1=0, x2=10, y2=10)],
+            x=gc.Bounds(0, 10), y=gc.Bounds(0, 10),
+        ))
+    elif name == "canvas-shapes":
+        gc.draw_canvas(s, gc.CanvasOptions(
+            shapes=[
+                gc.Shape(kind="rect", x1=1, y1=1, width=4, height=4),
+                gc.Shape(kind="circle", x1=7, y1=5, radius=2),
+                gc.Shape(kind="polyline", points=[(0, 8), (3, 9), (6, 7), (9, 9)]),
+                gc.Shape(kind="points", points=[(1, 9), (9, 1)]),
+            ],
+            x=gc.Bounds(0, 10), y=gc.Bounds(0, 10),
+        ))
+    elif name == "canvas-filled":
+        gc.draw_canvas(s, gc.CanvasOptions(
+            shapes=[gc.Shape(kind="rect", x1=2, y1=2, width=6, height=6, fill=True)],
+            x=gc.Bounds(0, 10), y=gc.Bounds(0, 10),
+        ))
+    elif name == "canvas-bounds":
+        gc.draw_canvas(s, gc.CanvasOptions(
+            shapes=[gc.Shape(kind="line", x1=0, y1=0, x2=10, y2=10)],
+            x=gc.Bounds(0, 40), y=gc.Bounds(0, 40),
+        ))
+    elif name == "canvas-grid":
+        gc.draw_canvas(s, gc.CanvasOptions(
+            shapes=[gc.Shape(kind="points", points=[(5, 5)])],
+            x=gc.Bounds(0, 10), y=gc.Bounds(0, 10), grid=True,
         ))
     elif name == "badge":
         w.draw_badge(s, w.BadgeOptions(text="LIVE"))

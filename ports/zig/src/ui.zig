@@ -374,6 +374,7 @@ const Node = union(enum) {
     graph: w.GraphOptions,
     calendar: w.CalendarOptions,
     chart: w.ChartOptions,
+    shapes: graphics.CanvasOptions,
     clear: w.ClearOptions,
     fill: w.FillOptions,
     sparkline: w.SparklineWidgetOptions,
@@ -465,6 +466,7 @@ fn drawNode(ctx: *Ctx, s: Surface, node: Node) anyerror!void {
         .graph => |o| try w.drawGraph(allocator, s, o),
         .calendar => |o| w.drawCalendar(s, o),
         .chart => |o| try w.drawChart(allocator, s, o),
+        .shapes => |o| try graphics.drawCanvas(allocator, s, o),
         .clear => |o| w.drawClear(s, o),
         .fill => |o| w.drawFill(s, o),
         .sparkline => |o| w.drawSparkline(s, o),
@@ -875,6 +877,15 @@ pub const Container = struct {
     /// months a row short and others a blank row long.
     pub fn calendar(self: *Container, options: w.CalendarOptions) !void {
         try self.add(self.leaf(w.calendarHeight(options)), .{ .calendar = options });
+    }
+
+    /// A canvas drawn in your own coordinates rather than in pixels.
+    ///
+    /// `canvas` hands you the pixel grid and leaves the unit conversion to you,
+    /// which means a drawing written for one panel size is wrong in the next.
+    /// This takes bounds and shapes placed inside them, and y goes up.
+    pub fn shapes(self: *Container, options: graphics.CanvasOptions) !void {
+        try self.add(self.filling(), .{ .shapes = options });
     }
 
     pub fn sparkline(self: *Container, options: w.SparklineWidgetOptions) !void {

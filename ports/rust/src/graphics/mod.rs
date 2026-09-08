@@ -2,6 +2,7 @@
 //! plotting primitives built on them.
 
 pub mod blocks;
+pub mod canvas;
 pub mod chart;
 pub mod braille;
 pub mod plot;
@@ -11,6 +12,9 @@ pub use blocks::{
     HORIZONTAL_EIGHTHS, QUADRANTS, SHADES, VERTICAL_EIGHTHS,
 };
 pub use braille::BrailleCanvas;
+pub use canvas::{
+    draw_canvas, projection, Bounds, CanvasOptions, Projection, Shape,
+};
 pub use chart::{
     domain_of, plot_points, AxisOptions, ChartPlotOptions, ChartSeries, Domain, MarkType, Point,
 };

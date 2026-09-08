@@ -514,6 +514,15 @@ func (c *Container) Calendar(o CalendarOptions, layout ...Layout) *Container {
 	})
 }
 
+// Shapes draws a canvas in your own coordinates rather than in pixels.
+//
+// Canvas hands you the pixel grid and leaves the unit conversion to you, which
+// means a drawing written for one panel size is wrong in the next. This takes
+// bounds and shapes placed inside them, and y goes up.
+func (c *Container) Shapes(o CanvasOptions, layout ...Layout) *Container {
+	return c.add(c.filling(firstLayout(layout)), func(s Surface) { DrawCanvas(s, o) })
+}
+
 func (c *Container) Sparkline(o SparklineWidgetOptions, layout ...Layout) *Container {
 	return c.add(c.leaf(firstLayout(layout), 1), func(s Surface) { DrawSparkline(s, o) })
 }

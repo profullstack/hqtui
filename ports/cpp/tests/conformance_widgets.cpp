@@ -159,6 +159,62 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_calendar(s, c);
     return true;
   }
+  if (name == "canvas-line") {
+    Canvas c;
+    c.shapes = {Shape{HQ_SHAPE_LINE, 0, 0, 10, 10}};
+    c.x = Bounds{0, 10};
+    c.y = Bounds{0, 10};
+    draw_canvas(s, c);
+    return true;
+  }
+  if (name == "canvas-shapes") {
+    Canvas c;
+    Shape rect{HQ_SHAPE_RECT, 1, 1};
+    rect.width = 4;
+    rect.height = 4;
+    Shape circle{HQ_SHAPE_CIRCLE, 7, 5};
+    circle.radius = 2;
+    Shape poly{HQ_SHAPE_POLYLINE};
+    poly.points = {{0, 8}, {3, 9}, {6, 7}, {9, 9}};
+    Shape points{HQ_SHAPE_POINTS};
+    points.points = {{1, 9}, {9, 1}};
+    c.shapes = {rect, circle, poly, points};
+    c.x = Bounds{0, 10};
+    c.y = Bounds{0, 10};
+    draw_canvas(s, c);
+    return true;
+  }
+  if (name == "canvas-filled") {
+    Canvas c;
+    Shape rect{HQ_SHAPE_RECT, 2, 2};
+    rect.width = 6;
+    rect.height = 6;
+    rect.fill = true;
+    c.shapes = {rect};
+    c.x = Bounds{0, 10};
+    c.y = Bounds{0, 10};
+    draw_canvas(s, c);
+    return true;
+  }
+  if (name == "canvas-bounds") {
+    Canvas c;
+    c.shapes = {Shape{HQ_SHAPE_LINE, 0, 0, 10, 10}};
+    c.x = Bounds{0, 40};
+    c.y = Bounds{0, 40};
+    draw_canvas(s, c);
+    return true;
+  }
+  if (name == "canvas-grid") {
+    Canvas c;
+    Shape points{HQ_SHAPE_POINTS};
+    points.points = {{5, 5}};
+    c.shapes = {points};
+    c.x = Bounds{0, 10};
+    c.y = Bounds{0, 10};
+    c.grid = true;
+    draw_canvas(s, c);
+    return true;
+  }
   if (name == "badge") {
     {
       Badge badge;

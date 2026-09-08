@@ -18,6 +18,7 @@ from . import widgets as w
 from .buffer import Style
 from .capabilities import Capabilities
 from .color import Color
+from . import graphics as g
 from .graphics import BrailleCanvas
 from .layout import Constraint, Direction, Rect, solve, stack
 from .surface import BorderStyle, BoxOptions, Surface
@@ -514,6 +515,18 @@ class Container:
         return self._add(
             self._constraint(layout or Layout(), height, height),
             lambda s: w.draw_calendar(s, options),
+        )
+
+    def shapes(self, options: g.CanvasOptions, layout: Layout | None = None):
+        """A canvas drawn in your own coordinates rather than in pixels.
+
+        ``canvas`` hands you the pixel grid and leaves the unit conversion to
+        you, which means a drawing written for one panel size is wrong in the
+        next. This takes bounds and shapes placed inside them, and y goes up.
+        """
+        return self._add(
+            self._constraint(layout or Layout(), "fill"),
+            lambda s: g.draw_canvas(s, options),
         )
 
     def sparkline(self, options: w.SparklineWidgetOptions, layout: Layout | None = None):

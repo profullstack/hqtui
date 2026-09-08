@@ -9,6 +9,7 @@ import {
 import { stringWidth, wrap } from "./unicode.ts";
 import { isRich, toSpanLines, wrapRich, type RichText } from "./richtext.ts";
 import { BrailleCanvas } from "./graphics/braille.ts";
+import { drawCanvas, type CanvasOptions } from "./graphics/canvas.ts";
 import * as W from "./widgets/index.ts";
 
 export interface HitRegion {
@@ -617,6 +618,17 @@ export class Container {
   /** Draw straight onto the framebuffer region. Nothing is off limits. */
   draw(fn: (surface: Surface) => void, options: ContainerOptions = {}): this {
     return this.add(fn, this.sizeOf(options, "fill"));
+  }
+
+  /**
+   * A canvas drawn in your own coordinates rather than in pixels.
+   *
+   * `canvas` hands you the pixel grid and leaves the unit conversion to you,
+   * which means a drawing written for one panel size is wrong in the next.
+   * This takes bounds and shapes placed inside them, and y goes up.
+   */
+  shapes(options: CanvasOptions & ContainerOptions): this {
+    return this.add((s) => drawCanvas(s, options), this.sizeOf(options, "fill"));
   }
 
   /** A Braille pixel canvas sized to the region, blitted when you are done. */

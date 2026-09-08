@@ -276,6 +276,61 @@ public:
       }
     }
   }
+  /// The inclusive row/column span an axis-aligned loop should cover, clipped
+  /// to the canvas. Nothing outside it can draw, so clipping here is what makes
+  /// every loop below finite for any input -- infinite, enormous, or NaN.
+  std::pair<int, int> span(double a, double b, int limit) const {
+    double lo = std::min(a, b), hi = std::max(a, b);
+    if (!(lo <= hi))
+      return {0, -1};
+    return {std::max(0, int(std::ceil(lo))), std::min(limit - 1, int(std::floor(hi)))};
+  }
+  void vline(double x, double y0, double y1) {
+    auto [a, b] = span(y0, y1, h);
+    for (int y = a; y <= b; y++)
+      pixel(x, y);
+  }
+  void hline(double y, double x0, double x1) {
+    auto [a, b] = span(x0, x1, w);
+    for (int x = a; x <= b; x++)
+      pixel(x, y);
+  }
+  void rect(double x0, double y0, double x1, double y1) {
+    hline(y0, x0, x1);
+    hline(y1, x0, x1);
+    vline(x0, y0, y1);
+    vline(x1, y0, y1);
+  }
+  void fill_rect(double x0, double y0, double x1, double y1) {
+    auto [a, b] = span(y0, y1, h);
+    for (int y = a; y <= b; y++)
+      hline(y, x0, x1);
+  }
+  void circle(double cx, double cy, double radius) {
+    // A radius larger than the canvas draws the same arc as one exactly its
+    // size, and an unbounded one never finishes the `x >= y` walk.
+    if (std::isnan(radius))
+      return;
+    int x = int(std::floor(std::min(std::abs(radius), double(w + h)) + .5));
+    int y = 0, err = 1 - x;
+    while (x >= y) {
+      pixel(cx + x, cy + y);
+      pixel(cx + y, cy + x);
+      pixel(cx - y, cy + x);
+      pixel(cx - x, cy + y);
+      pixel(cx - x, cy - y);
+      pixel(cx - y, cy - x);
+      pixel(cx + y, cy - x);
+      pixel(cx + x, cy - y);
+      y++;
+      if (err < 0) {
+        err += 2 * y + 1;
+      } else {
+        x--;
+        err += 2 * (y - x) + 1;
+      }
+    }
+  }
   void blit(Surface s, Color color, std::optional<Color> bg = {}) const {
     blit(s, [color](int, int) { return color; }, bg);
   }
@@ -392,6 +447,7 @@ struct Progress {
 void draw_progress(Surface, const Progress &);
 void draw_graph(Surface, const Graph &);
 
+
 extern const char *const MONTH_NAMES[12];
 /// Two letters each, so a week is exactly as wide as its days.
 extern const char *const WEEKDAY_NAMES[7];
@@ -486,6 +542,55 @@ Domain domain_of(const std::vector<ChartSeries> &, const Axis *, int which);
 void plot_points(Surface, const std::vector<ChartSeries> &, const ChartPlot &);
 /// A chart of arbitrary (x, y) data, with a domain on both axes.
 void draw_chart(Surface, const Chart &);
+
+struct Bounds {
+  double min = 0, max = 1;
+};
+/// Which of the shapes a Shape is.
+enum ShapeKind {
+  HQ_SHAPE_LINE,
+  HQ_SHAPE_POLYLINE,
+  HQ_SHAPE_POINTS,
+  HQ_SHAPE_CIRCLE,
+  HQ_SHAPE_RECT,
+};
+struct Shape {
+  ShapeKind kind = HQ_SHAPE_LINE;
+  /// Line: the two ends. Circle and rect: the centre or corner.
+  double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+  /// points and polyline.
+  std::vector<ChartPoint> points;
+  /// circle.
+  double radius = 0;
+  /// rect.
+  double width = 0, height = 0;
+  bool fill = false;
+  Color color = 0;
+};
+struct Canvas {
+  std::vector<Shape> shapes;
+  /// The span the drawing is in. Unset means 0-1.
+  std::optional<Bounds> x, y;
+  /// Colour for shapes that do not name their own.
+  Color color = 0;
+  std::optional<Color> background;
+  /// A faint dotted grid behind the shapes.
+  bool grid = false;
+  std::optional<Color> grid_color;
+};
+/// A projection from the caller's coordinates onto the canvas's pixels.
+///
+/// Handed out so a caller can place their own labels against the same drawing.
+struct Projection {
+  double width = 0, height = 0;
+  Bounds x_bounds, y_bounds;
+  double x(double value) const;
+  /// Flipped: the caller's y goes up, the canvas's goes down.
+  double y(double value) const;
+};
+Projection canvas_projection(const Braille &, Bounds x, Bounds y);
+/// A canvas drawn in the caller's own coordinates rather than in pixels.
+void draw_canvas(Surface, const Canvas &);
 void draw_gauge(Surface, double, std::string_view);
 void draw_keys(Surface, const std::vector<KeyValue> &, bool spread = true);
 /// Which edge a scrollbar sits on, and therefore which way it runs.
@@ -952,6 +1057,10 @@ public:
   void calendar(Calendar o) {
     int height = calendar_height(o);
     draw([=](Surface s) { draw_calendar(s, o); }, cells(height));
+  }
+  /// A canvas drawn in your own coordinates rather than in pixels.
+  void shapes(Canvas o, Constraint size = fr()) {
+    draw([=](Surface s) { draw_canvas(s, o); }, size);
   }
   void sparkline(Sparkline o) {
     draw([=](Surface s) { draw_sparkline(s, o); }, cells(1));

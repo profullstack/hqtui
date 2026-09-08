@@ -785,6 +785,16 @@ impl<'a> Container<'a> {
         self.add(constraint, move |s| w::draw_calendar(&s, &options))
     }
 
+    /// A canvas drawn in your own coordinates rather than in pixels.
+    ///
+    /// `canvas` hands you the pixel grid and leaves the unit conversion to you,
+    /// which means a drawing written for one panel size is wrong in the next.
+    /// This takes bounds and shapes placed inside them, and y goes up.
+    pub fn shapes(&mut self, options: crate::graphics::CanvasOptions) -> &mut Self {
+        let constraint = self.filling();
+        self.add(constraint, move |s| crate::graphics::draw_canvas(&s, &options))
+    }
+
     pub fn sparkline(&mut self, options: w::SparklineWidgetOptions) -> &mut Self {
         let constraint = self.leaf(1);
         self.add(constraint, move |s| w::draw_sparkline(&s, &options))
