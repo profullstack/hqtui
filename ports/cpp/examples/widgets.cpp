@@ -87,9 +87,24 @@ void widget_log(Surface s) {
 // @widget meter
 void widget_meter(Surface s) {
   const int width = s.rect().width;
-  draw_meter(s.sub(Rect{0, 0, width, 1}), Meter{.value = 0.62, .label = "CPU"});
-  draw_meter(s.sub(Rect{0, 1, width, 1}), Meter{.value = 0.31, .label = "MEM"});
-  draw_meter(s.sub(Rect{0, 2, width, 1}), Meter{.value = 0.87, .label = "SWP"});
+  {
+    Meter meter;
+    meter.value = 0.87;
+    meter.label = "SWP";
+    {
+    Meter meter;
+    meter.value = 0.31;
+    meter.label = "MEM";
+    {
+    Meter meter;
+    meter.value = 0.62;
+    meter.label = "CPU";
+    draw_meter(s.sub(Rect{0, 0, width, 1}), meter);
+  }
+  draw_meter(s.sub(Rect{0, 1, width, 1}), meter);
+  }
+  draw_meter(s.sub(Rect{0, 2, width, 1}), meter);
+  }
 }
 // @end
 
@@ -116,30 +131,68 @@ void widget_label(Surface s) {
   // Muted secondary copy: captions, and the line under a number that says what
   // the number is.
   const auto &t = theme(s);
-  draw_text(s, "cpu · 8 cores · 3.4 GHz", TextStyle{.fg = t.muted});
-  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), "42.1%", TextStyle{.attrs = HQ_BOLD});
+  {
+    TextStyle text_style;
+    text_style.fg = t.muted;
+    {
+    TextStyle text_style;
+    text_style.attrs = HQ_BOLD;
+    {
+    TextStyle text_style;
+    text_style.fg = t.muted;
+    draw_text(s, "cpu · 8 cores · 3.4 GHz", text_style);
+  }
+  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), "42.1%", text_style);
+  }
   draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), "15 minute average",
-            TextStyle{.fg = t.muted});
+            text_style);
+  }
 }
 // @end
 
 // @widget heading
 void widget_heading(Surface s) {
   const auto &t = theme(s);
-  draw_text(s, "Storage", TextStyle{.fg = t.title, .attrs = HQ_BOLD});
+  {
+    TextStyle text_style;
+    text_style.fg = t.muted;
+    {
+    TextStyle text_style;
+    text_style.fg = t.title;
+    text_style.attrs = HQ_BOLD;
+    draw_text(s, "Storage", text_style);
+  }
   draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), "Four volumes, one degraded",
-            TextStyle{.fg = t.muted});
+            text_style);
+  }
 }
 // @end
 
 // @widget badge
 void widget_badge(Surface s) {
   const auto &t = theme(s);
-  draw_badge(s.sub(Rect{0, 0, 10, 1}), Badge{.text = "active", .color = t.success});
+  {
+    Badge badge;
+    badge.text = "failed";
+    badge.color = t.danger;
+    badge.variant = HQ_BADGE_OUTLINE;
+    {
+    Badge badge;
+    badge.text = "idle";
+    badge.color = t.warning;
+    badge.variant = HQ_BADGE_SUBTLE;
+    {
+    Badge badge;
+    badge.text = "active";
+    badge.color = t.success;
+    draw_badge(s.sub(Rect{0, 0, 10, 1}), badge);
+  }
   draw_badge(s.sub(Rect{10, 0, 10, 1}),
-             Badge{.text = "idle", .color = t.warning, .variant = HQ_BADGE_SUBTLE});
+             badge);
+  }
   draw_badge(s.sub(Rect{20, 0, 10, 1}),
-             Badge{.text = "failed", .color = t.danger, .variant = HQ_BADGE_OUTLINE});
+             badge);
+  }
 }
 // @end
 
@@ -148,8 +201,13 @@ void widget_divider(Surface s) {
   draw_text(s, "Above the line");
   draw_divider(s.sub(Rect{0, 1, s.rect().width, 1}));
   draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), "Below it");
-  draw_divider(s.sub(Rect{0, 3, s.rect().width, 1}),
-               Divider{.label = "status", .align = HQ_CENTER});
+  {
+    Divider divider;
+    divider.label = "status";
+    divider.align = HQ_CENTER;
+    draw_divider(s.sub(Rect{0, 3, s.rect().width, 1}),
+               divider);
+  }
 }
 // @end
 
@@ -169,31 +227,65 @@ void widget_meters(Surface s) {
 
 // @widget progress
 void widget_progress(Surface s) {
-  draw_progress(s, Progress{.value = 37, .max = 120, .label = "Indexing", .show_count = true});
+  {
+    Progress progress;
+    progress.value = 0.82;
+    progress.label = "Upload";
+    {
+    Progress progress;
+    progress.value = 37;
+    progress.max = 120;
+    progress.label = "Indexing";
+    progress.show_count = true;
+    draw_progress(s, progress);
+  }
   draw_progress(s.sub(Rect{0, 1, s.rect().width, 1}),
-                Progress{.value = 0.82, .label = "Upload"});
+                progress);
+  }
 }
 // @end
 
 // @widget sparkline
 void widget_sparkline(Surface s) {
-  draw_sparkline(s, Sparkline{.values = cpu_history(), .label = "CPU ", .text = "44%"});
+  {
+    Sparkline sparkline;
+    sparkline.values = cpu_history();
+    sparkline.label = "CPU ";
+    sparkline.text = "44%";
+    draw_sparkline(s, sparkline);
+  }
 }
 // @end
 
 // @widget histogram
 void widget_histogram(Surface s) {
-  // Block columns. Cheaper than Braille and easier to read when short.
-  draw_columns(s, Columns{.values = cpu_history()});
+  {
+    Columns columns;
+    columns.values = cpu_history();
+    // Block columns. Cheaper than Braille and easier to read when short.
+  draw_columns(s, columns);
+  }
 }
 // @end
 
 // @widget heatBar
 void widget_heat_bar(Surface s) {
-  // Coloured along the theme's heat ramp, like btop's temperatures.
-  draw_heat_bar(s, HeatBar{.value = 0.28});
-  draw_heat_bar(s.sub(Rect{0, 1, s.rect().width, 1}), HeatBar{.value = 0.64});
-  draw_heat_bar(s.sub(Rect{0, 2, s.rect().width, 1}), HeatBar{.value = 0.91});
+  {
+    HeatBar heat_bar;
+    heat_bar.value = 0.91;
+    {
+    HeatBar heat_bar;
+    heat_bar.value = 0.64;
+    {
+    HeatBar heat_bar;
+    heat_bar.value = 0.28;
+    // Coloured along the theme's heat ramp, like btop's temperatures.
+  draw_heat_bar(s, heat_bar);
+  }
+  draw_heat_bar(s.sub(Rect{0, 1, s.rect().width, 1}), heat_bar);
+  }
+  draw_heat_bar(s.sub(Rect{0, 2, s.rect().width, 1}), heat_bar);
+  }
 }
 // @end
 
@@ -220,12 +312,26 @@ void widget_list(Surface s) {
 // @widget tree
 void widget_tree(Surface s) {
   Tree tree;
-  TreeNode root{.label = "systemd"};
-  root.children.push_back(TreeNode{.label = "bash"});
-  TreeNode bun{.label = "bun"};
-  bun.children.push_back(TreeNode{.label = "bun:worker"});
+  TreeNode root;
+  root.label = "systemd";
+  {
+    TreeNode tree_node;
+    tree_node.label = "bash";
+    root.children.push_back(tree_node);
+  }
+  TreeNode bun;
+  bun.label = "bun";
+  {
+    TreeNode tree_node;
+    tree_node.label = "bun:worker";
+    bun.children.push_back(tree_node);
+  }
   root.children.push_back(bun);
-  root.children.push_back(TreeNode{.label = "postgres"});
+  {
+    TreeNode tree_node;
+    tree_node.label = "postgres";
+    root.children.push_back(tree_node);
+  }
   tree.nodes.push_back(root);
   tree.selected = 2;
   draw_tree(s, tree);
@@ -234,53 +340,96 @@ void widget_tree(Surface s) {
 
 // @widget button
 void widget_button(Surface s) {
-  draw_button(s.sub(Rect{0, 0, 11, 1}), Button{.label = "Primary"});
-  draw_button(s.sub(Rect{12, 0, 11, 1}), Button{.label = "Success", .variant = HQ_BUTTON_SUCCESS});
-  draw_button(s.sub(Rect{24, 0, 10, 1}), Button{.label = "Danger", .variant = HQ_BUTTON_DANGER});
+  {
+    Button button;
+    button.label = "Danger";
+    button.variant = HQ_BUTTON_DANGER;
+    {
+    Button button;
+    button.label = "Success";
+    button.variant = HQ_BUTTON_SUCCESS;
+    {
+    Button button;
+    button.label = "Primary";
+    draw_button(s.sub(Rect{0, 0, 11, 1}), button);
+  }
+  draw_button(s.sub(Rect{12, 0, 11, 1}), button);
+  }
+  draw_button(s.sub(Rect{24, 0, 10, 1}), button);
+  }
 }
 // @end
 
 // @widget checkbox
 void widget_checkbox(Surface s) {
-  draw_checkbox(s.sub(Rect{0, 0, 14, 1}),
-                Checkbox{.label = "Toggle", .checked = true, .variant = HQ_CHECKBOX_TOGGLE});
-  draw_checkbox(s.sub(Rect{16, 0, 14, 1}), Checkbox{.label = "Checkbox"});
+  {
+    Checkbox checkbox;
+    checkbox.label = "Checkbox";
+    {
+    Checkbox checkbox;
+    checkbox.label = "Toggle";
+    checkbox.checked = true;
+    checkbox.variant = HQ_CHECKBOX_TOGGLE;
+    draw_checkbox(s.sub(Rect{0, 0, 14, 1}),
+                checkbox);
+  }
+  draw_checkbox(s.sub(Rect{16, 0, 14, 1}), checkbox);
+  }
 }
 // @end
 
 // @widget select
 void widget_select(Surface s) {
-  draw_select(s, Select{.value = "Dracula",
-                        .open = true,
-                        .options = {"Dark", "Dracula", "Nord", "Tokyo Night"},
-                        .selected_index = 1,
-                        .width = 20});
+  {
+    Select select;
+    select.value = "Dracula";
+    select.open = true;
+    select.options = {"Dark", "Dracula", "Nord", "Tokyo Night"};
+    select.selected_index = 1;
+    select.width = 20;
+    draw_select(s, select);
+  }
 }
 // @end
 
 // @widget textInput
 void widget_text_input(Surface s) {
-  draw_text_input(s, TextInput{.value = "postgres", .label = "Search"});
+  {
+    TextInput text_input;
+    text_input.placeholder = "type to filter…";
+    text_input.label = "Filter";
+    {
+    TextInput text_input;
+    text_input.value = "postgres";
+    text_input.label = "Search";
+    draw_text_input(s, text_input);
+  }
   draw_text_input(s.sub(Rect{0, 2, s.rect().width, 1}),
-                  TextInput{.placeholder = "type to filter…", .label = "Filter"});
+                  text_input);
+  }
 }
 // @end
 
 // @widget tabs
 void widget_tabs(Surface s) {
-  draw_tabs(s, Tabs{.tabs = {"1 dashboard", "2 traffic", "3 sessions", "4 network"},
-                    .active = 1});
+  {
+    Tabs tabs;
+    tabs.tabs = {"1 dashboard", "2 traffic", "3 sessions", "4 network"};
+    tabs.active = 1;
+    draw_tabs(s, tabs);
+  }
 }
 // @end
 
 // @widget statusBar
 void widget_status_bar(Surface s) {
-  // Usually the last thing drawn, pinned to the bottom row.
-  draw_status_bar(s, StatusBar{.items = {{"F1", "Help"},
-                                         {"F2", "Theme"},
-                                         {"F3", "Filter", 0, true},
-                                         {"q", "Quit"}},
-                               .right = {{"", "0.41ms  184 cells"}}});
+  {
+    StatusBar status_bar;
+    status_bar.items = {{"F1", "Help"}, {"F2", "Theme"}, {"F3", "Filter", 0, true}, {"q", "Quit"}};
+    status_bar.right = {{"", "0.41ms 184 cells"}};
+    // Usually the last thing drawn, pinned to the bottom row.
+  draw_status_bar(s, status_bar);
+  }
 }
 // @end
 
@@ -292,8 +441,14 @@ void widget_modal(Surface s) {
   modal.message = "Terminate process 4821 (postgres)?";
   modal.width = 46;
   modal.height = 9;
-  modal.buttons = {{.label = "Yes", .variant = HQ_BUTTON_SUCCESS, .focused = true},
-                   {.label = "No", .variant = HQ_BUTTON_GHOST}};
+  ModalButton yes;
+  yes.label = "Yes";
+  yes.variant = HQ_BUTTON_SUCCESS;
+  yes.focused = true;
+  ModalButton no;
+  no.label = "No";
+  no.variant = HQ_BUTTON_GHOST;
+  modal.buttons = {yes, no};
   draw_modal(s, modal);
 }
 // @end
@@ -310,7 +465,13 @@ void widget_command_palette(Surface s) {
 // @widget tooltip
 void widget_tooltip(Surface s) {
   draw_text(s, "Tooltips are overlays positioned at a cell.");
-  draw_tooltip(s, Tooltip{.text = "swap is 87% full", .x = 6, .y = 3});
+  {
+    Tooltip tooltip;
+    tooltip.text = "swap is 87% full";
+    tooltip.x = 6;
+    tooltip.y = 3;
+    draw_tooltip(s, tooltip);
+  }
 }
 // @end
 

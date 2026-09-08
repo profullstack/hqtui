@@ -40,29 +40,63 @@ bool draw_scene(const std::string &name, Surface s) {
     return true;
   }
   if (name == "text-wrapped") {
-    draw_text(s, "the quick brown fox jumps", TextStyle{.wrap = true});
+    {
+      TextStyle text_style;
+      text_style.wrap = true;
+      draw_text(s, "the quick brown fox jumps", text_style);
+    }
     return true;
   }
   if (name == "text-aligned") {
-    draw_text(s.sub({0, 0, 20, 1}), "left", TextStyle{.align = HQ_LEFT});
-    draw_text(s.sub({0, 1, 20, 1}), "center", TextStyle{.align = HQ_CENTER});
-    draw_text(s.sub({0, 2, 20, 1}), "right", TextStyle{.align = HQ_RIGHT});
+    {
+      TextStyle text_style;
+      text_style.align = HQ_RIGHT;
+      {
+      TextStyle text_style;
+      text_style.align = HQ_CENTER;
+      {
+      TextStyle text_style;
+      text_style.align = HQ_LEFT;
+      draw_text(s.sub({0, 0, 20, 1}), "left", text_style);
+    }
+    draw_text(s.sub({0, 1, 20, 1}), "center", text_style);
+    }
+    draw_text(s.sub({0, 2, 20, 1}), "right", text_style);
+    }
     return true;
   }
   if (name == "badge") {
-    draw_badge(s, Badge{.text = "LIVE"});
+    {
+      Badge badge;
+      badge.text = "LIVE";
+      draw_badge(s, badge);
+    }
     return true;
   }
   if (name == "badge-outline") {
-    draw_badge(s, Badge{.text = "IDLE", .variant = HQ_BADGE_OUTLINE});
+    {
+      Badge badge;
+      badge.text = "IDLE";
+      badge.variant = HQ_BADGE_OUTLINE;
+      draw_badge(s, badge);
+    }
     return true;
   }
   if (name == "badge-subtle") {
-    draw_badge(s, Badge{.text = "WARN", .variant = HQ_BADGE_SUBTLE});
+    {
+      Badge badge;
+      badge.text = "WARN";
+      badge.variant = HQ_BADGE_SUBTLE;
+      draw_badge(s, badge);
+    }
     return true;
   }
   if (name == "divider") {
-    draw_divider(s, Divider{.label = "Section"});
+    {
+      Divider divider;
+      divider.label = "Section";
+      draw_divider(s, divider);
+    }
     return true;
   }
   if (name == "keyvalues") {
@@ -71,19 +105,41 @@ bool draw_scene(const std::string &name, Surface s) {
     return true;
   }
   if (name == "meter") {
-    draw_meter(s, Meter{.value = 0.72, .label = "CPU"});
+    {
+      Meter meter;
+      meter.value = 0.72;
+      meter.label = "CPU";
+      draw_meter(s, meter);
+    }
     return true;
   }
   if (name == "meter-segmented") {
-    draw_meter(s, Meter{.value = 0.33, .label = "MEM", .segmented = true});
+    {
+      Meter meter;
+      meter.value = 0.33;
+      meter.label = "MEM";
+      meter.segmented = true;
+      draw_meter(s, meter);
+    }
     return true;
   }
   if (name == "meter-ascii") {
-    draw_meter(s, Meter{.value = 0.9, .label = "IO", .ascii = true});
+    {
+      Meter meter;
+      meter.value = 0.9;
+      meter.label = "IO";
+      meter.ascii = true;
+      draw_meter(s, meter);
+    }
     return true;
   }
   if (name == "meter-nan") {
-    draw_meter(s, Meter{.value = std::numeric_limits<double>::quiet_NaN(), .label = "BAD"});
+    {
+      Meter meter;
+      meter.value = std::numeric_limits<double>::quiet_NaN();
+      meter.label = "BAD";
+      draw_meter(s, meter);
+    }
     return true;
   }
   if (name == "meters-grid") {
@@ -94,19 +150,40 @@ bool draw_scene(const std::string &name, Surface s) {
     return true;
   }
   if (name == "progress") {
-    draw_progress(s, Progress{.value = 37, .max = 120, .label = "Sync", .show_count = true});
+    {
+      Progress progress;
+      progress.value = 37;
+      progress.max = 120;
+      progress.label = "Sync";
+      progress.show_count = true;
+      draw_progress(s, progress);
+    }
     return true;
   }
   if (name == "bar-smooth") {
-    draw_bar(s, Bar{.value = 0.63});
+    {
+      Bar bar;
+      bar.value = 0.63;
+      draw_bar(s, bar);
+    }
     return true;
   }
   if (name == "bar-segmented") {
-    draw_bar(s, Bar{.value = 0.63, .style = HQ_BAR_SEGMENTED});
+    {
+      Bar bar;
+      bar.value = 0.63;
+      bar.style = HQ_BAR_SEGMENTED;
+      draw_bar(s, bar);
+    }
     return true;
   }
   if (name == "bar-ascii") {
-    draw_bar(s, Bar{.value = 0.63, .style = HQ_BAR_ASCII});
+    {
+      Bar bar;
+      bar.value = 0.63;
+      bar.style = HQ_BAR_ASCII;
+      draw_bar(s, bar);
+    }
     return true;
   }
   if (name == "sparkline") {
@@ -114,15 +191,29 @@ bool draw_scene(const std::string &name, Surface s) {
     return true;
   }
   if (name == "sparkline-widget") {
-    draw_sparkline(s, Sparkline{.values = kSeries, .label = "net", .text = "1.2M"});
+    {
+      Sparkline sparkline;
+      sparkline.values = kSeries;
+      sparkline.label = "net";
+      sparkline.text = "1.2M";
+      draw_sparkline(s, sparkline);
+    }
     return true;
   }
   if (name == "heat-bar") {
-    draw_heat_bar(s, HeatBar{.value = 0.6});
+    {
+      HeatBar heat_bar;
+      heat_bar.value = 0.6;
+      draw_heat_bar(s, heat_bar);
+    }
     return true;
   }
   if (name == "columns") {
-    draw_columns(s, Columns{.values = kSeries});
+    {
+      Columns columns;
+      columns.values = kSeries;
+      draw_columns(s, columns);
+    }
     return true;
   }
   if (name == "gauge") {
@@ -232,7 +323,12 @@ bool draw_scene(const std::string &name, Surface s) {
     Modal modal;
     modal.title = "Confirm";
     modal.message = "Restart the service?";
-    modal.buttons = {{.label = "Yes", .focused = true}, {.label = "No"}};
+    ModalButton yes;
+    yes.label = "Yes";
+    yes.focused = true;
+    ModalButton no;
+    no.label = "No";
+    modal.buttons = {yes, no};
     draw_modal(s, modal);
     return true;
   }
@@ -244,65 +340,155 @@ bool draw_scene(const std::string &name, Surface s) {
     return true;
   }
   if (name == "tooltip") {
-    draw_tooltip(s, Tooltip{.text = "hint", .x = 4, .y = 2});
+    {
+      Tooltip tooltip;
+      tooltip.text = "hint";
+      tooltip.x = 4;
+      tooltip.y = 2;
+      draw_tooltip(s, tooltip);
+    }
     return true;
   }
   if (name == "button") {
-    draw_button(s, Button{.label = "OK"});
+    {
+      Button button;
+      button.label = "OK";
+      draw_button(s, button);
+    }
     return true;
   }
   if (name == "button-focused") {
-    draw_button(s, Button{.label = "Run", .focused = true});
+    {
+      Button button;
+      button.label = "Run";
+      button.focused = true;
+      draw_button(s, button);
+    }
     return true;
   }
   if (name == "button-variants") {
-    draw_button(s.sub({0, 0, 10, 1}), Button{.label = "ok", .variant = HQ_BUTTON_SUCCESS});
-    draw_button(s.sub({10, 0, 10, 1}), Button{.label = "hm", .variant = HQ_BUTTON_WARNING});
-    draw_button(s.sub({20, 0, 10, 1}), Button{.label = "no", .variant = HQ_BUTTON_DANGER});
-    draw_button(s.sub({30, 0, 10, 1}), Button{.label = "gh", .variant = HQ_BUTTON_GHOST});
+    {
+      Button button;
+      button.label = "gh";
+      button.variant = HQ_BUTTON_GHOST;
+      {
+      Button button;
+      button.label = "no";
+      button.variant = HQ_BUTTON_DANGER;
+      {
+      Button button;
+      button.label = "hm";
+      button.variant = HQ_BUTTON_WARNING;
+      {
+      Button button;
+      button.label = "ok";
+      button.variant = HQ_BUTTON_SUCCESS;
+      draw_button(s.sub({0, 0, 10, 1}), button);
+    }
+    draw_button(s.sub({10, 0, 10, 1}), button);
+    }
+    draw_button(s.sub({20, 0, 10, 1}), button);
+    }
+    draw_button(s.sub({30, 0, 10, 1}), button);
+    }
     return true;
   }
   if (name == "checkbox") {
-    draw_checkbox(s.sub({0, 0, 24, 1}), Checkbox{.label = "on", .checked = true});
-    draw_checkbox(s.sub({0, 1, 24, 1}), Checkbox{.label = "toggle", .variant = HQ_CHECKBOX_TOGGLE});
+    {
+      Checkbox checkbox;
+      checkbox.label = "radio";
+      checkbox.checked = true;
+      checkbox.variant = HQ_CHECKBOX_RADIO;
+      {
+      Checkbox checkbox;
+      checkbox.label = "toggle";
+      checkbox.variant = HQ_CHECKBOX_TOGGLE;
+      {
+      Checkbox checkbox;
+      checkbox.label = "on";
+      checkbox.checked = true;
+      draw_checkbox(s.sub({0, 0, 24, 1}), checkbox);
+    }
+    draw_checkbox(s.sub({0, 1, 24, 1}), checkbox);
+    }
     draw_checkbox(s.sub({0, 2, 24, 1}),
-                  Checkbox{.label = "radio", .checked = true, .variant = HQ_CHECKBOX_RADIO});
+                  checkbox);
+    }
     return true;
   }
   if (name == "select-closed") {
-    draw_select(s, Select{.value = "dark"});
+    {
+      Select select;
+      select.value = "dark";
+      draw_select(s, select);
+    }
     return true;
   }
   if (name == "select-open") {
-    draw_select(s, Select{.value = "dark",
-                          .open = true,
-                          .options = {"dark", "nord", "light"},
-                          .selected_index = 1});
+    {
+      Select select;
+      select.value = "dark";
+      select.open = true;
+      select.options = {"dark", "nord", "light"};
+      select.selected_index = 1;
+      draw_select(s, select);
+    }
     return true;
   }
   if (name == "text-input") {
-    draw_text_input(s, TextInput{.value = "seed", .label = "host", .focused = true});
+    {
+      TextInput text_input;
+      text_input.value = "seed";
+      text_input.label = "host";
+      text_input.focused = true;
+      draw_text_input(s, text_input);
+    }
     return true;
   }
   if (name == "text-input-password") {
-    draw_text_input(s, TextInput{.value = "hunter2", .password = true});
+    {
+      TextInput text_input;
+      text_input.value = "hunter2";
+      text_input.password = true;
+      draw_text_input(s, text_input);
+    }
     return true;
   }
   if (name == "text-input-placeholder") {
-    draw_text_input(s, TextInput{.value = "", .placeholder = "search…"});
+    {
+      TextInput text_input;
+      text_input.value = "";
+      text_input.placeholder = "search…";
+      draw_text_input(s, text_input);
+    }
     return true;
   }
   if (name == "tabs") {
-    draw_tabs(s, Tabs{.tabs = {"cpu", "mem", "net"}, .active = 1});
+    {
+      Tabs tabs;
+      tabs.tabs = {"cpu", "mem", "net"};
+      tabs.active = 1;
+      draw_tabs(s, tabs);
+    }
     return true;
   }
   if (name == "tabs-underline") {
-    draw_tabs(s, Tabs{.tabs = {"a", "b"}, .active = 0, .variant = HQ_TAB_UNDERLINE});
+    {
+      Tabs tabs;
+      tabs.tabs = {"a", "b"};
+      tabs.active = 0;
+      tabs.variant = HQ_TAB_UNDERLINE;
+      draw_tabs(s, tabs);
+    }
     return true;
   }
   if (name == "status-bar") {
-    draw_status_bar(s, StatusBar{.items = {{"F1", "Help"}, {"F10", "Quit"}},
-                                 .right = {{"", "30fps"}}});
+    {
+      StatusBar status_bar;
+      status_bar.items = {{"F1", "Help"}, {"F10", "Quit"}};
+      status_bar.right = {{"", "30fps"}};
+      draw_status_bar(s, status_bar);
+    }
     return true;
   }
   if (name == "list") {
@@ -315,13 +501,27 @@ bool draw_scene(const std::string &name, Surface s) {
   }
   if (name == "tree") {
     Tree tree;
-    TreeNode root{.label = "root"};
-    TreeNode a{.label = "child-a"};
-    a.children.push_back(TreeNode{.label = "leaf"});
+    TreeNode root;
+    root.label = "root";
+    TreeNode a;
+    a.label = "child-a";
+    {
+      TreeNode tree_node;
+      tree_node.label = "leaf";
+      a.children.push_back(tree_node);
+    }
     root.children.push_back(a);
-    root.children.push_back(TreeNode{.label = "child-b"});
+    {
+      TreeNode tree_node;
+      tree_node.label = "child-b";
+      root.children.push_back(tree_node);
+    }
     tree.nodes.push_back(root);
-    tree.nodes.push_back(TreeNode{.label = "second"});
+    {
+      TreeNode tree_node;
+      tree_node.label = "second";
+      tree.nodes.push_back(tree_node);
+    }
     tree.selected = 1;
     draw_tree(s, tree);
     return true;

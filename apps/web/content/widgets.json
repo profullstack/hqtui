@@ -158,7 +158,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_label(Surface s) {\n  // Muted secondary copy: captions, and the line under a number that says what\n  // the number is.\n  const auto &t = theme(s);\n  draw_text(s, \"cpu · 8 cores · 3.4 GHz\", TextStyle{.fg = t.muted});\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"42.1%\", TextStyle{.attrs = HQ_BOLD});\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"15 minute average\",\n            TextStyle{.fg = t.muted});\n}",
+          "code": "void widget_label(Surface s) {\n  // Muted secondary copy: captions, and the line under a number that says what\n  // the number is.\n  const auto &t = theme(s);\n  {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    {\n    TextStyle text_style;\n    text_style.attrs = HQ_BOLD;\n    {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    draw_text(s, \"cpu · 8 cores · 3.4 GHz\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"42.1%\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"15 minute average\",\n            text_style);\n  }\n}",
           "syntax": "cpp"
         }
       }
@@ -197,7 +197,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_heading(Surface s) {\n  const auto &t = theme(s);\n  draw_text(s, \"Storage\", TextStyle{.fg = t.title, .attrs = HQ_BOLD});\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"Four volumes, one degraded\",\n            TextStyle{.fg = t.muted});\n}",
+          "code": "void widget_heading(Surface s) {\n  const auto &t = theme(s);\n  {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    {\n    TextStyle text_style;\n    text_style.fg = t.title;\n    text_style.attrs = HQ_BOLD;\n    draw_text(s, \"Storage\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"Four volumes, one degraded\",\n            text_style);\n  }\n}",
           "syntax": "cpp"
         }
       }
@@ -236,7 +236,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_badge(Surface s) {\n  const auto &t = theme(s);\n  draw_badge(s.sub(Rect{0, 0, 10, 1}), Badge{.text = \"active\", .color = t.success});\n  draw_badge(s.sub(Rect{10, 0, 10, 1}),\n             Badge{.text = \"idle\", .color = t.warning, .variant = HQ_BADGE_SUBTLE});\n  draw_badge(s.sub(Rect{20, 0, 10, 1}),\n             Badge{.text = \"failed\", .color = t.danger, .variant = HQ_BADGE_OUTLINE});\n}",
+          "code": "void widget_badge(Surface s) {\n  const auto &t = theme(s);\n  {\n    Badge badge;\n    badge.text = \"failed\";\n    badge.color = t.danger;\n    badge.variant = HQ_BADGE_OUTLINE;\n    {\n    Badge badge;\n    badge.text = \"idle\";\n    badge.color = t.warning;\n    badge.variant = HQ_BADGE_SUBTLE;\n    {\n    Badge badge;\n    badge.text = \"active\";\n    badge.color = t.success;\n    draw_badge(s.sub(Rect{0, 0, 10, 1}), badge);\n  }\n  draw_badge(s.sub(Rect{10, 0, 10, 1}),\n             badge);\n  }\n  draw_badge(s.sub(Rect{20, 0, 10, 1}),\n             badge);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -291,7 +291,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_divider(Surface s) {\n  draw_text(s, \"Above the line\");\n  draw_divider(s.sub(Rect{0, 1, s.rect().width, 1}));\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"Below it\");\n  draw_divider(s.sub(Rect{0, 3, s.rect().width, 1}),\n               Divider{.label = \"status\", .align = HQ_CENTER});\n}",
+          "code": "void widget_divider(Surface s) {\n  draw_text(s, \"Above the line\");\n  draw_divider(s.sub(Rect{0, 1, s.rect().width, 1}));\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"Below it\");\n  {\n    Divider divider;\n    divider.label = \"status\";\n    divider.align = HQ_CENTER;\n    draw_divider(s.sub(Rect{0, 3, s.rect().width, 1}),\n               divider);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -401,7 +401,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_status_bar(Surface s) {\n  // Usually the last thing drawn, pinned to the bottom row.\n  draw_status_bar(s, StatusBar{.items = {{\"F1\", \"Help\"},\n                                         {\"F2\", \"Theme\"},\n                                         {\"F3\", \"Filter\", 0, true},\n                                         {\"q\", \"Quit\"}},\n                               .right = {{\"\", \"0.41ms  184 cells\"}}});\n}",
+          "code": "void widget_status_bar(Surface s) {\n  {\n    StatusBar status_bar;\n    status_bar.items = {{\"F1\", \"Help\"}, {\"F2\", \"Theme\"}, {\"F3\", \"Filter\", 0, true}, {\"q\", \"Quit\"}};\n    status_bar.right = {{\"\", \"0.41ms 184 cells\"}};\n    // Usually the last thing drawn, pinned to the bottom row.\n  draw_status_bar(s, status_bar);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -566,7 +566,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_tree(Surface s) {\n  Tree tree;\n  TreeNode root{.label = \"systemd\"};\n  root.children.push_back(TreeNode{.label = \"bash\"});\n  TreeNode bun{.label = \"bun\"};\n  bun.children.push_back(TreeNode{.label = \"bun:worker\"});\n  root.children.push_back(bun);\n  root.children.push_back(TreeNode{.label = \"postgres\"});\n  tree.nodes.push_back(root);\n  tree.selected = 2;\n  draw_tree(s, tree);\n}",
+          "code": "void widget_tree(Surface s) {\n  Tree tree;\n  TreeNode root;\n  root.label = \"systemd\";\n  {\n    TreeNode tree_node;\n    tree_node.label = \"bash\";\n    root.children.push_back(tree_node);\n  }\n  TreeNode bun;\n  bun.label = \"bun\";\n  {\n    TreeNode tree_node;\n    tree_node.label = \"bun:worker\";\n    bun.children.push_back(tree_node);\n  }\n  root.children.push_back(bun);\n  {\n    TreeNode tree_node;\n    tree_node.label = \"postgres\";\n    root.children.push_back(tree_node);\n  }\n  tree.nodes.push_back(root);\n  tree.selected = 2;\n  draw_tree(s, tree);\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -676,7 +676,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_meter(Surface s) {\n  const int width = s.rect().width;\n  draw_meter(s.sub(Rect{0, 0, width, 1}), Meter{.value = 0.62, .label = \"CPU\"});\n  draw_meter(s.sub(Rect{0, 1, width, 1}), Meter{.value = 0.31, .label = \"MEM\"});\n  draw_meter(s.sub(Rect{0, 2, width, 1}), Meter{.value = 0.87, .label = \"SWP\"});\n}",
+          "code": "void widget_meter(Surface s) {\n  const int width = s.rect().width;\n  {\n    Meter meter;\n    meter.value = 0.87;\n    meter.label = \"SWP\";\n    {\n    Meter meter;\n    meter.value = 0.31;\n    meter.label = \"MEM\";\n    {\n    Meter meter;\n    meter.value = 0.62;\n    meter.label = \"CPU\";\n    draw_meter(s.sub(Rect{0, 0, width, 1}), meter);\n  }\n  draw_meter(s.sub(Rect{0, 1, width, 1}), meter);\n  }\n  draw_meter(s.sub(Rect{0, 2, width, 1}), meter);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -770,7 +770,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_progress(Surface s) {\n  draw_progress(s, Progress{.value = 37, .max = 120, .label = \"Indexing\", .show_count = true});\n  draw_progress(s.sub(Rect{0, 1, s.rect().width, 1}),\n                Progress{.value = 0.82, .label = \"Upload\"});\n}",
+          "code": "void widget_progress(Surface s) {\n  {\n    Progress progress;\n    progress.value = 0.82;\n    progress.label = \"Upload\";\n    {\n    Progress progress;\n    progress.value = 37;\n    progress.max = 120;\n    progress.label = \"Indexing\";\n    progress.show_count = true;\n    draw_progress(s, progress);\n  }\n  draw_progress(s.sub(Rect{0, 1, s.rect().width, 1}),\n                progress);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -880,7 +880,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_sparkline(Surface s) {\n  draw_sparkline(s, Sparkline{.values = cpu_history(), .label = \"CPU \", .text = \"44%\"});\n}",
+          "code": "void widget_sparkline(Surface s) {\n  {\n    Sparkline sparkline;\n    sparkline.values = cpu_history();\n    sparkline.label = \"CPU \";\n    sparkline.text = \"44%\";\n    draw_sparkline(s, sparkline);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -935,7 +935,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_histogram(Surface s) {\n  // Block columns. Cheaper than Braille and easier to read when short.\n  draw_columns(s, Columns{.values = cpu_history()});\n}",
+          "code": "void widget_histogram(Surface s) {\n  {\n    Columns columns;\n    columns.values = cpu_history();\n    // Block columns. Cheaper than Braille and easier to read when short.\n  draw_columns(s, columns);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -986,7 +986,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_heat_bar(Surface s) {\n  // Coloured along the theme's heat ramp, like btop's temperatures.\n  draw_heat_bar(s, HeatBar{.value = 0.28});\n  draw_heat_bar(s.sub(Rect{0, 1, s.rect().width, 1}), HeatBar{.value = 0.64});\n  draw_heat_bar(s.sub(Rect{0, 2, s.rect().width, 1}), HeatBar{.value = 0.91});\n}",
+          "code": "void widget_heat_bar(Surface s) {\n  {\n    HeatBar heat_bar;\n    heat_bar.value = 0.91;\n    {\n    HeatBar heat_bar;\n    heat_bar.value = 0.64;\n    {\n    HeatBar heat_bar;\n    heat_bar.value = 0.28;\n    // Coloured along the theme's heat ramp, like btop's temperatures.\n  draw_heat_bar(s, heat_bar);\n  }\n  draw_heat_bar(s.sub(Rect{0, 1, s.rect().width, 1}), heat_bar);\n  }\n  draw_heat_bar(s.sub(Rect{0, 2, s.rect().width, 1}), heat_bar);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -1151,7 +1151,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_button(Surface s) {\n  draw_button(s.sub(Rect{0, 0, 11, 1}), Button{.label = \"Primary\"});\n  draw_button(s.sub(Rect{12, 0, 11, 1}), Button{.label = \"Success\", .variant = HQ_BUTTON_SUCCESS});\n  draw_button(s.sub(Rect{24, 0, 10, 1}), Button{.label = \"Danger\", .variant = HQ_BUTTON_DANGER});\n}",
+          "code": "void widget_button(Surface s) {\n  {\n    Button button;\n    button.label = \"Danger\";\n    button.variant = HQ_BUTTON_DANGER;\n    {\n    Button button;\n    button.label = \"Success\";\n    button.variant = HQ_BUTTON_SUCCESS;\n    {\n    Button button;\n    button.label = \"Primary\";\n    draw_button(s.sub(Rect{0, 0, 11, 1}), button);\n  }\n  draw_button(s.sub(Rect{12, 0, 11, 1}), button);\n  }\n  draw_button(s.sub(Rect{24, 0, 10, 1}), button);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -1206,7 +1206,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_checkbox(Surface s) {\n  draw_checkbox(s.sub(Rect{0, 0, 14, 1}),\n                Checkbox{.label = \"Toggle\", .checked = true, .variant = HQ_CHECKBOX_TOGGLE});\n  draw_checkbox(s.sub(Rect{16, 0, 14, 1}), Checkbox{.label = \"Checkbox\"});\n}",
+          "code": "void widget_checkbox(Surface s) {\n  {\n    Checkbox checkbox;\n    checkbox.label = \"Checkbox\";\n    {\n    Checkbox checkbox;\n    checkbox.label = \"Toggle\";\n    checkbox.checked = true;\n    checkbox.variant = HQ_CHECKBOX_TOGGLE;\n    draw_checkbox(s.sub(Rect{0, 0, 14, 1}),\n                checkbox);\n  }\n  draw_checkbox(s.sub(Rect{16, 0, 14, 1}), checkbox);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -1261,7 +1261,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_select(Surface s) {\n  draw_select(s, Select{.value = \"Dracula\",\n                        .open = true,\n                        .options = {\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"},\n                        .selected_index = 1,\n                        .width = 20});\n}",
+          "code": "void widget_select(Surface s) {\n  {\n    Select select;\n    select.value = \"Dracula\";\n    select.open = true;\n    select.options = {\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"};\n    select.selected_index = 1;\n    select.width = 20;\n    draw_select(s, select);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -1312,7 +1312,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_text_input(Surface s) {\n  draw_text_input(s, TextInput{.value = \"postgres\", .label = \"Search\"});\n  draw_text_input(s.sub(Rect{0, 2, s.rect().width, 1}),\n                  TextInput{.placeholder = \"type to filter…\", .label = \"Filter\"});\n}",
+          "code": "void widget_text_input(Surface s) {\n  {\n    TextInput text_input;\n    text_input.placeholder = \"type to filter…\";\n    text_input.label = \"Filter\";\n    {\n    TextInput text_input;\n    text_input.value = \"postgres\";\n    text_input.label = \"Search\";\n    draw_text_input(s, text_input);\n  }\n  draw_text_input(s.sub(Rect{0, 2, s.rect().width, 1}),\n                  text_input);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -1367,7 +1367,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_tabs(Surface s) {\n  draw_tabs(s, Tabs{.tabs = {\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"},\n                    .active = 1});\n}",
+          "code": "void widget_tabs(Surface s) {\n  {\n    Tabs tabs;\n    tabs.tabs = {\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"};\n    tabs.active = 1;\n    draw_tabs(s, tabs);\n  }\n}",
           "syntax": "cpp"
         },
         "ruby": {
@@ -1422,7 +1422,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_modal(Surface s) {\n  // Overlays draw over everything already on the screen, centred.\n  Modal modal;\n  modal.title = \"Confirm Action\";\n  modal.message = \"Terminate process 4821 (postgres)?\";\n  modal.width = 46;\n  modal.height = 9;\n  modal.buttons = {{.label = \"Yes\", .variant = HQ_BUTTON_SUCCESS, .focused = true},\n                   {.label = \"No\", .variant = HQ_BUTTON_GHOST}};\n  draw_modal(s, modal);\n}",
+          "code": "void widget_modal(Surface s) {\n  // Overlays draw over everything already on the screen, centred.\n  Modal modal;\n  modal.title = \"Confirm Action\";\n  modal.message = \"Terminate process 4821 (postgres)?\";\n  modal.width = 46;\n  modal.height = 9;\n  ModalButton yes;\n  yes.label = \"Yes\";\n  yes.variant = HQ_BUTTON_SUCCESS;\n  yes.focused = true;\n  ModalButton no;\n  no.label = \"No\";\n  no.variant = HQ_BUTTON_GHOST;\n  modal.buttons = {yes, no};\n  draw_modal(s, modal);\n}",
           "syntax": "cpp"
         }
       }
@@ -1500,7 +1500,7 @@
           "syntax": "zig"
         },
         "cpp": {
-          "code": "void widget_tooltip(Surface s) {\n  draw_text(s, \"Tooltips are overlays positioned at a cell.\");\n  draw_tooltip(s, Tooltip{.text = \"swap is 87% full\", .x = 6, .y = 3});\n}",
+          "code": "void widget_tooltip(Surface s) {\n  draw_text(s, \"Tooltips are overlays positioned at a cell.\");\n  {\n    Tooltip tooltip;\n    tooltip.text = \"swap is 87% full\";\n    tooltip.x = 6;\n    tooltip.y = 3;\n    draw_tooltip(s, tooltip);\n  }\n}",
           "syntax": "cpp"
         }
       }
