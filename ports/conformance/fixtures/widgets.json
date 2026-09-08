@@ -4973,6 +4973,298 @@
     }
   },
   {
+    "name": "shadow",
+    "width": 16,
+    "height": 5,
+    "result": {
+      "width": 16,
+      "height": 5,
+      "chars": [
+        [
+          80,
+          120
+        ]
+      ],
+      "fg": [
+        [
+          40,
+          29806811
+        ],
+        [
+          1,
+          22634083
+        ],
+        [
+          10,
+          29806811
+        ],
+        [
+          6,
+          22634083
+        ],
+        [
+          23,
+          29806811
+        ]
+      ],
+      "bg": [
+        [
+          40,
+          17106698
+        ],
+        [
+          1,
+          16909061
+        ],
+        [
+          10,
+          17106698
+        ],
+        [
+          6,
+          16909061
+        ],
+        [
+          23,
+          17106698
+        ]
+      ],
+      "attrs": [
+        [
+          80,
+          0
+        ]
+      ],
+      "clusters": [],
+      "text": [
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx"
+      ]
+    }
+  },
+  {
+    "name": "shadow-offset",
+    "width": 16,
+    "height": 5,
+    "result": {
+      "width": 16,
+      "height": 5,
+      "chars": [
+        [
+          80,
+          120
+        ]
+      ],
+      "fg": [
+        [
+          40,
+          29806811
+        ],
+        [
+          2,
+          22634083
+        ],
+        [
+          10,
+          29806811
+        ],
+        [
+          6,
+          22634083
+        ],
+        [
+          22,
+          29806811
+        ]
+      ],
+      "bg": [
+        [
+          40,
+          17106698
+        ],
+        [
+          2,
+          16909061
+        ],
+        [
+          10,
+          17106698
+        ],
+        [
+          6,
+          16909061
+        ],
+        [
+          22,
+          17106698
+        ]
+      ],
+      "attrs": [
+        [
+          80,
+          0
+        ]
+      ],
+      "clusters": [],
+      "text": [
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx"
+      ]
+    }
+  },
+  {
+    "name": "shadow-back",
+    "width": 16,
+    "height": 5,
+    "result": {
+      "width": 16,
+      "height": 5,
+      "chars": [
+        [
+          80,
+          120
+        ]
+      ],
+      "fg": [
+        [
+          20,
+          29806811
+        ],
+        [
+          6,
+          22634083
+        ],
+        [
+          10,
+          29806811
+        ],
+        [
+          1,
+          22634083
+        ],
+        [
+          43,
+          29806811
+        ]
+      ],
+      "bg": [
+        [
+          20,
+          17106698
+        ],
+        [
+          6,
+          16909061
+        ],
+        [
+          10,
+          17106698
+        ],
+        [
+          1,
+          16909061
+        ],
+        [
+          43,
+          17106698
+        ]
+      ],
+      "attrs": [
+        [
+          80,
+          0
+        ]
+      ],
+      "clusters": [],
+      "text": [
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx"
+      ]
+    }
+  },
+  {
+    "name": "shadow-solid",
+    "width": 16,
+    "height": 5,
+    "result": {
+      "width": 16,
+      "height": 5,
+      "chars": [
+        [
+          40,
+          120
+        ],
+        [
+          1,
+          32
+        ],
+        [
+          10,
+          120
+        ],
+        [
+          6,
+          32
+        ],
+        [
+          23,
+          120
+        ]
+      ],
+      "fg": [
+        [
+          80,
+          29806811
+        ]
+      ],
+      "bg": [
+        [
+          40,
+          17106698
+        ],
+        [
+          1,
+          17830936
+        ],
+        [
+          10,
+          17106698
+        ],
+        [
+          6,
+          17830936
+        ],
+        [
+          23,
+          17106698
+        ]
+      ],
+      "attrs": [
+        [
+          80,
+          0
+        ]
+      ],
+      "clusters": [],
+      "text": [
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxx",
+        "xxxxxxxx xxxxxxx",
+        "xxx      xxxxxxx",
+        "xxxxxxxxxxxxxxxx"
+      ]
+    }
+  },
+  {
     "name": "badge",
     "width": 20,
     "height": 1,

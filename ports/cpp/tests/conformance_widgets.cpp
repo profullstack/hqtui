@@ -215,6 +215,42 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_canvas(s, c);
     return true;
   }
+  if (name == "shadow") {
+    Fill f;
+    f.symbol = "x";
+    draw_fill(s, f);
+    draw_shadow(s, Rect{2, 1, 6, 2});
+    return true;
+  }
+  if (name == "shadow-offset") {
+    Fill f;
+    f.symbol = "x";
+    draw_fill(s, f);
+    Shadow sh;
+    sh.offset_x = 2;
+    sh.offset_y = 1;
+    draw_shadow(s, Rect{2, 1, 6, 2}, sh);
+    return true;
+  }
+  if (name == "shadow-back") {
+    Fill f;
+    f.symbol = "x";
+    draw_fill(s, f);
+    Shadow sh;
+    sh.offset_x = -1;
+    sh.offset_y = -1;
+    draw_shadow(s, Rect{5, 2, 6, 2}, sh);
+    return true;
+  }
+  if (name == "shadow-solid") {
+    Fill f;
+    f.symbol = "x";
+    draw_fill(s, f);
+    Shadow sh;
+    sh.color = hq_rgb(0x10, 0x14, 0x18);
+    draw_shadow(s, Rect{2, 1, 6, 2}, sh);
+    return true;
+  }
   if (name == "badge") {
     {
       Badge badge;

@@ -112,6 +112,23 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 			Shapes: []Shape{{Kind: ShapePoints, Points: []Point{{5, 5}}}},
 			X:      &Bounds{0, 10}, Y: &Bounds{0, 10}, Grid: true,
 		})
+	case "shadow":
+		DrawFill(s, FillOptions{Symbol: "x"})
+		DrawShadow(s, Rect{X: 2, Y: 1, Width: 6, Height: 2},
+			ShadowOptions{OffsetX: 1, OffsetY: 1, Amount: 0.55})
+	case "shadow-offset":
+		DrawFill(s, FillOptions{Symbol: "x"})
+		DrawShadow(s, Rect{X: 2, Y: 1, Width: 6, Height: 2},
+			ShadowOptions{OffsetX: 2, OffsetY: 1, Amount: 0.55})
+	case "shadow-back":
+		DrawFill(s, FillOptions{Symbol: "x"})
+		DrawShadow(s, Rect{X: 5, Y: 2, Width: 6, Height: 2},
+			ShadowOptions{OffsetX: -1, OffsetY: -1, Amount: 0.55})
+	case "shadow-solid":
+		DrawFill(s, FillOptions{Symbol: "x"})
+		solid := RGB(0x10, 0x14, 0x18)
+		DrawShadow(s, Rect{X: 2, Y: 1, Width: 6, Height: 2},
+			ShadowOptions{OffsetX: 1, OffsetY: 1, Color: &solid})
 	case "badge":
 		DrawBadge(s, BadgeOptions{Text: "LIVE"})
 	case "badge-outline":

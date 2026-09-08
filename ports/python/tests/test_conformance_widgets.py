@@ -30,6 +30,8 @@ from hqtui.graphics import (
     plot,
     sparkline,
 )
+from hqtui.color import rgb
+from hqtui.layout import Rect
 from hqtui.surface import Surface
 
 from .support import assert_buffer, fixture, scene
@@ -124,6 +126,18 @@ def draw_scene(case, name: str, s: Surface) -> None:
             shapes=[gc.Shape(kind="points", points=[(5, 5)])],
             x=gc.Bounds(0, 10), y=gc.Bounds(0, 10), grid=True,
         ))
+    elif name == "shadow":
+        w.draw_fill(s, w.FillOptions(symbol="x"))
+        w.draw_shadow(s, Rect(2, 1, 6, 2))
+    elif name == "shadow-offset":
+        w.draw_fill(s, w.FillOptions(symbol="x"))
+        w.draw_shadow(s, Rect(2, 1, 6, 2), w.ShadowOptions(offset_x=2, offset_y=1))
+    elif name == "shadow-back":
+        w.draw_fill(s, w.FillOptions(symbol="x"))
+        w.draw_shadow(s, Rect(5, 2, 6, 2), w.ShadowOptions(offset_x=-1, offset_y=-1))
+    elif name == "shadow-solid":
+        w.draw_fill(s, w.FillOptions(symbol="x"))
+        w.draw_shadow(s, Rect(2, 1, 6, 2), w.ShadowOptions(color=rgb(0x10, 0x14, 0x18)))
     elif name == "badge":
         w.draw_badge(s, w.BadgeOptions(text="LIVE"))
     elif name == "badge-outline":

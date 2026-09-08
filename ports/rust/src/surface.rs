@@ -348,6 +348,15 @@ pub struct Surface {
 }
 
 impl Surface {
+    /// The frame buffer this surface draws into.
+    ///
+    /// For effects that read a cell before writing it -- a shadow dims what is
+    /// already there rather than painting over it, so it cannot go through the
+    /// write-only drawing methods.
+    pub fn buffer_mut(&self) -> std::cell::RefMut<'_, FrameBuffer> {
+        self.buffer.borrow_mut()
+    }
+
     pub fn new(buffer: SharedBuffer, rect: Rect, theme: Rc<Theme>, clip: Option<Rect>) -> Surface {
         let clip = match clip {
             Some(c) => rect.intersect(c),

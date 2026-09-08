@@ -591,6 +591,19 @@ struct Projection {
 Projection canvas_projection(const Braille &, Bounds x, Bounds y);
 /// A canvas drawn in the caller's own coordinates rather than in pixels.
 void draw_canvas(Surface, const Canvas &);
+
+struct Shadow {
+  /// How far the shadow falls.
+  int offset_x = 1, offset_y = 1;
+  /// 0-1: how much light the covered cells lose.
+  double amount = .55;
+  /// Paint this colour instead of dimming what is underneath.
+  std::optional<Color> color;
+};
+/// Darken every cell in a region, keeping its character and its hue.
+void dim_rect(Surface, int x, int y, int width, int height, double amount);
+/// Cast a shadow from `rect` onto the surface, behind whatever sits there.
+void draw_shadow(Surface, Rect rect, const Shadow & = {});
 void draw_gauge(Surface, double, std::string_view);
 void draw_keys(Surface, const std::vector<KeyValue> &, bool spread = true);
 /// Which edge a scrollbar sits on, and therefore which way it runs.
