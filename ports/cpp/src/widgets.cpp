@@ -507,6 +507,19 @@ void draw_graph(Surface surface, const Graph &o) {
       text(s, 0, s.rect().height - 1, fit(label(o.min), lw, HQ_RIGHT), t.muted);
     s = s.sub({lw, 0, std::max(0, s.rect().width - lw), s.rect().height});
   }
+  // The time axis costs the bottom row, and the plot gets what is left.
+  if (!o.time_axis.empty() && s.rect().height > 1) {
+    Surface plot_surface = s;
+    int pw = plot_surface.rect().width, ph = plot_surface.rect().height;
+    double step = o.time_axis.size() > 1 ? double(pw - 1) / double(o.time_axis.size() - 1) : 0;
+    for (std::size_t i = 0; i < o.time_axis.size(); i++) {
+      const auto &label = o.time_axis[i];
+      int x = std::min(pw - int(width(label)), iround(double(i) * step));
+      text(plot_surface, std::max(0, x), ph - 1, label, t.muted, 0, {});
+    }
+    s = s.sub({0, 0, pw, ph - 1});
+  }
+
   int w = s.rect().width, h = s.rect().height;
   if (w <= 0 || h <= 0)
     return;
@@ -628,6 +641,53 @@ void draw_graph(Surface surface, const Graph &o) {
     }
   }
 }
+void draw_donut(Surface s, const Donut &o) {
+  auto &t = theme(s);
+  int w = s.rect().width, h = s.rect().height;
+  if (w <= 0 || h <= 0)
+    return;
+  double total = 0;
+  for (const auto &seg : o.segments)
+    total += std::max(0., seg.value);
+  if (total <= 0)
+    total = 1;
+
+  Braille canvas(w, h);
+  // Colour is per cell rather than per segment, because one cell can hold dots
+  // from two segments and the last one written wins, as in the reference.
+  std::vector<Color> colors(std::size_t(w) * std::size_t(h), 0);
+  double cx = canvas.w / 2., cy = canvas.h / 2.;
+  double outer = std::min(canvas.w / 2., canvas.h / 2.) - 1, inner = outer * .55;
+
+  double angle = -std::acos(-1.) / 2;
+  for (std::size_t i = 0; i < o.segments.size(); i++) {
+    const auto &seg = o.segments[i];
+    double sweep = (std::max(0., seg.value) / total) * std::acos(-1.) * 2;
+    Color color = seg.color ? seg.color : hq_series(&t, i);
+    int steps = std::max(8, iround(sweep * outer * 3));
+    for (int step = 0; step <= steps; step++) {
+      double a = angle + (sweep * step) / steps;
+      for (double r = inner; r <= outer; r += .4) {
+        int x = iround(cx + std::cos(a) * r);
+        int y = iround(cy + std::sin(a) * r * .9);
+        canvas.pixel(x, y);
+        int col = x >> 1, row = y >> 2;
+        if (col >= 0 && col < w && row >= 0 && row < h)
+          colors[std::size_t(row) * std::size_t(w) + std::size_t(col)] = color;
+      }
+    }
+    angle += sweep;
+  }
+
+  canvas.blit(
+      s,
+      [&](int col, int row) {
+        Color c = colors[std::size_t(row) * std::size_t(w) + std::size_t(col)];
+        return c ? c : t.muted;
+      },
+      o.background);
+}
+
 void draw_gauge(Surface s, double value, std::string_view label) {
   int w = s.rect().width, h = s.rect().height;
   if (w <= 0 || h <= 0)

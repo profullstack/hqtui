@@ -132,6 +132,8 @@ struct Graph {
   double min = 0;
   std::optional<double> max;
   bool axis = false, grid = false, legend = false;
+  /// Labels along the bottom, e.g. {"60s", "30s", "0s"}. Costs a row.
+  std::vector<std::string> time_axis;
   std::string mode = "braille";
   std::vector<Color> colors;
   std::optional<Color> background;
@@ -205,10 +207,15 @@ public:
     }
   }
   void blit(Surface s, Color color, std::optional<Color> bg = {}) const {
+    blit(s, [color](int, int) { return color; }, bg);
+  }
+  /// Blit with a colour chosen per cell, for a canvas whose parts differ.
+  void blit(Surface s, const std::function<Color(int, int)> &color_at,
+            std::optional<Color> bg = {}) const {
     for (int y = 0; y < rows; y++)
       for (int x = 0; x < cols; x++)
         if (auto d = dots[std::size_t(y) * cols + x]) {
-          auto st = Style().foreground(color);
+          auto st = Style().foreground(color_at(x, y));
           if (bg)
             st = st.background(*bg);
           s.set(x, y, 0x2800 + d, st);
@@ -437,6 +444,18 @@ struct Tooltip {
   Color color = 0;
 };
 void draw_tooltip(Surface root, const Tooltip &);
+
+/// A ring split into labelled, coloured segments. Reads well from about 12x6.
+struct DonutSegment {
+  double value = 0;
+  Color color = 0;
+  std::string label;
+};
+struct Donut {
+  std::vector<DonutSegment> segments;
+  std::optional<Color> background;
+};
+void draw_donut(Surface, const Donut &);
 
 struct Column {
   std::string title;

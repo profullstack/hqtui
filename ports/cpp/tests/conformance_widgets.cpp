@@ -2,9 +2,10 @@
 // compared against what the TypeScript reference produced.
 //
 // The other native ports have had this for a while; C++ did not, which is how
-// it ended up implementing seven widgets while claiming to be a port. A scene
-// with no case here is reported as missing rather than skipped, so the gap is
-// visible in the test output instead of in a coverage table nobody reads.
+// it ended up implementing seven widgets while claiming to be a port. All 53
+// scenes are covered now. A scene with no case here is reported as missing
+// rather than skipped, so a future gap shows up in the test output instead of
+// in a coverage table nobody reads.
 //
 // Rows are compared as text. The fixture also carries per-cell colour, which
 // the richer ports check; text catches every structural difference and is what
@@ -142,6 +143,89 @@ bool draw_scene(const std::string &name, Surface s) {
     pane.total = 3;
     table.pane = &pane;
     draw_table(s, table);
+    return true;
+  }
+  if (name == "graph-axis") {
+    Graph g;
+    g.series = {{kSeries, 0, "", false}};
+    g.axis = true;
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "plot-braille") {
+    Graph g;
+    g.series = {{kSeries, 0, "", false}};
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "plot-block") {
+    Graph g;
+    g.series = {{kSeries, 0, "", false}};
+    g.mode = "block";
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "plot-ascii") {
+    Graph g;
+    g.series = {{kSeries, 0, "", false}};
+    g.mode = "ascii";
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "plot-fill") {
+    Graph g;
+    g.series = {{kSeries, 0, "", true}};
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "plot-grid") {
+    Graph g;
+    g.series = {{kSeries, 0, "", false}};
+    g.grid = true;
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "plot-multi") {
+    std::vector<double> inverted;
+    for (double v : kSeries) inverted.push_back(10 - v);
+    Graph g;
+    g.series = {{kSeries, 0, "", false}, {inverted, 0, "", false}};
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "graph-legend") {
+    std::vector<double> halved;
+    for (double v : kSeries) halved.push_back(v / 2);
+    Graph g;
+    g.series = {{kSeries, 0, "rx", false}, {halved, 0, "tx", false}};
+    g.legend = true;
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "graph-timeaxis") {
+    Graph g;
+    g.series = {{kSeries, 0, "", false}};
+    g.time_axis = {"60s", "30s", "0s"};
+    draw_graph(s, g);
+    return true;
+  }
+  if (name == "table-scrollbar") {
+    Table table;
+    table.columns = {{"#", -1, 1, 0, HQ_RIGHT}, {"VALUE"}};
+    for (int i = 0; i < 20; i++)
+      table.rows.push_back({{std::to_string(i), "row " + std::to_string(i)}});
+    Pane pane;
+    pane.selected = 12;
+    pane.total = 20;
+    table.pane = &pane;
+    table.scrollbar = true;
+    draw_table(s, table);
+    return true;
+  }
+  if (name == "donut") {
+    Donut d;
+    d.segments = {{3}, {5}, {2}};
+    draw_donut(s, d);
     return true;
   }
   if (name == "modal") {
