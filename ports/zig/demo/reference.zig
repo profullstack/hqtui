@@ -12,10 +12,21 @@ pub const C = struct {
     v: V,
     index: usize = 0,
     color: ?Color = null,
+    /// The size the enclosing row gave this panel, if it gave one. Null leaves
+    /// the container's own default in place.
+    size: ?Size = null,
     pub fn sub(c: *C, p: *P, v: V, index: usize) !*C {
         const child = try p.ctx.allocator.create(C);
         child.* = .{ .s = c.s, .v = v, .index = index, .color = c.color };
         return child;
+    }
+    /// Draw `f` with an explicit size, the way the reference demo passes one
+    /// straight to the panel rather than wrapping it in a column.
+    pub fn sized(c: *C, p: *P, size: Size, comptime f: fn (*C, *P) anyerror!void) !void {
+        const child = try p.ctx.allocator.create(C);
+        child.* = c.*;
+        child.size = size;
+        try f(child, p);
     }
     pub fn at(c: *C, path: []const u8) V {
         return m.at(c.v, path);
@@ -25,6 +36,11 @@ pub const C = struct {
     }
     pub fn str(c: *C, path: []const u8) []const u8 {
         return m.string(c.at(path));
+    }
+    /// The seam a container of panels should use. Read it at the call site:
+    /// the demo screens run under both border modes.
+    pub fn panelGap(c: *C) usize {
+        return c.s.panelGap();
     }
     pub fn row(c: *C, p: *P, size: Size, gap: usize, comptime f: fn (*C, *P) anyerror!void) !void {
         try p.row(.{ .layout = .{ .size = size, .gap = gap } }, h.Body.with(c, f));

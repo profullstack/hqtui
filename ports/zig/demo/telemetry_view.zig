@@ -31,7 +31,7 @@ fn commas(p: *P, v: f64) ![]const u8 {
 }
 fn traffic(c: *C, p: *P) !void {
     if (c.s.real) try p.label("Protocol/direction: port-based estimates; HTTP rate: estimated from log growth");
-    try c.row(p, .{ .cells = 13 }, 1, trafficTop);
+    try c.row(p, .{ .cells = 13 }, c.panelGap(), trafficTop);
     try c.row(p, .{ .fr = 1 }, 1, trafficMiddle);
     if (m.arr(c.at("telemetry.http.recent")).len > 0) try c.panel(p, .{ .title = "Recent Requests", .layout = .{ .size = .{ .cells = 10 } }, .border_color = p.theme().primary }, requests);
 }
@@ -73,8 +73,8 @@ fn retrans(c: *C, p: *P) !void {
     try r.keys(p, &.{ r.kv("UDP in/out", try p.fmt("{s} / {s}", .{ try rate(p, c.n("telemetry.net.rates.udpIn")), try rate(p, c.n("telemetry.net.rates.udpOut")) }), t.muted), r.kv("ICMP", try p.fmt("{d:.0} / {d:.0}", .{ c.n("telemetry.net.icmpInMsgs"), c.n("telemetry.net.icmpOutMsgs") }), t.muted) }, true);
 }
 fn trafficMiddle(c: *C, p: *P) !void {
-    try c.col(p, .fill, 1, httpColumn);
-    try c.col(p, .{ .fr = 0.85 }, 1, sshColumn);
+    try c.col(p, .fill, c.panelGap(), httpColumn);
+    try c.col(p, .{ .fr = 0.85 }, c.panelGap(), sshColumn);
 }
 fn httpColumn(c: *C, p: *P) !void {
     try c.panel(p, .{ .title = "HTTP", .subtitle = if (c.at("telemetry.http") == .null) "no access log" else try p.fmt("{d:.1} req/s", .{c.n("telemetry.http.requestsPerSecond")}), .border_color = p.theme().success }, httpBody);
@@ -139,7 +139,7 @@ fn requests(c: *C, p: *P) !void {
     try r.table(c, p, 3, m.arr(c.at("telemetry.http.recent")), &cols, true, true, true);
 }
 fn sessions(c: *C, p: *P) !void {
-    try c.row(p, .{ .cells = 9 }, 1, sessionsTop);
+    try c.row(p, .{ .cells = 9 }, c.panelGap(), sessionsTop);
     try c.row(p, .{ .fr = 1 }, 1, sessionsBottom);
 }
 fn sessionsTop(c: *C, p: *P) !void {
@@ -164,7 +164,7 @@ fn processStates(c: *C, p: *P) !void {
 }
 fn sessionsBottom(c: *C, p: *P) !void {
     try c.panel(p, .{ .title = "Recent Logins", .subtitle = try p.fmt("{d} from wtmp", .{m.arr(c.at("telemetry.logins")).len}), .border_color = p.theme().accent }, logins);
-    try c.col(p, .{ .fr = 0.8 }, 1, failedColumn);
+    try c.col(p, .{ .fr = 0.8 }, c.panelGap(), failedColumn);
 }
 fn logins(c: *C, p: *P) !void {
     const t = p.theme().*;
@@ -196,7 +196,7 @@ fn sessionHistory(c: *C, p: *P) !void {
     try r.plot(p, c.at("telemetry.sessionHistory"), p.theme().success, null, false);
 }
 fn network(c: *C, p: *P) !void {
-    try c.row(p, .{ .cells = 13 }, 1, interfaces);
+    try c.row(p, .{ .cells = 13 }, c.panelGap(), interfaces);
     try c.row(p, .{ .fr = 1 }, 1, networkBottom);
 }
 fn interfaces(c: *C, p: *P) !void {
@@ -232,7 +232,7 @@ fn interfaceBody(c: *C, p: *P) !void {
 }
 fn networkBottom(c: *C, p: *P) !void {
     try c.panel(p, .{ .title = "Connections", .subtitle = try p.fmt("{d} open", .{m.arr(c.at("telemetry.connections")).len}), .border_color = p.theme().accent }, connections);
-    try c.col(p, .{ .fr = 0.7 }, 1, listenersColumn);
+    try c.col(p, .{ .fr = 0.7 }, c.panelGap(), listenersColumn);
 }
 fn connections(c: *C, p: *P) !void {
     const t = p.theme().*;
@@ -266,7 +266,7 @@ fn servicesTop(c: *C, p: *P) !void {
         if (m.eq(m.string(m.get(v, "active")), "failed")) count += 1;
     }
     try c.panel(p, .{ .title = "Services", .subtitle = if (count > 0) try p.fmt("{d} failed", .{count}) else try p.fmt("{d} units", .{data.len}), .subtitle_color = if (count > 0) t.danger else t.muted, .border_color = if (count > 0) t.danger else t.success }, units);
-    try c.col(p, .{ .fr = 0.85 }, 1, hardwareColumn);
+    try c.col(p, .{ .fr = 0.85 }, c.panelGap(), hardwareColumn);
 }
 fn units(c: *C, p: *P) !void {
     const t = p.theme().*;

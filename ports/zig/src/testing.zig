@@ -168,6 +168,19 @@ pub fn renderCollapsedToText(
     return parent.dupe(u8, try screen.text());
 }
 
+/// As `renderToScreen`, with adjacent panel borders merged. The parity
+/// fixtures cover both modes because collapsing changes the layout, not only
+/// the glyphs.
+pub fn renderCollapsedToScreen(
+    parent: std.mem.Allocator,
+    width: usize,
+    height: usize,
+    theme_name: []const u8,
+    view: ui.Body,
+) !RenderedScreen {
+    return renderWithCollapse(parent, width, height, theme_name, 0, .{}, true, view);
+}
+
 fn renderWithCollapse(
     parent: std.mem.Allocator,
     width: usize,

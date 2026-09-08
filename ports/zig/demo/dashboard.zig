@@ -11,34 +11,34 @@ pub fn render(s: *m.State, p: *P) !void {
 }
 fn draw(c: *C, p: *P) anyerror!void {
     if (p.width() >= 150) {
-        try c.row(p, .{ .cells = if (p.height() >= 44) 19 else 16 }, 1, wideTop);
-        try c.row(p, .{ .fr = 1 }, 1, wideMiddle);
-        try c.row(p, .{ .cells = 12 }, 1, wideBottom);
+        try c.row(p, .{ .cells = if (p.height() >= 44) 19 else 16 }, c.panelGap(), wideTop);
+        try c.row(p, .{ .fr = 1 }, c.panelGap(), wideMiddle);
+        try c.row(p, .{ .cells = 12 }, c.panelGap(), wideBottom);
     } else if (p.width() >= 100) {
-        try c.row(p, .{ .cells = 14 }, 1, mediumTop);
-        try c.row(p, .{ .fr = 1 }, 1, mediumMiddle);
-        try c.row(p, .{ .cells = 10 }, 1, mediumBottom);
+        try c.row(p, .{ .cells = 14 }, c.panelGap(), mediumTop);
+        try c.row(p, .{ .fr = 1 }, c.panelGap(), mediumMiddle);
+        try c.row(p, .{ .cells = 10 }, c.panelGap(), mediumBottom);
     } else {
-        try c.row(p, .{ .cells = 10 }, 1, compactTop);
+        try c.row(p, .{ .cells = 10 }, c.panelGap(), compactTop);
         try c.col(p, .fill, 0, processes);
-        try c.row(p, .{ .cells = 8 }, 1, network);
+        try c.row(p, .{ .cells = 8 }, c.panelGap(), network);
     }
 }
 fn wideTop(c: *C, p: *P) !void {
-    try c.col(p, .{ .fr = 1 }, 0, cpu);
-    try c.col(p, .{ .fr = 0.95 }, 0, memory);
-    try c.col(p, .{ .fr = 0.95 }, 0, disks);
-    try c.col(p, .{ .fr = 1.35 }, 0, system);
+    try c.sized(p, .{ .fr = 1 }, cpu);
+    try c.sized(p, .{ .fr = 0.95 }, memory);
+    try c.sized(p, .{ .fr = 0.95 }, disks);
+    try c.sized(p, .{ .fr = 1.35 }, system);
 }
 fn wideMiddle(c: *C, p: *P) !void {
-    try c.col(p, .{ .fr = 2 }, 0, processes);
-    try c.col(p, .{ .fr = 1.2 }, 0, network);
-    try c.col(p, .{ .fr = 1.2 }, 0, diskUsage);
+    try c.sized(p, .{ .fr = 2 }, processes);
+    try c.sized(p, .{ .fr = 1.2 }, network);
+    try c.sized(p, .{ .fr = 1.2 }, diskUsage);
 }
 fn wideBottom(c: *C, p: *P) !void {
     try temperatures(c, p);
     try sensors(c, p);
-    try c.col(p, .{ .fr = 1.6 }, 0, logs);
+    try c.sized(p, .{ .fr = 1.6 }, logs);
 }
 fn mediumTop(c: *C, p: *P) !void {
     try cpu(c, p);
@@ -46,8 +46,8 @@ fn mediumTop(c: *C, p: *P) !void {
     try system(c, p);
 }
 fn mediumMiddle(c: *C, p: *P) !void {
-    try c.col(p, .{ .fr = 1.6 }, 0, processes);
-    try c.col(p, .fill, 0, network);
+    try c.sized(p, .{ .fr = 1.6 }, processes);
+    try c.sized(p, .fill, network);
 }
 fn mediumBottom(c: *C, p: *P) !void {
     try temperatures(c, p);
@@ -59,7 +59,7 @@ fn compactTop(c: *C, p: *P) !void {
     try memory(c, p);
 }
 fn cpu(c: *C, p: *P) !void {
-    try c.panel(p, .{ .title = "CPU Overview", .subtitle = try r.pct(p, c.n("cpu.total")) }, cpuBody);
+    try c.panel(p, .{ .title = "CPU Overview", .subtitle = try r.pct(p, c.n("cpu.total")), .layout = .{ .size = c.size } }, cpuBody);
 }
 fn cpuBody(c: *C, p: *P) !void {
     const t = p.theme().*;
@@ -74,7 +74,7 @@ fn cpuBody(c: *C, p: *P) !void {
     try r.keys(p, &.{r.kv("Load Avg", try p.fmt("{d:.2}   {d:.2}   {d:.2}", .{ if (load.len > 0) m.num(load[0]) else 0, if (load.len > 1) m.num(load[1]) else 0, if (load.len > 2) m.num(load[2]) else 0 }), t.warning)}, true);
 }
 fn memory(c: *C, p: *P) !void {
-    try c.panel(p, .{ .title = "Memory & Swap" }, memoryBody);
+    try c.panel(p, .{ .title = "Memory & Swap", .layout = .{ .size = c.size } }, memoryBody);
 }
 fn memoryBody(c: *C, p: *P) !void {
     const t = p.theme().*;
@@ -91,7 +91,7 @@ fn memoryBody(c: *C, p: *P) !void {
     try r.keys(p, &.{ r.kv("Used:", try r.bytes(p, c.n("memory.swapUsed"), 2), t.secondary), r.kv("Free:", try r.bytes(p, c.n("memory.swapTotal") - c.n("memory.swapUsed"), 2), t.muted) }, true);
 }
 fn disks(c: *C, p: *P) !void {
-    try c.panel(p, .{ .title = "Disks" }, disksBody);
+    try c.panel(p, .{ .title = "Disks", .layout = .{ .size = c.size } }, disksBody);
 }
 fn diskRates(c: *C, p: *P) !void {
     const t = p.theme().*;
@@ -118,7 +118,7 @@ fn disksBody(c: *C, p: *P) !void {
     }
 }
 fn system(c: *C, p: *P) !void {
-    try c.panel(p, .{ .title = "System" }, systemBody);
+    try c.panel(p, .{ .title = "System", .layout = .{ .size = c.size } }, systemBody);
 }
 fn processCount(c: *C) f64 {
     return if (c.n("system.processCount") != 0) c.n("system.processCount") else @floatFromInt(m.arr(c.at("processes")).len);
@@ -169,7 +169,7 @@ fn systemBody(c: *C, p: *P) !void {
     }
 }
 fn processes(c: *C, p: *P) !void {
-    try c.panel(p, .{ .title = try p.fmt("Processes (sorted by {s})", .{([_][]const u8{ "CPU", "MEM", "PID", "NAME" })[c.s.sort]}), .subtitle = if (c.s.filter.len > 0) try p.fmt("filter: {s}", .{c.s.filter.slice()}) else "", .focus_id = "dashboard.processes" }, processesBody);
+    try c.panel(p, .{ .title = try p.fmt("Processes (sorted by {s})", .{([_][]const u8{ "CPU", "MEM", "PID", "NAME" })[c.s.sort]}), .subtitle = if (c.s.filter.len > 0) try p.fmt("filter: {s}", .{c.s.filter.slice()}) else "", .focus_id = "dashboard.processes", .layout = .{ .size = c.size } }, processesBody);
 }
 fn processesBody(c: *C, p: *P) !void {
     const t = p.theme().*;
@@ -183,7 +183,7 @@ fn processesBody(c: *C, p: *P) !void {
     try r.table(c, p, 1, data, &cols, false, true, true);
 }
 fn network(c: *C, p: *P) !void {
-    try c.panel(p, .{ .title = "Network" }, networkBody);
+    try c.panel(p, .{ .title = "Network", .layout = .{ .size = c.size } }, networkBody);
 }
 fn networkRates(c: *C, p: *P) !void {
     const t = p.theme().*;
@@ -213,7 +213,7 @@ fn networkBody(c: *C, p: *P) !void {
 }
 fn diskUsage(c: *C, p: *P) !void {
     const disks_ = m.arr(c.at("disks"));
-    try c.panel(p, .{ .title = "Disk Usage", .subtitle = if (disks_.len > 0) m.string(m.get(disks_[0], "device")) else "" }, diskUsageBody);
+    try c.panel(p, .{ .title = "Disk Usage", .subtitle = if (disks_.len > 0) m.string(m.get(disks_[0], "device")) else "", .layout = .{ .size = c.size } }, diskUsageBody);
 }
 fn ioGraph(c: *C, p: *P) !void {
     const read = c.index == 0;
@@ -282,7 +282,7 @@ fn sensorsBody(c: *C, p: *P) !void {
     try r.keys(p, rows, true);
 }
 fn logs(c: *C, p: *P) !void {
-    try c.panel(p, .{ .title = "Logs" }, logsBody);
+    try c.panel(p, .{ .title = "Logs", .layout = .{ .size = c.size } }, logsBody);
 }
 fn logsBody(c: *C, p: *P) !void {
     try r.log(c, p, 7);

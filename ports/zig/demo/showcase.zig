@@ -25,8 +25,8 @@ fn graphics(c: *C, p: *P) !void {
     try c.row(p, .{ .fr = 1 }, 1, graphicsColumns);
 }
 fn graphicsColumns(c: *C, p: *P) !void {
-    try c.col(p, .fill, 1, graphicsLeft);
-    try c.col(p, .fill, 1, graphicsRight);
+    try c.col(p, .fill, c.panelGap(), graphicsLeft);
+    try c.col(p, .fill, c.panelGap(), graphicsRight);
 }
 fn graphicsLeft(c: *C, p: *P) !void {
     for ([_][]const u8{ "Braille (2×4 pixels per cell)", "Block elements", "ASCII fallback" }, 0..) |title, i| {
@@ -139,7 +139,7 @@ fn themeRampDraw(c: *C, s: h.Surface) !void {
     }
 }
 fn input(c: *C, p: *P) !void {
-    try c.row(p, .{ .fr = 1 }, 1, inputColumns);
+    try c.row(p, .{ .fr = 1 }, c.panelGap(), inputColumns);
 }
 fn inputColumns(c: *C, p: *P) !void {
     try c.panel(p, .{ .title = "Last Events" }, lastEvents);
@@ -186,7 +186,7 @@ fn inputButton(c: *C, p: *P) !void {
     }
 }
 fn stress(c: *C, p: *P) !void {
-    try c.row(p, .{ .cells = 3 }, 1, stressStats);
+    try c.row(p, .{ .cells = 3 }, c.panelGap(), stressStats);
     try c.panel(p, .{ .title = "Full-screen churn" }, churn);
 }
 fn stressStats(c: *C, p: *P) !void {
@@ -225,8 +225,8 @@ fn components(c: *C, p: *P) !void {
     try c.row(p, .{ .fr = 1 }, 1, componentColumns);
 }
 fn componentColumns(c: *C, p: *P) !void {
-    try c.col(p, .fill, 1, componentLeft);
-    try c.col(p, .fill, 1, componentRight);
+    try c.col(p, .fill, c.panelGap(), componentLeft);
+    try c.col(p, .fill, c.panelGap(), componentRight);
 }
 fn componentLeft(c: *C, p: *P) !void {
     try c.panel(p, .{ .title = "Buttons & Inputs", .layout = .{ .size = .{ .cells = 13 } } }, controls);

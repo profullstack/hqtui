@@ -173,6 +173,12 @@ pub const State = struct {
     pub fn deinit(self: *State) void {
         self.parsed.deinit();
     }
+    /// The seam between panels: zero while collapsed, so their borders merge.
+    /// The library merges a seam only where two bordered siblings already
+    /// touch, so toggling `collapse` without closing the gap moved nothing.
+    pub fn panelGap(self: *const State) usize {
+        return if (self.collapse) 0 else 1;
+    }
     pub fn data(self: *const State) Value {
         return self.parsed.value;
     }
