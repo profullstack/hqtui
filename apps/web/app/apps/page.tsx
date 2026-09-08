@@ -69,6 +69,90 @@ const APPS: App[] = [
       "The analyser is drawn on the braille canvas — four vertical pixels per character cell, which "
       + "is why the bars move smoothly instead of stepping through eight block glyphs.",
   },
+  {
+    shot: "diskpush",
+    name: "diskpush",
+    tagline: "Two panes and an rsync between them",
+    repo: "https://github.com/profullstack/diskpush",
+    install: "bunx diskpush",
+    body:
+      "Local on one side, an SSH host on the other, and a transfer panel that shows the plan before "
+      + "it runs and every path as it lands. rsync does the work; the interface exists so you can see "
+      + "what it is about to do.",
+    found:
+      "The transfer panel updates several times a second against a full file listing, which is where "
+      + "a renderer that diffs frames stops being an optimisation and starts being the reason it is usable.",
+  },
+  {
+    shot: "threatcrush",
+    name: "ThreatCrush",
+    tagline: "A security daemon you can watch",
+    repo: "https://github.com/profullstack/threatcrush",
+    install: "threatcrush tui",
+    body:
+      "Modules, a live event feed, top threats and a severity breakdown, fed by a daemon over a unix "
+      + "socket. When no daemon is running it says so and tells you how to start one, rather than "
+      + "filling the screen with invented attacks.",
+    found:
+      "Rendering to a buffer made three header and truncation defects into ordinary failing tests. "
+      + "They had been invisible because the old build wrote escape codes straight to stdout.",
+  },
+  {
+    shot: "coinpay",
+    name: "CoinPay",
+    tagline: "A merchant's money, in one screen",
+    repo: "https://github.com/profullstack/coinpayportal",
+    install: "coinpay finances",
+    body:
+      "Earnings, bank position and pipeline across seven screens, with a live payment feed over "
+      + "server-sent events. Bank syncs are a keypress, never automatic — the bridge allows about "
+      + "24 pulls a day.",
+    found:
+      "Every figure here is a fixture. It is the one app on this page whose real screen cannot be "
+      + "published, which is its own kind of design constraint.",
+  },
+  {
+    shot: "myna",
+    name: "myna",
+    tagline: "Post once, everywhere",
+    repo: "https://github.com/profullstack/mynaposter",
+    install: "bunx myna",
+    body:
+      "Compose in the terminal and publish to every network you have connected, with per-network "
+      + "character counts and thread splitting shown as you type. Credentials live in an encrypted "
+      + "vault the interface never reads.",
+    found:
+      "The screen had to be lifted out of the app loop to be captured at all. That refactor is what "
+      + "made its layout testable, which it had never been.",
+  },
+  {
+    shot: "logicsrc",
+    name: "logicsrc",
+    tagline: "Team vaults, without the plaintext",
+    repo: "https://github.com/profullstack/logicsrc",
+    install: "logicsrc teams tui",
+    body:
+      "Which vaults exist, what their secrets are called, who can decrypt them and what changed. It "
+      + "never fetches a decryption key and has no keybinding that would: a value that can appear on "
+      + "screen can appear in a screen share.",
+    found:
+      "Being metadata-only is why this is the one screenshot here taken from something close to a "
+      + "real shape without redaction.",
+  },
+  {
+    shot: "tsbb",
+    name: "tsbb",
+    tagline: "A message board in your terminal",
+    repo: "https://github.com/profullstack/tsbb",
+    install: "bunx tsbb",
+    body:
+      "Forums, topics, threads, search and notifications against any tsbb board. Unread, solved and "
+      + "locked are glyphs in the margin rather than colours alone, so the list still reads on a "
+      + "terminal with no colour at all.",
+    found:
+      "Its views were pure functions of state from the start, which is why the whole client is "
+      + "asserted on as text rather than described in a test.",
+  },
 ];
 
 export default async function Apps() {
@@ -84,9 +168,10 @@ export default async function Apps() {
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight">Apps built with HQTUI</h1>
           <p className="mt-4 text-lg text-white/60">
-            Three programs people actually run. They exist partly to keep the library honest: a
-            real application finds the gaps a widget gallery does not, and each of these has
-            already changed HQTUI.
+            Nine programs people actually run. They exist partly to keep the library honest: a
+            real application finds the gaps a widget gallery does not, and several of these have
+            already changed HQTUI — styled spans, collapsed borders and the braille metrics in
+            these very screenshots all came from building one of them.
           </p>
           <p className="mt-3 text-sm text-white/40">
             Every screenshot is rendered by HQTUI itself and captured at 2x — the same pipeline as
