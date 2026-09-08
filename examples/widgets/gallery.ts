@@ -191,6 +191,22 @@ export function scrollbar(ui: Container, theme: Theme): void {
 }
 // @end
 
+// @widget chart
+export function chart(ui: Container, theme: Theme): void {
+  // Points carry their own x, so a sparse series and a dense one line up.
+  ui.chart({
+    series: [
+      { points: [[0, 1], [2, 6], [5, 3], [8, 9], [10, 4]], label: "load" },
+      { points: [[0, 8], [10, 2]], label: "limit", color: theme.muted },
+    ],
+    axis: true,
+    legend: true,
+    x: { min: 0, max: 10, ticks: 3, format: (v) => `${v}s` },
+    y: { min: 0, max: 10 },
+  });
+}
+// @end
+
 // ----------------------------------------------------------------- meters
 
 // @widget meter

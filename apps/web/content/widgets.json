@@ -730,6 +730,61 @@
       }
     },
     {
+      "id": "chart",
+      "title": "Chart",
+      "category": "Meters",
+      "width": 48,
+      "height": 9,
+      "blurb": "Arbitrary (x, y) data with a domain on both axes. Lines, scatters and bars.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#5a6b7d;background:#05070a\"> 10</span><span style=\"color:#c6d0db;background:#05070a\">                                   </span><span style=\"color:#58a6ff;background:#05070a\">⢀</span><span style=\"color:#c6d0db;background:#05070a\">         </span>\n<span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#5a6b7d;background:#05070a\">⠤⢄⣀⣀</span><span style=\"color:#c6d0db;background:#05070a\">                            </span><span style=\"color:#58a6ff;background:#05070a\">⢀⡠⠊⠁⠑⢄⡀</span><span style=\"color:#c6d0db;background:#05070a\">      </span>\n<span style=\"color:#c6d0db;background:#05070a\">       </span><span style=\"color:#5a6b7d;background:#05070a\">⠉⠉⠒⠒⠢⠤⠤⣀⣀</span><span style=\"color:#c6d0db;background:#05070a\">                 </span><span style=\"color:#58a6ff;background:#05070a\">⡠⠔⠁</span><span style=\"color:#c6d0db;background:#05070a\">     </span><span style=\"color:#58a6ff;background:#05070a\">⠈⠢⡀</span><span style=\"color:#c6d0db;background:#05070a\">    </span>\n<span style=\"color:#c6d0db;background:#05070a\">          </span><span style=\"color:#58a6ff;background:#05070a\">⢀⠔⠉⠒⠢⢄</span><span style=\"color:#5a6b7d;background:#05070a\">⠉⠉⠑⠒⠒⠤⠤⣀⣀⡀</span><span style=\"color:#c6d0db;background:#05070a\">    </span><span style=\"color:#58a6ff;background:#05070a\">⣀⠔⠉</span><span style=\"color:#c6d0db;background:#05070a\">          </span><span style=\"color:#58a6ff;background:#05070a\">⠈⠢⣀</span><span style=\"color:#c6d0db;background:#05070a\">  </span>\n<span style=\"color:#c6d0db;background:#05070a\">        </span><span style=\"color:#58a6ff;background:#05070a\">⡠⠊⠁</span><span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#58a6ff;background:#05070a\">⠉⠑⠢⠤⣀⡀</span><span style=\"color:#c6d0db;background:#05070a\">  </span><span style=\"color:#5a6b7d;background:#05070a\">⠈⠉⠉⠒⠒⠤⠤⢄⣀⣀</span><span style=\"color:#c6d0db;background:#05070a\">           </span><span style=\"color:#58a6ff;background:#05070a\">⠑⢄</span>\n<span style=\"color:#c6d0db;background:#05070a\">      </span><span style=\"color:#58a6ff;background:#05070a\">⡠⠊</span><span style=\"color:#c6d0db;background:#05070a\">              </span><span style=\"color:#58a6ff;background:#05070a\">⠈⠑⠒⠤⠒⠁</span><span style=\"color:#c6d0db;background:#05070a\">       </span><span style=\"color:#5a6b7d;background:#05070a\">⠉⠉⠒⠒⠢⠤⠤⣀⣀</span><span style=\"color:#c6d0db;background:#05070a\">    </span>\n<span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#58a6ff;background:#05070a\">⢀⠔⠉</span><span style=\"color:#c6d0db;background:#05070a\">                                      </span><span style=\"color:#5a6b7d;background:#05070a\">⠉⠉⠑⠒</span>\n<span style=\"color:#5a6b7d;background:#05070a\">  0</span><span style=\"color:#58a6ff;background:#05070a\">■ </span><span style=\"color:#5a6b7d;background:#05070a\">load ■ limit </span><span style=\"color:#c6d0db;background:#05070a\">                              </span>\n<span style=\"color:#c6d0db;background:#05070a\">   </span><span style=\"color:#5a6b7d;background:#05070a\">0s</span><span style=\"color:#c6d0db;background:#05070a\">                    </span><span style=\"color:#5a6b7d;background:#05070a\">5s</span><span style=\"color:#c6d0db;background:#05070a\">                  </span><span style=\"color:#5a6b7d;background:#05070a\">10s</span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function chart(ui: Container, theme: Theme): void {\n  // Points carry their own x, so a sparse series and a dense one line up.\n  ui.chart({\n    series: [\n      { points: [[0, 1], [2, 6], [5, 3], [8, 9], [10, 4]], label: \"load\" },\n      { points: [[0, 8], [10, 2]], label: \"limit\", color: theme.muted },\n    ],\n    axis: true,\n    legend: true,\n    x: { min: 0, max: 10, ticks: 3, format: (v) => `${v}s` },\n    y: { min: 0, max: 10 },\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function chart(ui, theme) {\n  // Points carry their own x, so a sparse series and a dense one line up.\n  ui.chart({\n    series: [\n      { points: [[0, 1], [2, 6], [5, 3], [8, 9], [10, 4]], label: \"load\" },\n      { points: [[0, 8], [10, 2]], label: \"limit\", color: theme.muted },\n    ],\n    axis: true,\n    legend: true,\n    x: { min: 0, max: 10, ticks: 3, format: (v) => `${v}s` },\n    y: { min: 0, max: 10 },\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn chart(ui: &mut Container) {\n    // Points carry their own x, so a sparse series and a dense one line up.\n    ui.chart(ChartOptions {\n        series: vec![\n            ChartSeries::new(vec![(0.0, 1.0), (2.0, 6.0), (5.0, 3.0), (8.0, 9.0), (10.0, 4.0)])\n                .label(\"load\"),\n            ChartSeries::new(vec![(0.0, 8.0), (10.0, 2.0)]).label(\"limit\"),\n        ],\n        axis: true,\n        legend: true,\n        plot: ChartPlotOptions {\n            x: Some(AxisOptions { min: Some(0.0), max: Some(10.0), ticks: Some(3), format: None }),\n            y: Some(AxisOptions { min: Some(0.0), max: Some(10.0), ticks: None, format: None }),\n            ..Default::default()\n        },\n        ..Default::default()\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Chart(ui *hqtui.Container) {\n\t// Points carry their own x, so a sparse series and a dense one line up.\n\tzero, ten, seven := 0.0, 10.0, 3\n\tui.Chart(hqtui.ChartOptions{\n\t\tSeries: []hqtui.ChartSeries{\n\t\t\t{Points: []hqtui.Point{{X: 0, Y: 1}, {X: 2, Y: 6}, {X: 5, Y: 3}, {X: 8, Y: 9}, {X: 10, Y: 4}}, Label: \"load\"},\n\t\t\t{Points: []hqtui.Point{{X: 0, Y: 8}, {X: 10, Y: 2}}, Label: \"limit\"},\n\t\t},\n\t\tAxis:   true,\n\t\tLegend: true,\n\t\tPlot: hqtui.ChartPlotOptions{\n\t\t\tX: &hqtui.AxisOptions{Min: &zero, Max: &ten, Ticks: seven},\n\t\t\tY: &hqtui.AxisOptions{Min: &zero, Max: &ten},\n\t\t},\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def chart(ui: Container) -> None:\n    # Points carry their own x, so a sparse series and a dense one line up.\n    ui.chart(w.ChartOptions(\n        series=[\n            g.ChartSeries(points=[(0, 1), (2, 6), (5, 3), (8, 9), (10, 4)], label=\"load\"),\n            g.ChartSeries(points=[(0, 8), (10, 2)], label=\"limit\"),\n        ],\n        axis=True,\n        legend=True,\n        plot=g.ChartPlotOptions(\n            x=g.AxisOptions(min=0, max=10, ticks=3),\n            y=g.AxisOptions(min=0, max=10),\n        ),\n    ))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn chart(ui: *Container) anyerror!void {\n    // Points carry their own x, so a sparse series and a dense one line up.\n    try ui.chart(.{\n        .series = &.{\n            .{ .points = &.{\n                .{ .x = 0, .y = 1 }, .{ .x = 2, .y = 6 }, .{ .x = 5, .y = 3 },\n                .{ .x = 8, .y = 9 }, .{ .x = 10, .y = 4 },\n            }, .label = \"load\" },\n            .{ .points = &.{ .{ .x = 0, .y = 8 }, .{ .x = 10, .y = 2 } }, .label = \"limit\" },\n        },\n        .axis = true,\n        .legend = true,\n        .plot = .{\n            .x = .{ .min = 0, .max = 10, .ticks = 3 },\n            .y = .{ .min = 0, .max = 10 },\n        },\n    });\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_chart(Surface s) {\n  // Points carry their own x, so a sparse series and a dense one line up.\n  Chart c;\n  c.series = {\n      {{{0, 1}, {2, 6}, {5, 3}, {8, 9}, {10, 4}}, 0, \"load\"},\n      {{{0, 8}, {10, 2}}, 0, \"limit\"},\n  };\n  c.axis = true;\n  c.legend = true;\n  Axis x;\n  x.min = 0;\n  x.max = 10;\n  x.ticks = 3;\n  Axis y;\n  y.min = 0;\n  y.max = 10;\n  c.plot.x = x;\n  c.plot.y = y;\n  draw_chart(s, c);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def chart(ui)\n  # Points carry their own x, so a sparse series and a dense one line up.\n  ui.chart(\n    [\n      { points: [{ x: 0, y: 1 }, { x: 2, y: 6 }, { x: 5, y: 3 }, { x: 8, y: 9 }, { x: 10, y: 4 }],\n        label: 'load' },\n      { points: [{ x: 0, y: 8 }, { x: 10, y: 2 }], label: 'limit' }\n    ],\n    axis: true, legend: true,\n    x: { min: 0, max: 10, ticks: 3 }, y: { min: 0, max: 10 }\n  )\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_chart(UI $ui): void\n{\n    // Points carry their own x, so a sparse series and a dense one line up.\n    $ui->chart(\n        [\n            ['points' => [['x' => 0, 'y' => 1], ['x' => 2, 'y' => 6], ['x' => 5, 'y' => 3],\n                          ['x' => 8, 'y' => 9], ['x' => 10, 'y' => 4]], 'label' => 'load'],\n            ['points' => [['x' => 0, 'y' => 8], ['x' => 10, 'y' => 2]], 'label' => 'limit'],\n        ],\n        ['axis' => true, 'legend' => true,\n         'x' => ['min' => 0, 'max' => 10, 'ticks' => 3], 'y' => ['min' => 0, 'max' => 10]]\n    );\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_chart {\n    my ($ui) = @_;\n    # Points carry their own x, so a sparse series and a dense one line up.\n    $ui->chart(\n        [\n            { points => [ { x => 0, y => 1 }, { x => 2, y => 6 }, { x => 5, y => 3 },\n                          { x => 8, y => 9 }, { x => 10, y => 4 } ], label => 'load' },\n            { points => [ { x => 0, y => 8 }, { x => 10, y => 2 } ], label => 'limit' },\n        ],\n        axis => 1, legend => 1,\n        x => { min => 0, max => 10, ticks => 3 }, y => { min => 0, max => 10 },\n    );\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "CHART-WIDGET.\n    MOVE \"chart\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> CHARTPT carries one point; its key names the series it joins, so a\n    *> flat record stream can describe several. The text is \"x|y\".\n    MOVE \"CHARTPT\" TO SR-VERB\n    MOVE \"load\" TO SR-KEY\n    MOVE \"0|1\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"CHARTPT\" TO SR-VERB\n    MOVE \"load\" TO SR-KEY\n    MOVE \"5|3\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"CHARTPT\" TO SR-VERB\n    MOVE \"load\" TO SR-KEY\n    MOVE \"10|4\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"CHARTPT\" TO SR-VERB\n    MOVE \"limit\" TO SR-KEY\n    MOVE \"0|8\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    MOVE \"CHARTPT\" TO SR-VERB\n    MOVE \"limit\" TO SR-KEY\n    MOVE \"10|2\" TO SR-TEXT\n    PERFORM EMIT-RECORD\n\n    *> CHART draws what has accumulated. Its key is the mark, and the text\n    *> carries both domains as \"xmin|xmax|ymin|ymax\".\n    MOVE \"CHART\" TO SR-VERB\n    MOVE \"LINE\" TO SR-KEY\n    MOVE \"0|10|0|10\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
       "id": "meter",
       "title": "Meter",
       "category": "Meters",

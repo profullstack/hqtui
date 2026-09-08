@@ -471,6 +471,18 @@ class Container:
         """Braille line/area graph. Fills the space it is given."""
         return self._add(self._filling(layout or Layout()), lambda s: w.draw_graph(s, options))
 
+    def chart(self, options: w.ChartOptions, layout: Layout | None = None):
+        """A chart of arbitrary (x, y) data, with a domain on both axes.
+
+        ``graph`` plots a history buffer, one sample per column. Use this when
+        the data has its own x values: two series of different lengths then line
+        up, and a point lands where its x says it does.
+        """
+        return self._add(
+            self._constraint(layout or Layout(), "fill"),
+            lambda s: w.draw_chart(s, options),
+        )
+
     def sparkline(self, options: w.SparklineWidgetOptions, layout: Layout | None = None):
         return self._add(self._leaf(layout or Layout(), 1), lambda s: w.draw_sparkline(s, options))
 

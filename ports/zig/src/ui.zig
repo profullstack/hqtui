@@ -372,6 +372,7 @@ const Node = union(enum) {
     meters: w.MetersOptions,
     progress: w.ProgressOptions,
     graph: w.GraphOptions,
+    chart: w.ChartOptions,
     sparkline: w.SparklineWidgetOptions,
     histogram: w.ColumnsOptions,
     gauge: w.GaugeOptions,
@@ -459,6 +460,7 @@ fn drawNode(ctx: *Ctx, s: Surface, node: Node) anyerror!void {
         .meters => |o| w.drawMeters(s, o),
         .progress => |o| w.drawProgress(s, o),
         .graph => |o| try w.drawGraph(allocator, s, o),
+        .chart => |o| try w.drawChart(allocator, s, o),
         .sparkline => |o| w.drawSparkline(s, o),
         .histogram => |o| w.drawColumns(s, o),
         .gauge => |o| try w.drawGauge(allocator, s, o),
@@ -836,6 +838,15 @@ pub const Container = struct {
     /// Braille line/area graph. Fills the space it is given.
     pub fn graph(self: *Container, options: w.GraphOptions) !void {
         try self.add(self.filling(), .{ .graph = options });
+    }
+
+    /// A chart of arbitrary (x, y) data, with a domain on both axes.
+    ///
+    /// `graph` plots a history buffer, one sample per column. Use this when the
+    /// data has its own x values: two series of different lengths then line up,
+    /// and a point lands where its x says it does.
+    pub fn chart(self: *Container, options: w.ChartOptions) !void {
+        try self.add(self.filling(), .{ .chart = options });
     }
 
     pub fn sparkline(self: *Container, options: w.SparklineWidgetOptions) !void {

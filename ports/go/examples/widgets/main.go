@@ -204,6 +204,26 @@ func Scrollbar(ui *hqtui.Container) {
 
 // @end
 
+// @widget chart
+func Chart(ui *hqtui.Container) {
+	// Points carry their own x, so a sparse series and a dense one line up.
+	zero, ten, seven := 0.0, 10.0, 3
+	ui.Chart(hqtui.ChartOptions{
+		Series: []hqtui.ChartSeries{
+			{Points: []hqtui.Point{{X: 0, Y: 1}, {X: 2, Y: 6}, {X: 5, Y: 3}, {X: 8, Y: 9}, {X: 10, Y: 4}}, Label: "load"},
+			{Points: []hqtui.Point{{X: 0, Y: 8}, {X: 10, Y: 2}}, Label: "limit"},
+		},
+		Axis:   true,
+		Legend: true,
+		Plot: hqtui.ChartPlotOptions{
+			X: &hqtui.AxisOptions{Min: &zero, Max: &ten, Ticks: seven},
+			Y: &hqtui.AxisOptions{Min: &zero, Max: &ten},
+		},
+	})
+}
+
+// @end
+
 // @widget meter
 func Meter(ui *hqtui.Container) {
 	ui.Meter(hqtui.MeterOptions{Value: 0.62, Label: "CPU"})
@@ -406,7 +426,7 @@ func main() {
 		{"text", Text}, {"label", Label}, {"heading", Heading}, {"badge", Badge},
 		{"divider", Divider}, {"keyValues", KeyValues}, {"statusBar", StatusBar},
 		{"table", Table}, {"list", List}, {"tree", Tree}, {"log", Log},
-		{"scrollbar", Scrollbar},
+		{"scrollbar", Scrollbar}, {"chart", Chart},
 		{"meter", Meter}, {"meters", Meters}, {"progress", Progress}, {"graph", Graph},
 		{"sparkline", Sparkline}, {"histogram", Histogram}, {"heatBar", HeatBar},
 		{"gauge", Gauge}, {"donut", Donut},

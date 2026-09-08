@@ -2,6 +2,7 @@
 //! builder in [`ui`](crate::ui) wraps every one of these with layout, so reach
 //! for these directly only when you are drawing inside a `draw` escape hatch.
 
+pub mod chart;
 pub mod controls;
 pub mod meters;
 pub mod scrollbar;
@@ -20,6 +21,7 @@ pub use meters::{
     DonutSegment, GaugeOptions, GraphOptions, HeatBarOptions, MeterItem, MeterOptions,
     MetersOptions, ProgressOptions, SparklineWidgetOptions,
 };
+pub use chart::{draw_chart, ChartOptions};
 pub use scrollbar::{
     draw_scrollbar, draw_scrollbar_widget, offset_for_position, thumb, thumb_of, ScrollbarOptions,
     ScrollbarOrientation,

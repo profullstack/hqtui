@@ -478,6 +478,17 @@ func (c *Container) Graph(o GraphOptions, layout ...Layout) *Container {
 	return c.add(c.filling(firstLayout(layout)), func(s Surface) { DrawGraph(s, o) })
 }
 
+// Chart draws arbitrary (x, y) data, with a domain on both axes.
+//
+// Graph plots a history buffer, one sample per column. Use this when the data
+// has its own x values: two series of different lengths then line up, and a
+// point lands where its x says it does.
+func (c *Container) Chart(o ChartOptions, layout ...Layout) *Container {
+	return c.add(c.filling(firstLayout(layout)), func(s Surface) {
+		DrawChart(s, o)
+	})
+}
+
 func (c *Container) Sparkline(o SparklineWidgetOptions, layout ...Layout) *Container {
 	return c.add(c.leaf(firstLayout(layout), 1), func(s Surface) { DrawSparkline(s, o) })
 }

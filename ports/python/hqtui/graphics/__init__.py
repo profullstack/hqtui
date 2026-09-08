@@ -15,6 +15,16 @@ from .blocks import (
     vertical_glyph,
 )
 from .braille import BrailleCanvas
+from .chart import (
+    AxisOptions,
+    ChartPlotOptions,
+    ChartSeries,
+    Domain,
+    MarkType,
+    Point,
+    domain_of,
+    plot_points,
+)
 from .plot import (
     BarOptions,
     BarStyle,
@@ -35,6 +45,14 @@ from .plot import (
 )
 
 __all__ = [
+    "AxisOptions",
+    "ChartPlotOptions",
+    "ChartSeries",
+    "Domain",
+    "MarkType",
+    "Point",
+    "domain_of",
+    "plot_points",
     "ASCII_RAMP", "BarOptions", "BarStyle", "BrailleCanvas", "DonutOptions",
     "DonutSegment", "FillMode", "GaugeOptions", "HORIZONTAL_EIGHTHS",
     "HistogramOptions", "PlotOptions", "QUADRANTS", "SHADES", "Series",

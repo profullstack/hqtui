@@ -13,6 +13,7 @@ use hqtui::graphics::plot::{
     bar, donut, gauge, plot, sparkline, BarOptions, BarStyle, DonutOptions, DonutSegment,
     GaugeOptions, PlotOptions, Series,
 };
+use hqtui::graphics::chart::{AxisOptions, ChartPlotOptions, ChartSeries, MarkType};
 use hqtui::graphics::FillMode;
 use hqtui::surface::Surface;
 use hqtui::unicode::Align;
@@ -23,6 +24,24 @@ const SERIES: [f64; 20] =
 
 fn series() -> Vec<f64> {
     SERIES.to_vec()
+}
+
+/// The axis bounds every chart fixture pins, without the ceremony.
+fn axis(min: f64, max: f64, ticks: Option<usize>) -> AxisOptions {
+    AxisOptions { min: Some(min), max: Some(max), ticks, format: None }
+}
+
+/// One series over the standard 0..10 domain.
+fn chart(points: &[(f64, f64)], mark: MarkType) -> ChartOptions {
+    ChartOptions {
+        series: vec![ChartSeries::new(points.to_vec()).mark(mark)],
+        plot: ChartPlotOptions {
+            x: Some(axis(0.0, 10.0, None)),
+            y: Some(axis(0.0, 10.0, None)),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
 }
 
 fn draw_scene(name: &str, s: &Surface) {
@@ -143,6 +162,79 @@ fn draw_scene(name: &str, s: &Surface) {
                     DonutSegment { value: 2.0, ..Default::default() },
                 ],
                 background: None,
+            },
+        ),
+        "chart-line" => draw_chart(s, &chart(&[(0.0, 1.0), (2.0, 6.0), (5.0, 3.0), (8.0, 9.0), (10.0, 4.0)], MarkType::Line)),
+        "chart-scatter" => draw_chart(s, &chart(&[(0.0, 1.0), (2.0, 6.0), (5.0, 3.0), (8.0, 9.0), (10.0, 4.0)], MarkType::Scatter)),
+        "chart-bar" => draw_chart(s, &chart(&[(0.0, 1.0), (2.0, 6.0), (5.0, 3.0), (8.0, 9.0), (10.0, 4.0)], MarkType::Bar)),
+        "chart-fill" => draw_chart(
+            s,
+            &ChartOptions {
+                series: vec![ChartSeries::new(vec![(0.0, 2.0), (5.0, 8.0), (10.0, 2.0)]).filled()],
+                plot: ChartPlotOptions {
+                    x: Some(axis(0.0, 10.0, None)),
+                    y: Some(axis(0.0, 10.0, None)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        ),
+        "chart-axes" => draw_chart(
+            s,
+            &ChartOptions {
+                series: vec![ChartSeries::new(vec![(0.0, 0.0), (5.0, 50.0), (10.0, 100.0)])],
+                axis: true,
+                plot: ChartPlotOptions {
+                    x: Some(axis(0.0, 10.0, Some(3))),
+                    y: Some(axis(0.0, 100.0, None)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        ),
+        "chart-block" => draw_chart(
+            s,
+            &ChartOptions {
+                series: vec![ChartSeries::new(vec![
+                    (0.0, 1.0), (2.0, 6.0), (5.0, 3.0), (8.0, 9.0), (10.0, 4.0),
+                ])
+                .mark(MarkType::Bar)],
+                plot: ChartPlotOptions {
+                    mode: Some(FillMode::Block),
+                    x: Some(axis(0.0, 10.0, None)),
+                    y: Some(axis(0.0, 10.0, None)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        ),
+        "chart-multi" => draw_chart(
+            s,
+            &ChartOptions {
+                series: vec![
+                    ChartSeries::new(vec![
+                        (0.0, 1.0), (1.0, 3.0), (2.0, 2.0), (3.0, 5.0),
+                        (4.0, 4.0), (5.0, 7.0), (6.0, 6.0), (7.0, 9.0),
+                    ])
+                    .label("fine"),
+                    ChartSeries::new(vec![(0.0, 8.0), (7.0, 2.0)]).label("coarse"),
+                ],
+                axis: true,
+                legend: true,
+                plot: ChartPlotOptions {
+                    x: Some(axis(0.0, 7.0, None)),
+                    y: Some(axis(0.0, 10.0, None)),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        ),
+        "chart-flat" => draw_chart(
+            s,
+            &ChartOptions {
+                series: vec![ChartSeries::new(vec![(0.0, 4.0), (5.0, 4.0), (10.0, 4.0)])],
+                plot: ChartPlotOptions { x: Some(axis(0.0, 10.0, None)), ..Default::default() },
+                ..Default::default()
             },
         ),
         "graph-axis" => draw_graph(s, &GraphOptions::new(series()).with_axis()),

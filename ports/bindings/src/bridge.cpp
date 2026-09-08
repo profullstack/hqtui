@@ -79,7 +79,7 @@ void validate(const Json &n, int depth, int &count) {
       "badge",    "progress", "sparkline", "heatbar",   "columns", "donut",
       "list",     "tree",     "button",    "checkbox",  "select",  "input",
       "tabs",     "statusbar", "label",     "heading",   "meters",  "modal",
-      "commandpalette",        "tooltip",   "scrollbar"};
+      "commandpalette",        "tooltip",   "scrollbar", "chart"};
   if (std::find(types.begin(), types.end(), type) == types.end())
     throw std::runtime_error("unknown widget: " + type);
   if (!n["children"].null() &&
@@ -271,6 +271,42 @@ void node(UI &ui, const Json &n, std::vector<PendingOverlay> &overlays) {
     if (d.segments.size() > 64)
       throw std::runtime_error("too many donut segments");
     ui.donut(d, size(n));
+  } else if (type == "chart") {
+    Chart chart;
+    for (auto &sj : n["series"].array()) {
+      ChartSeries cs;
+      for (auto &pj : sj["points"].array())
+        cs.points.push_back({pj["x"].n(), pj["y"].n()});
+      if (cs.points.size() > 10000)
+        throw std::runtime_error("chart series too large");
+      cs.label = sj["label"].s("");
+      auto mark = sj["mark"].s("line");
+      cs.mark = mark == "scatter" ? HQ_MARK_SCATTER
+                : mark == "bar"   ? HQ_MARK_BAR
+                                  : HQ_MARK_LINE;
+      cs.fill = sj["fill"].b(false);
+      chart.series.push_back(std::move(cs));
+    }
+    if (chart.series.size() > 64)
+      throw std::runtime_error("too many chart series");
+    chart.axis = n["axis"].b(false);
+    chart.legend = n["legend"].b(false);
+    if (!n["mode"].null())
+      chart.plot.mode = n["mode"].s("braille");
+    auto read_axis = [](const Json &j) -> std::optional<Axis> {
+      if (j.null())
+        return std::nullopt;
+      Axis a;
+      if (!j["min"].null())
+        a.min = j["min"].n();
+      if (!j["max"].null())
+        a.max = j["max"].n();
+      a.ticks = integer(j["ticks"], 0, 0, 64);
+      return a;
+    };
+    chart.plot.x = read_axis(n["x"]);
+    chart.plot.y = read_axis(n["y"]);
+    ui.chart(chart, size(n));
   } else if (type == "scrollbar") {
     Scrollbar bar;
     bar.total = integer(n["total"], 0, 0, 1000000);

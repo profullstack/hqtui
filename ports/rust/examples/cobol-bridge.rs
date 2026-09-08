@@ -15,6 +15,7 @@
 
 use std::io::Read;
 
+use hqtui::graphics::chart::{AxisOptions, ChartPlotOptions, ChartSeries, MarkType};
 use hqtui::graphics::plot::{DonutOptions, DonutSegment, GaugeOptions, PlotOptions, Series};
 use hqtui::prelude::*;
 use hqtui::testing::render_to_text;
@@ -86,6 +87,7 @@ fn draw(scene: &Scene, ui: &mut Container) {
     let mut columns: Vec<TableColumn> = Vec::new();
     let mut rows: Vec<TableRow> = Vec::new();
     let mut keys: Vec<KeyValueRow> = Vec::new();
+    let mut chart_series: Vec<(String, Vec<(f64, f64)>)> = Vec::new();
     let mut entries: Vec<LogEntry> = Vec::new();
     let mut points: Vec<f64> = Vec::new();
     let mut bars: Vec<f64> = Vec::new();
@@ -147,6 +149,50 @@ fn draw(scene: &Scene, ui: &mut Container) {
             }
             "METER" => {
                 ui.meter(MeterOptions::new(record.num.parse().unwrap_or(0.0)).label(&record.key));
+            }
+            "CHARTPT" => {
+                // One point per record, like GRAPHPT. key names the series it
+                // joins, so a flat record stream can describe several.
+                let mut parts = record.text.split('|');
+                let x: f64 = parts.next().unwrap_or("").parse().unwrap_or(0.0);
+                let y: f64 = parts.next().unwrap_or("").parse().unwrap_or(0.0);
+                if let Some(points) = chart_series.iter_mut().find(|(k, _)| *k == record.key) {
+                    points.1.push((x, y));
+                } else {
+                    chart_series.push((record.key.clone(), vec![(x, y)]));
+                }
+            }
+            "CHART" => {
+                // key is the mark every series takes; text is the domain.
+                let mut parts = record.text.split('|');
+                let mut next = || -> f64 { parts.next().unwrap_or("").parse().unwrap_or(0.0) };
+                let (xmin, xmax, ymin, ymax) = (next(), next(), next(), next());
+                let mark = match record.key.as_str() {
+                    "SCATTER" => MarkType::Scatter,
+                    "BAR" => MarkType::Bar,
+                    _ => MarkType::Line,
+                };
+                let legend = chart_series.len() > 1;
+                ui.chart(ChartOptions {
+                    series: chart_series
+                        .drain(..)
+                        .map(|(label, points)| {
+                            ChartSeries::new(points).mark(mark).label(label)
+                        })
+                        .collect(),
+                    axis: true,
+                    legend,
+                    plot: ChartPlotOptions {
+                        x: Some(AxisOptions {
+                            min: Some(xmin), max: Some(xmax), ticks: None, format: None,
+                        }),
+                        y: Some(AxisOptions {
+                            min: Some(ymin), max: Some(ymax), ticks: None, format: None,
+                        }),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                });
             }
             "SCROLLBAR" => {
                 // key is the edge, num the offset, text "total|viewport".

@@ -19,6 +19,26 @@ const Surface = surface_mod.Surface;
 
 const series = [_]f64{ 3, 7, 2, 9, 4, 8, 6, 1, 5, 9, 3, 7, 8, 2, 6, 4, 9, 1, 5, 7 };
 
+
+/// The points every single-series chart fixture pins.
+const chart_points = [_]graphics.Point{
+    .{ .x = 0, .y = 1 }, .{ .x = 2, .y = 6 }, .{ .x = 5, .y = 3 },
+    .{ .x = 8, .y = 9 }, .{ .x = 10, .y = 4 },
+};
+
+/// The axis bounds every chart fixture pins, without the ceremony.
+fn axisOf(min: f64, max: f64, ticks: usize) graphics.AxisOptions {
+    return .{ .min = min, .max = max, .ticks = ticks };
+}
+
+/// One series over the standard 0..10 domain.
+fn chartScene(allocator: std.mem.Allocator, s: Surface, mark: graphics.MarkType) !void {
+    try w.drawChart(allocator, s, .{
+        .series = &.{.{ .points = &chart_points, .mark = mark }},
+        .plot = .{ .x = axisOf(0, 10, 0), .y = axisOf(0, 10, 0) },
+    });
+}
+
 fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
     const eq = std.mem.eql;
 
@@ -98,6 +118,46 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
         try w.drawDonut(allocator, s, .{ .segments = &.{
             .{ .value = 3 }, .{ .value = 5 }, .{ .value = 2 },
         } });
+    } else if (eq(u8, name, "chart-line")) {
+        try chartScene(allocator, s, .line);
+    } else if (eq(u8, name, "chart-scatter")) {
+        try chartScene(allocator, s, .scatter);
+    } else if (eq(u8, name, "chart-bar")) {
+        try chartScene(allocator, s, .bar);
+    } else if (eq(u8, name, "chart-fill")) {
+        try w.drawChart(allocator, s, .{
+            .series = &.{.{ .points = &.{ .{ .x = 0, .y = 2 }, .{ .x = 5, .y = 8 }, .{ .x = 10, .y = 2 } }, .fill = true }},
+            .plot = .{ .x = axisOf(0, 10, 0), .y = axisOf(0, 10, 0) },
+        });
+    } else if (eq(u8, name, "chart-axes")) {
+        try w.drawChart(allocator, s, .{
+            .series = &.{.{ .points = &.{ .{ .x = 0, .y = 0 }, .{ .x = 5, .y = 50 }, .{ .x = 10, .y = 100 } } }},
+            .axis = true,
+            .plot = .{ .x = axisOf(0, 10, 3), .y = axisOf(0, 100, 0) },
+        });
+    } else if (eq(u8, name, "chart-block")) {
+        try w.drawChart(allocator, s, .{
+            .series = &.{.{ .points = &chart_points, .mark = .bar }},
+            .plot = .{ .mode = .block, .x = axisOf(0, 10, 0), .y = axisOf(0, 10, 0) },
+        });
+    } else if (eq(u8, name, "chart-multi")) {
+        try w.drawChart(allocator, s, .{
+            .series = &.{
+                .{ .points = &.{
+                    .{ .x = 0, .y = 1 }, .{ .x = 1, .y = 3 }, .{ .x = 2, .y = 2 }, .{ .x = 3, .y = 5 },
+                    .{ .x = 4, .y = 4 }, .{ .x = 5, .y = 7 }, .{ .x = 6, .y = 6 }, .{ .x = 7, .y = 9 },
+                }, .label = "fine" },
+                .{ .points = &.{ .{ .x = 0, .y = 8 }, .{ .x = 7, .y = 2 } }, .label = "coarse" },
+            },
+            .axis = true,
+            .legend = true,
+            .plot = .{ .x = axisOf(0, 7, 0), .y = axisOf(0, 10, 0) },
+        });
+    } else if (eq(u8, name, "chart-flat")) {
+        try w.drawChart(allocator, s, .{
+            .series = &.{.{ .points = &.{ .{ .x = 0, .y = 4 }, .{ .x = 5, .y = 4 }, .{ .x = 10, .y = 4 } } }},
+            .plot = .{ .x = axisOf(0, 10, 0) },
+        });
     } else if (eq(u8, name, "graph-axis")) {
         try w.drawGraph(allocator, s, .{ .values = &series, .axis = true });
     } else if (eq(u8, name, "graph-legend")) {

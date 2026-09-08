@@ -445,6 +445,17 @@ export class Container {
     return this.add((s) => W.drawGraph(s, options), this.sizeOfData(options, "fill", "min-max"));
   }
 
+  /**
+   * A chart of arbitrary (x, y) data, with a domain on both axes.
+   *
+   * `graph` plots a history buffer, one sample per column. Use this when the
+   * data has its own x values: two series of different lengths then line up,
+   * and a point lands where its x says it does.
+   */
+  chart(options: W.ChartOptions & ContainerOptions): this {
+    return this.add((s) => W.drawChart(s, options), this.sizeOfData(options, "fill", "min-max"));
+  }
+
   /** A filled area graph — `graph` with `fill` on. */
   areaGraph(options: W.GraphOptions & ContainerOptions): this {
     return this.graph({ fill: true, ...options });

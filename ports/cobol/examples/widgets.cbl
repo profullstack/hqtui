@@ -69,6 +69,7 @@ MAIN-PARAGRAPH.
     PERFORM DONUT-WIDGET
     PERFORM LIST-WIDGET
     PERFORM SCROLLBAR-WIDGET
+    PERFORM CHART-WIDGET
     PERFORM TREE-WIDGET
     PERFORM BUTTON-WIDGET
     PERFORM CHECKBOX-WIDGET
@@ -400,6 +401,46 @@ SCROLLBAR-WIDGET.
     MOVE "BOTTOM" TO SR-KEY
     MOVE "36" TO SR-NUM
     MOVE "120|8" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget chart
+CHART-WIDGET.
+    MOVE "chart" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> CHARTPT carries one point; its key names the series it joins, so a
+    *> flat record stream can describe several. The text is "x|y".
+    MOVE "CHARTPT" TO SR-VERB
+    MOVE "load" TO SR-KEY
+    MOVE "0|1" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "CHARTPT" TO SR-VERB
+    MOVE "load" TO SR-KEY
+    MOVE "5|3" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "CHARTPT" TO SR-VERB
+    MOVE "load" TO SR-KEY
+    MOVE "10|4" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "CHARTPT" TO SR-VERB
+    MOVE "limit" TO SR-KEY
+    MOVE "0|8" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "CHARTPT" TO SR-VERB
+    MOVE "limit" TO SR-KEY
+    MOVE "10|2" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    *> CHART draws what has accumulated. Its key is the mark, and the text
+    *> carries both domains as "xmin|xmax|ymin|ymax".
+    MOVE "CHART" TO SR-VERB
+    MOVE "LINE" TO SR-KEY
+    MOVE "0|10|0|10" TO SR-TEXT
     PERFORM EMIT-RECORD.
 *> @end
 

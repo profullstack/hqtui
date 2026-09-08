@@ -4,6 +4,7 @@
 
 pub const controls = @import("widgets/controls.zig");
 pub const meters = @import("widgets/meters.zig");
+pub const chart = @import("widgets/chart.zig");
 pub const scrollbar = @import("widgets/scrollbar.zig");
 pub const table = @import("widgets/table.zig");
 pub const text = @import("widgets/text.zig");
@@ -59,6 +60,8 @@ pub const TreeOptions = table.TreeOptions;
 pub const TreeValue = table.TreeValue;
 pub const drawList = table.drawList;
 pub const drawLog = table.drawLog;
+pub const ChartOptions = chart.ChartOptions;
+pub const drawChart = chart.drawChart;
 pub const ScrollbarOptions = scrollbar.ScrollbarOptions;
 pub const ScrollbarOrientation = scrollbar.ScrollbarOrientation;
 pub const drawScrollbar = scrollbar.drawScrollbar;

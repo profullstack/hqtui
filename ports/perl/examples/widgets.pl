@@ -94,6 +94,22 @@ sub widget_scrollbar {
 }
 # @end
 
+# @widget chart
+sub widget_chart {
+    my ($ui) = @_;
+    # Points carry their own x, so a sparse series and a dense one line up.
+    $ui->chart(
+        [
+            { points => [ { x => 0, y => 1 }, { x => 2, y => 6 }, { x => 5, y => 3 },
+                          { x => 8, y => 9 }, { x => 10, y => 4 } ], label => 'load' },
+            { points => [ { x => 0, y => 8 }, { x => 10, y => 2 } ], label => 'limit' },
+        ],
+        axis => 1, legend => 1,
+        x => { min => 0, max => 10, ticks => 3 }, y => { min => 0, max => 10 },
+    );
+}
+# @end
+
 # @widget meter
 sub widget_meter {
     my ($ui) = @_;
@@ -305,6 +321,7 @@ my @examples = (
     ['table',     \&widget_table],
     ['log',       \&widget_log],
     ['scrollbar', \&widget_scrollbar],
+    ['chart',     \&widget_chart],
     ['meter',     \&widget_meter],
     ['graph',     \&widget_graph],
     ['gauge',     \&widget_gauge],

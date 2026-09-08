@@ -64,6 +64,7 @@ sub columns { my ($s,$values,%o)=@_; $s->add('columns',values=>$values,%o); }
 sub donut { my ($s,$segments,%o)=@_; $s->add('donut',segments=>$segments,%o); }
 sub list { my ($s,$items,%o)=@_; $s->add('list',items=>$items,%o); }
 sub scrollbar { my ($s,$total,%o)=@_; $s->add('scrollbar',total=>$total,%o); }
+sub chart { my ($s,$series,%o)=@_; $s->add('chart',series=>$series,%o); }
 sub tree { my ($s,$nodes,%o)=@_; $s->add('tree',nodes=>$nodes,%o); }
 sub button { my ($s,$label,%o)=@_; $s->add('button',label=>$label,%o); }
 sub checkbox { my ($s,$label,%o)=@_; $s->add('checkbox',label=>$label,%o); }

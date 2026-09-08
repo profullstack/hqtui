@@ -8,6 +8,7 @@
 //!
 //! Keep each function self-contained: it takes a container and nothing else.
 
+use hqtui::graphics::chart::{AxisOptions, ChartPlotOptions, ChartSeries};
 use hqtui::graphics::plot::{BarStyle, DonutOptions, DonutSegment, GaugeOptions, PlotOptions, Series};
 use hqtui::prelude::*;
 use hqtui::testing::render_to_text;
@@ -430,6 +431,27 @@ pub fn scrollbar(ui: &mut Container) {
 }
 // @end
 
+// @widget chart
+pub fn chart(ui: &mut Container) {
+    // Points carry their own x, so a sparse series and a dense one line up.
+    ui.chart(ChartOptions {
+        series: vec![
+            ChartSeries::new(vec![(0.0, 1.0), (2.0, 6.0), (5.0, 3.0), (8.0, 9.0), (10.0, 4.0)])
+                .label("load"),
+            ChartSeries::new(vec![(0.0, 8.0), (10.0, 2.0)]).label("limit"),
+        ],
+        axis: true,
+        legend: true,
+        plot: ChartPlotOptions {
+            x: Some(AxisOptions { min: Some(0.0), max: Some(10.0), ticks: Some(3), format: None }),
+            y: Some(AxisOptions { min: Some(0.0), max: Some(10.0), ticks: None, format: None }),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+}
+// @end
+
 /// Renders each widget on its own small screen and prints the lot.
 fn main() {
     let examples: Vec<(&str, fn(&mut Container))> = vec![
@@ -445,6 +467,7 @@ fn main() {
         ("tree", tree),
         ("log", log),
         ("scrollbar", scrollbar),
+        ("chart", chart),
         ("meter", meter),
         ("meters", meters),
         ("progress", progress),
