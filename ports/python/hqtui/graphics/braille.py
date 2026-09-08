@@ -64,6 +64,19 @@ def _finite(v: float) -> float | None:
     return v
 
 
+def _snap_round(value: float) -> float:
+    """Round, treating a value within a hair of .5 as the tie it mathematically is.
+
+    Plot geometry runs through cos and sin, and libm implementations differ by an
+    ULP at the exact angles where a coordinate lands on .5 — cos(120°) is -0.5,
+    and V8 returns a hair under it where CPython returns a hair over. Rounding
+    the raw value lets that ULP decide a pixel, so the same widget at the same
+    size differs between ports. The tolerance is far wider than an ULP and far
+    narrower than anything geometric.
+    """
+    return round_half_up(value + 1e-9 if value >= 0 else value - 1e-9)
+
+
 class BrailleCanvas:
     __slots__ = ("width", "height", "cols", "rows", "_dots")
 
@@ -85,7 +98,7 @@ class BrailleCanvas:
         The test is written positively so that NaN, which compares false against
         everything, is ignored rather than landing in cell 0.
         """
-        px, py = round_half_up(x), round_half_up(y)
+        px, py = _snap_round(x), _snap_round(y)
         if not (0 <= px < self.width and 0 <= py < self.height):
             return None
         ix, iy = int(px), int(py)

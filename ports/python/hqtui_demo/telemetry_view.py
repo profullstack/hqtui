@@ -9,6 +9,7 @@ def rate(v):
     return f'{v:.0f}/s'
 def status_color(t,c): return {"1xx":t.secondary,"2xx":t.success,"3xx":t.accent,"4xx":t.warning,"5xx":t.danger}.get(c,t.muted)
 def traffic(ui,s):
+    gap=s.panel_gap()
     if s.source!="simulated": ui.label("Protocol/direction: port-based estimates; HTTP rate: estimated from log growth")
     t=ui.theme;d=s.sample["telemetry"];net=d["net"];rates=net["rates"];http=d["http"]
     def top(r):
@@ -28,7 +29,7 @@ def traffic(ui,s):
             p.text(f'{max(0,min(1,net["retransRatio"]))*100:.2f}%',w.TextStyle(fg=color,bold=True));p.label("of outbound segments");plot(p,d["retransHistory"],t.danger)
             keys(p,[kv("UDP in/out",rate(rates["udpIn"])+" / "+rate(rates["udpOut"]),t.muted),kv("ICMP",scalar(net["icmpInMsgs"])+" / "+scalar(net["icmpOutMsgs"]),t.muted)])
         r.panel(Panel(title="Retransmits",size="0.7fr",border_color=color),retrans)
-    row(ui,13,1,top)
+    row(ui,13,gap,top)
     def middle(r):
         def left(c):
             def http_panel(p):
@@ -40,7 +41,7 @@ def traffic(ui,s):
                 p.meters(w.MetersOptions(items=[w.MeterItem(label=b["class"],value=b["count"]/maximum,color=status_color(t,b["class"]),text=scalar(b["count"])) for b in http["statusClasses"]],label_width=5,value_width=7));p.divider(w.DividerOptions(label="top paths"))
                 data_table(p,s,"traffic.paths",http["topPaths"],[dc("path","Path",minimum=20,color=t.primary),dc("count","Hits",7,color=t.accent,right=True)],header=False)
             c.panel(Panel(title="HTTP",subtitle=f'{http["requestsPerSecond"]:.1f} req/s' if http else "no access log",border_color=t.success),http_panel)
-        r.column(Layout(gap=1),left)
+        r.column(Layout(gap=gap),left)
         def right(c):
             def ssh(p):
                 if not d["ssh"]: p.label("No sshd events in the journal.");return
@@ -50,11 +51,12 @@ def traffic(ui,s):
                 if not d["remotes"]: p.label("No remote peers.");return
                 data_table(p,s,"traffic.remotes",d["remotes"],[dc("host","Host",minimum=16,color=t.accent),dc("connections","Conns",6,color=t.success,right=True),dc("protocols","Protocols",minimum=12,color=t.muted)],True)
             c.panel(Panel(title="Top Remote Hosts",size=10,border_color=t.secondary),remotes)
-        r.column(Layout(size="0.85fr",gap=1),right)
+        r.column(Layout(size="0.85fr",gap=gap),right)
     row(ui,"1fr",1,middle)
     if http and http["recent"]:
         ui.panel(Panel(title="Recent Requests",size=10,border_color=t.primary),lambda p:data_table(p,s,"traffic.requests",http["recent"],[dc("time","Time",9,color=t.muted),dc("method","Method",7,color=t.secondary),dc("path","Path",minimum=24,color=t.primary),dc("status","Status",7,right=True,cell_color=lambda d:status_color(t,str(d["status"])[0]+"xx")),dc("client","Client",16,color=t.accent),dc("bytes","Bytes",9,color=t.muted,right=True)],True))
 def sessions(ui,s):
+    gap=s.panel_gap()
     t=ui.theme;d=s.sample["telemetry"]
     def top(r):
         def active(p):
@@ -67,7 +69,7 @@ def sessions(ui,s):
                 p.meter(w.MeterOptions(label=label,value=states[key]/max(1,states["total"]),text=scalar(states[key]),heat=False,color=color))
             p.spacer(1);keys(p,[kv("Total",states["total"],t.accent)])
         r.panel(Panel(title="Process States",size=34,border_color=t.primary),states)
-    row(ui,9,1,top)
+    row(ui,9,gap,top)
     def bottom(r):
         def logins(p):
             if not d["logins"]: p.label("No login history available.");return
@@ -79,9 +81,10 @@ def sessions(ui,s):
                 data_table(p,s,"sessions.failed",d["failedLogins"],[dc("user","User",12,color=t.danger),dc("from","From",minimum=12),dc("when","When",minimum=14,color=t.muted)])
             c.panel(Panel(title="Failed Logins",border_color=t.danger),failed)
             c.panel(Panel(title="Session History",size=8,border_color=t.secondary),lambda p:(p.label("concurrent sessions"),plot(p,d["sessionHistory"],t.success)))
-        r.column(Layout(size="0.8fr",gap=1),right)
+        r.column(Layout(size="0.8fr",gap=gap),right)
     row(ui,"1fr",1,bottom)
 def network(ui,s):
+    gap=s.panel_gap()
     t=ui.theme;d=s.sample["telemetry"];active=[i for i in d["interfaces"] if i["rxTotal"]>0 or i["state"]=="up"];shown=(active or d["interfaces"])[:3]
     def top(r):
         if not shown: r.panel(Panel(title="Interfaces"),lambda p:p.label("No interfaces reported."));return
@@ -91,7 +94,7 @@ def network(ui,s):
                 multi(p,d["rxHistory"],d["txHistory"],t.primary,t.secondary);p.divider()
                 keys(p,[kv("RX total",bytes(d["rxTotal"]),t.primary),kv("TX total",bytes(d["txTotal"]),t.secondary),kv("MAC",d["mac"],t.muted),kv("MTU / err / drop"," / ".join(scalar(d[k]) for k in ("mtu","errors","drops")),t.muted)])
             r.panel(Panel(title=f'{iface["name"]} ({iface["state"]})',subtitle=iface["ip"],border_color=(t.primary,t.success,t.secondary)[i]),draw)
-    row(ui,13,1,top)
+    row(ui,13,gap,top)
     def bottom(r):
         def connections(p):
             if not d["connections"]: p.label("No connections visible (`ss` unavailable).");return
@@ -100,9 +103,10 @@ def network(ui,s):
         def right(c):
             c.panel(Panel(title="Listening Ports",subtitle=str(len(d["listeners"])),border_color=t.warning),lambda p:data_table(p,s,"network.listeners",d["listeners"],[dc("proto","Proto",6,color=t.muted),dc("port","Port",7,color=t.warning,right=True),dc("address","Address",minimum=10,color=t.muted),dc("process","Process",minimum=10,color=t.primary)],True))
             c.panel(Panel(title="Open Connections",size=6,border_color=t.secondary),lambda p:plot(p,d["connectionHistory"],t.accent))
-        r.column(Layout(size="0.7fr",gap=1),right)
+        r.column(Layout(size="0.7fr",gap=gap),right)
     row(ui,"1fr",1,bottom)
 def services(ui,s):
+    gap=s.panel_gap()
     t=ui.theme;d=s.sample["telemetry"];failed=sum(x["active"]=="failed" for x in d["services"])
     def top(r):
         def units(p):
@@ -130,7 +134,7 @@ def services(ui,s):
                 if not rows: p.label("No battery or GPU telemetry on this host.");return
                 keys(p,rows)
             c.panel(Panel(title="Hardware",border_color=t.warning),hardware)
-        r.column(Layout(size="0.85fr",gap=1),right)
+        r.column(Layout(size="0.85fr",gap=gap),right)
     row(ui,"1fr",1,top)
     def filesystems(p):
         if not d["filesystems"]: p.label("No filesystems reported.");return

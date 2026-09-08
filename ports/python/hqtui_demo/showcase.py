@@ -10,6 +10,7 @@ from .dashboard import (w,Layout,Panel,row,txt,kv,keys,percent,bytes,data_table,
                         scalar,overlay,PlotOptions,Series,GaugeOptions)
 
 def graphics(ui,s):
+    gap=s.panel_gap()
     t=ui.theme;time=s.sample["time"]
     wave=lambda phase,freq:[math.sin(i/freq+phase)*50+50 for i in range(240)]
     a,b,c=wave(time/3,9),wave(time/3+2,5),wave(time/2,17)
@@ -18,7 +19,7 @@ def graphics(ui,s):
             p.panel(Panel(title="Braille (2×4 pixels per cell)"),lambda p:p.graph(w.GraphOptions(values=a,plot=PlotOptions(min=0,max=100,fill=True,color=t.accent,grid=True))))
             p.panel(Panel(title="Block elements"),lambda p:p.graph(w.GraphOptions(values=a,plot=PlotOptions(min=0,max=100,mode="block",colors=t.heat))))
             p.panel(Panel(title="ASCII fallback"),lambda p:p.graph(w.GraphOptions(values=a,plot=PlotOptions(min=0,max=100,mode="ascii",color=t.foreground))))
-        r.column(Layout(gap=1),left)
+        r.column(Layout(gap=gap),left)
         def right(p):
             p.panel(Panel(title="Multi-series"),lambda p:p.graph(w.GraphOptions(series=[Series(a,t.primary,"alpha"),Series(b,t.success,"beta"),Series(c,t.secondary,"gamma")],axis=True,legend=True,plot=PlotOptions(min=0,max=100))))
             def gradient(surface):
@@ -31,7 +32,7 @@ def graphics(ui,s):
                 for i in range(12):
                     angle=i/12*math.pi*2+time/4;c.line(cx,cy,cx+math.cos(angle)*radius,cy+math.sin(angle)*radius*.9)
             p.panel(Panel(title="Raw Braille canvas"),lambda p:p.canvas(canvas,color=t.accent))
-        r.column(Layout(gap=1),right)
+        r.column(Layout(gap=gap),right)
     row(ui,"1fr",1,draw)
 def themes(ui,s):
     ui.label(f'Theme {s.theme_index+1}/9: {ui.theme.name}   ←/→ or F2 to change');ui.spacer(1)
@@ -52,6 +53,7 @@ def themes(ui,s):
             g.panel(Panel(title=e.name,border_color=e.border_focused if i==s.theme_index else e.border,background=e.background),Cell(),draw)
     ui.grid(GridSpec(columns=3,rows=3,gap=1),grid)
 def input_screen(ui,s):
+    gap=s.panel_gap()
     t=ui.theme
     def draw(r):
         def events(p):
@@ -64,13 +66,14 @@ def input_screen(ui,s):
                 r.checkbox(w.CheckboxOptions(label="Check",checked=s.checkbox),lambda:toggle(s,"checkbox"),Layout(size=12));r.spacer()
             row(p,1,2,buttons);p.spacer(1);p.label("Tab / Shift+Tab moves focus. Enter activates.");p.spacer();keys(p,[kv("Mouse tracking","on"),kv("Bracketed paste","on"),kv("Focus events","on")])
         r.panel(Panel(title="Try it"),controls)
-    row(ui,"1fr",1,draw)
+    row(ui,"1fr",gap,draw)
 def stress(ui,s):
+    gap=s.panel_gap()
     t=ui.theme
     def stats(r):
         for title,value,color in (("Render",f'{s.render_ms:.2f} ms/frame',t.success),("Changed cells",str(s.changed_cells),t.warning),("Bytes/frame",str(s.output_bytes),t.primary),("FPS",f'{s.fps:.1f}',t.accent)):
             r.panel(Panel(title=title),lambda p,value=value,color=color:txt(p,value,color))
-    row(ui,3,1,stats)
+    row(ui,3,gap,stats)
     def draw(surface):
         ramp=Gradient(t.graph);chars="▖▗▘▙▚▛▜▝▞▟█▓▒░";time=s.sample["time"]
         for y in range(surface.height):
@@ -91,6 +94,7 @@ def handlers(s,name,pane):
         if not overlay(s): pane.selected=max(0,min(pane.total-1,pane.offset+i))
     return ScrollHandlers(on_focus=focus,on_scroll=scroll,on_select_row=select)
 def components(ui,s):
+    gap=s.panel_gap()
     t=ui.theme;c,m,n=s.sample["cpu"],s.sample["memory"],s.sample["network"]
     def draw(r):
         def left(left):
@@ -116,7 +120,7 @@ def components(ui,s):
                     if not overlay(s): h.on_focus();pane.offset=max(0,min(max(0,len(data)-1),pane.offset-d))
                 p.log(w.LogOptions(entries=[w.LogEntry(time=d["time"],level=d["level"],message=d["message"],meta="{"+d["meta"]+"}") for d in data],from_end=pane.offset,scrollbar=True),ScrollHandlers(on_focus=h.on_focus,on_scroll=scroll))
             left.panel(Panel(title="Log Viewer",size=11),logs)
-        r.column(Layout(gap=1),left)
+        r.column(Layout(gap=gap),left)
         def right(right):
             def processes(p):
                 row(p,1,0,lambda r:(r.text("Name",w.TextStyle(fg=t.muted,bold=True)),r.text("CPU%   MEM%",w.TextStyle(fg=t.muted,bold=True,align="right"))))
@@ -130,5 +134,5 @@ def components(ui,s):
                 row(p,1,1,lambda r:(r.badge(w.BadgeOptions(text="active",color=t.success),Layout(size=10)),r.badge(w.BadgeOptions(text="idle",color=t.warning,variant="subtle"),Layout(size=8)),r.badge(w.BadgeOptions(text="failed",color=t.danger,variant="outline"),Layout(size=10)),r.spacer()))
                 p.spacer(1);pane=s.pane("components.list",4);p.list(w.ListOptions(items=[w.ListItem("apps/demo",color=t.primary),w.ListItem("packages/hqtui"),w.ListItem("apps/web"),w.ListItem("docs")],selected=pane.selected,offset=pane.offset,follow_selection=True,bullet="▸",scrollbar=True),handlers(s,"components.list",pane))
             right.panel(Panel(title="Lists & Badges"),lists)
-        r.column(Layout(gap=1),right)
+        r.column(Layout(gap=gap),right)
     row(ui,"1fr",1,draw)

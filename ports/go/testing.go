@@ -88,6 +88,12 @@ func RenderCollapsedToText(width, height int, theme string, view func(*Container
 	return renderWithCollapse(width, height, theme, 0, CapabilityOverrides{}, true, view).Text()
 }
 
+// RenderCollapsedToScreen is the same, returning the whole screen. Cell-level
+// parity against the TypeScript reference needs the buffer, not the text.
+func RenderCollapsedToScreen(width, height int, theme string, view func(*Container)) *RenderedScreen {
+	return renderWithCollapse(width, height, theme, 0, CapabilityOverrides{}, true, view)
+}
+
 // RenderWith is the full form: pick the frame number and override capabilities.
 func RenderWith(
 	width, height int, themeName string, frame int,

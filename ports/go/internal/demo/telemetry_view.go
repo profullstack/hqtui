@@ -52,6 +52,7 @@ func (s *state) telemetry(p *ui.Container) {
 	}
 }
 func (s *state) trafficScreen(p *ui.Container) {
+	gap := s.panelGap()
 	if s.real {
 		p.Label(trafficNotice())
 	}
@@ -60,7 +61,7 @@ func (s *state) trafficScreen(p *ui.Container) {
 	net := obj(d["net"])
 	rates := obj(net["rates"])
 	http := obj(d["http"])
-	row(p, ui.Cells(13), 1, func(r *ui.Container) {
+	row(p, ui.Cells(13), gap, func(r *ui.Container) {
 		r.Panel(ui.PanelOptions{Title: "Protocols", Subtitle: fmt.Sprintf("%s in / %s out", scalar(d["inboundConnections"]), scalar(d["outboundConnections"])), BorderColor: &t.Accent}, func(p *ui.Container) {
 			data := arr(d["protocols"])
 			if len(data) == 0 {
@@ -99,7 +100,7 @@ func (s *state) trafficScreen(p *ui.Container) {
 		})
 	})
 	row(p, ui.Fr(1), 1, func(r *ui.Container) {
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: 1}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(c *ui.Container) {
 			subtitle := "no access log"
 			if len(http) > 0 {
 				subtitle = fmt.Sprintf("%.1f req/s", num(http["requestsPerSecond"]))
@@ -131,7 +132,7 @@ func (s *state) trafficScreen(p *ui.Container) {
 				s.dataTable(p, "traffic.paths", arr(http["topPaths"]), []dataColumn{dc("path", "Path", 0, 20, &t.Primary, false), dc("count", "Hits", 7, 0, &t.Accent, true)}, false, true)
 			})
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: 1}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: gap}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "SSH Activity", Subtitle: fmt.Sprint(len(arr(d["ssh"]))), BorderColor: &t.Warning}, func(p *ui.Container) {
 				data := slices.Clone(arr(d["ssh"]))
 				slices.Reverse(data)
@@ -176,9 +177,10 @@ func (s *state) trafficScreen(p *ui.Container) {
 	}
 }
 func (s *state) sessionsScreen(p *ui.Container) {
+	gap := s.panelGap()
 	t := p.Theme()
 	d := obj(s.sample["telemetry"])
-	row(p, ui.Cells(9), 1, func(r *ui.Container) {
+	row(p, ui.Cells(9), gap, func(r *ui.Container) {
 		r.Panel(ui.PanelOptions{Title: "Active Sessions", Subtitle: fmt.Sprint(len(arr(d["sessions"]))), BorderColor: &t.Success}, func(p *ui.Container) {
 			data := arr(d["sessions"])
 			if len(data) == 0 {
@@ -214,7 +216,7 @@ func (s *state) sessionsScreen(p *ui.Container) {
 			}
 			s.dataTable(p, "sessions.logins", data, cols, true)
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.8)), Gap: 1}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.8)), Gap: gap}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "Failed Logins", BorderColor: &t.Danger}, func(p *ui.Container) {
 				data := arr(d["failedLogins"])
 				if len(data) == 0 {
@@ -232,6 +234,7 @@ func (s *state) sessionsScreen(p *ui.Container) {
 	})
 }
 func (s *state) networkScreen(p *ui.Container) {
+	gap := s.panelGap()
 	t := p.Theme()
 	d := obj(s.sample["telemetry"])
 	active := []any{}
@@ -245,7 +248,7 @@ func (s *state) networkScreen(p *ui.Container) {
 		active = arr(d["interfaces"])
 	}
 	active = active[:min(3, len(active))]
-	row(p, ui.Cells(13), 1, func(r *ui.Container) {
+	row(p, ui.Cells(13), gap, func(r *ui.Container) {
 		if len(active) == 0 {
 			r.Panel(ui.PanelOptions{Title: "Interfaces"}, func(p *ui.Container) { p.Label("No interfaces reported.") })
 			return
@@ -273,7 +276,7 @@ func (s *state) networkScreen(p *ui.Container) {
 			}
 			s.dataTable(p, "network.connections", data, []dataColumn{dc("proto", "Proto", 6, 0, &t.Muted, false), dc("local", "Local", 0, 18, nil, false), dc("remote", "Remote", 0, 18, &t.Accent, false), dc("state", "State", 10, 0, &t.Success, false), dc("process", "Process", 0, 12, &t.Primary, false)}, true)
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.7)), Gap: 1}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.7)), Gap: gap}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "Listening Ports", Subtitle: fmt.Sprint(len(arr(d["listeners"]))), BorderColor: &t.Warning}, func(p *ui.Container) {
 				s.dataTable(p, "network.listeners", arr(d["listeners"]), []dataColumn{dc("proto", "Proto", 6, 0, &t.Muted, false), dc("port", "Port", 7, 0, &t.Warning, true), dc("address", "Address", 0, 10, &t.Muted, false), dc("process", "Process", 0, 10, &t.Primary, false)}, true)
 			})
@@ -282,6 +285,7 @@ func (s *state) networkScreen(p *ui.Container) {
 	})
 }
 func (s *state) servicesScreen(p *ui.Container) {
+	gap := s.panelGap()
 	t := p.Theme()
 	d := obj(s.sample["telemetry"])
 	failed := 0
@@ -316,7 +320,7 @@ func (s *state) servicesScreen(p *ui.Container) {
 			}
 			s.dataTable(p, "services.units", data, cols, true)
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: 1}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: gap}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "Kernel", Layout: fixed(11), BorderColor: &t.Accent}, func(p *ui.Container) {
 				k := obj(d["kernel"])
 				blocked, entropy := t.Muted, t.Success

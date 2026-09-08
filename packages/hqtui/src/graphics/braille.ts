@@ -12,6 +12,20 @@ const DOT_BITS = [
   [0x40, 0x80],
 ];
 
+/**
+ * Round, treating a value within a hair of .5 as the tie it mathematically is.
+ *
+ * Plot geometry runs through cos and sin, and libm implementations differ by an
+ * ULP at the exact angles where a coordinate lands on .5 -- cos(120 degrees) is
+ * -0.5, and V8 returns a hair under it where Go returns a hair over. Rounding
+ * the raw value makes that ULP decide a pixel, so the same widget at the same
+ * size differs between ports. The tolerance is far wider than an ULP and far
+ * narrower than anything geometric.
+ */
+function snap(v: number): number {
+  return Math.round(v + (v >= 0 ? 1e-9 : -1e-9));
+}
+
 export class BrailleCanvas {
   /** Pixel dimensions (cells * 2 wide, cells * 4 tall). */
   readonly width: number;
@@ -38,8 +52,8 @@ export class BrailleCanvas {
    * everything, is ignored too rather than landing in cell 0.
    */
   pixel(x: number, y: number): void {
-    const px = Math.round(x);
-    const py = Math.round(y);
+    const px = snap(x);
+    const py = snap(y);
     if (!(px >= 0 && py >= 0 && px < this.width && py < this.height)) return;
     const cell = (py >> 2) * this.cols + (px >> 1);
     this.dots[cell] |= DOT_BITS[py & 3][px & 1];

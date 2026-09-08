@@ -17,6 +17,7 @@ func TestTypeScriptScreenCells(t *testing.T) {
 	var cases []struct {
 		Screen, Theme, Text string
 		Width, Height       int
+		Collapsed           bool
 		Hashes              []uint32
 	}
 	if err = json.Unmarshal(raw, &cases); err != nil {
@@ -28,7 +29,12 @@ func TestTypeScriptScreenCells(t *testing.T) {
 			s.sample = loadSample(false)
 			s.theme = index(themes, c.Theme)
 			s.screen = index(screens, c.Screen)
-			f := ui.RenderToScreen(c.Width, c.Height, c.Theme, func(p *ui.Container) {
+			s.collapse = c.Collapsed
+			render := ui.RenderToScreen
+			if c.Collapsed {
+				render = ui.RenderCollapsedToScreen
+			}
+			f := render(c.Width, c.Height, c.Theme, func(p *ui.Container) {
 				s.body(p)
 			})
 			expected := strings.Split(c.Text, "\n")

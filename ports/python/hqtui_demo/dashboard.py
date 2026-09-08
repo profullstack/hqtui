@@ -64,22 +64,22 @@ def _data_table(p,s,name,data,columns,zebra=False,header=True,scrollbar=True):
 def dc(key,title,width=None,minimum=None,color=None,right=False,fmt=None,cell_color=None):
     return key,w.TableColumn(title,width=width,min=minimum,color=color,align="right" if right else "left"),fmt,cell_color
 
-def cpu_panel(ui,s,columns):
+def cpu_panel(ui,s,columns,size=None):
     c=s.sample["cpu"]
     def draw(p):
         t=p.theme;p.label(f'{c["model"]}   {c["frequencyGhz"]:.1f} GHz');plot(p,c["history"],t.success,100)
         p.meters(w.MetersOptions(items=[w.MeterItem(label=f'P{i}',value=v) for i,v in enumerate(c["cores"])],columns=columns,label_width=4,value_width=5,style="segmented"))
         p.divider();keys(p,[kv("Load Avg","   ".join(f'{v:.2f}' for v in c["load"]),t.warning)])
-    ui.panel(Panel(title="CPU Overview",subtitle=percent(c["total"])),draw)
-def memory_panel(ui,s):
+    ui.panel(Panel(title="CPU Overview",subtitle=percent(c["total"]),size=size),draw)
+def memory_panel(ui,s,size=None):
     m=s.sample["memory"];used=m["used"]/max(1,m["total"]);swap=m["swapUsed"]/max(1,m["swapTotal"])
     def draw(p):
         t=p.theme;txt(p,f'Memory      {bytes(m["used"])} / {bytes(m["total"])} ({percent(used)})',t.foreground);meter(p,used);p.spacer(1)
         keys(p,[kv(label,bytes(m[key]),color) for key,label,color in (("used","Used:",t.warning),("available","Available:",t.success),("cached","Cached:",t.accent),("buffers","Buffers:",t.secondary),("free","Free:",t.muted))])
         p.spacer();p.divider();txt(p,f'Swap        {bytes(m["swapUsed"])} / {bytes(m["swapTotal"])} ({percent(swap)})',t.foreground);meter(p,swap,t.secondary)
         keys(p,[kv("Used:",bytes(m["swapUsed"]),t.secondary),kv("Free:",bytes(m["swapTotal"]-m["swapUsed"]),t.muted)])
-    ui.panel(Panel(title="Memory & Swap"),draw)
-def disks_panel(ui,s):
+    ui.panel(Panel(title="Memory & Swap",size=size),draw)
+def disks_panel(ui,s,size=None):
     disks=s.sample["disks"]
     def draw(p):
         t=p.theme
@@ -90,8 +90,8 @@ def disks_panel(ui,s):
             row(p,1,0,lambda r,d=d:(txt(r,"Read: "+byte_rate(d["readRate"]),t.success),r.text("Write: "+byte_rate(d["writeRate"]),w.TextStyle(fg=t.secondary,align="right"))))
             multi(p,d["readHistory"],d["writeHistory"],t.success,t.secondary)
             if i==0 and len(disks)>1: p.divider()
-    ui.panel(Panel(title="Disks"),draw)
-def system_panel(ui,s):
+    ui.panel(Panel(title="Disks",size=size),draw)
+def system_panel(ui,s,size=None):
     sys,c,m=s.sample["system"],s.sample["cpu"],s.sample["memory"];used=m["used"]/max(1,m["total"]);count=sys["processCount"] or len(s.sample["processes"])
     def draw(p):
         t=p.theme
@@ -109,14 +109,14 @@ def system_panel(ui,s):
             row(p,6,1,stats)
         else:
             p.divider();keys(p,[kv("Threads",sys["threadCount"],t.accent),kv("Ctx switches",f'{sys["contextSwitches"]/1000:.1f}K',t.accent)])
-    ui.panel(Panel(title="System"),draw)
-def processes_panel(ui,s):
+    ui.panel(Panel(title="System",size=size),draw)
+def processes_panel(ui,s,size=None):
     def draw(p):
         t=p.theme
         columns=[dc("pid","PID",7,right=True),dc("name","Name",minimum=8,color=t.primary),dc("cpu","CPU%",6,right=True,fmt=lambda d:f'{d["cpu"]:.1f}',cell_color=lambda d:heat_color(t,min(1,d["cpu"]/100))),dc("mem","MEM%",6,color=t.warning,right=True,fmt=lambda d:f'{d["mem"]:.1f}'),dc("rss","RSS",9,right=True,fmt=lambda d:bytes(d["rss"],0)),dc("threads","Threads",7,right=True),dc("state","S",2,cell_color=lambda d:t.success if d["state"]=="R" else t.muted),dc("user","User",10,color=t.muted),dc("command","Command",minimum=10,color=t.muted)]
         data_table(p,s,"dashboard.processes",s.processes(),columns)
-    ui.panel(Panel(title=f'Processes (sorted by {s.sort.upper()})',subtitle="filter: "+s.filter if s.filter else "",focusable=True),draw)
-def network_panel(ui,s):
+    ui.panel(Panel(title=f'Processes (sorted by {s.sort.upper()})',subtitle="filter: "+s.filter if s.filter else "",focusable=True,size=size),draw)
+def network_panel(ui,s,size=None):
     n=s.sample["network"]
     def draw(p):
         t=p.theme;row(p,1,0,lambda r:(txt(r,"Download: "+bit_rate(n["downRate"]),t.primary),r.text("Upload: "+bit_rate(n["upRate"]),w.TextStyle(fg=t.secondary,align="right"))))
@@ -127,8 +127,8 @@ def network_panel(ui,s):
             for prefix,color in (("down",t.primary),("up",t.secondary)):
                 keys(r,[kv("Total:",bytes(n[prefix+"Total"]),color),kv("Current:",bit_rate(n[prefix+"Rate"]),color),kv("Peak:",bit_rate(n[prefix+"Peak"]),color)],False)
         row(p,3,2,totals)
-    ui.panel(Panel(title="Network"),draw)
-def disk_usage_panel(ui,s):
+    ui.panel(Panel(title="Network",size=size),draw)
+def disk_usage_panel(ui,s,size=None):
     disks=s.sample["disks"];first=disks[0] if disks else {}
     def draw(p):
         t=p.theme
@@ -141,7 +141,7 @@ def disk_usage_panel(ui,s):
                     col(r,"fill",lambda c,prefix=prefix,label=label,color=color:(txt(c,label+byte_rate(first.get(prefix+"Rate",0)),color),plot(c,first.get(prefix+"History",[]),color)))
             row(p,"fill",2,columns)
         p.panel(Panel(title="I/O Summary"),io)
-    ui.panel(Panel(title="Disk Usage",subtitle=first.get("device","")),draw)
+    ui.panel(Panel(title="Disk Usage",subtitle=first.get("device",""),size=size),draw)
 def temperatures_panel(ui,s):
     def draw(p):
         t=p.theme;temps=s.sample["temperatures"]
@@ -158,7 +158,7 @@ def sensors_panel(ui,s):
             p.label("No hardware sensors on this host.");p.spacer(1);p.label("Probed: /sys/class/hwmon, thermal zones, lm-sensors,");p.label("power supplies and nvidia-smi.");return
         keys(p,[kv(v["label"],v["value"],p.theme.accent) for v in sensors])
     ui.panel(Panel(title="Sensors"),draw)
-def logs_panel(ui,s):
+def logs_panel(ui,s,size=None):
     def draw(p):
         data=s.sample["logs"];pane=s.pane("dashboard.logs",len(data));pane.log=True
         def focus():
@@ -166,16 +166,21 @@ def logs_panel(ui,s):
         def scroll(d):
             if not overlay(s): focus();pane.offset=max(0,min(max(0,len(data)-1),pane.offset-d))
         p.log(w.LogOptions(entries=[w.LogEntry(time=d["time"],level=d["level"],message=d["message"],meta="{"+d["meta"]+"}") for d in data],from_end=pane.offset,scrollbar=True),ScrollHandlers(on_focus=focus,on_scroll=scroll))
-    ui.panel(Panel(title="Logs"),draw)
+    ui.panel(Panel(title="Logs",size=size),draw)
 def dashboard(ui,s):
+    # Panels go straight into their row rather than each inside a sizing column.
+    # A column is not a bordered child, so a row of them has no seam to merge
+    # and c could never change this screen; a size on the panel does the same
+    # job and leaves the borders adjacent to each other.
+    gap=s.panel_gap()
     if ui.width>=150:
-        row(ui,19 if ui.height>=44 else 16,1,lambda r:(col(r,"1fr",lambda c:cpu_panel(c,s,2)),col(r,"0.95fr",lambda c:memory_panel(c,s)),col(r,"0.95fr",lambda c:disks_panel(c,s)),col(r,"1.35fr",lambda c:system_panel(c,s))))
-        row(ui,"1fr",1,lambda r:(col(r,"2fr",lambda c:processes_panel(c,s)),col(r,"1.2fr",lambda c:network_panel(c,s)),col(r,"1.2fr",lambda c:disk_usage_panel(c,s))))
-        row(ui,12,1,lambda r:(temperatures_panel(r,s),sensors_panel(r,s),col(r,"1.6fr",lambda c:logs_panel(c,s))))
+        row(ui,19 if ui.height>=44 else 16,gap,lambda r:(cpu_panel(r,s,2,"1fr"),memory_panel(r,s,"0.95fr"),disks_panel(r,s,"0.95fr"),system_panel(r,s,"1.35fr")))
+        row(ui,"1fr",gap,lambda r:(processes_panel(r,s,"2fr"),network_panel(r,s,"1.2fr"),disk_usage_panel(r,s,"1.2fr")))
+        row(ui,12,gap,lambda r:(temperatures_panel(r,s),sensors_panel(r,s),logs_panel(r,s,"1.6fr")))
     elif ui.width>=100:
-        row(ui,14,1,lambda r:(cpu_panel(r,s,2),memory_panel(r,s),system_panel(r,s)))
-        row(ui,"1fr",1,lambda r:(col(r,"1.6fr",lambda c:processes_panel(c,s)),col(r,"fill",lambda c:network_panel(c,s))))
-        row(ui,10,1,lambda r:(temperatures_panel(r,s),logs_panel(r,s)))
+        row(ui,14,gap,lambda r:(cpu_panel(r,s,2),memory_panel(r,s),system_panel(r,s)))
+        row(ui,"1fr",gap,lambda r:(processes_panel(r,s,"1.6fr"),network_panel(r,s,"fill")))
+        row(ui,10,gap,lambda r:(temperatures_panel(r,s),logs_panel(r,s)))
     else:
-        row(ui,10,1,lambda r:(cpu_panel(r,s,1),memory_panel(r,s)))
-        col(ui,"fill",lambda c:processes_panel(c,s));row(ui,8,1,lambda r:network_panel(r,s))
+        row(ui,10,gap,lambda r:(cpu_panel(r,s,1),memory_panel(r,s)))
+        col(ui,"fill",lambda c:processes_panel(c,s));row(ui,8,gap,lambda r:network_panel(r,s))
