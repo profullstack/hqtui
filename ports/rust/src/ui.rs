@@ -749,6 +749,16 @@ impl<'a> Container<'a> {
         self.add(constraint, move |s| w::draw_graph(&s, &options))
     }
 
+    /// A chart of arbitrary (x, y) data, with a domain on both axes.
+    ///
+    /// `graph` plots a history buffer, one sample per column. Use this when the
+    /// data has its own x values: two series of different lengths then line up,
+    /// and a point lands where its x says it does.
+    pub fn chart(&mut self, options: w::ChartOptions) -> &mut Self {
+        let constraint = self.filling();
+        self.add(constraint, move |s| w::draw_chart(&s, &options))
+    }
+
     pub fn sparkline(&mut self, options: w::SparklineWidgetOptions) -> &mut Self {
         let constraint = self.leaf(1);
         self.add(constraint, move |s| w::draw_sparkline(&s, &options))

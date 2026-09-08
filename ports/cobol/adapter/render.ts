@@ -70,6 +70,9 @@ const ALIGN: Record<string, Align> = { LEFT: "left", CENTER: "center", RIGHT: "r
 type Edge = "right" | "left" | "bottom" | "top";
 const EDGE: Record<string, Edge> = { RIGHT: "right", LEFT: "left", BOTTOM: "bottom", TOP: "top" };
 
+type Mark = "line" | "scatter" | "bar";
+const MARK: Record<string, Mark> = { LINE: "line", SCATTER: "scatter", BAR: "bar" };
+
 type ButtonVariant = "primary" | "success" | "warning" | "danger" | "ghost";
 const VARIANT: Record<string, ButtonVariant> = {
   PRIMARY: "primary",
@@ -106,6 +109,7 @@ export function draw(scene: Scene, ui: Container, theme: Theme): void {
   let modal: { title: string; width: number } | undefined;
   let palette: { query: string; selected: number } | undefined;
   let tooltip: { text: string; x: number; y: number } | undefined;
+  const chartSeries = new Map<string, [number, number][]>();
   let selected = 0;
   let activeTab = 0;
 
@@ -139,6 +143,29 @@ export function draw(scene: Scene, ui: Container, theme: Theme): void {
       case "SELECT":
         selected = Number(record.num) || 0;
         break;
+      case "CHARTPT": {
+        // One point per record, like GRAPHPT. key names the series it joins, so
+        // a flat record stream can describe several of them.
+        const points = chartSeries.get(record.key) ?? [];
+        const [px = "", py = ""] = record.text.split("|");
+        points.push([Number(px) || 0, Number(py) || 0]);
+        chartSeries.set(record.key, points);
+        break;
+      }
+      case "CHART": {
+        // key is the mark every series takes; text is "xmin|xmax|ymin|ymax".
+        const [xmin = "", xmax = "", ymin = "", ymax = ""] = record.text.split("|");
+        const mark = MARK[record.key] ?? "line";
+        ui.chart({
+          series: [...chartSeries].map(([label, points]) => ({ label, points, type: mark })),
+          axis: true,
+          legend: chartSeries.size > 1,
+          x: { min: Number(xmin) || 0, max: Number(xmax) || 0 },
+          y: { min: Number(ymin) || 0, max: Number(ymax) || 0 },
+        });
+        chartSeries.clear();
+        break;
+      }
       case "SCROLLBAR": {
         // key is the edge, num the offset, text "total|viewport".
         const [total = "", viewport = ""] = record.text.split("|");

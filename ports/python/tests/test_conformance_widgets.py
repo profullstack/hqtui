@@ -11,6 +11,7 @@ from __future__ import annotations
 import math
 import unittest
 
+import hqtui.graphics.chart as g
 import hqtui.widgets as w
 from hqtui.graphics import (
     BarOptions,
@@ -31,6 +32,20 @@ from hqtui.graphics import (
 from hqtui.surface import Surface
 
 from .support import assert_buffer, fixture, scene
+
+
+def _axis(minimum: float, maximum: float, ticks: int = 0) -> g.AxisOptions:
+    """The axis bounds every chart fixture pins, without the ceremony."""
+    return g.AxisOptions(min=minimum, max=maximum, ticks=ticks)
+
+
+def _chart(mark: str) -> w.ChartOptions:
+    """One series over the standard 0..10 domain."""
+    return w.ChartOptions(
+        series=[g.ChartSeries(points=[(0, 1), (2, 6), (5, 3), (8, 9), (10, 4)], mark=mark)],
+        plot=g.ChartPlotOptions(x=_axis(0, 10), y=_axis(0, 10)),
+    )
+
 
 SERIES = [3, 7, 2, 9, 4, 8, 6, 1, 5, 9, 3, 7, 8, 2, 6, 4, 9, 1, 5, 7]
 
@@ -119,6 +134,46 @@ def draw_scene(case, name: str, s: Surface) -> None:
                 segments=[DonutSegment(value=3), DonutSegment(value=5), DonutSegment(value=2)]
             ),
         )
+    elif name == "chart-line":
+        w.draw_chart(s, _chart("line"))
+    elif name == "chart-scatter":
+        w.draw_chart(s, _chart("scatter"))
+    elif name == "chart-bar":
+        w.draw_chart(s, _chart("bar"))
+    elif name == "chart-fill":
+        w.draw_chart(s, w.ChartOptions(
+            series=[g.ChartSeries(points=[(0, 2), (5, 8), (10, 2)], fill=True)],
+            plot=g.ChartPlotOptions(x=_axis(0, 10), y=_axis(0, 10)),
+        ))
+    elif name == "chart-axes":
+        w.draw_chart(s, w.ChartOptions(
+            series=[g.ChartSeries(points=[(0, 0), (5, 50), (10, 100)])],
+            axis=True,
+            plot=g.ChartPlotOptions(x=_axis(0, 10, 3), y=_axis(0, 100)),
+        ))
+    elif name == "chart-block":
+        w.draw_chart(s, w.ChartOptions(
+            series=[g.ChartSeries(points=[(0, 1), (2, 6), (5, 3), (8, 9), (10, 4)], mark="bar")],
+            plot=g.ChartPlotOptions(mode="block", x=_axis(0, 10), y=_axis(0, 10)),
+        ))
+    elif name == "chart-multi":
+        w.draw_chart(s, w.ChartOptions(
+            series=[
+                g.ChartSeries(
+                    points=[(0, 1), (1, 3), (2, 2), (3, 5), (4, 4), (5, 7), (6, 6), (7, 9)],
+                    label="fine",
+                ),
+                g.ChartSeries(points=[(0, 8), (7, 2)], label="coarse"),
+            ],
+            axis=True,
+            legend=True,
+            plot=g.ChartPlotOptions(x=_axis(0, 7), y=_axis(0, 10)),
+        ))
+    elif name == "chart-flat":
+        w.draw_chart(s, w.ChartOptions(
+            series=[g.ChartSeries(points=[(0, 4), (5, 4), (10, 4)])],
+            plot=g.ChartPlotOptions(x=_axis(0, 10)),
+        ))
     elif name == "graph-axis":
         w.draw_graph(s, w.GraphOptions(values=SERIES, axis=True))
     elif name == "graph-legend":

@@ -2,7 +2,7 @@
 #include <hqtui/widgets.hpp>
 #include <numeric>
 namespace hqtui {
-static std::string number(double v) {
+std::string number(double v) {
   char b[80];
   std::snprintf(b, sizeof b, v == std::floor(v) ? "%.0f" : "%.1f", v);
   return b;

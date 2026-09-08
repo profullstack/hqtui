@@ -187,6 +187,27 @@ fn scrollbarRow(r: *Container) anyerror!void {
 }
 // @end
 
+// @widget chart
+fn chart(ui: *Container) anyerror!void {
+    // Points carry their own x, so a sparse series and a dense one line up.
+    try ui.chart(.{
+        .series = &.{
+            .{ .points = &.{
+                .{ .x = 0, .y = 1 }, .{ .x = 2, .y = 6 }, .{ .x = 5, .y = 3 },
+                .{ .x = 8, .y = 9 }, .{ .x = 10, .y = 4 },
+            }, .label = "load" },
+            .{ .points = &.{ .{ .x = 0, .y = 8 }, .{ .x = 10, .y = 2 } }, .label = "limit" },
+        },
+        .axis = true,
+        .legend = true,
+        .plot = .{
+            .x = .{ .min = 0, .max = 10, .ticks = 3 },
+            .y = .{ .min = 0, .max = 10 },
+        },
+    });
+}
+// @end
+
 // @widget meter
 fn meter(ui: *Container) anyerror!void {
     try ui.meter(.{ .value = 0.62, .label = "CPU" });
@@ -375,6 +396,7 @@ const examples = [_]Example{
     .{ .name = "tree", .body = hqtui.Body.plain(tree) },
     .{ .name = "log", .body = hqtui.Body.plain(log) },
     .{ .name = "scrollbar", .body = hqtui.Body.plain(scrollbar) },
+    .{ .name = "chart", .body = hqtui.Body.plain(chart) },
     .{ .name = "meter", .body = hqtui.Body.plain(meter) },
     .{ .name = "meters", .body = hqtui.Body.plain(meters) },
     .{ .name = "progress", .body = hqtui.Body.plain(progress) },

@@ -17,6 +17,28 @@ var widgetSeries = []float64{3, 7, 2, 9, 4, 8, 6, 1, 5, 9, 3, 7, 8, 2, 6, 4, 9, 
 
 func series() []float64 { return append([]float64(nil), widgetSeries...) }
 
+// pts builds a point list from flat x, y pairs, which is all a fixture needs.
+func pts(values ...float64) []Point {
+	out := make([]Point, 0, len(values)/2)
+	for i := 0; i+1 < len(values); i += 2 {
+		out = append(out, Point{X: values[i], Y: values[i+1]})
+	}
+	return out
+}
+
+// axisOf is the axis bounds every chart fixture pins, without the ceremony.
+func axisOf(min, max float64, ticks int) *AxisOptions {
+	return &AxisOptions{Min: &min, Max: &max, Ticks: ticks}
+}
+
+// chartFixture is one series over the standard 0..10 domain.
+func chartFixture(mark MarkType) ChartOptions {
+	return ChartOptions{
+		Series: []ChartSeries{{Points: pts(0, 1, 2, 6, 5, 3, 8, 9, 10, 4), Mark: mark}},
+		Plot:   ChartPlotOptions{X: axisOf(0, 10, 0), Y: axisOf(0, 10, 0)},
+	}
+}
+
 func drawWidgetScene(t *testing.T, name string, s Surface) {
 	switch name {
 	case "text-plain":
@@ -91,6 +113,47 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 		Gauge(s, GaugeOptions{Value: 0.7, Label: "70%"})
 	case "donut":
 		Donut(s, DonutOptions{Segments: []DonutSegment{{Value: 3}, {Value: 5}, {Value: 2}}})
+	case "chart-line":
+		DrawChart(s, chartFixture(MarkLine))
+	case "chart-scatter":
+		DrawChart(s, chartFixture(MarkScatter))
+	case "chart-bar":
+		DrawChart(s, chartFixture(MarkBar))
+	case "chart-fill":
+		DrawChart(s, ChartOptions{
+			Series: []ChartSeries{{Points: pts(0, 2, 5, 8, 10, 2), Fill: true}},
+			Plot:   ChartPlotOptions{X: axisOf(0, 10, 0), Y: axisOf(0, 10, 0)},
+		})
+	case "chart-axes":
+		DrawChart(s, ChartOptions{
+			Series: []ChartSeries{{Points: pts(0, 0, 5, 50, 10, 100)}},
+			Axis:   true,
+			Plot:   ChartPlotOptions{X: axisOf(0, 10, 3), Y: axisOf(0, 100, 0)},
+		})
+	case "chart-block":
+		DrawChart(s, ChartOptions{
+			Series: []ChartSeries{{Points: pts(0, 1, 2, 6, 5, 3, 8, 9, 10, 4), Mark: MarkBar}},
+			Plot: ChartPlotOptions{
+				Mode: FillBlock,
+				X:    axisOf(0, 10, 0),
+				Y:    axisOf(0, 10, 0),
+			},
+		})
+	case "chart-multi":
+		DrawChart(s, ChartOptions{
+			Series: []ChartSeries{
+				{Points: pts(0, 1, 1, 3, 2, 2, 3, 5, 4, 4, 5, 7, 6, 6, 7, 9), Label: "fine"},
+				{Points: pts(0, 8, 7, 2), Label: "coarse"},
+			},
+			Axis:   true,
+			Legend: true,
+			Plot:   ChartPlotOptions{X: axisOf(0, 7, 0), Y: axisOf(0, 10, 0)},
+		})
+	case "chart-flat":
+		DrawChart(s, ChartOptions{
+			Series: []ChartSeries{{Points: pts(0, 4, 5, 4, 10, 4)}},
+			Plot:   ChartPlotOptions{X: axisOf(0, 10, 0)},
+		})
 	case "graph-axis":
 		DrawGraph(s, GraphOptions{Values: series(), Axis: true})
 	case "graph-legend":

@@ -97,6 +97,22 @@ function widget_scrollbar(UI $ui): void
 }
 // @end
 
+// @widget chart
+function widget_chart(UI $ui): void
+{
+    // Points carry their own x, so a sparse series and a dense one line up.
+    $ui->chart(
+        [
+            ['points' => [['x' => 0, 'y' => 1], ['x' => 2, 'y' => 6], ['x' => 5, 'y' => 3],
+                          ['x' => 8, 'y' => 9], ['x' => 10, 'y' => 4]], 'label' => 'load'],
+            ['points' => [['x' => 0, 'y' => 8], ['x' => 10, 'y' => 2]], 'label' => 'limit'],
+        ],
+        ['axis' => true, 'legend' => true,
+         'x' => ['min' => 0, 'max' => 10, 'ticks' => 3], 'y' => ['min' => 0, 'max' => 10]]
+    );
+}
+// @end
+
 // @widget meter
 function widget_meter(UI $ui): void
 {
@@ -309,6 +325,7 @@ $examples = [
     'table' => 'widget_table',
     'log' => 'widget_log',
     'scrollbar' => 'widget_scrollbar',
+    'chart' => 'widget_chart',
     'meter' => 'widget_meter',
     'graph' => 'widget_graph',
     'gauge' => 'widget_gauge',

@@ -63,6 +63,8 @@ inline std::string fit(std::string_view s, int columns, int align = HQ_LEFT,
   return std::string(left, ' ') + out + std::string(padding - left, ' ');
 }
 inline const hq_theme &theme(Surface s) { return *s.native().theme; }
+/// `4` rather than `4.0`, `4.2` rather than `4.20`.
+std::string number(double);
 /// Returns the columns written, so a caller laying items out in a row can
 /// advance by what was actually drawn rather than by what it hoped to draw.
 inline std::size_t text(Surface s, int x, int y, std::string_view value, Color fg,
@@ -329,6 +331,58 @@ struct Progress {
 };
 void draw_progress(Surface, const Progress &);
 void draw_graph(Surface, const Graph &);
+
+/// A point in a chart's own coordinates, not the grid's.
+struct ChartPoint {
+  double x = 0, y = 0;
+};
+/// How a series is marked: joined, dotted, or dropped to the baseline.
+enum MarkType { HQ_MARK_LINE, HQ_MARK_SCATTER, HQ_MARK_BAR };
+struct ChartSeries {
+  std::vector<ChartPoint> points;
+  Color color = 0;
+  std::string label;
+  MarkType mark = HQ_MARK_LINE;
+  /// Shade between the line and the baseline. Ignored for a scatter.
+  bool fill = false;
+};
+/// One axis: what it spans and how its numbers read.
+struct Axis {
+  std::optional<double> min, max;
+  std::function<std::string(double)> format;
+  /// How many labels to place. Default 2 -- the ends.
+  int ticks = 0;
+};
+struct Domain {
+  double min = 0, max = 1;
+};
+struct ChartPlot {
+  std::string mode = "braille";
+  std::optional<Axis> x, y;
+  std::optional<Color> background;
+  bool grid = false;
+  std::optional<Color> grid_color;
+  /// 0-1 opacity of the area fill against the background.
+  std::optional<double> fill_alpha;
+  /// Where a bar or an area is measured from. Defaults to the y minimum.
+  std::optional<double> baseline;
+};
+struct Chart {
+  std::vector<ChartSeries> series;
+  ChartPlot plot;
+  /// Numbers down the left edge.
+  bool axis = false;
+  Color axis_color = 0;
+  bool legend = false;
+  int legend_align = HQ_LEFT;
+};
+/// The span an axis covers, from the caller where they said and from the data
+/// where they did not.
+Domain domain_of(const std::vector<ChartSeries> &, const Axis *, int which);
+/// Draw point series across the whole surface.
+void plot_points(Surface, const std::vector<ChartSeries> &, const ChartPlot &);
+/// A chart of arbitrary (x, y) data, with a domain on both axes.
+void draw_chart(Surface, const Chart &);
 void draw_gauge(Surface, double, std::string_view);
 void draw_keys(Surface, const std::vector<KeyValue> &, bool spread = true);
 /// Which edge a scrollbar sits on, and therefore which way it runs.
@@ -774,6 +828,14 @@ public:
   }
   void progress(Progress o) {
     draw([=](Surface s) { draw_progress(s, o); }, cells(1));
+  }
+  /// A chart of arbitrary (x, y) data, with a domain on both axes.
+  ///
+  /// `graph` plots a history buffer, one sample per column. Use this when the
+  /// data has its own x values: two series of different lengths then line up,
+  /// and a point lands where its x says it does.
+  void chart(Chart o, Constraint size = fr()) {
+    draw([=](Surface s) { draw_chart(s, o); }, size);
   }
   void sparkline(Sparkline o) {
     draw([=](Surface s) { draw_sparkline(s, o); }, cells(1));

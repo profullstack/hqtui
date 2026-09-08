@@ -62,7 +62,7 @@ pub struct PlotOptions {
 
 /// Every glyph ramp entry is a single character; this is the reference
 /// implementation's `codePointAt(0)` on a one-glyph string.
-fn first_char(s: &str) -> char {
+pub(crate) fn first_char(s: &str) -> char {
     s.chars().next().unwrap_or(' ')
 }
 

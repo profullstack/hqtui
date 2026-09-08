@@ -86,6 +86,21 @@ def scrollbar(ui)
 end
 # @end
 
+# @widget chart
+def chart(ui)
+  # Points carry their own x, so a sparse series and a dense one line up.
+  ui.chart(
+    [
+      { points: [{ x: 0, y: 1 }, { x: 2, y: 6 }, { x: 5, y: 3 }, { x: 8, y: 9 }, { x: 10, y: 4 }],
+        label: 'load' },
+      { points: [{ x: 0, y: 8 }, { x: 10, y: 2 }], label: 'limit' }
+    ],
+    axis: true, legend: true,
+    x: { min: 0, max: 10, ticks: 3 }, y: { min: 0, max: 10 }
+  )
+end
+# @end
+
 # @widget meter
 def meter(ui)
   ui.meter(0.62, label: 'CPU')
@@ -274,6 +289,7 @@ EXAMPLES = {
   'table' => method(:table),
   'log' => method(:log),
   'scrollbar' => method(:scrollbar),
+  'chart' => method(:chart),
   'meter' => method(:meter),
   'graph' => method(:graph),
   'gauge' => method(:gauge),

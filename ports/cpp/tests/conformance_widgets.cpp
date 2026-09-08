@@ -32,6 +32,25 @@ const std::vector<double> kSeries{3, 7, 2, 9, 4, 8, 6, 1, 5, 9,
                                   3, 7, 8, 2, 6, 4, 9, 1, 5, 7};
 
 /// Draws one named scene. Returns false when C++ has no implementation yet.
+
+/// The axis bounds every chart fixture pins, without the ceremony.
+static Axis axis_of(double min, double max, int ticks) {
+  Axis a;
+  a.min = min;
+  a.max = max;
+  a.ticks = ticks;
+  return a;
+}
+
+/// One series over the standard 0..10 domain.
+static Chart chart_fixture(MarkType mark) {
+  Chart c;
+  c.series = {{{{0, 1}, {2, 6}, {5, 3}, {8, 9}, {10, 4}}, 0, "", mark}};
+  c.plot.x = axis_of(0, 10, 0);
+  c.plot.y = axis_of(0, 10, 0);
+  return c;
+}
+
 bool draw_scene(const std::string &name, Surface s) {
   const auto &t = theme(s);
 
@@ -262,6 +281,64 @@ bool draw_scene(const std::string &name, Surface s) {
     pane.total = 3;
     table.pane = &pane;
     draw_table(s, table);
+    return true;
+  }
+  if (name == "chart-line") {
+    draw_chart(s, chart_fixture(HQ_MARK_LINE));
+    return true;
+  }
+  if (name == "chart-scatter") {
+    draw_chart(s, chart_fixture(HQ_MARK_SCATTER));
+    return true;
+  }
+  if (name == "chart-bar") {
+    draw_chart(s, chart_fixture(HQ_MARK_BAR));
+    return true;
+  }
+  if (name == "chart-fill") {
+    Chart c;
+    c.series = {{{{0, 2}, {5, 8}, {10, 2}}, 0, "", HQ_MARK_LINE, true}};
+    c.plot.x = axis_of(0, 10, 0);
+    c.plot.y = axis_of(0, 10, 0);
+    draw_chart(s, c);
+    return true;
+  }
+  if (name == "chart-axes") {
+    Chart c;
+    c.series = {{{{0, 0}, {5, 50}, {10, 100}}}};
+    c.axis = true;
+    c.plot.x = axis_of(0, 10, 3);
+    c.plot.y = axis_of(0, 100, 0);
+    draw_chart(s, c);
+    return true;
+  }
+  if (name == "chart-block") {
+    Chart c;
+    c.series = {{{{0, 1}, {2, 6}, {5, 3}, {8, 9}, {10, 4}}, 0, "", HQ_MARK_BAR}};
+    c.plot.mode = "block";
+    c.plot.x = axis_of(0, 10, 0);
+    c.plot.y = axis_of(0, 10, 0);
+    draw_chart(s, c);
+    return true;
+  }
+  if (name == "chart-multi") {
+    Chart c;
+    c.series = {
+        {{{0, 1}, {1, 3}, {2, 2}, {3, 5}, {4, 4}, {5, 7}, {6, 6}, {7, 9}}, 0, "fine"},
+        {{{0, 8}, {7, 2}}, 0, "coarse"},
+    };
+    c.axis = true;
+    c.legend = true;
+    c.plot.x = axis_of(0, 7, 0);
+    c.plot.y = axis_of(0, 10, 0);
+    draw_chart(s, c);
+    return true;
+  }
+  if (name == "chart-flat") {
+    Chart c;
+    c.series = {{{{0, 4}, {5, 4}, {10, 4}}}};
+    c.plot.x = axis_of(0, 10, 0);
+    draw_chart(s, c);
     return true;
   }
   if (name == "graph-axis") {

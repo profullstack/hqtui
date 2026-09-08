@@ -99,6 +99,29 @@ void widget_scrollbar(Surface s) {
 }
 // @end
 
+// @widget chart
+void widget_chart(Surface s) {
+  // Points carry their own x, so a sparse series and a dense one line up.
+  Chart c;
+  c.series = {
+      {{{0, 1}, {2, 6}, {5, 3}, {8, 9}, {10, 4}}, 0, "load"},
+      {{{0, 8}, {10, 2}}, 0, "limit"},
+  };
+  c.axis = true;
+  c.legend = true;
+  Axis x;
+  x.min = 0;
+  x.max = 10;
+  x.ticks = 3;
+  Axis y;
+  y.min = 0;
+  y.max = 10;
+  c.plot.x = x;
+  c.plot.y = y;
+  draw_chart(s, c);
+}
+// @end
+
 // @widget meter
 void widget_meter(Surface s) {
   const int width = s.rect().width;
@@ -508,6 +531,7 @@ int main() {
       {"tree", widget_tree},
       {"log", widget_log},
       {"scrollbar", widget_scrollbar},
+      {"chart", widget_chart},
       {"meter", widget_meter},
       {"meters", widget_meters},
       {"progress", widget_progress},

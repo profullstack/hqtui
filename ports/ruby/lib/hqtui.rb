@@ -72,6 +72,7 @@ module Hqtui
     def donut(segments, **options) = add('donut', segments: segments, **options)
     def list(items, **options) = add('list', items: items, **options)
     def scrollbar(total, **options) = add('scrollbar', total: total, **options)
+    def chart(series, **options) = add('chart', series: series, **options)
     def tree(nodes, **options) = add('tree', nodes: nodes, **options)
     def button(label, **options) = add('button', label: label, **options)
     def checkbox(label, **options) = add('checkbox', label: label, **options)

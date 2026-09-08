@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import sys
 
+import hqtui.graphics.chart as g
 import hqtui.widgets as w
 from hqtui.graphics import BarStyle, DonutOptions, DonutSegment, GaugeOptions, PlotOptions, Series
 from hqtui.testing import render_to_text
@@ -205,6 +206,24 @@ def scrollbar(ui: Container) -> None:
 # @end
 
 
+# @widget chart
+def chart(ui: Container) -> None:
+    # Points carry their own x, so a sparse series and a dense one line up.
+    ui.chart(w.ChartOptions(
+        series=[
+            g.ChartSeries(points=[(0, 1), (2, 6), (5, 3), (8, 9), (10, 4)], label="load"),
+            g.ChartSeries(points=[(0, 8), (10, 2)], label="limit"),
+        ],
+        axis=True,
+        legend=True,
+        plot=g.ChartPlotOptions(
+            x=g.AxisOptions(min=0, max=10, ticks=3),
+            y=g.AxisOptions(min=0, max=10),
+        ),
+    ))
+# @end
+
+
 # @widget meter
 def meter(ui: Container) -> None:
     ui.meter(w.MeterOptions(value=0.62, label="CPU"))
@@ -391,7 +410,7 @@ EXAMPLES = [
     ("text", text), ("label", label), ("heading", heading), ("badge", badge),
     ("divider", divider), ("keyValues", key_values), ("statusBar", status_bar),
     ("table", table), ("list", list_), ("tree", tree), ("log", log),
-    ("scrollbar", scrollbar),
+    ("scrollbar", scrollbar), ("chart", chart),
     ("meter", meter), ("meters", meters), ("progress", progress), ("graph", graph),
     ("sparkline", sparkline), ("histogram", histogram), ("heatBar", heat_bar),
     ("gauge", gauge), ("donut", donut),
