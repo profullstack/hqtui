@@ -20,7 +20,10 @@ export type {
 } from "./ui.ts";
 
 // Terminal + capabilities
-export { Terminal, createTerminal, emergencyRestore, type TerminalOptions, type TerminalSize } from "./terminal.ts";
+export {
+  Terminal, createTerminal, emergencyRestore,
+  type TerminalOptions, type TerminalSize, type Viewport, type Rect as ViewportRect,
+} from "./terminal.ts";
 export { detectCapabilities, type Capabilities, type ColorDepth, type CapabilityOverrides } from "./capabilities.ts";
 
 // Rendering core
