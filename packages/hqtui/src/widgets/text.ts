@@ -3,8 +3,10 @@ import type { Style } from "../buffer.ts";
 import { Attr } from "../buffer.ts";
 import type { Color } from "../color.ts";
 import { mix } from "../color.ts";
-import { fit, stringWidth, truncate, wrap } from "../unicode.ts";
-import { fitSpans, isRich, toSpanLines, wrapRich, type RichText, type SpanLine } from "../richtext.ts";
+import { dropColumns, fit, stringWidth, truncate, wrap } from "../unicode.ts";
+import {
+  dropSpanColumns, fitSpans, isRich, toSpanLines, wrapRich, type RichText, type SpanLine,
+} from "../richtext.ts";
 import { elevate } from "../theme.ts";
 
 export interface TextOptions extends Style {
@@ -14,6 +16,16 @@ export interface TextOptions extends Style {
   dim?: boolean;
   italic?: boolean;
   underline?: boolean;
+  /**
+   * First line to show, counted after wrapping.
+   *
+   * After wrapping is the only place this can be correct: the caller does not
+   * know how many lines their text became, and pre-slicing the string means
+   * re-deciding every time the width changes.
+   */
+  scroll?: number;
+  /** Columns to shift the text left by, for lines wider than the surface. */
+  scrollX?: number;
 }
 
 function attrsOf(o: TextOptions): number {
@@ -36,18 +48,29 @@ export function drawText(surface: Surface, content: RichText, options: TextOptio
   // the span code. The two agree — richtext.test.ts holds them to the same
   // columns over a corpus — but "agree" and "emit identical cells" are not the
   // same claim, and every committed fixture depends on the second one.
+  // Both offsets are clamped to zero: a negative scroll would otherwise read
+  // as "start before the beginning" and silently drop the first rows.
+  const scroll = Math.max(0, Math.floor(options.scroll ?? 0));
+  const scrollX = Math.max(0, Math.floor(options.scrollX ?? 0));
+
   if (!isRich(content)) {
-    const lines = options.wrap ? wrap(content, surface.width) : content.split("\n");
+    const wrapped = options.wrap ? wrap(content, surface.width) : content.split("\n");
+    const lines = scroll > 0 ? wrapped.slice(scroll) : wrapped;
     for (let i = 0; i < lines.length && i < surface.height; i++) {
-      surface.text(0, i, fit(truncate(lines[i], surface.width), surface.width, options.align ?? "left"), style);
+      const line = scrollX > 0 ? dropColumns(lines[i], scrollX) : lines[i];
+      surface.text(0, i, fit(truncate(line, surface.width), surface.width, options.align ?? "left"), style);
     }
     return;
   }
-  const lines = options.wrap
+  const wrapped = options.wrap
     ? wrapRich(content, surface.width)
     : toSpanLines(content);
+  const lines = scroll > 0 ? wrapped.slice(scroll) : wrapped;
   for (let i = 0; i < lines.length && i < surface.height; i++) {
-    surface.spans(0, i, fitSpans(lines[i] as SpanLine, surface.width, options.align ?? "left"), style);
+    const line = scrollX > 0
+      ? dropSpanColumns(lines[i] as SpanLine, scrollX)
+      : (lines[i] as SpanLine);
+    surface.spans(0, i, fitSpans(line, surface.width, options.align ?? "left"), style);
   }
 }
 

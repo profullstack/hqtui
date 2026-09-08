@@ -438,6 +438,42 @@ pub fn truncateInto(out: []u8, text: []const u8, max: usize, ellipsis: []const u
     return out[0 .. written + room];
 }
 
+/// `text` with its first `columns` display columns removed, written into `out`.
+///
+/// For scrolling a line sideways. Slicing by bytes would cut inside a grapheme
+/// and corrupt it, and a scroll that lands in the middle of a wide character
+/// cannot draw half of it -- what is left of that character is a space, which
+/// is what a terminal shows when a double-width cell is clipped.
+pub fn dropColumns(out: []u8, text: []const u8, columns: usize) []u8 {
+    if (columns == 0) {
+        const n = @min(out.len, text.len);
+        @memcpy(out[0..n], text[0..n]);
+        return out[0..n];
+    }
+    var written: usize = 0;
+    var skipped: usize = 0;
+    var it = graphemes(text);
+    while (it.next()) |g| {
+        if (skipped >= columns) {
+            var buf: [4]u8 = undefined;
+            const bytes = cellText(g.value, &buf);
+            if (written + bytes.len > out.len) break;
+            @memcpy(out[written..][0..bytes.len], bytes);
+            written += bytes.len;
+            continue;
+        }
+        skipped += g.width;
+        // A wide character straddling the cut leaves its trailing half behind.
+        if (skipped > columns) {
+            const pad = skipped - columns;
+            if (written + pad > out.len) break;
+            @memset(out[written..][0..pad], ' ');
+            written += pad;
+        }
+    }
+    return out[0..written];
+}
+
 pub fn truncate(out: []u8, text: []const u8, max: usize) []u8 {
     return truncateInto(out, text, max, "…");
 }

@@ -342,6 +342,32 @@ func StringWidth(text string) int {
 }
 
 // Truncate cuts to max columns, appending an ellipsis when it does not fit.
+// DropColumns returns text with its first `columns` display columns removed.
+//
+// For scrolling a line sideways. Slicing by bytes would cut inside a grapheme
+// and corrupt it, and a scroll that lands in the middle of a wide character
+// cannot draw half of it — what is left of that character is a space, which is
+// what a terminal shows when a double-width cell is clipped.
+func DropColumns(text string, columns int) string {
+	if columns <= 0 {
+		return text
+	}
+	var out strings.Builder
+	skipped := 0
+	for _, g := range Graphemes(text) {
+		if skipped >= columns {
+			out.WriteString(CellText(g.Value))
+			continue
+		}
+		skipped += g.Width
+		// A wide character straddling the cut leaves its trailing half behind.
+		if skipped > columns {
+			out.WriteString(strings.Repeat(" ", skipped-columns))
+		}
+	}
+	return out.String()
+}
+
 func Truncate(text string, max int) string { return TruncateWith(text, max, "…") }
 
 func TruncateWith(text string, max int, ellipsis string) string {

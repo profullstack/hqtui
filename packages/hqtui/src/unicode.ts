@@ -298,6 +298,30 @@ export function truncate(text: string, max: number, ellipsis = "…"): string {
   return out + ellipsis;
 }
 
+/**
+ * `text` with its first `columns` display columns removed.
+ *
+ * For scrolling a line sideways. Slicing by code units would cut inside a
+ * grapheme and corrupt it, and a scroll that lands in the middle of a wide
+ * character cannot draw half of it -- what is left of that character is a
+ * space, which is what a terminal shows when a double-width cell is clipped.
+ */
+export function dropColumns(text: string, columns: number): string {
+  if (columns <= 0) return text;
+  let out = "";
+  let skipped = 0;
+  for (const g of graphemes(text)) {
+    if (skipped >= columns) {
+      out += cellText(g.value);
+      continue;
+    }
+    skipped += g.width;
+    // A wide character straddling the cut leaves its trailing half behind.
+    if (skipped > columns) out += " ".repeat(skipped - columns);
+  }
+  return out;
+}
+
 /** Pad or truncate to exactly `width` columns. */
 export function fit(text: string, width: number, align: "left" | "right" | "center" = "left"): string {
   const t = truncate(text, width);

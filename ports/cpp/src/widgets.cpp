@@ -113,8 +113,61 @@ void draw_text(Surface s, std::string_view content, const TextStyle &o) {
     return;
   Color fg = o.fg ? o.fg : t.foreground;
   auto lines = lines_of(content, w, o.wrap);
-  for (int i = 0; i < h && i < int(lines.size()); i++)
-    text(s, 0, i, fit(lines[std::size_t(i)], w, o.align), fg, o.attrs, o.bg);
+  const int scroll = std::max(0, o.scroll);
+  const int scroll_x = std::max(0, o.scroll_x);
+  for (int i = 0; i + scroll < int(lines.size()) && i < h; i++) {
+    std::string line = lines[std::size_t(i + scroll)];
+    if (scroll_x > 0)
+      line = drop_columns(line, scroll_x);
+    text(s, 0, i, fit(line, w, o.align), fg, o.attrs, o.bg);
+  }
+}
+
+/// The first codepoint of a symbol, which is the whole of it for a fill.
+static std::uint32_t codepoint_of(std::string_view s) {
+  if (s.empty())
+    return ' ';
+  unsigned char c = s[0];
+  std::size_t len = c < 128 ? 1 : c < 224 ? 2 : c < 240 ? 3 : 4;
+  if (len == 1)
+    return c;
+  if (s.size() < len)
+    return ' ';
+  std::uint32_t cp = c & (0xff >> (len + 1));
+  for (std::size_t i = 1; i < len; i++)
+    cp = (cp << 6) | (static_cast<unsigned char>(s[i]) & 0x3f);
+  return cp;
+}
+
+void draw_clear(Surface s, const Clear &o) {
+  int w = s.rect().width, h = s.rect().height;
+  if (w <= 0 || h <= 0)
+    return;
+  auto &t = theme(s);
+  s.fill(' ', Style().foreground(t.foreground).background(o.background ? o.background
+                                                                       : t.background));
+}
+
+void draw_fill(Surface s, const Fill &o) {
+  int w = s.rect().width, h = s.rect().height;
+  if (w <= 0 || h <= 0)
+    return;
+  auto style = Style().foreground(o.fg ? o.fg : theme(s).foreground).attributes(o.attrs);
+  if (o.bg)
+    style = style.background(*o.bg);
+  const int glyph_width = std::max(1, int(width(o.symbol)));
+  // A one-cell symbol is what `fill` is for. Anything wider has to be stepped
+  // over rather than written per column: each glyph owns a continuation cell,
+  // and writing the next one on top of it leaves a row of half-characters.
+  if (glyph_width == 1) {
+    s.fill(codepoint_of(o.symbol), style);
+    return;
+  }
+  for (int y = 0; y < h; y++)
+    // The last glyph is dropped rather than clipped when the region does not
+    // divide evenly: half a wide character is not a fill, it is damage.
+    for (int x = 0; x + glyph_width <= w; x += glyph_width)
+      s.set(x, y, codepoint_of(o.symbol), style);
 }
 
 int draw_badge(Surface s, const Badge &o) {

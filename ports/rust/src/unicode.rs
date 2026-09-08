@@ -319,6 +319,32 @@ pub fn string_width(text: &str) -> usize {
 }
 
 /// Truncate to `max` columns, appending an ellipsis when it does not fit.
+/// `text` with its first `columns` display columns removed.
+///
+/// For scrolling a line sideways. Slicing by bytes would cut inside a grapheme
+/// and corrupt it, and a scroll that lands in the middle of a wide character
+/// cannot draw half of it -- what is left of that character is a space, which
+/// is what a terminal shows when a double-width cell is clipped.
+pub fn drop_columns(text: &str, columns: usize) -> String {
+    if columns == 0 {
+        return text.to_string();
+    }
+    let mut out = String::new();
+    let mut skipped = 0usize;
+    for g in graphemes(text) {
+        if skipped >= columns {
+            out.push_str(&cell_text(g.value));
+            continue;
+        }
+        skipped += g.width;
+        // A wide character straddling the cut leaves its trailing half behind.
+        if skipped > columns {
+            out.push_str(&" ".repeat(skipped - columns));
+        }
+    }
+    out
+}
+
 pub fn truncate(text: &str, max: usize) -> String {
     truncate_with(text, max, "…")
 }

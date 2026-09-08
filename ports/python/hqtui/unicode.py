@@ -319,6 +319,29 @@ def string_width(text: str) -> int:
     return sum(g.width for g in graphemes(text))
 
 
+def drop_columns(text: str, columns: int) -> str:
+    """``text`` with its first ``columns`` display columns removed.
+
+    For scrolling a line sideways. Slicing by code points would cut inside a
+    grapheme and corrupt it, and a scroll that lands in the middle of a wide
+    character cannot draw half of it — what is left of that character is a
+    space, which is what a terminal shows when a double-width cell is clipped.
+    """
+    if columns <= 0:
+        return text
+    out: list[str] = []
+    skipped = 0
+    for g in graphemes(text):
+        if skipped >= columns:
+            out.append(cell_text(g.value))
+            continue
+        skipped += g.width
+        # A wide character straddling the cut leaves its trailing half behind.
+        if skipped > columns:
+            out.append(" " * (skipped - columns))
+    return "".join(out)
+
+
 def truncate(text: str, max_width: int, ellipsis: str = "…") -> str:
     """Truncate to ``max_width`` columns, appending an ellipsis when it does not fit."""
     if max_width <= 0:

@@ -20,6 +20,9 @@ const Surface = surface_mod.Surface;
 const series = [_]f64{ 3, 7, 2, 9, 4, 8, 6, 1, 5, 9, 3, 7, 8, 2, 6, 4, 9, 1, 5, 7 };
 
 
+/// The paragraph every scroll fixture pins.
+const prose = "one two three four five six seven eight nine ten eleven twelve";
+
 /// The points every single-series chart fixture pins.
 const chart_points = [_]graphics.Point{
     .{ .x = 0, .y = 1 }, .{ .x = 2, .y = 6 }, .{ .x = 5, .y = 3 },
@@ -50,6 +53,21 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
         try w.drawText(allocator, s.sub(0, 0, 20, 1), "left", .{ .alignment = .left });
         try w.drawText(allocator, s.sub(0, 1, 20, 1), "center", .{ .alignment = .center });
         try w.drawText(allocator, s.sub(0, 2, 20, 1), "right", .{ .alignment = .right });
+    } else if (eq(u8, name, "text-scrolled")) {
+        try w.drawText(allocator, s, prose, .{ .wrap = true, .scroll = 2 });
+    } else if (eq(u8, name, "text-scrolled-past")) {
+        try w.drawText(allocator, s, prose, .{ .wrap = true, .scroll = 99 });
+    } else if (eq(u8, name, "text-scrolled-x")) {
+        try w.drawText(allocator, s, "abcdefghijklmnopqrstuvwxyz", .{ .scroll_x = 6 });
+    } else if (eq(u8, name, "text-scrolled-wide")) {
+        try w.drawText(allocator, s, "日本語です", .{ .scroll_x = 3 });
+    } else if (eq(u8, name, "clear")) {
+        try w.drawText(allocator, s, "xxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx", .{});
+        w.drawClear(s.sub(4, 1, 8, 1), .{});
+    } else if (eq(u8, name, "fill")) {
+        w.drawFill(s, .{ .symbol = "\u{b7}" });
+    } else if (eq(u8, name, "fill-wide")) {
+        w.drawFill(s, .{ .symbol = "\u{65e5}" });
     } else if (eq(u8, name, "badge")) {
         _ = w.drawBadge(s, .{ .text = "LIVE" });
     } else if (eq(u8, name, "badge-outline")) {

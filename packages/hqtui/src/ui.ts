@@ -456,6 +456,21 @@ export class Container {
     return this.add((s) => W.drawChart(s, options), this.sizeOfData(options, "fill", "min-max"));
   }
 
+  /**
+   * Reset a region so an overlay can own it.
+   *
+   * Anything drawn into a region without clearing it first shows whatever was
+   * underneath through the cells it does not touch.
+   */
+  clear(options: W.ClearOptions & ContainerOptions = {}): this {
+    return this.add((s) => W.drawClear(s, options), this.sizeOf(options, "fill"));
+  }
+
+  /** Flood a region with one repeated symbol and style. */
+  fill(options: W.FillOptions & ContainerOptions = {}): this {
+    return this.add((s) => W.drawFill(s, options), this.sizeOf(options, "fill"));
+  }
+
   /** A filled area graph — `graph` with `fill` on. */
   areaGraph(options: W.GraphOptions & ContainerOptions): this {
     return this.graph({ fill: true, ...options });

@@ -15,6 +15,16 @@ type TextStyle struct {
 	Dim       bool
 	Italic    bool
 	Underline bool
+
+	// Scroll is the first line to show, counted after wrapping.
+	//
+	// After wrapping is the only place this can be correct: the caller does not
+	// know how many lines their text became, and pre-slicing the string means
+	// re-deciding every time the width changes.
+	Scroll int
+	// ScrollX is the columns to shift the text left by, for lines wider than
+	// the surface.
+	ScrollX int
 }
 
 func (o TextStyle) resolvedAttrs() Attrs {
@@ -54,9 +64,19 @@ func DrawText(s Surface, content string, o TextStyle) {
 	} else {
 		lines = strings.Split(content, "\n")
 	}
+	if o.Scroll > 0 {
+		if o.Scroll >= len(lines) {
+			lines = nil
+		} else {
+			lines = lines[o.Scroll:]
+		}
+	}
 	for i, line := range lines {
 		if i >= s.Height() {
 			break
+		}
+		if o.ScrollX > 0 {
+			line = DropColumns(line, o.ScrollX)
 		}
 		s.Text(0, i, Fit(Truncate(line, s.Width()), s.Width(), o.Align), style)
 	}

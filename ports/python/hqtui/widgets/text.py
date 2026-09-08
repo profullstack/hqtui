@@ -10,7 +10,7 @@ from ..buffer import Attrs, Style
 from ..color import Color
 from ..surface import Surface, TextOptions
 from ..theme import elevate
-from ..unicode import Align, fit, string_width, truncate, wrap
+from ..unicode import Align, drop_columns, fit, string_width, truncate, wrap
 
 __all__ = [
     "BadgeOptions",
@@ -41,6 +41,14 @@ class TextStyle:
     dim: bool = False
     italic: bool = False
     underline: bool = False
+    #: First line to show, counted after wrapping.
+    #:
+    #: After wrapping is the only place this can be correct: the caller does not
+    #: know how many lines their text became, and pre-slicing the string means
+    #: re-deciding every time the width changes.
+    scroll: int = 0
+    #: Columns to shift the text left by, for lines wider than the surface.
+    scroll_x: int = 0
 
     @property
     def resolved_attrs(self) -> int:
@@ -65,7 +73,11 @@ def draw_text(surface: Surface, content: str, options: TextStyle = TextStyle()) 
         attrs=options.resolved_attrs,
     )
     lines = wrap(content, surface.width) if options.wrap else content.split("\n")
+    if options.scroll > 0:
+        lines = lines[options.scroll :]
     for i, line in enumerate(lines[: surface.height]):
+        if options.scroll_x > 0:
+            line = drop_columns(line, options.scroll_x)
         surface.text(0, i, fit(truncate(line, surface.width), surface.width, options.align), style)
 
 
