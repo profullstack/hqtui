@@ -50,6 +50,24 @@ export function moveToColumn(x: number): string {
   return `${CSI}${x + 1}G`;
 }
 
+/**
+ * Cursor up and down, in rows.
+ *
+ * An inline viewport cannot use absolute addressing: it does not know which
+ * screen row it starts on, and a scroll moves it without telling anyone. It
+ * returns to its own top-left with a saved cursor and walks from there, which
+ * is what these are for.
+ */
+export function moveUp(n: number): string {
+  if (n <= 0) return "";
+  return n === 1 ? `${CSI}A` : `${CSI}${n}A`;
+}
+
+export function moveDown(n: number): string {
+  if (n <= 0) return "";
+  return n === 1 ? `${CSI}B` : `${CSI}${n}B`;
+}
+
 export function setTitle(title: string): string {
   // The title is interpolated into an OSC sequence, so anything that could end
   // or restart it has to go. `stripUnsafe` is the same policy the grid uses:

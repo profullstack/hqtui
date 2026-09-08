@@ -1,5 +1,5 @@
 import { FrameBuffer } from "./buffer.ts";
-import { Encoder } from "./diff.ts";
+import { Encoder, encodeRows } from "./diff.ts";
 import { ansi } from "./ansi.ts";
 import { Terminal, type TerminalOptions, emergencyRestore } from "./terminal.ts";
 import type { Capabilities } from "./capabilities.ts";
@@ -111,12 +111,14 @@ export class App {
     this.capabilities = this.terminal.capabilities;
     this.theme = resolveTheme(options.theme);
 
-    const { columns, rows } = this.terminal.size();
-    this.current = new FrameBuffer(columns, rows);
-    this.previous = new FrameBuffer(columns, rows);
+    const rect = this.terminal.viewportRect();
+    this.current = new FrameBuffer(rect.width, rect.height);
+    this.previous = new FrameBuffer(rect.width, rect.height);
     this.encoder = new Encoder({
       colors: this.capabilities.colors,
       monochrome: options.monochrome ?? this.capabilities.colors === "none",
+      origin: { x: rect.x, y: rect.y },
+      relative: this.terminal.viewport.mode === "inline",
     });
   }
 
@@ -200,6 +202,67 @@ export class App {
     this.dirty = true;
   }
 
+  /**
+   * Write `height` rows into the terminal's scrollback, above the live view.
+   *
+   * This is what an inline app is for. The live rows stay where they are and
+   * keep redrawing; what you pass here scrolls away above them and is still
+   * there when the process exits, which is how `npm`, `cargo` and every
+   * installer behave and what the alternate screen can never do.
+   *
+   *   app.insertBefore(1, ui => ui.text("compiled in 1.2s", { fg: theme.success }));
+   *
+   * It is a no-op for a fullscreen or fixed viewport, where there is no "above"
+   * to write into -- the app owns every row it can see.
+   */
+  insertBefore(height: number, draw: (ui: Container) => void): void {
+    if (this.terminal.viewport.mode !== "inline" || height <= 0) return;
+    const width = this.current.width;
+    if (width <= 0) return;
+
+    const buffer = new FrameBuffer(width, height);
+    // No background: these lines join the user's terminal, and a block of
+    // theme colour across their scrollback is not ours to paint.
+    buffer.clear(undefined, this.theme.foreground);
+    const surface = createSurface(buffer, this.theme);
+    const container = new Container(surface, this.scrollbackContext(), "column");
+    draw(container);
+    container.flush();
+
+    this.terminal.insertBefore(encodeRows(buffer, {
+      colors: this.capabilities.colors,
+      monochrome: this.options.monochrome ?? this.capabilities.colors === "none",
+    }));
+    // Everything below the anchor is now whatever the terminal shifted there.
+    this.forceRepaint = true;
+    this.dirty = true;
+    this.frame();
+  }
+
+  /**
+   * A render context for lines that are printed once and never redrawn.
+   *
+   * Scrollback is not interactive: it cannot take focus, a click cannot reach
+   * it, and nothing about it can ask for another frame -- by the time anyone
+   * looks, it has scrolled away.
+   */
+  private scrollbackContext(): RenderContext {
+    return {
+      theme: this.theme,
+      capabilities: this.capabilities,
+      width: this.current.width,
+      height: 0,
+      frame: this.frameCount,
+      elapsed: Date.now() - this.startedAt,
+      focusIndex: -1,
+      collapseBorders: this.options.collapseBorders ?? false,
+      registerFocus: () => ({ index: -1, focused: false }),
+      hit: () => {},
+      overlay: () => {},
+      invalidate: () => {},
+    };
+  }
+
   /** Start the loop. Resolves when the app exits. */
   async start(): Promise<void> {
     if (this.running) return;
@@ -214,12 +277,14 @@ export class App {
     // host, the render loop must not keep drawing into the restored shell.
     this.subscriptions.push(this.terminal.onTeardown(() => this.stop()));
     this.subscriptions.push(this.terminal.onInput((event) => this.handleInput(event)));
-    this.subscriptions.push(this.terminal.onResizeEvent(({ columns, rows }) => {
-      this.current.resize(columns, rows);
-      this.previous.resize(columns, rows);
+    this.subscriptions.push(this.terminal.onResizeEvent(() => {
+      const rect = this.terminal.viewportRect();
+      this.current.resize(rect.width, rect.height);
+      this.previous.resize(rect.width, rect.height);
+      this.encoder.origin = { x: rect.x, y: rect.y };
       this.forceRepaint = true;
       this.dirty = true;
-      this.emit("resize", { width: columns, height: rows });
+      this.emit("resize", { width: rect.width, height: rect.height });
       this.frame();
     }));
 
@@ -312,10 +377,11 @@ export class App {
     const started = performance.now();
     this.dirty = false;
 
-    const size = this.terminal.size();
-    if (size.columns !== this.current.width || size.rows !== this.current.height) {
-      this.current.resize(size.columns, size.rows);
-      this.previous.resize(size.columns, size.rows);
+    const rect = this.terminal.viewportRect();
+    if (rect.width !== this.current.width || rect.height !== this.current.height) {
+      this.current.resize(rect.width, rect.height);
+      this.previous.resize(rect.width, rect.height);
+      this.encoder.origin = { x: rect.x, y: rect.y };
       this.forceRepaint = true;
     }
 
@@ -368,6 +434,10 @@ export class App {
 
     let output = result.output;
     if (output.length > 0) {
+      // An inline viewport measures everything from its own top-left, so the
+      // cursor has to be put there before the frame rather than assumed to be
+      // wherever the last one finished.
+      if (this.encoder.relative) output = ansi.cursorRestore + ansi.cursorSave + "\r" + output;
       if (this.capabilities.synchronizedOutput) output = ansi.beginSync + output + ansi.endSync;
       this.terminal.write(output);
     }
