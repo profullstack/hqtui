@@ -82,6 +82,25 @@ int hq_solve_gaps(int total, const hq_constraint *items, size_t count,
 int hq_stack_gaps(hq_rect rect, const hq_constraint *items, size_t count,
                   int horizontal, const int *gaps, hq_rect *out);
 
+/* Where space the children leave over goes. It only applies when there is
+ * slack: a container holding any fr or fill child has none, because that child
+ * has already absorbed it. HQ_JUSTIFY_START is what every layout did before
+ * this existed. */
+typedef enum {
+  HQ_JUSTIFY_START = 0,
+  HQ_JUSTIFY_END,
+  HQ_JUSTIFY_CENTER,
+  HQ_JUSTIFY_SPACE_BETWEEN,
+  HQ_JUSTIFY_SPACE_AROUND,
+  HQ_JUSTIFY_SPACE_EVENLY
+} hq_justify;
+
+/* The offset before the first child, and the extra added at each of the
+ * count-1 seams. `seams` may be NULL when count < 2. Returns 0 on bad input. */
+int hq_distribute(int slack, size_t count, hq_justify justify, int *lead, int *seams);
+int hq_stack_justified(hq_rect rect, const hq_constraint *items, size_t count,
+                       int horizontal, const int *gaps, hq_justify justify, hq_rect *out);
+
 /* colors: 0 (no color), 16, 256 or 16777216 (truecolor).
  * encode reuses output capacity; allocation failure invalidates terminal state.
  * It never writes to stdout. An unchanged frame produces zero bytes. */

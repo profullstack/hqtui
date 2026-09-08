@@ -44,7 +44,8 @@ export {
 // Layout
 export {
   solve, stack, inset, intersect, contains, isEmpty, fixed, percent, flex, auto, fill,
-  remaining, minmax, normalizePadding, type Rect, type Size, type Constraint, type Padding,
+  remaining, minmax, normalizePadding, distribute,
+  type Rect, type Size, type Constraint, type Padding, type Justify,
 } from "./layout.ts";
 
 // Input

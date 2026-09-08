@@ -4,7 +4,7 @@ import type { Color } from "./color.ts";
 import type { Theme } from "./theme.ts";
 import type { Capabilities } from "./capabilities.ts";
 import {
-  type Constraint, type Rect, type Padding, type Size, inset, stack, solve, isEmpty,
+  type Constraint, type Justify, type Rect, type Padding, type Size, inset, stack, solve, isEmpty,
 } from "./layout.ts";
 import { stringWidth, wrap } from "./unicode.ts";
 import { isRich, toSpanLines, wrapRich, type RichText } from "./richtext.ts";
@@ -69,6 +69,12 @@ interface Child {
 
 export interface ContainerOptions {
   gap?: number;
+  /**
+   * Where space left over by the children goes. Defaults to "start", which is
+   * what every layout did before this existed, and is inert unless the
+   * children actually leave slack.
+   */
+  justify?: Justify;
   padding?: Padding;
   /** Size along the parent's main axis. */
   size?: Size;
@@ -114,6 +120,7 @@ export class Container {
   readonly direction: "row" | "column";
   private children: Child[] = [];
   private gap: number;
+  private justify: Justify;
   private inner: Surface;
 
   constructor(
@@ -126,6 +133,7 @@ export class Container {
     this.ctx = ctx;
     this.direction = direction;
     this.gap = options.gap ?? 0;
+    this.justify = options.justify ?? "start";
     this.inner = options.padding ? surface.inset(options.padding) : surface;
     if (options.background !== undefined) surface.fill({ bg: options.background });
   }
@@ -204,6 +212,7 @@ export class Container {
       this.children.map((c) => c.constraint),
       this.direction,
       this.seams(),
+      this.justify,
     );
     this.children.forEach((child, i) => {
       const rect = rects[i];

@@ -330,6 +330,84 @@ func remove(s []int, v int) []int {
 	return s
 }
 
+// Justify says where leftover space goes.
+//
+// It only ever applies when there is slack, and a container holding any fr or
+// fill child has none -- that child has already absorbed it. So this is inert
+// exactly where it would otherwise fight with the constraints.
+type Justify int
+
+const (
+	JustifyStart Justify = iota
+	JustifyEnd
+	JustifyCenter
+	JustifySpaceBetween
+	JustifySpaceAround
+	JustifySpaceEvenly
+)
+
+// ParseJustify reads the spelling the reference API uses. Anything else is
+// start, which is what every layout did before this existed.
+func ParseJustify(name string) Justify {
+	switch name {
+	case "end":
+		return JustifyEnd
+	case "center":
+		return JustifyCenter
+	case "space-between":
+		return JustifySpaceBetween
+	case "space-around":
+		return JustifySpaceAround
+	case "space-evenly":
+		return JustifySpaceEvenly
+	}
+	return JustifyStart
+}
+
+// before is how much slack sits ahead of item i, as an exact fraction. Every
+// mode is a different answer to that one question, which is why they share the
+// rounding below rather than each growing their own off-by-one.
+func before(i int, slack float64, count int, justify Justify) float64 {
+	fi, fc := float64(i), float64(count)
+	switch justify {
+	case JustifyEnd:
+		return slack
+	case JustifyCenter:
+		// Floor, so an odd cell falls after the content rather than before it.
+		return math.Floor(slack / 2)
+	case JustifySpaceBetween:
+		if count > 1 {
+			return fi * slack / (fc - 1)
+		}
+		return 0
+	case JustifySpaceEvenly:
+		return (fi + 1) * slack / (fc + 1)
+	case JustifySpaceAround:
+		return (fi + 0.5) * slack / fc
+	}
+	return 0
+}
+
+// Distribute returns the offset before the first child and the extra added at
+// each seam.
+//
+// Cells are whole, and rounding each gap on its own loses one here and gains
+// one there. Rounding the cumulative offset and taking differences means the
+// parts always add up to exactly the slack.
+func Distribute(slack, count int, justify Justify) (int, []int) {
+	seams := make([]int, max(0, count-1))
+	if slack <= 0 || count == 0 || justify == JustifyStart {
+		return 0, seams
+	}
+	at := func(i int) int {
+		return int(math.Round(before(i, float64(slack), count, justify)))
+	}
+	for i := 0; i+1 < count; i++ {
+		seams[i] = max(0, at(i+1)-at(i))
+	}
+	return at(0), seams
+}
+
 // Stack lays children out along one axis inside rect.
 func Stack(rect Rect, items []Constraint, direction Direction, gap int) []Rect {
 	seams := make([]int, max(0, len(items)-1))
@@ -339,19 +417,49 @@ func Stack(rect Rect, items []Constraint, direction Direction, gap int) []Rect {
 	return StackWithGaps(rect, items, direction, seams)
 }
 
+// StackJustified is Stack with a policy for whatever the children leave over.
+func StackJustified(rect Rect, items []Constraint, direction Direction, gap int, justify Justify) []Rect {
+	seams := make([]int, max(0, len(items)-1))
+	for i := range seams {
+		seams[i] = gap
+	}
+	return StackWithGapsJustified(rect, items, direction, seams, justify)
+}
+
 // StackWithGaps is Stack with a gap per seam, which may be negative.
 func StackWithGaps(rect Rect, items []Constraint, direction Direction, gaps []int) []Rect {
+	return StackWithGapsJustified(rect, items, direction, gaps, JustifyStart)
+}
+
+// StackWithGapsJustified is the full form: a gap per seam, and a policy for
+// whatever is left over.
+func StackWithGapsJustified(rect Rect, items []Constraint, direction Direction, gaps []int, justify Justify) []Rect {
 	horizontal := direction == DirRow
 	total := rect.Height
 	if horizontal {
 		total = rect.Width
 	}
 	sizes := SolveWithGaps(total, items, gaps)
+
+	gapTotal := 0
+	for i := 0; i+1 < len(sizes); i++ {
+		if i < len(gaps) {
+			gapTotal += gaps[i]
+		}
+	}
+	used := gapTotal
+	for _, size := range sizes {
+		used += size
+	}
+	slack := max(0, total-used)
+	lead, extra := Distribute(slack, len(sizes), justify)
+
 	out := make([]Rect, 0, len(sizes))
 	offset := rect.Y
 	if horizontal {
 		offset = rect.X
 	}
+	offset += lead
 	for i, size := range sizes {
 		if horizontal {
 			out = append(out, Rect{X: offset, Y: rect.Y, Width: size, Height: rect.Height})
@@ -361,6 +469,9 @@ func StackWithGaps(rect Rect, items []Constraint, direction Direction, gaps []in
 		seam := 0
 		if i < len(gaps) {
 			seam = gaps[i]
+		}
+		if i < len(extra) {
+			seam += extra[i]
 		}
 		offset += size + seam
 	}

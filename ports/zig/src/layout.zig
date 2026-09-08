@@ -328,6 +328,78 @@ pub fn solveWithGaps(
 }
 
 /// Lay children out along one axis inside `rect`. The caller owns the slice.
+/// Where leftover space goes.
+///
+/// It only ever applies when there is slack, and a container holding any `fr`
+/// or `fill` child has none -- that child has already absorbed it. So this is
+/// inert exactly where it would otherwise fight with the constraints.
+pub const Justify = enum {
+    start,
+    end,
+    center,
+    space_between,
+    space_around,
+    space_evenly,
+
+    /// The spelling the reference API uses. Anything else is `start`, which is
+    /// what every layout did before this existed.
+    pub fn parse(name: []const u8) Justify {
+        if (std.mem.eql(u8, name, "end")) return .end;
+        if (std.mem.eql(u8, name, "center")) return .center;
+        if (std.mem.eql(u8, name, "space-between")) return .space_between;
+        if (std.mem.eql(u8, name, "space-around")) return .space_around;
+        if (std.mem.eql(u8, name, "space-evenly")) return .space_evenly;
+        return .start;
+    }
+};
+
+/// How much slack sits before item `i`, as an exact fraction. Every mode is a
+/// different answer to that one question, which is why they share the rounding
+/// below rather than each growing their own off-by-one.
+fn before(i: usize, slack: f64, count: usize, justify: Justify) f64 {
+    const fi: f64 = @floatFromInt(i);
+    const fc: f64 = @floatFromInt(count);
+    return switch (justify) {
+        .start => 0,
+        .end => slack,
+        // Floor, so an odd cell falls after the content rather than before it.
+        .center => @floor(slack / 2),
+        .space_between => if (count > 1) fi * slack / (fc - 1) else 0,
+        .space_evenly => (fi + 1) * slack / (fc + 1),
+        .space_around => (fi + 0.5) * slack / fc,
+    };
+}
+
+/// The offset before the first child, and the extra added at each seam. The
+/// caller owns the returned slice.
+///
+/// Cells are whole, and rounding each gap on its own loses one here and gains
+/// one there. Rounding the cumulative offset and taking differences means the
+/// parts always add up to exactly the slack.
+pub fn distribute(
+    allocator: std.mem.Allocator,
+    slack: usize,
+    count: usize,
+    justify: Justify,
+) !struct { lead: usize, seams: []usize } {
+    const seams = try allocator.alloc(usize, count -| 1);
+    @memset(seams, 0);
+    if (slack == 0 or count == 0 or justify == .start) return .{ .lead = 0, .seams = seams };
+
+    const at = struct {
+        fn f(i: usize, sl: usize, c: usize, j: Justify) usize {
+            const v = before(i, @floatFromInt(sl), c, j);
+            return @intFromFloat(@floor(v + 0.5));
+        }
+    }.f;
+
+    var i: usize = 0;
+    while (i + 1 < count) : (i += 1) {
+        seams[i] = at(i + 1, slack, count, justify) -| at(i, slack, count, justify);
+    }
+    return .{ .lead = at(0, slack, count, justify), .seams = seams };
+}
+
 pub fn stack(
     allocator: std.mem.Allocator,
     rect: Rect,
@@ -341,6 +413,21 @@ pub fn stack(
     return stackWithGaps(allocator, rect, items, direction, seams);
 }
 
+/// As `stack`, with a policy for whatever the children leave over.
+pub fn stackJustified(
+    allocator: std.mem.Allocator,
+    rect: Rect,
+    items: []const Constraint,
+    direction: Direction,
+    gap: usize,
+    justify: Justify,
+) ![]Rect {
+    const seams = try allocator.alloc(isize, items.len -| 1);
+    defer allocator.free(seams);
+    @memset(seams, @intCast(gap));
+    return stackWithGapsJustified(allocator, rect, items, direction, seams, justify);
+}
+
 /// As `stack`, but with a gap per seam, which may be negative.
 pub fn stackWithGaps(
     allocator: std.mem.Allocator,
@@ -349,18 +436,45 @@ pub fn stackWithGaps(
     direction: Direction,
     gaps: []const isize,
 ) ![]Rect {
+    return stackWithGapsJustified(allocator, rect, items, direction, gaps, .start);
+}
+
+/// The full form: a gap per seam, and a policy for whatever is left over.
+pub fn stackWithGapsJustified(
+    allocator: std.mem.Allocator,
+    rect: Rect,
+    items: []const Constraint,
+    direction: Direction,
+    gaps: []const isize,
+    justify: Justify,
+) ![]Rect {
     const horizontal = direction == .row;
-    const sizes = try solveWithGaps(allocator, if (horizontal) rect.width else rect.height, items, gaps);
+    const axis = if (horizontal) rect.width else rect.height;
+    const sizes = try solveWithGaps(allocator, axis, items, gaps);
     defer allocator.free(sizes);
 
+    var gap_total: isize = 0;
+    var g: usize = 0;
+    while (g + 1 < sizes.len) : (g += 1) {
+        if (g < gaps.len) gap_total += gaps[g];
+    }
+    var used: isize = gap_total;
+    for (sizes) |size| used += @intCast(size);
+    const slack: usize = @intCast(@max(0, @as(isize, @intCast(axis)) - used));
+
+    const spread = try distribute(allocator, slack, sizes.len, justify);
+    defer allocator.free(spread.seams);
+
     const out = try allocator.alloc(Rect, sizes.len);
-    var offset: isize = if (horizontal) rect.x else rect.y;
+    var offset: isize = (if (horizontal) rect.x else rect.y) + @as(isize, @intCast(spread.lead));
     for (sizes, 0..) |size, i| {
         out[i] = if (horizontal)
             .{ .x = offset, .y = rect.y, .width = size, .height = rect.height }
         else
             .{ .x = rect.x, .y = offset, .width = rect.width, .height = size };
-        offset += @as(isize, @intCast(size)) + (if (i < gaps.len) gaps[i] else 0);
+        const seam = (if (i < gaps.len) gaps[i] else 0) +
+            @as(isize, @intCast(if (i < spread.seams.len) spread.seams[i] else 0));
+        offset += @as(isize, @intCast(size)) + seam;
     }
     return out;
 }

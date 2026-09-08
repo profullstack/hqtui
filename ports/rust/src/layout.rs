@@ -386,9 +386,93 @@ pub fn solve_with_gaps(total: usize, items: &[Constraint], gaps: &[isize]) -> Ve
 }
 
 /// Lay children out along one axis inside `rect`.
+/// Where leftover space goes.
+///
+/// It only ever applies when there is slack, and a container holding any `fr`
+/// or `fill` child has none -- that child has already absorbed it. So this is
+/// inert exactly where it would otherwise fight with the constraints.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum Justify {
+    #[default]
+    Start,
+    End,
+    Center,
+    SpaceBetween,
+    SpaceAround,
+    SpaceEvenly,
+}
+
+impl Justify {
+    /// Parse the spelling the reference API uses. Anything else is `Start`,
+    /// which is what every layout did before this existed.
+    pub fn parse(name: &str) -> Justify {
+        match name {
+            "end" => Justify::End,
+            "center" => Justify::Center,
+            "space-between" => Justify::SpaceBetween,
+            "space-around" => Justify::SpaceAround,
+            "space-evenly" => Justify::SpaceEvenly,
+            _ => Justify::Start,
+        }
+    }
+}
+
+/// How much slack sits before item `i`, as an exact fraction.
+///
+/// Every mode is a different answer to that one question, which is why they
+/// share the rounding below rather than each growing their own off-by-one.
+fn before(i: usize, slack: f64, count: usize, justify: Justify) -> f64 {
+    let i = i as f64;
+    let count = count as f64;
+    match justify {
+        Justify::Start => 0.0,
+        Justify::End => slack,
+        // Floor, so an odd cell falls after the content rather than before it.
+        Justify::Center => (slack / 2.0).floor(),
+        Justify::SpaceBetween => {
+            if count > 1.0 {
+                i * slack / (count - 1.0)
+            } else {
+                0.0
+            }
+        }
+        Justify::SpaceEvenly => (i + 1.0) * slack / (count + 1.0),
+        Justify::SpaceAround => (i + 0.5) * slack / count,
+    }
+}
+
+/// The offset before the first child, and the extra added at each seam.
+///
+/// Cells are whole, and rounding each gap on its own loses one here and gains
+/// one there. Rounding the cumulative offset and taking differences means the
+/// parts always add up to exactly the slack.
+pub fn distribute(slack: usize, count: usize, justify: Justify) -> (usize, Vec<usize>) {
+    let mut seams = vec![0usize; count.saturating_sub(1)];
+    if slack == 0 || count == 0 || justify == Justify::Start {
+        return (0, seams);
+    }
+    let at = |i: usize| -> usize { before(i, slack as f64, count, justify).round() as usize };
+    for i in 0..count.saturating_sub(1) {
+        seams[i] = at(i + 1).saturating_sub(at(i));
+    }
+    (at(0), seams)
+}
+
 pub fn stack(rect: Rect, items: &[Constraint], direction: Direction, gap: usize) -> Vec<Rect> {
     let seams = vec![gap as isize; items.len().saturating_sub(1)];
     stack_with_gaps(rect, items, direction, &seams)
+}
+
+/// As `stack`, with leftover space distributed rather than left at the end.
+pub fn stack_justified(
+    rect: Rect,
+    items: &[Constraint],
+    direction: Direction,
+    gap: usize,
+    justify: Justify,
+) -> Vec<Rect> {
+    let seams = vec![gap as isize; items.len().saturating_sub(1)];
+    stack_with_gaps_justified(rect, items, direction, &seams, justify)
 }
 
 /// As `stack`, but with a gap per seam, which may be negative.
@@ -398,17 +482,39 @@ pub fn stack_with_gaps(
     direction: Direction,
     gaps: &[isize],
 ) -> Vec<Rect> {
+    stack_with_gaps_justified(rect, items, direction, gaps, Justify::Start)
+}
+
+/// The full form: a gap per seam, and a policy for whatever is left over.
+pub fn stack_with_gaps_justified(
+    rect: Rect,
+    items: &[Constraint],
+    direction: Direction,
+    gaps: &[isize],
+    justify: Justify,
+) -> Vec<Rect> {
     let horizontal = direction == Direction::Row;
-    let sizes = solve_with_gaps(if horizontal { rect.width } else { rect.height }, items, gaps);
+    let axis = if horizontal { rect.width } else { rect.height };
+    let sizes = solve_with_gaps(axis, items, gaps);
+
+    let gap_total: isize = (0..sizes.len().saturating_sub(1))
+        .map(|i| gaps.get(i).copied().unwrap_or(0))
+        .sum();
+    let used: isize = sizes.iter().map(|s| *s as isize).sum::<isize>() + gap_total;
+    let slack = (axis as isize - used).max(0) as usize;
+    let (lead, extra) = distribute(slack, sizes.len(), justify);
+
     let mut out = Vec::with_capacity(sizes.len());
-    let mut offset = if horizontal { rect.x } else { rect.y };
+    let mut offset = (if horizontal { rect.x } else { rect.y }) + lead as isize;
     for (i, size) in sizes.into_iter().enumerate() {
         out.push(if horizontal {
             Rect { x: offset, y: rect.y, width: size, height: rect.height }
         } else {
             Rect { x: rect.x, y: offset, width: rect.width, height: size }
         });
-        offset += size as isize + gaps.get(i).copied().unwrap_or(0);
+        offset += size as isize
+            + gaps.get(i).copied().unwrap_or(0)
+            + extra.get(i).copied().unwrap_or(0) as isize;
     }
     out
 }

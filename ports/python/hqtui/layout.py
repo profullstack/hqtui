@@ -240,22 +240,79 @@ def solve(
     return [max(0, v) for v in out]
 
 
+#: Where leftover space goes.
+#:
+#: It only ever applies when there is slack, and a container holding any ``fr``
+#: or ``fill`` child has none -- that child has already absorbed it. So this is
+#: inert exactly where it would otherwise fight with the constraints.
+JUSTIFY = ("start", "end", "center", "space-between", "space-around", "space-evenly")
+
+
+def _before(i: int, slack: float, count: int, justify: str) -> float:
+    """How much slack sits before item ``i``, as an exact fraction.
+
+    Every mode is a different answer to that one question, which is why they
+    share the rounding below rather than each growing their own off-by-one.
+    """
+    if justify == "end":
+        return slack
+    if justify == "center":
+        # Floor, so an odd cell falls after the content rather than before it.
+        return float(int(slack // 2))
+    if justify == "space-between":
+        return (i * slack / (count - 1)) if count > 1 else 0.0
+    if justify == "space-evenly":
+        return (i + 1) * slack / (count + 1)
+    if justify == "space-around":
+        return (i + 0.5) * slack / count
+    return 0.0
+
+
+def _round_half_up(value: float) -> int:
+    """Python rounds halves to even; every other port rounds them up."""
+    return int(math.floor(value + 0.5))
+
+
+def distribute(slack: int, count: int, justify: str = "start") -> tuple[int, list[int]]:
+    """The offset before the first child, and the extra added at each seam.
+
+    Cells are whole, and rounding each gap on its own loses one here and gains
+    one there. Rounding the cumulative offset and taking differences means the
+    parts always add up to exactly the slack.
+    """
+    seams = [0] * max(0, count - 1)
+    if slack <= 0 or count == 0 or justify == "start":
+        return 0, seams
+    at = lambda i: _round_half_up(_before(i, float(slack), count, justify))  # noqa: E731
+    for i in range(max(0, count - 1)):
+        seams[i] = max(0, at(i + 1) - at(i))
+    return at(0), seams
+
+
 def stack(
     rect: Rect,
     items: Sequence[Constraint],
     direction: "Direction | str" = Direction.COLUMN,
     gap: "int | Sequence[int]" = 0,
+    justify: str = "start",
 ) -> list[Rect]:
     """Lay children out along one axis inside ``rect``."""
     horizontal = direction == Direction.ROW
-    sizes = solve(rect.width if horizontal else rect.height, items, gap)
+    axis = rect.width if horizontal else rect.height
+    sizes = solve(axis, items, gap)
     gaps = list(gap) if isinstance(gap, (list, tuple)) else [gap] * max(0, len(sizes) - 1)
+
+    gap_total = sum(gaps[i] for i in range(max(0, len(sizes) - 1)) if i < len(gaps))
+    slack = max(0, axis - sum(sizes) - gap_total)
+    lead, extra = distribute(slack, len(sizes), justify)
+
     out: list[Rect] = []
-    offset = rect.x if horizontal else rect.y
+    offset = (rect.x if horizontal else rect.y) + lead
     for i, size in enumerate(sizes):
         if horizontal:
             out.append(Rect(offset, rect.y, size, rect.height))
         else:
             out.append(Rect(rect.x, offset, rect.width, size))
-        offset += size + (gaps[i] if i < len(gaps) else 0)
+        seam = (gaps[i] if i < len(gaps) else 0) + (extra[i] if i < len(extra) else 0)
+        offset += size + seam
     return out

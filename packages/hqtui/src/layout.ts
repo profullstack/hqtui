@@ -155,25 +155,97 @@ export function solve(total: number, items: Constraint[], gap: number | number[]
   return out;
 }
 
+/**
+ * Where leftover space goes.
+ *
+ * It only ever applies when there is slack, and a container holding any `fr`
+ * or `fill` child has none -- that child has already absorbed it. So this is
+ * inert exactly where it would otherwise fight with the constraints.
+ */
+export type Justify =
+  | "start"
+  | "end"
+  | "center"
+  | "space-between"
+  | "space-around"
+  | "space-evenly";
+
+/**
+ * How much slack sits before item `i`, as an exact fraction.
+ *
+ * Every mode is a different answer to that one question, which is why they can
+ * share the rounding below rather than each doing their own and each getting a
+ * different kind of off-by-one.
+ */
+function before(i: number, slack: number, count: number, justify: Justify): number {
+  switch (justify) {
+    case "end":
+      return slack;
+    case "center":
+      // Floor, so an odd cell falls after the content rather than before it.
+      // That is what CSS and ratatui do, and it is what reads as centred.
+      return Math.floor(slack / 2);
+    case "space-between":
+      // One child has nothing to sit between, so it stays where it started.
+      return count > 1 ? (i * slack) / (count - 1) : 0;
+    case "space-evenly":
+      return ((i + 1) * slack) / (count + 1);
+    case "space-around":
+      // Half a share at each end, a whole one between.
+      return ((i + 0.5) * slack) / count;
+    default:
+      return 0;
+  }
+}
+
+/**
+ * The offset before the first child, and the extra added at each seam.
+ *
+ * Cells are whole, and rounding each gap on its own loses a cell here and
+ * gains one there. Rounding the *cumulative* offset instead and taking
+ * differences means the parts always add up to exactly the slack, whatever the
+ * mode and however awkward the division.
+ */
+export function distribute(
+  slack: number,
+  count: number,
+  justify: Justify,
+): { lead: number; seams: number[] } {
+  const seams = new Array<number>(Math.max(0, count - 1)).fill(0);
+  if (slack <= 0 || count === 0 || justify === "start") return { lead: 0, seams };
+
+  const at = (i: number): number => Math.round(before(i, slack, count, justify));
+  for (let i = 0; i + 1 < count; i++) seams[i] = at(i + 1) - at(i);
+  return { lead: at(0), seams };
+}
+
 /** Lay children out along one axis inside `rect`. */
 export function stack(
   rect: Rect,
   items: Constraint[],
   direction: "row" | "column",
   gap: number | number[] = 0,
+  justify: Justify = "start",
 ): Rect[] {
   const horizontal = direction === "row";
-  const sizes = solve(horizontal ? rect.width : rect.height, items, gap);
+  const axis = horizontal ? rect.width : rect.height;
+  const sizes = solve(axis, items, gap);
   const seam = (i: number) => (Array.isArray(gap) ? (gap[i] ?? 0) : gap);
+
+  let gapTotal = 0;
+  for (let i = 0; i + 1 < sizes.length; i++) gapTotal += seam(i);
+  const slack = Math.max(0, axis - sizes.reduce((a, b) => a + b, 0) - gapTotal);
+  const { lead, seams } = distribute(slack, sizes.length, justify);
+
   const out: Rect[] = [];
-  let offset = horizontal ? rect.x : rect.y;
+  let offset = (horizontal ? rect.x : rect.y) + lead;
   sizes.forEach((size, i) => {
     out.push(
       horizontal
         ? { x: offset, y: rect.y, width: size, height: rect.height }
         : { x: rect.x, y: offset, width: rect.width, height: size },
     );
-    offset += size + seam(i);
+    offset += size + seam(i) + (seams[i] ?? 0);
   });
   return out;
 }
