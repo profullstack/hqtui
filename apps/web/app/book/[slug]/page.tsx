@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { renderMarkdown } from "@/lib/blog";
+import { ProseBody } from "@/components/site/prose-body";
 import { allChapters, BOOK_TITLE, chapterBySlug, neighbours } from "@/lib/book";
 import { recordView } from "@/lib/db";
 
@@ -51,12 +52,7 @@ export default async function BookChapter({ params }: Params) {
             <h1 className="mt-2 text-4xl font-bold tracking-tight">{chapter.title}</h1>
             <p className="mt-3 leading-relaxed text-white/60">{chapter.summary}</p>
           </header>
-          {/* Rendered by lib/blog.ts from files in this repository, never from
-              user input, and every text node in it is escaped there. */}
-          <div
-            className="post-body mt-8"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(chapter.body) }}
-          />
+          <ProseBody className="post-body mt-8" html={renderMarkdown(chapter.body)} />
         </article>
 
         <nav className="mt-14 flex flex-wrap justify-between gap-4 border-t border-white/10 pt-6 text-sm">

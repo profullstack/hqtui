@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 
+import { CopyButton } from "@/components/site/copy-button";
+
 type Rule = { pattern: RegExp; className: string };
 
 const RULES: Rule[] = [
@@ -63,15 +65,23 @@ export function Code({
   filename?: string;
 }) {
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-white/10 bg-[#0a0e14]", className)}>
+    // Relative so the copy button can sit in the corner; the highlighting still
+    // happens on the server and only the button ships as client JavaScript.
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-xl border border-white/10 bg-[#0a0e14]",
+        className,
+      )}
+    >
       {filename ? (
-        <div className="border-b border-white/10 px-4 py-2 font-mono text-[11px] text-white/50">
+        <div className="border-b border-white/10 px-4 py-2 pr-11 font-mono text-[11px] text-white/50">
           {filename}
         </div>
       ) : null}
-      <pre className="overflow-x-auto p-4 font-mono text-[13px] leading-relaxed text-[#c6d0db]">
+      <pre className="overflow-x-auto p-4 pr-11 font-mono text-[13px] leading-relaxed text-[#c6d0db]">
         <code dangerouslySetInnerHTML={{ __html: highlight(code) }} />
       </pre>
+      <CopyButton text={code} label={filename ?? "code"} />
     </div>
   );
 }

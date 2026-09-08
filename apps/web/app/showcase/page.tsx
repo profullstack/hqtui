@@ -1,9 +1,9 @@
+import { CommandBlock } from "@/components/site/command";
 import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
 import { Badge } from "@/components/ui/badge";
 
 import { recordView } from "@/lib/db";
-
 
 export const dynamic = "force-dynamic";
 
@@ -98,10 +98,11 @@ export default async function Showcase() {
             The reference dashboard reads real metrics on Linux, macOS and Windows, or runs a
             deterministic simulation.
           </p>
-          <pre className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-[#0a0e14] p-4 font-mono text-sm text-[#c6d0db]">
-            <span className="text-[#5fff87]">$</span> bunx @profullstack/hqtui-demo{"\n"}
-            <span className="text-[#5fff87]">$</span> bunx @profullstack/hqtui-demo --sim
-          </pre>
+          <CommandBlock
+            className="mt-4"
+            label="demo"
+            command={"bunx @profullstack/hqtui-demo\nbunx @profullstack/hqtui-demo --sim"}
+          />
         </section>
       </main>
       <SiteFooter />
