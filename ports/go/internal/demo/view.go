@@ -62,9 +62,9 @@ func (s *state) render(p *ui.Container) {
 	if s.filtering {
 		filter = "Filter: " + s.filter + "_"
 	}
-	p.StatusBar(ui.StatusBarOptions{Items: []ui.StatusItem{ui.StatusKey("F1", "Help"), ui.StatusKey("F2", "Theme ("+t.Name+")"), {Key: "F3", Label: filter, Active: s.filtering}, ui.StatusKey("F6", "Sort: "+[]string{"cpu", "mem", "pid", "name"}[s.sort]), ui.StatusKey("^K", "Palette"), ui.StatusKey("Tab", "Screen"), ui.StatusKey("q", "Quit")}, Right: []ui.StatusItem{ui.Status(fmt.Sprintf("%.2fms  %d cells  %dB", s.renderMs, s.changedCells, s.outputBytes))}})
+	p.StatusBar(ui.StatusBarOptions{Items: []ui.StatusItem{ui.StatusKey("F1", "Help"), ui.StatusKey("F2", "Theme ("+t.Name+")"), {Key: "F3", Label: filter, Active: s.filtering}, {Key: "c", Label: "Collapse", Active: s.collapse}, ui.StatusKey("F6", "Sort: "+[]string{"cpu", "mem", "pid", "name"}[s.sort]), ui.StatusKey("^K", "Palette"), ui.StatusKey("Tab", "Screen"), ui.StatusKey("q", "Quit")}, Right: []ui.StatusItem{ui.Status(fmt.Sprintf("%.2fms  %d cells  %dB", s.renderMs, s.changedCells, s.outputBytes))}})
 	if s.help {
-		p.Modal(ui.ModalOptions{Title: "hqtui — Help", Message: "1–9/0 / Tab: screen\nF2 theme · F3 filter · F6 sort\nCtrl+K palette · Space pause\nArrows / PgUp / PgDn / Home / End: scroll\nMouse tabs, controls, selection and wheel\ne edits text · Esc finishes\nq / Ctrl+C quit · Any key closes help"}, nil)
+		p.Modal(ui.ModalOptions{Title: "hqtui — Help", Message: "1–9/0 / Tab: screen\nF2 theme · F3 filter · F6 sort\nc collapse panel borders\nCtrl+K palette · Space pause\nArrows / PgUp / PgDn / Home / End: scroll\nMouse tabs, controls, selection and wheel\ne edits text · Esc finishes\nq / Ctrl+C quit · Any key closes help"}, nil)
 	}
 	if s.modal {
 		p.Modal(ui.ModalOptions{Title: "Read-only Demo", Message: "No process will be killed and no service changed.\nPress any key to close."}, nil)

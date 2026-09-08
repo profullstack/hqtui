@@ -128,6 +128,7 @@ type state struct {
 	sample                                                                              object
 	screen, theme, sort                                                                 int
 	real, paused, help, modal, palette, filtering, editing, checked, toggle, selectOpen bool
+	collapse                                                                            bool
 	filter, input, query, lastKey, lastMouse                                            string
 	paletteIndex, selectIndex                                                           int
 	keyLog                                                                              []any
@@ -361,6 +362,10 @@ func (s *state) key(key, char string) bool {
 		s.theme = (s.theme + 1) % len(themes)
 	case "f3":
 		s.filtering = true
+	case "c":
+		// Shows what CollapseBorders does, live. Worth a key because the
+		// difference is only visible when panels sit next to each other.
+		s.collapse = !s.collapse
 	case "f6":
 		s.sort = (s.sort + 1) % 4
 	case "ctrl+k":

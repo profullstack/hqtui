@@ -82,13 +82,16 @@ inline Meter meter(double value, Color color = 0) {
   m.value = value;
   m.color = color;
   m.show_value = false;
+  // The demo's bars are segmented, like btop's. The library default is smooth,
+  // matching every other port, so this asks rather than assuming.
+  m.segmented = true;
   return m;
 }
 struct State {
   Json data;
   bool real = false, paused = false, help = false, modal = false,
        palette = false, filtering = false, editing = false, toggle = true,
-       checkbox = true, select_open = false;
+       checkbox = true, select_open = false, collapse = false;
   int screen = 0, theme_index = 0, sort = 0, select_index = 0,
       palette_index = 0;
   double slider = .7, fps = 0, render_ms = 0;

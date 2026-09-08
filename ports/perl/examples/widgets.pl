@@ -109,6 +109,112 @@ sub widget_gauge {
 }
 # @end
 
+# @widget badge
+sub widget_badge {
+    my ($ui) = @_;
+    $ui->badge('active');
+}
+# @end
+
+# @widget progress
+sub widget_progress {
+    my ($ui) = @_;
+    $ui->progress(37, max => 120, label => 'Indexing', count => \1);
+    $ui->progress(0.82, label => 'Upload');
+}
+# @end
+
+# @widget sparkline
+sub widget_sparkline {
+    my ($ui) = @_;
+    $ui->sparkline(\@cpu_history, label => 'CPU ', text => '44%');
+}
+# @end
+
+# @widget heatBar
+sub widget_heat_bar {
+    my ($ui) = @_;
+    $ui->heatbar(0.28);
+    $ui->heatbar(0.64);
+    $ui->heatbar(0.91);
+}
+# @end
+
+# @widget histogram
+sub widget_histogram {
+    my ($ui) = @_;
+    # Block columns. Cheaper than Braille and easier to read when short.
+    $ui->columns(\@cpu_history);
+}
+# @end
+
+# @widget donut
+sub widget_donut {
+    my ($ui) = @_;
+    $ui->donut([{ value => 4.65, label => 'Used' }, { value => 10.96, label => 'Free' }]);
+}
+# @end
+
+# @widget list
+sub widget_list {
+    my ($ui) = @_;
+    $ui->list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], selected => 0, bullet => '▸');
+}
+# @end
+
+# @widget tree
+sub widget_tree {
+    my ($ui) = @_;
+    $ui->tree([{ label => 'systemd', children => [{ label => 'bash' }, { label => 'postgres' }] }],
+              selected => 1);
+}
+# @end
+
+# @widget button
+sub widget_button {
+    my ($ui) = @_;
+    # variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.
+    $ui->button('Primary');
+}
+# @end
+
+# @widget checkbox
+sub widget_checkbox {
+    my ($ui) = @_;
+    $ui->checkbox('Toggle', checked => \1, variant => 1);
+    $ui->checkbox('Checkbox', checked => \0);
+}
+# @end
+
+# @widget select
+sub widget_select {
+    my ($ui) = @_;
+    $ui->select('Dracula', open => \1, options => ['Dark', 'Dracula', 'Nord'], selected => 1);
+}
+# @end
+
+# @widget textInput
+sub widget_text_input {
+    my ($ui) = @_;
+    $ui->input('postgres', label => 'Search');
+}
+# @end
+
+# @widget tabs
+sub widget_tabs {
+    my ($ui) = @_;
+    $ui->tabs(['1 dashboard', '2 traffic', '3 sessions'], active => 1);
+}
+# @end
+
+# @widget statusBar
+sub widget_status_bar {
+    my ($ui) = @_;
+    $ui->statusbar([{ key => 'F1', label => 'Help' }, { key => 'q', label => 'Quit' }],
+                   right => [{ label => '0.41ms' }]);
+}
+# @end
+
 my @examples = (
     ['text',      \&widget_text],
     ['divider',   \&widget_divider],
@@ -118,6 +224,20 @@ my @examples = (
     ['meter',     \&widget_meter],
     ['graph',     \&widget_graph],
     ['gauge',     \&widget_gauge],
+    ['badge', \&widget_badge],
+    ['progress', \&widget_progress],
+    ['sparkline', \&widget_sparkline],
+    ['heatBar', \&widget_heat_bar],
+    ['histogram', \&widget_histogram],
+    ['donut', \&widget_donut],
+    ['list', \&widget_list],
+    ['tree', \&widget_tree],
+    ['button', \&widget_button],
+    ['checkbox', \&widget_checkbox],
+    ['select', \&widget_select],
+    ['textInput', \&widget_text_input],
+    ['tabs', \&widget_tabs],
+    ['statusBar', \&widget_status_bar],
 );
 
 # Renders each widget on its own small screen and prints the lot.

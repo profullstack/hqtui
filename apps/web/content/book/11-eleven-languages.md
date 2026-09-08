@@ -11,7 +11,8 @@ of thing. Knowing which kind you are using tells you what to expect.
 
 TypeScript, JavaScript, Rust, Go, Python and Zig each implement the library.
 Not a wrapper: the buffer, the diff, the layout engine and all twenty-eight
-widgets, in that language, with no shared object to install.
+widgets, in that language, with no shared object to install. C++ implements it
+too, over the shared C core, and is checked against the same fixtures.
 
 ```rust
 ui.meter(MeterOptions::new(0.62).label("CPU"));
@@ -36,17 +37,21 @@ in Python, anonymous struct literals in Zig.
 
 ## FFI bindings
 
-C++, Ruby, PHP and Perl reach a shared native core through a small C ABI.
+C++ is a seventh implementation, and Ruby, PHP and Perl reach that same native
+core through a small C ABI.
 
 ```ruby
 ui.meter(0.62, label: 'CPU')
+ui.tabs(['dashboard', 'traffic'], active: 0)
 ```
 
-The trade is real and worth stating plainly: those four reach the eight widgets
-the core draws, not all twenty-eight. `text`, `divider`, `keyValues`, `table`,
-`log`, `meter`, `graph` and `gauge`. If you need tabs or a command palette in
-Ruby today, you need a native port instead, and the honest coverage table lives
-on [the widget gallery](/widgets).
+The trade is real and worth stating plainly. C++ draws all twenty-eight, and is
+checked against the same fixtures as every other port. Ruby, PHP and Perl reach
+twenty-two, and what they are missing is not something the core lacks: it is
+what a JSON node cannot express, like a widget whose content is another
+container. If you need a modal with arbitrary contents in Ruby, you need a
+native port. The honest coverage table lives on
+[the widget gallery](/widgets).
 
 They also need the shared library built, which the launcher does for you and
 your build will have to do for itself.
@@ -75,6 +80,11 @@ the interface is a record layout rather than an API, so it belongs to no
 language and no runtime, and a nightly batch job that already emits records can
 be pointed at a dashboard for the cost of a `DISPLAY` statement.
 
+Repeated records accumulate into one widget, which is how something flat
+describes something with parts: `ITEM` builds a list, `NODE` and `CHILD` a
+shallow tree, `SEGMENT` a donut, `SPARKPT` a sparkline. Twenty of the
+twenty-eight widgets are reachable that way.
+
 The same trick works for anything that can write a line of text. If you have a
 language with no port and no FFI, you have a bridge already.
 
@@ -82,7 +92,7 @@ language with no port and no FFI, you have a bridge already.
 
 - The language your project is in has a native port: use it, and you get
   everything.
-- It has an FFI binding: use it if the eight widgets cover you.
+- It has an FFI binding: use it if twenty-two widgets cover you.
 - It has neither, but it can print: write records and use an adapter.
 - You want the demo without installing anything:
 

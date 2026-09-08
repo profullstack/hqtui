@@ -224,6 +224,24 @@ ui.row({ gap: 1 }, (row) => {
 });`}
           />
           <P>
+            Adjacent panels each draw their own border by default. Turn on{" "}
+            <code className="font-mono text-white/80">collapseBorders</code> and neighbours share
+            one, the way CSS collapses table borders. It is a whole-screen setting because it
+            changes the layout rather than only the glyphs: two panels overlap by the column their
+            borders share, and the corners where they meet become junctions. It applies to panels
+            only, so a table pressed against a panel edge keeps its own shape. Press{" "}
+            <code className="font-mono text-white/80">c</code> in any demo to see it.
+          </P>
+          <Code
+            className="mt-4"
+            code={`const app = createApp({ collapseBorders: true });
+app.setCollapseBorders(!app.collapseBorders);   // or toggle it while running
+
+// ╭─ CPU ────────┬─ Memory ─────╮   instead of   ╭─ CPU ────────╮╭─ Memory ─────╮
+// │ all █████ 62%│ used ██▏  31%│                │ all █████ 62%││ used ██▏  31%│
+// ╰──────────────┴──────────────╯                ╰──────────────╯╰──────────────╯`}
+          />
+          <P>
             Responsive layouts pick a branch by the width actually available, so the same view
             works in a 60-column pane and a 240-column window.
           </P>

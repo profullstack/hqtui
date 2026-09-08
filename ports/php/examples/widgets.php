@@ -112,6 +112,111 @@ function widget_gauge(UI $ui): void
 }
 // @end
 
+// @widget badge
+function widget_badge(UI $ui): void
+{
+    $ui->badge('active');
+}
+// @end
+
+// @widget progress
+function widget_progress(UI $ui): void
+{
+    $ui->progress(37, ['max' => 120, 'label' => 'Indexing', 'count' => true]);
+    $ui->progress(0.82, ['label' => 'Upload']);
+}
+// @end
+
+// @widget sparkline
+function widget_sparkline(UI $ui): void
+{
+    $ui->sparkline(CPU_HISTORY, ['label' => 'CPU ', 'text' => '44%']);
+}
+// @end
+
+// @widget heatBar
+function widget_heat_bar(UI $ui): void
+{
+    $ui->heatbar(0.28);
+    $ui->heatbar(0.64);
+    $ui->heatbar(0.91);
+}
+// @end
+
+// @widget histogram
+function widget_histogram(UI $ui): void
+{
+    // Block columns. Cheaper than Braille and easier to read when short.
+    $ui->columns(CPU_HISTORY);
+}
+// @end
+
+// @widget donut
+function widget_donut(UI $ui): void
+{
+    $ui->donut([['value' => 4.65, 'label' => 'Used'], ['value' => 10.96, 'label' => 'Free']]);
+}
+// @end
+
+// @widget list
+function widget_list(UI $ui): void
+{
+    $ui->list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], ['selected' => 0, 'bullet' => '▸']);
+}
+// @end
+
+// @widget tree
+function widget_tree(UI $ui): void
+{
+    $ui->tree([['label' => 'systemd', 'children' => [['label' => 'bash'], ['label' => 'postgres']]]], ['selected' => 1]);
+}
+// @end
+
+// @widget button
+function widget_button(UI $ui): void
+{
+    // variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.
+    $ui->button('Primary');
+}
+// @end
+
+// @widget checkbox
+function widget_checkbox(UI $ui): void
+{
+    $ui->checkbox('Toggle', ['checked' => true, 'variant' => 1]);
+    $ui->checkbox('Checkbox', ['checked' => false]);
+}
+// @end
+
+// @widget select
+function widget_select(UI $ui): void
+{
+    $ui->select('Dracula', ['open' => true, 'options' => ['Dark', 'Dracula', 'Nord'], 'selected' => 1]);
+}
+// @end
+
+// @widget textInput
+function widget_text_input(UI $ui): void
+{
+    $ui->input('postgres', ['label' => 'Search']);
+}
+// @end
+
+// @widget tabs
+function widget_tabs(UI $ui): void
+{
+    $ui->tabs(['1 dashboard', '2 traffic', '3 sessions'], ['active' => 1]);
+}
+// @end
+
+// @widget statusBar
+function widget_status_bar(UI $ui): void
+{
+    $ui->statusbar([['key' => 'F1', 'label' => 'Help'], ['key' => 'q', 'label' => 'Quit']],
+        ['right' => [['label' => '0.41ms']]]);
+}
+// @end
+
 $examples = [
     'text' => 'widget_text',
     'divider' => 'widget_divider',
@@ -121,6 +226,20 @@ $examples = [
     'meter' => 'widget_meter',
     'graph' => 'widget_graph',
     'gauge' => 'widget_gauge',
+    'badge' => 'widget_badge',
+    'progress' => 'widget_progress',
+    'sparkline' => 'widget_sparkline',
+    'heatBar' => 'widget_heat_bar',
+    'histogram' => 'widget_histogram',
+    'donut' => 'widget_donut',
+    'list' => 'widget_list',
+    'tree' => 'widget_tree',
+    'button' => 'widget_button',
+    'checkbox' => 'widget_checkbox',
+    'select' => 'widget_select',
+    'textInput' => 'widget_text_input',
+    'tabs' => 'widget_tabs',
+    'statusBar' => 'widget_status_bar',
 ];
 
 // Renders each widget on its own small screen and prints the lot.

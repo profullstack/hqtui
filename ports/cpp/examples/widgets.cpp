@@ -6,10 +6,10 @@
 // slices to show the code for one widget, which is why a snippet on the site
 // is always a region of something that compiles.
 //
-// C++ draws straight onto a Surface rather than describing a tree, and the
-// native core exposes eight widgets rather than the twenty-eight the
-// TypeScript, JavaScript, Rust, Go, Python and Zig ports do. The list is
-// honest about that.
+// C++ draws straight onto a Surface rather than describing a tree, so each
+// function here places its own widgets rather than nesting containers. It
+// covers the same twenty-eight widgets every other native port does, checked
+// against the shared fixtures by tests/conformance_widgets.cpp.
 
 #include <cstdio>
 #include <string>
@@ -87,9 +87,24 @@ void widget_log(Surface s) {
 // @widget meter
 void widget_meter(Surface s) {
   const int width = s.rect().width;
-  draw_meter(s.sub(Rect{0, 0, width, 1}), Meter{.value = 0.62, .label = "CPU"});
-  draw_meter(s.sub(Rect{0, 1, width, 1}), Meter{.value = 0.31, .label = "MEM"});
-  draw_meter(s.sub(Rect{0, 2, width, 1}), Meter{.value = 0.87, .label = "SWP"});
+  {
+    Meter meter;
+    meter.value = 0.87;
+    meter.label = "SWP";
+    {
+    Meter meter;
+    meter.value = 0.31;
+    meter.label = "MEM";
+    {
+    Meter meter;
+    meter.value = 0.62;
+    meter.label = "CPU";
+    draw_meter(s.sub(Rect{0, 0, width, 1}), meter);
+  }
+  draw_meter(s.sub(Rect{0, 1, width, 1}), meter);
+  }
+  draw_meter(s.sub(Rect{0, 2, width, 1}), meter);
+  }
 }
 // @end
 
@@ -111,16 +126,389 @@ void widget_gauge(Surface s) {
 }
 // @end
 
+// @widget label
+void widget_label(Surface s) {
+  // Muted secondary copy: captions, and the line under a number that says what
+  // the number is.
+  const auto &t = theme(s);
+  {
+    TextStyle text_style;
+    text_style.fg = t.muted;
+    {
+    TextStyle text_style;
+    text_style.attrs = HQ_BOLD;
+    {
+    TextStyle text_style;
+    text_style.fg = t.muted;
+    draw_text(s, "cpu · 8 cores · 3.4 GHz", text_style);
+  }
+  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), "42.1%", text_style);
+  }
+  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), "15 minute average",
+            text_style);
+  }
+}
+// @end
+
+// @widget heading
+void widget_heading(Surface s) {
+  const auto &t = theme(s);
+  {
+    TextStyle text_style;
+    text_style.fg = t.muted;
+    {
+    TextStyle text_style;
+    text_style.fg = t.title;
+    text_style.attrs = HQ_BOLD;
+    draw_text(s, "Storage", text_style);
+  }
+  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), "Four volumes, one degraded",
+            text_style);
+  }
+}
+// @end
+
+// @widget badge
+void widget_badge(Surface s) {
+  const auto &t = theme(s);
+  {
+    Badge badge;
+    badge.text = "failed";
+    badge.color = t.danger;
+    badge.variant = HQ_BADGE_OUTLINE;
+    {
+    Badge badge;
+    badge.text = "idle";
+    badge.color = t.warning;
+    badge.variant = HQ_BADGE_SUBTLE;
+    {
+    Badge badge;
+    badge.text = "active";
+    badge.color = t.success;
+    draw_badge(s.sub(Rect{0, 0, 10, 1}), badge);
+  }
+  draw_badge(s.sub(Rect{10, 0, 10, 1}),
+             badge);
+  }
+  draw_badge(s.sub(Rect{20, 0, 10, 1}),
+             badge);
+  }
+}
+// @end
+
+// @widget divider
+void widget_divider(Surface s) {
+  draw_text(s, "Above the line");
+  draw_divider(s.sub(Rect{0, 1, s.rect().width, 1}));
+  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), "Below it");
+  {
+    Divider divider;
+    divider.label = "status";
+    divider.align = HQ_CENTER;
+    draw_divider(s.sub(Rect{0, 3, s.rect().width, 1}),
+               divider);
+  }
+}
+// @end
+
+// @widget meters
+void widget_meters(Surface s) {
+  // One call for a whole bank. `columns` lays them out side by side.
+  Meters m;
+  for (int i = 0; i < 8; i++)
+    m.items.push_back({"P" + std::to_string(i), (i * 13 % 100) / 100., 0, 0, ""});
+  m.columns = 2;
+  m.label_width = 4;
+  m.value_width = 5;
+  m.style = HQ_BAR_SEGMENTED;
+  draw_meters(s, m);
+}
+// @end
+
+// @widget progress
+void widget_progress(Surface s) {
+  {
+    Progress progress;
+    progress.value = 0.82;
+    progress.label = "Upload";
+    {
+    Progress progress;
+    progress.value = 37;
+    progress.max = 120;
+    progress.label = "Indexing";
+    progress.show_count = true;
+    draw_progress(s, progress);
+  }
+  draw_progress(s.sub(Rect{0, 1, s.rect().width, 1}),
+                progress);
+  }
+}
+// @end
+
+// @widget sparkline
+void widget_sparkline(Surface s) {
+  {
+    Sparkline sparkline;
+    sparkline.values = cpu_history();
+    sparkline.label = "CPU ";
+    sparkline.text = "44%";
+    draw_sparkline(s, sparkline);
+  }
+}
+// @end
+
+// @widget histogram
+void widget_histogram(Surface s) {
+  {
+    Columns columns;
+    columns.values = cpu_history();
+    // Block columns. Cheaper than Braille and easier to read when short.
+  draw_columns(s, columns);
+  }
+}
+// @end
+
+// @widget heatBar
+void widget_heat_bar(Surface s) {
+  {
+    HeatBar heat_bar;
+    heat_bar.value = 0.91;
+    {
+    HeatBar heat_bar;
+    heat_bar.value = 0.64;
+    {
+    HeatBar heat_bar;
+    heat_bar.value = 0.28;
+    // Coloured along the theme's heat ramp, like btop's temperatures.
+  draw_heat_bar(s, heat_bar);
+  }
+  draw_heat_bar(s.sub(Rect{0, 1, s.rect().width, 1}), heat_bar);
+  }
+  draw_heat_bar(s.sub(Rect{0, 2, s.rect().width, 1}), heat_bar);
+  }
+}
+// @end
+
+// @widget donut
+void widget_donut(Surface s) {
+  const auto &t = theme(s);
+  Donut d;
+  d.segments = {{4.65, t.primary, "Used"}, {10.96, t.warning, "Free"}};
+  draw_donut(s, d);
+}
+// @end
+
+// @widget list
+void widget_list(Surface s) {
+  List l;
+  l.items = {{"apps/demo"}, {"packages/hqtui"}, {"apps/web"}, {"docs"}};
+  l.selected = 0;
+  l.bullet = "▸";
+  l.scrollbar = true;
+  draw_list(s, l);
+}
+// @end
+
+// @widget tree
+void widget_tree(Surface s) {
+  Tree tree;
+  TreeNode root;
+  root.label = "systemd";
+  {
+    TreeNode tree_node;
+    tree_node.label = "bash";
+    root.children.push_back(tree_node);
+  }
+  TreeNode bun;
+  bun.label = "bun";
+  {
+    TreeNode tree_node;
+    tree_node.label = "bun:worker";
+    bun.children.push_back(tree_node);
+  }
+  root.children.push_back(bun);
+  {
+    TreeNode tree_node;
+    tree_node.label = "postgres";
+    root.children.push_back(tree_node);
+  }
+  tree.nodes.push_back(root);
+  tree.selected = 2;
+  draw_tree(s, tree);
+}
+// @end
+
+// @widget button
+void widget_button(Surface s) {
+  {
+    Button button;
+    button.label = "Danger";
+    button.variant = HQ_BUTTON_DANGER;
+    {
+    Button button;
+    button.label = "Success";
+    button.variant = HQ_BUTTON_SUCCESS;
+    {
+    Button button;
+    button.label = "Primary";
+    draw_button(s.sub(Rect{0, 0, 11, 1}), button);
+  }
+  draw_button(s.sub(Rect{12, 0, 11, 1}), button);
+  }
+  draw_button(s.sub(Rect{24, 0, 10, 1}), button);
+  }
+}
+// @end
+
+// @widget checkbox
+void widget_checkbox(Surface s) {
+  {
+    Checkbox checkbox;
+    checkbox.label = "Checkbox";
+    {
+    Checkbox checkbox;
+    checkbox.label = "Toggle";
+    checkbox.checked = true;
+    checkbox.variant = HQ_CHECKBOX_TOGGLE;
+    draw_checkbox(s.sub(Rect{0, 0, 14, 1}),
+                checkbox);
+  }
+  draw_checkbox(s.sub(Rect{16, 0, 14, 1}), checkbox);
+  }
+}
+// @end
+
+// @widget select
+void widget_select(Surface s) {
+  {
+    Select select;
+    select.value = "Dracula";
+    select.open = true;
+    select.options = {"Dark", "Dracula", "Nord", "Tokyo Night"};
+    select.selected_index = 1;
+    select.width = 20;
+    draw_select(s, select);
+  }
+}
+// @end
+
+// @widget textInput
+void widget_text_input(Surface s) {
+  {
+    TextInput text_input;
+    text_input.placeholder = "type to filter…";
+    text_input.label = "Filter";
+    {
+    TextInput text_input;
+    text_input.value = "postgres";
+    text_input.label = "Search";
+    draw_text_input(s, text_input);
+  }
+  draw_text_input(s.sub(Rect{0, 2, s.rect().width, 1}),
+                  text_input);
+  }
+}
+// @end
+
+// @widget tabs
+void widget_tabs(Surface s) {
+  {
+    Tabs tabs;
+    tabs.tabs = {"1 dashboard", "2 traffic", "3 sessions", "4 network"};
+    tabs.active = 1;
+    draw_tabs(s, tabs);
+  }
+}
+// @end
+
+// @widget statusBar
+void widget_status_bar(Surface s) {
+  {
+    StatusBar status_bar;
+    status_bar.items = {{"F1", "Help"}, {"F2", "Theme"}, {"F3", "Filter", 0, true}, {"q", "Quit"}};
+    status_bar.right = {{"", "0.41ms 184 cells"}};
+    // Usually the last thing drawn, pinned to the bottom row.
+  draw_status_bar(s, status_bar);
+  }
+}
+// @end
+
+// @widget modal
+void widget_modal(Surface s) {
+  // Overlays draw over everything already on the screen, centred.
+  Modal modal;
+  modal.title = "Confirm Action";
+  modal.message = "Terminate process 4821 (postgres)?";
+  modal.width = 46;
+  modal.height = 9;
+  ModalButton yes;
+  yes.label = "Yes";
+  yes.variant = HQ_BUTTON_SUCCESS;
+  yes.focused = true;
+  ModalButton no;
+  no.label = "No";
+  no.variant = HQ_BUTTON_GHOST;
+  modal.buttons = {yes, no};
+  draw_modal(s, modal);
+}
+// @end
+
+// @widget commandPalette
+void widget_command_palette(Surface s) {
+  CommandPalette palette;
+  palette.query = "the";
+  palette.items = {{"Toggle theme", "F2"}, {"Filter processes", "F3"}, {"Sort by memory", "F6"}};
+  draw_command_palette(s, palette);
+}
+// @end
+
+// @widget tooltip
+void widget_tooltip(Surface s) {
+  draw_text(s, "Tooltips are overlays positioned at a cell.");
+  {
+    Tooltip tooltip;
+    tooltip.text = "swap is 87% full";
+    tooltip.x = 6;
+    tooltip.y = 3;
+    draw_tooltip(s, tooltip);
+  }
+}
+// @end
+
 int main() {
   struct Example {
     const char *name;
     void (*draw)(Surface);
   };
   const Example examples[] = {
-      {"text", widget_text},   {"keyValues", widget_key_values},
-      {"table", widget_table}, {"log", widget_log},
-      {"meter", widget_meter}, {"graph", widget_graph},
+      {"text", widget_text},
+      {"label", widget_label},
+      {"heading", widget_heading},
+      {"badge", widget_badge},
+      {"divider", widget_divider},
+      {"keyValues", widget_key_values},
+      {"statusBar", widget_status_bar},
+      {"table", widget_table},
+      {"list", widget_list},
+      {"tree", widget_tree},
+      {"log", widget_log},
+      {"meter", widget_meter},
+      {"meters", widget_meters},
+      {"progress", widget_progress},
+      {"graph", widget_graph},
+      {"sparkline", widget_sparkline},
+      {"histogram", widget_histogram},
+      {"heatBar", widget_heat_bar},
       {"gauge", widget_gauge},
+      {"donut", widget_donut},
+      {"button", widget_button},
+      {"checkbox", widget_checkbox},
+      {"select", widget_select},
+      {"textInput", widget_text_input},
+      {"tabs", widget_tabs},
+      {"modal", widget_modal},
+      {"commandPalette", widget_command_palette},
+      {"tooltip", widget_tooltip},
   };
 
   const hq_theme *dark = hq_theme_named("dark");

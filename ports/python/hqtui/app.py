@@ -172,6 +172,19 @@ class App:
         self.redraw()
         return self
 
+    @property
+    def collapse_borders(self) -> bool:
+        """Whether adjacent panel borders are being merged."""
+        return self.options.collapse_borders
+
+    def set_collapse_borders(self, value: bool) -> "App":
+        """Turn collapsed borders on or off while running, so a keybinding can
+        show what the flag does. It changes the layout rather than only the
+        glyphs, so it forces a full repaint."""
+        self.options.collapse_borders = value
+        self.redraw()
+        return self
+
     def focus_next(self, delta: int = 1) -> None:
         """Move keyboard focus. Wraps around."""
         if self._focus_count == 0:

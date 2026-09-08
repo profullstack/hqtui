@@ -126,6 +126,7 @@ class State:
     sort: str = "cpu"
     filter: str = ""
     filtering: bool = False
+    collapse: bool = False
     help: bool = False
     palette: bool = False
     modal: bool = False
@@ -216,6 +217,9 @@ class State:
         elif key == "f2" or (key == "right" and self.screen == "themes"): self.theme_index = (self.theme_index + 1) % len(THEMES)
         elif key == "left" and self.screen == "themes": self.theme_index = (self.theme_index - 1) % len(THEMES)
         elif key == "f3": self.filtering = True
+        # Shows what collapse_borders does, live. Worth a key because the
+        # difference is only visible when panels sit next to each other.
+        elif key == "c": self.collapse = not self.collapse
         elif key == "f6": self.sort = ("cpu", "mem", "pid", "name")[(("cpu", "mem", "pid", "name").index(self.sort) + 1) % 4]
         elif key == "ctrl+k": self.palette = True; self.palette_query = ""; self.palette_index = 0
         elif key == "space": self.paused = not self.paused

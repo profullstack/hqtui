@@ -79,6 +79,7 @@ def main(argv=None):
                 pending=worker.submit(source.refresh,.1)
                 next_poll=now+(.1 if isinstance(source,Simulation) else args.interval)
             if app.theme.name!=THEMES[state.theme_index]: app.set_theme(THEMES[state.theme_index])
+            if app.collapse_borders!=state.collapse: app.set_collapse_borders(state.collapse)
             state.render_ms=app.stats.render*1000; state.changed_cells=app.stats.changed_cells; state.output_bytes=app.stats.bytes
             render(frame.ui,state)
         app.render(update)

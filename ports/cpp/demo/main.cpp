@@ -179,6 +179,7 @@ void render(UI &ui, State &s, bool body_only) {
             {"F1", "Help"},
             {"F2", "Theme (" + std::string(themes[s.theme_index]) + ")"},
             {"F3", s.filtering ? "Filter: " + s.filter + "_" : "Filter"},
+            {"c", "Collapse"},
             {"F6", "Sort: " + std::vector<std::string>{"cpu", "mem", "pid",
                                                        "name"}[s.sort]},
             {"^K", "Palette"},
@@ -307,6 +308,10 @@ static bool key(State &s, std::string key) {
     s.theme_index = (s.theme_index + 1) % 9;
   else if (key == "f3" || key == "/")
     s.filtering = true;
+  else if (key == "c")
+    // Shows what collapsed borders do, live. Worth a key because the
+    // difference is only visible when panels sit next to each other.
+    s.collapse = !s.collapse;
   else if (key == "f6")
     s.sort = (s.sort + 1) % 4;
   else if (key == "\x0b")
@@ -593,7 +598,7 @@ int hqtui_demo_main(int argc, char **argv) {
       auto t = hq_theme_named(themes[state.theme_index]);
       Buffer frame(w, h);
       frame.clear(t->background, t->foreground);
-      UI ui(frame.surface(t), false, 0, &state.regions);
+      UI ui(frame.surface(t), false, 0, &state.regions, state.collapse);
       render(ui, state, body_only);
       ui.flush();
       if (format == "ansi") {
@@ -645,7 +650,7 @@ int hqtui_demo_main(int argc, char **argv) {
                           .0001,
                           std::chrono::duration<double>(start - last).count());
       last = start;
-      UI ui(frame.surface(t), false, 0, &state.regions);
+      UI ui(frame.surface(t), false, 0, &state.regions, state.collapse);
       render(ui, state);
       ui.flush();
       if (!state.overlay() &&

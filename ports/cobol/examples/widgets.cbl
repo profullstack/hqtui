@@ -52,6 +52,18 @@ MAIN-PARAGRAPH.
     PERFORM METER-WIDGET
     PERFORM GRAPH-WIDGET
     PERFORM GAUGE-WIDGET
+    PERFORM BADGE-WIDGET
+    PERFORM PROGRESS-WIDGET
+    PERFORM SPARKLINE-WIDGET
+    PERFORM HEATBAR-WIDGET
+    PERFORM DONUT-WIDGET
+    PERFORM LIST-WIDGET
+    PERFORM TREE-WIDGET
+    PERFORM BUTTON-WIDGET
+    PERFORM CHECKBOX-WIDGET
+    PERFORM INPUT-WIDGET
+    PERFORM TABS-WIDGET
+    PERFORM STATUSBAR-WIDGET
     STOP RUN.
 
 *> Emits the current record and clears it, so a paragraph only sets the
@@ -252,5 +264,196 @@ GAUGE-WIDGET.
     MOVE "GAUGE" TO SR-VERB
     MOVE "62%" TO SR-TEXT
     MOVE "0.62" TO SR-NUM
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget badge
+BADGE-WIDGET.
+    MOVE "badge" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "BADGE" TO SR-VERB
+    MOVE "active" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget progress
+PROGRESS-WIDGET.
+    MOVE "progress" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> SR-TEXT carries the maximum, which also asks for a count readout.
+    MOVE "PROGRESS" TO SR-VERB
+    MOVE "Indexing" TO SR-KEY
+    MOVE "120" TO SR-TEXT
+    MOVE "37" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "PROGRESS" TO SR-VERB
+    MOVE "Upload" TO SR-KEY
+    MOVE "0.82" TO SR-NUM
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget sparkline
+SPARKLINE-WIDGET.
+    MOVE "sparkline" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> One sample per record, straight out of a table, exactly as a nightly
+    *> batch job already produces them.
+    PERFORM VARYING I FROM 1 BY 1 UNTIL I > 20
+        MOVE "SPARKPT" TO SR-VERB
+        MOVE CPU-POINT(I) TO SR-NUM
+        PERFORM EMIT-RECORD
+    END-PERFORM.
+*> @end
+
+*> @widget heatBar
+HEATBAR-WIDGET.
+    MOVE "heatBar" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "HEATBAR" TO SR-VERB
+    MOVE "0.28" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "HEATBAR" TO SR-VERB
+    MOVE "0.64" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "HEATBAR" TO SR-VERB
+    MOVE "0.91" TO SR-NUM
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget donut
+DONUT-WIDGET.
+    MOVE "donut" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "SEGMENT" TO SR-VERB
+    MOVE "Used" TO SR-TEXT
+    MOVE "4.65" TO SR-NUM
+    PERFORM EMIT-RECORD
+
+    MOVE "SEGMENT" TO SR-VERB
+    MOVE "Free" TO SR-TEXT
+    MOVE "10.96" TO SR-NUM
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget list
+LIST-WIDGET.
+    MOVE "list" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "ITEM" TO SR-VERB
+    MOVE "apps/demo" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "ITEM" TO SR-VERB
+    MOVE "packages/hqtui" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "ITEM" TO SR-VERB
+    MOVE "apps/web" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "ITEM" TO SR-VERB
+    MOVE "docs" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget tree
+TREE-WIDGET.
+    MOVE "tree" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> CHILD attaches to the NODE most recently declared, so a flat record
+    *> stream can still describe a hierarchy.
+    MOVE "NODE" TO SR-VERB
+    MOVE "systemd" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "CHILD" TO SR-VERB
+    MOVE "bash" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "CHILD" TO SR-VERB
+    MOVE "postgres" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget button
+BUTTON-WIDGET.
+    MOVE "button" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "BUTTON" TO SR-VERB
+    MOVE "Primary" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget checkbox
+CHECKBOX-WIDGET.
+    MOVE "checkbox" TO SR-KEY
+    PERFORM START-WIDGET
+
+    *> SR-KEY is ON or OFF: a record layout has no booleans.
+    MOVE "CHECKBOX" TO SR-VERB
+    MOVE "ON" TO SR-KEY
+    MOVE "Toggle" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "CHECKBOX" TO SR-VERB
+    MOVE "OFF" TO SR-KEY
+    MOVE "Checkbox" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget textInput
+INPUT-WIDGET.
+    MOVE "textInput" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "INPUT" TO SR-VERB
+    MOVE "Search" TO SR-KEY
+    MOVE "postgres" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget tabs
+TABS-WIDGET.
+    MOVE "tabs" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "TAB" TO SR-VERB
+    MOVE "1 dashboard" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "TAB" TO SR-VERB
+    MOVE "ACTIVE" TO SR-KEY
+    MOVE "2 traffic" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "TAB" TO SR-VERB
+    MOVE "3 sessions" TO SR-TEXT
+    PERFORM EMIT-RECORD.
+*> @end
+
+*> @widget statusBar
+STATUSBAR-WIDGET.
+    MOVE "statusBar" TO SR-KEY
+    PERFORM START-WIDGET
+
+    MOVE "STATUS" TO SR-VERB
+    MOVE "F1" TO SR-KEY
+    MOVE "Help" TO SR-TEXT
+    PERFORM EMIT-RECORD
+
+    MOVE "STATUS" TO SR-VERB
+    MOVE "q" TO SR-KEY
+    MOVE "Quit" TO SR-TEXT
     PERFORM EMIT-RECORD.
 *> @end

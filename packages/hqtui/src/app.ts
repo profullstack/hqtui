@@ -155,6 +155,22 @@ export class App {
     return this;
   }
 
+  /** Whether adjacent panel borders are being merged. */
+  get collapseBorders(): boolean {
+    return this.options.collapseBorders ?? false;
+  }
+
+  /**
+   * Turn collapsed borders on or off while running, so a keybinding can show
+   * what the flag does. It changes the layout, not just the glyphs, so this
+   * forces a full repaint rather than a diff against the old geometry.
+   */
+  setCollapseBorders(value: boolean): this {
+    this.options = { ...this.options, collapseBorders: value };
+    this.redraw();
+    return this;
+  }
+
   on<K extends keyof EventMap>(event: K, listener: (value: EventMap[K]) => void): () => void {
     let set = this.listeners.get(event);
     if (!set) {

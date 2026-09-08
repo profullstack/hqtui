@@ -108,6 +108,9 @@ func run(args []string) int {
 		if app.Theme.Name != themes[s.theme] {
 			app.SetTheme(themes[s.theme])
 		}
+		if app.CollapseBorders() != s.collapse {
+			app.SetCollapseBorders(s.collapse)
+		}
 	})
 	app.OnMouse(func(e ui.InputEvent) {
 		s.lastMouse = fmt.Sprintf("%s %d,%d wheel=%d", e.Action.String(), e.X, e.Y, e.Scroll)

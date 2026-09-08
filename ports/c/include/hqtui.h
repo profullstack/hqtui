@@ -74,6 +74,13 @@ typedef struct {
 int hq_solve(int total, const hq_constraint *items, size_t count, int gap, int *out);
 int hq_stack(hq_rect rect, const hq_constraint *items, size_t count,
              int horizontal, int gap, hq_rect *out);
+/* As above, with a gap per seam (count-1 of them) which may be negative.
+ * A negative seam is how collapsed borders work: two panels overlap by the
+ * column their borders share. `gaps` may be NULL when count < 2. */
+int hq_solve_gaps(int total, const hq_constraint *items, size_t count,
+                  const int *gaps, int *out);
+int hq_stack_gaps(hq_rect rect, const hq_constraint *items, size_t count,
+                  int horizontal, const int *gaps, hq_rect *out);
 
 /* colors: 0 (no color), 16, 256 or 16777216 (truecolor).
  * encode reuses output capacity; allocation failure invalidates terminal state.

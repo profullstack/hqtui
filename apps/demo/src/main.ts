@@ -210,6 +210,11 @@ async function main(): Promise<void> {
         app.setTheme(themeList[state.themeIndex]);
         return;
       case "f3": state.filtering = true; return;
+      case "c":
+        // Shows what collapseBorders does, live. Worth a key because the
+        // difference is only visible when panels sit next to each other.
+        app.setCollapseBorders(!app.collapseBorders);
+        return;
       case "f6": {
         const order = ["cpu", "mem", "pid", "name"] as const;
         state.sort = order[(order.indexOf(state.sort) + 1) % order.length];
@@ -289,6 +294,7 @@ async function main(): Promise<void> {
         { key: "F1", label: "Help" },
         { key: "F2", label: `Theme (${theme.name})` },
         { key: "F3", label: state.filtering ? `Filter: ${state.filter}_` : "Filter", active: state.filtering },
+        { key: "c", label: "Collapse", active: app.collapseBorders },
         { key: "F6", label: `Sort: ${state.sort}` },
         { key: "^K", label: "Palette" },
         { key: "Tab", label: "Screen" },
@@ -305,6 +311,7 @@ async function main(): Promise<void> {
         message:
           "1-6 or Tab switch screens.\n" +
           "F2 cycles themes, F3 filters processes, F6 changes sort.\n" +
+          "c collapses adjacent panel borders into shared lines.\n" +
           "Ctrl+K opens the command palette, Space pauses updates.\n" +
           "Arrows, PageUp/PageDown, Home/End move the selection.\n" +
           "Mouse: click tabs and buttons, scroll the process list.\n\n" +

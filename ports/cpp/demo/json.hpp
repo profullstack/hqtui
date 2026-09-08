@@ -44,6 +44,15 @@ struct Json {
       return *p ? "true" : "false";
     return fallback;
   }
+  /// A JSON true, or a number the caller wrote instead. Anything else is the
+  /// fallback, so a missing key and an explicit false read the same.
+  bool b(bool fallback = false) const {
+    if (auto p = std::get_if<bool>(&value))
+      return *p;
+    if (auto p = std::get_if<double>(&value))
+      return *p != 0;
+    return fallback;
+  }
   const Array &array() const {
     static const Array empty;
     auto p = std::get_if<Array>(&value);

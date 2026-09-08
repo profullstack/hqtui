@@ -17,6 +17,7 @@ static void cpu_panel(UI &ui, State &s, int columns) {
           m.label = "P" + std::to_string(i++);
           m.label_width = 4;
           m.value_width = 5;
+          m.segmented = true;
           items.push_back(m);
         }
         p.meters(items, columns);
@@ -237,6 +238,7 @@ static void disk_usage_panel(UI &ui, State &s) {
           double used = d["used"].n() / std::max(1., d["total"].n());
           Meter m;
           m.value = used;
+          m.segmented = true;
           m.readout = percent(used) + " " + bytes(d["used"].n(), 0) + " / " +
                       bytes(d["total"].n(), 0);
           p.meter(m);

@@ -99,6 +99,97 @@ def gauge(ui)
 end
 # @end
 
+# @widget badge
+def badge(ui)
+  ui.badge('active')
+end
+# @end
+
+# @widget progress
+def progress(ui)
+  ui.progress(37, max: 120, label: 'Indexing', count: true)
+  ui.progress(0.82, label: 'Upload')
+end
+# @end
+
+# @widget sparkline
+def sparkline(ui)
+  ui.sparkline(CPU_HISTORY, label: 'CPU ', text: '44%')
+end
+# @end
+
+# @widget heatBar
+def heat_bar(ui)
+  ui.heatbar(0.28)
+  ui.heatbar(0.64)
+  ui.heatbar(0.91)
+end
+# @end
+
+# @widget histogram
+def histogram(ui)
+  # Block columns. Cheaper than Braille and easier to read when short.
+  ui.columns(CPU_HISTORY)
+end
+# @end
+
+# @widget donut
+def donut(ui)
+  ui.donut([{ value: 4.65, label: 'Used' }, { value: 10.96, label: 'Free' }])
+end
+# @end
+
+# @widget list
+def list(ui)
+  ui.list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], selected: 0, bullet: '▸')
+end
+# @end
+
+# @widget tree
+def tree(ui)
+  ui.tree([{ label: 'systemd', children: [{ label: 'bash' }, { label: 'postgres' }] }], selected: 1)
+end
+# @end
+
+# @widget button
+def button(ui)
+  # variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.
+  ui.button('Primary')
+end
+# @end
+
+# @widget checkbox
+def checkbox(ui)
+  ui.checkbox('Toggle', checked: true, variant: 1)
+  ui.checkbox('Checkbox', checked: false)
+end
+# @end
+
+# @widget select
+def select(ui)
+  ui.select('Dracula', open: true, options: %w[Dark Dracula Nord], selected: 1)
+end
+# @end
+
+# @widget textInput
+def text_input(ui)
+  ui.input('postgres', label: 'Search')
+end
+# @end
+
+# @widget tabs
+def tabs(ui)
+  ui.tabs(['1 dashboard', '2 traffic', '3 sessions'], active: 1)
+end
+# @end
+
+# @widget statusBar
+def status_bar(ui)
+  ui.statusbar([{ key: 'F1', label: 'Help' }, { key: 'q', label: 'Quit' }],
+               right: [{ label: '0.41ms' }])
+end
+# @end
+
 EXAMPLES = {
   'text' => method(:text),
   'divider' => method(:divider),
@@ -107,7 +198,21 @@ EXAMPLES = {
   'log' => method(:log),
   'meter' => method(:meter),
   'graph' => method(:graph),
-  'gauge' => method(:gauge)
+  'gauge' => method(:gauge),
+  'badge' => method(:badge),
+  'progress' => method(:progress),
+  'sparkline' => method(:sparkline),
+  'heatBar' => method(:heat_bar),
+  'histogram' => method(:histogram),
+  'donut' => method(:donut),
+  'list' => method(:list),
+  'tree' => method(:tree),
+  'button' => method(:button),
+  'checkbox' => method(:checkbox),
+  'select' => method(:select),
+  'textInput' => method(:text_input),
+  'tabs' => method(:tabs),
+  'statusBar' => method(:status_bar)
 }.freeze
 
 # Renders each widget on its own small screen and prints the lot.

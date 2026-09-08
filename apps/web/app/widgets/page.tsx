@@ -41,8 +41,11 @@ export default async function Widgets() {
           <table className="w-full min-w-[640px] border-collapse text-left text-sm">
             <caption className="border-b border-white/10 px-4 py-3 text-left text-[13px] text-white/50">
               {WIDGETS.length} widgets across {LANGUAGES.length} languages, {total} worked
-              examples. C++, Ruby, PHP and Perl reach the library through a narrower native core,
-              so they cover the widgets that core draws rather than all of them.
+              examples. Seven languages implement the library and draw everything. Ruby, PHP and
+              Perl describe a scene as data and hand it to the shared native core, so they cover
+              what a JSON node can express; COBOL writes fixed-width records, so it covers what a
+              flat record can. The counts below are measured from the galleries, not asserted
+              here.
             </caption>
             <thead>
               <tr className="text-[12px] uppercase tracking-wider text-white/40">
