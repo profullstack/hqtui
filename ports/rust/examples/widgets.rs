@@ -452,6 +452,21 @@ pub fn chart(ui: &mut Container) {
 }
 // @end
 
+// @widget calendar
+pub fn calendar(ui: &mut Container) {
+    // The dates are arithmetic, not a host calendar: every port has a different
+    // date type and none of them is consulted.
+    ui.calendar(CalendarOptions {
+        selected: Some(8),
+        marks: vec![
+            CalendarMark { day: 15, ..Default::default() },
+            CalendarMark { day: 22, bold: true, ..Default::default() },
+        ],
+        ..CalendarOptions::new(2026, 9)
+    });
+}
+// @end
+
 /// Renders each widget on its own small screen and prints the lot.
 fn main() {
     let examples: Vec<(&str, fn(&mut Container))> = vec![
@@ -468,6 +483,7 @@ fn main() {
         ("log", log),
         ("scrollbar", scrollbar),
         ("chart", chart),
+        ("calendar", calendar),
         ("meter", meter),
         ("meters", meters),
         ("progress", progress),

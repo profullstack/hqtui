@@ -224,6 +224,19 @@ func Chart(ui *hqtui.Container) {
 
 // @end
 
+// @widget calendar
+func Calendar(ui *hqtui.Container) {
+	// The dates are arithmetic, not a host calendar: every port has a different
+	// date type and none of them is consulted.
+	eighth := 8
+	ui.Calendar(hqtui.CalendarOptions{
+		Year: 2026, Month: 9, Selected: &eighth,
+		Marks: []hqtui.CalendarMark{{Day: 15}, {Day: 22, Bold: true}},
+	})
+}
+
+// @end
+
 // @widget meter
 func Meter(ui *hqtui.Container) {
 	ui.Meter(hqtui.MeterOptions{Value: 0.62, Label: "CPU"})
@@ -426,7 +439,7 @@ func main() {
 		{"text", Text}, {"label", Label}, {"heading", Heading}, {"badge", Badge},
 		{"divider", Divider}, {"keyValues", KeyValues}, {"statusBar", StatusBar},
 		{"table", Table}, {"list", List}, {"tree", Tree}, {"log", Log},
-		{"scrollbar", Scrollbar}, {"chart", Chart},
+		{"scrollbar", Scrollbar}, {"chart", Chart}, {"calendar", Calendar},
 		{"meter", Meter}, {"meters", Meters}, {"progress", Progress}, {"graph", Graph},
 		{"sparkline", Sparkline}, {"histogram", Histogram}, {"heatBar", HeatBar},
 		{"gauge", Gauge}, {"donut", Donut},

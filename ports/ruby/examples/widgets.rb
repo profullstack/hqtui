@@ -101,6 +101,14 @@ def chart(ui)
 end
 # @end
 
+# @widget calendar
+def calendar(ui)
+  # The dates are arithmetic, not a host calendar: every port has a different
+  # date type and none of them is consulted.
+  ui.calendar(2026, 9, selected: 8, marks: [{ day: 15 }, { day: 22, bold: true }])
+end
+# @end
+
 # @widget meter
 def meter(ui)
   ui.meter(0.62, label: 'CPU')
@@ -290,6 +298,7 @@ EXAMPLES = {
   'log' => method(:log),
   'scrollbar' => method(:scrollbar),
   'chart' => method(:chart),
+  'calendar' => method(:calendar),
   'meter' => method(:meter),
   'graph' => method(:graph),
   'gauge' => method(:gauge),

@@ -503,6 +503,19 @@ class Container:
             lambda s: w.draw_fill(s, chosen),
         )
 
+    def calendar(self, options: w.CalendarOptions, layout: Layout | None = None):
+        """A month as a grid, with per-day styling.
+
+        Sized to the month it shows: a month spans four, five or six week rows
+        depending on where its first day falls, and reserving five leaves some
+        months a row short and others a blank row long.
+        """
+        height = w.calendar_height(options)
+        return self._add(
+            self._constraint(layout or Layout(), height, height),
+            lambda s: w.draw_calendar(s, options),
+        )
+
     def sparkline(self, options: w.SparklineWidgetOptions, layout: Layout | None = None):
         return self._add(self._leaf(layout or Layout(), 1), lambda s: w.draw_sparkline(s, options))
 

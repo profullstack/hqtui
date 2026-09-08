@@ -471,6 +471,18 @@ export class Container {
     return this.add((s) => W.drawFill(s, options), this.sizeOf(options, "fill"));
   }
 
+  /**
+   * A month as a grid, with per-day styling.
+   *
+   * Sized to the month it shows: a month spans four, five or six week rows
+   * depending on where its first day falls, and reserving five leaves some
+   * months a row short and others a blank row long.
+   */
+  calendar(options: W.CalendarOptions & ContainerOptions): this {
+    const height = W.calendarHeight(options);
+    return this.add((s) => W.drawCalendar(s, options), this.sizeOf(options, height, height));
+  }
+
   /** A filled area graph — `graph` with `fill` on. */
   areaGraph(options: W.GraphOptions & ContainerOptions): this {
     return this.graph({ fill: true, ...options });

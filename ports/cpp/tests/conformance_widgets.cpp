@@ -131,6 +131,34 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_fill(s, f);
     return true;
   }
+  if (name == "calendar") {
+    draw_calendar(s, Calendar{2026, 9});
+    return true;
+  }
+  if (name == "calendar-sunday") {
+    Calendar c{2026, 9};
+    c.week_start = 0;
+    draw_calendar(s, c);
+    return true;
+  }
+  if (name == "calendar-leap") {
+    draw_calendar(s, Calendar{2024, 2});
+    return true;
+  }
+  if (name == "calendar-bare") {
+    Calendar c{2026, 9};
+    c.header = false;
+    c.weekdays = false;
+    draw_calendar(s, c);
+    return true;
+  }
+  if (name == "calendar-marked") {
+    Calendar c{2026, 9};
+    c.selected = 8;
+    c.marks = {CalendarMark{15}, CalendarMark{22, 0, 0, true}};
+    draw_calendar(s, c);
+    return true;
+  }
   if (name == "badge") {
     {
       Badge badge;

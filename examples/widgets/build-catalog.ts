@@ -99,6 +99,8 @@ export const WIDGETS: WidgetSpec[] = [
     blurb: "A bar over state you own, on any of the four edges, for anything that scrolls." },
   { id: "chart", title: "Chart", category: "Meters", width: 48, height: 9,
     blurb: "Arbitrary (x, y) data with a domain on both axes. Lines, scatters and bars." },
+  { id: "calendar", title: "Calendar", category: "Data", width: 20, height: 8,
+    blurb: "A month as a grid, with per-day styling. The dates are arithmetic, not a host calendar." },
 
   { id: "meter", title: "Meter", category: "Meters", width: 48, height: 3,
     blurb: "A labelled bar. Smooth or segmented, heat-colored by default." },

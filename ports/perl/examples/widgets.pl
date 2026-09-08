@@ -110,6 +110,18 @@ sub widget_chart {
 }
 # @end
 
+# @widget calendar
+sub widget_calendar {
+    my ($ui) = @_;
+    # The dates are arithmetic, not a host calendar: every port has a different
+    # date type and none of them is consulted.
+    $ui->calendar(2026, 9,
+        selected => 8,
+        marks    => [ { day => 15 }, { day => 22, bold => 1 } ],
+    );
+}
+# @end
+
 # @widget meter
 sub widget_meter {
     my ($ui) = @_;
@@ -322,6 +334,7 @@ my @examples = (
     ['log',       \&widget_log],
     ['scrollbar', \&widget_scrollbar],
     ['chart',     \&widget_chart],
+    ['calendar',  \&widget_calendar],
     ['meter',     \&widget_meter],
     ['graph',     \&widget_graph],
     ['gauge',     \&widget_gauge],

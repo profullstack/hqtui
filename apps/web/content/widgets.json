@@ -785,6 +785,61 @@
       }
     },
     {
+      "id": "calendar",
+      "title": "Calendar",
+      "category": "Data",
+      "width": 20,
+      "height": 8,
+      "blurb": "A month as a grid, with per-day styling. The dates are arithmetic, not a host calendar.",
+      "preview": "<pre class=\"hqtui-preview\" style=\"background:#05070a;color:#c6d0db;padding:14px;font-size:13px;line-height:15.34px;font-family:ui-monospace,SFMono-Regular,Menlo,&#39;DejaVu Sans Mono&#39;,&#39;Liberation Mono&#39;,Consolas,&#39;Segoe UI Symbol&#39;,monospace;margin:0;overflow-x:auto;border-radius:8px;white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased\"><span style=\"color:#7ee2ff;background:#05070a;font-weight:700\">   September 2026   </span>\n<span style=\"color:#5a6b7d;background:#05070a\">Mo</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a\">Tu</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a\">We</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a\">Th</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a\">Fr</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a\">Sa</span><span style=\"color:#c6d0db;background:#05070a\"> </span><span style=\"color:#5a6b7d;background:#05070a\">Su</span>\n<span style=\"color:#c6d0db;background:#05070a\">    1  2  3  4  5  6</span>\n<span style=\"color:#c6d0db;background:#05070a\"> 7 </span><span style=\"color:#05070a;background:#56d4dd;font-weight:700\"> 8</span><span style=\"color:#c6d0db;background:#05070a\">  9 10 11 12 13</span>\n<span style=\"color:#c6d0db;background:#05070a\">14 </span><span style=\"color:#ffd75f;background:#05070a\">15</span><span style=\"color:#c6d0db;background:#05070a\"> 16 17 18 19 20</span>\n<span style=\"color:#c6d0db;background:#05070a\">21 </span><span style=\"color:#5fff87;background:#05070a;font-weight:700\">22</span><span style=\"color:#c6d0db;background:#05070a\"> 23 24 25 26 27</span>\n<span style=\"color:#c6d0db;background:#05070a\">28 29 30            </span>\n<span style=\"color:#c6d0db;background:#05070a\">                    </span></pre>",
+      "examples": {
+        "typescript": {
+          "code": "export function calendar(ui: Container, theme: Theme): void {\n  // The dates are arithmetic, not a host calendar: every port has a different\n  // Date and none of them is consulted.\n  ui.calendar({\n    year: 2026,\n    month: 9,\n    selected: 8,\n    marks: [{ day: 15, color: theme.warning }, { day: 22, color: theme.success, bold: true }],\n  });\n}",
+          "syntax": "ts"
+        },
+        "javascript": {
+          "code": "export function calendar(ui, theme) {\n  // The dates are arithmetic, not a host calendar: every port has a different\n  // Date and none of them is consulted.\n  ui.calendar({\n    year: 2026,\n    month: 9,\n    selected: 8,\n    marks: [{ day: 15, color: theme.warning }, { day: 22, color: theme.success, bold: true }],\n  });\n}",
+          "syntax": "js"
+        },
+        "rust": {
+          "code": "pub fn calendar(ui: &mut Container) {\n    // The dates are arithmetic, not a host calendar: every port has a different\n    // date type and none of them is consulted.\n    ui.calendar(CalendarOptions {\n        selected: Some(8),\n        marks: vec![\n            CalendarMark { day: 15, ..Default::default() },\n            CalendarMark { day: 22, bold: true, ..Default::default() },\n        ],\n        ..CalendarOptions::new(2026, 9)\n    });\n}",
+          "syntax": "rust"
+        },
+        "go": {
+          "code": "func Calendar(ui *hqtui.Container) {\n\t// The dates are arithmetic, not a host calendar: every port has a different\n\t// date type and none of them is consulted.\n\teighth := 8\n\tui.Calendar(hqtui.CalendarOptions{\n\t\tYear: 2026, Month: 9, Selected: &eighth,\n\t\tMarks: []hqtui.CalendarMark{{Day: 15}, {Day: 22, Bold: true}},\n\t})\n}",
+          "syntax": "go"
+        },
+        "python": {
+          "code": "def calendar(ui: Container) -> None:\n    # The dates are arithmetic, not a host calendar: every port has a different\n    # date type and none of them is consulted.\n    ui.calendar(w.CalendarOptions(\n        year=2026, month=9, selected=8,\n        marks=[w.CalendarMark(day=15), w.CalendarMark(day=22, bold=True)],\n    ))",
+          "syntax": "python"
+        },
+        "zig": {
+          "code": "fn calendar(ui: *Container) anyerror!void {\n    // The dates are arithmetic, not a host calendar: every port has a different\n    // date type and none of them is consulted.\n    try ui.calendar(.{\n        .year = 2026,\n        .month = 9,\n        .selected = 8,\n        .marks = &.{ .{ .day = 15 }, .{ .day = 22, .bold = true } },\n    });\n}",
+          "syntax": "zig"
+        },
+        "cpp": {
+          "code": "void widget_calendar(Surface s) {\n  // The dates are arithmetic, not a host calendar: every port has a different\n  // date type and none of them is consulted.\n  Calendar c{2026, 9};\n  c.selected = 8;\n  c.marks = {CalendarMark{15}, CalendarMark{22, 0, 0, true}};\n  draw_calendar(s, c);\n}",
+          "syntax": "cpp"
+        },
+        "ruby": {
+          "code": "def calendar(ui)\n  # The dates are arithmetic, not a host calendar: every port has a different\n  # date type and none of them is consulted.\n  ui.calendar(2026, 9, selected: 8, marks: [{ day: 15 }, { day: 22, bold: true }])\nend",
+          "syntax": "ruby"
+        },
+        "php": {
+          "code": "function widget_calendar(UI $ui): void\n{\n    // The dates are arithmetic, not a host calendar: every port has a different\n    // date type and none of them is consulted.\n    $ui->calendar(2026, 9, [\n        'selected' => 8,\n        'marks' => [['day' => 15], ['day' => 22, 'bold' => true]],\n    ]);\n}",
+          "syntax": "php"
+        },
+        "perl": {
+          "code": "sub widget_calendar {\n    my ($ui) = @_;\n    # The dates are arithmetic, not a host calendar: every port has a different\n    # date type and none of them is consulted.\n    $ui->calendar(2026, 9,\n        selected => 8,\n        marks    => [ { day => 15 }, { day => 22, bold => 1 } ],\n    );\n}",
+          "syntax": "perl"
+        },
+        "cobol": {
+          "code": "CALENDAR-WIDGET.\n    MOVE \"calendar\" TO SR-KEY\n    PERFORM START-WIDGET\n\n    *> CALDAY carries one day; its key says whether that day is the selected\n    *> one, a bold mark, or a plain one. They accumulate until CALENDAR draws.\n    MOVE \"CALDAY\" TO SR-VERB\n    MOVE \"SELECTED\" TO SR-KEY\n    MOVE \"8\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"CALDAY\" TO SR-VERB\n    MOVE \"MARK\" TO SR-KEY\n    MOVE \"15\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    MOVE \"CALDAY\" TO SR-VERB\n    MOVE \"BOLD\" TO SR-KEY\n    MOVE \"22\" TO SR-NUM\n    PERFORM EMIT-RECORD\n\n    *> The text carries the month as \"year|month\".\n    MOVE \"CALENDAR\" TO SR-VERB\n    MOVE \"MONDAY\" TO SR-KEY\n    MOVE \"2026|9\" TO SR-TEXT\n    PERFORM EMIT-RECORD.",
+          "syntax": "cobol"
+        }
+      }
+    },
+    {
       "id": "meter",
       "title": "Meter",
       "category": "Meters",

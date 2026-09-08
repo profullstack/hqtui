@@ -122,6 +122,17 @@ void widget_chart(Surface s) {
 }
 // @end
 
+// @widget calendar
+void widget_calendar(Surface s) {
+  // The dates are arithmetic, not a host calendar: every port has a different
+  // date type and none of them is consulted.
+  Calendar c{2026, 9};
+  c.selected = 8;
+  c.marks = {CalendarMark{15}, CalendarMark{22, 0, 0, true}};
+  draw_calendar(s, c);
+}
+// @end
+
 // @widget meter
 void widget_meter(Surface s) {
   const int width = s.rect().width;
@@ -532,6 +543,7 @@ int main() {
       {"log", widget_log},
       {"scrollbar", widget_scrollbar},
       {"chart", widget_chart},
+      {"calendar", widget_calendar},
       {"meter", widget_meter},
       {"meters", widget_meters},
       {"progress", widget_progress},

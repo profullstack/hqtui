@@ -78,6 +78,21 @@ def draw_scene(case, name: str, s: Surface) -> None:
         w.draw_fill(s, w.FillOptions(symbol="\u00b7"))
     elif name == "fill-wide":
         w.draw_fill(s, w.FillOptions(symbol="\u65e5"))
+    elif name == "calendar":
+        w.draw_calendar(s, w.CalendarOptions(year=2026, month=9))
+    elif name == "calendar-sunday":
+        w.draw_calendar(s, w.CalendarOptions(year=2026, month=9, week_start=0))
+    elif name == "calendar-leap":
+        w.draw_calendar(s, w.CalendarOptions(year=2024, month=2))
+    elif name == "calendar-bare":
+        w.draw_calendar(
+            s, w.CalendarOptions(year=2026, month=9, header=False, weekdays=False)
+        )
+    elif name == "calendar-marked":
+        w.draw_calendar(s, w.CalendarOptions(
+            year=2026, month=9, selected=8,
+            marks=[w.CalendarMark(day=15), w.CalendarMark(day=22, bold=True)],
+        ))
     elif name == "badge":
         w.draw_badge(s, w.BadgeOptions(text="LIVE"))
     elif name == "badge-outline":

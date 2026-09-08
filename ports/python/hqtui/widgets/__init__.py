@@ -65,6 +65,16 @@ from .table import (
     draw_tree,
     resolve_offset,
 )
+from .calendar import (
+    CALENDAR_WIDTH,
+    CalendarMark,
+    CalendarOptions,
+    calendar_height,
+    day_of_week,
+    days_in_month,
+    draw_calendar,
+    is_leap_year,
+)
 from .chart import ChartOptions, draw_chart
 from .surface import ClearOptions, FillOptions, draw_clear, draw_fill
 from .scrollbar import (
@@ -107,6 +117,8 @@ __all__ = [
     "draw_columns", "draw_command_palette", "draw_divider", "draw_donut",
     "draw_gauge", "draw_graph", "draw_heat_bar", "draw_key_values", "draw_list",
     "draw_log", "draw_meter", "draw_meters", "draw_modal", "draw_progress",
+    "CalendarMark", "CalendarOptions", "calendar_height", "day_of_week", "days_in_month",
+    "draw_calendar", "is_leap_year", "CALENDAR_WIDTH",
     "ChartOptions", "draw_chart", "ClearOptions", "FillOptions", "draw_clear", "draw_fill",
     "ScrollbarOptions", "ScrollbarOrientation", "is_vertical", "offset_for_position",
     "thumb", "draw_scrollbar", "draw_scrollbar_widget", "draw_select", "draw_sparkline", "draw_status_bar",

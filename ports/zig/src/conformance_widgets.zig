@@ -68,6 +68,21 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
         w.drawFill(s, .{ .symbol = "\u{b7}" });
     } else if (eq(u8, name, "fill-wide")) {
         w.drawFill(s, .{ .symbol = "\u{65e5}" });
+    } else if (eq(u8, name, "calendar")) {
+        w.drawCalendar(s, .{ .year = 2026, .month = 9 });
+    } else if (eq(u8, name, "calendar-sunday")) {
+        w.drawCalendar(s, .{ .year = 2026, .month = 9, .week_start = 0 });
+    } else if (eq(u8, name, "calendar-leap")) {
+        w.drawCalendar(s, .{ .year = 2024, .month = 2 });
+    } else if (eq(u8, name, "calendar-bare")) {
+        w.drawCalendar(s, .{ .year = 2026, .month = 9, .header = false, .weekdays = false });
+    } else if (eq(u8, name, "calendar-marked")) {
+        w.drawCalendar(s, .{
+            .year = 2026,
+            .month = 9,
+            .selected = 8,
+            .marks = &.{ .{ .day = 15 }, .{ .day = 22, .bold = true } },
+        });
     } else if (eq(u8, name, "badge")) {
         _ = w.drawBadge(s, .{ .text = "LIVE" });
     } else if (eq(u8, name, "badge-outline")) {

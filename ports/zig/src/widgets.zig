@@ -4,6 +4,7 @@
 
 pub const controls = @import("widgets/controls.zig");
 pub const meters = @import("widgets/meters.zig");
+pub const calendar = @import("widgets/calendar.zig");
 pub const chart = @import("widgets/chart.zig");
 pub const surface_widgets = @import("widgets/surface.zig");
 pub const scrollbar = @import("widgets/scrollbar.zig");
@@ -61,6 +62,10 @@ pub const TreeOptions = table.TreeOptions;
 pub const TreeValue = table.TreeValue;
 pub const drawList = table.drawList;
 pub const drawLog = table.drawLog;
+pub const CalendarMark = calendar.CalendarMark;
+pub const CalendarOptions = calendar.CalendarOptions;
+pub const calendarHeight = calendar.calendarHeight;
+pub const drawCalendar = calendar.drawCalendar;
 pub const ChartOptions = chart.ChartOptions;
 pub const ClearOptions = surface_widgets.ClearOptions;
 pub const FillOptions = surface_widgets.FillOptions;

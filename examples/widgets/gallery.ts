@@ -207,6 +207,19 @@ export function chart(ui: Container, theme: Theme): void {
 }
 // @end
 
+// @widget calendar
+export function calendar(ui: Container, theme: Theme): void {
+  // The dates are arithmetic, not a host calendar: every port has a different
+  // Date and none of them is consulted.
+  ui.calendar({
+    year: 2026,
+    month: 9,
+    selected: 8,
+    marks: [{ day: 15, color: theme.warning }, { day: 22, color: theme.success, bold: true }],
+  });
+}
+// @end
+
 // ----------------------------------------------------------------- meters
 
 // @widget meter
