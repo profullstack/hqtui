@@ -84,18 +84,80 @@ int hq_stack(hq_rect r,const hq_constraint *items,size_t n,int horizontal,int ga
 }
 
 int hq_stack_gaps(hq_rect r,const hq_constraint *items,size_t n,int horizontal,const int *gaps,hq_rect *out) {
+    return hq_stack_justified(r,items,n,horizontal,gaps,HQ_JUSTIFY_START,out);
+}
+
+/* How much slack sits before item i, as an exact fraction. Every mode is a
+ * different answer to that one question, which is why they share the rounding
+ * below rather than each growing their own off-by-one. */
+static double hq_before(size_t i,double slack,size_t n,hq_justify j) {
+    double fi=(double)i, fn=(double)n;
+    switch(j) {
+        case HQ_JUSTIFY_END: return slack;
+        /* Floor, so an odd cell falls after the content rather than before. */
+        case HQ_JUSTIFY_CENTER: return floor(slack/2.0);
+        case HQ_JUSTIFY_SPACE_BETWEEN: return n>1 ? fi*slack/(fn-1.0):0.0;
+        case HQ_JUSTIFY_SPACE_EVENLY: return (fi+1.0)*slack/(fn+1.0);
+        case HQ_JUSTIFY_SPACE_AROUND: return (fi+0.5)*slack/fn;
+        default: return 0.0;
+    }
+}
+
+/* Cells are whole, and rounding each gap on its own loses one here and gains
+ * one there. Rounding the cumulative offset and taking differences means the
+ * parts always add up to exactly the slack. */
+static int hq_at(size_t i,int slack,size_t n,hq_justify j) {
+    return (int)floor(hq_before(i,(double)slack,n,j)+0.5);
+}
+
+int hq_distribute(int slack,size_t count,hq_justify justify,int *lead,int *seams) {
+    if(!lead || count>4096 || (count>1 && !seams)) return 0;
+    for(size_t i=0;i+1<count;++i) seams[i]=0;
+    if(slack<=0 || count==0 || justify==HQ_JUSTIFY_START) { *lead=0; return 1; }
+    for(size_t i=0;i+1<count;++i) {
+        int d=hq_at(i+1,slack,count,justify)-hq_at(i,slack,count,justify);
+        seams[i]=d>0 ? d:0;
+    }
+    *lead=hq_at(0,slack,count,justify);
+    return 1;
+}
+
+int hq_stack_justified(hq_rect r,const hq_constraint *items,size_t n,int horizontal,const int *gaps,hq_justify justify,hq_rect *out) {
     if(n>4096 || (n && (!out || !items)) || (n>1 && !gaps) || r.width<0 || r.height<0) return 0;
     if(!n) return 1;
     int local[64];
     int *sizes=n<=64 ? local:malloc(n*sizeof(*sizes));
     if(!sizes) return 0;
-    if(!hq_solve_gaps(horizontal ? r.width:r.height,items,n,gaps,sizes)) { if(sizes!=local) free(sizes); return 0; }
-    int64_t offset=horizontal ? r.x:r.y;
+    int axis=horizontal ? r.width:r.height;
+    if(!hq_solve_gaps(axis,items,n,gaps,sizes)) { if(sizes!=local) free(sizes); return 0; }
+
+    int64_t used=0;
+    for(size_t i=0;i<n;++i) used+=sizes[i];
+    for(size_t i=0;i+1<n;++i) used+=gaps[i];
+    int64_t spare=(int64_t)axis-used;
+    int slack=spare>0 ? (int)spare:0;
+
+    int seam_local[64];
+    int *extra=n-1<=64 ? seam_local:malloc((n?n-1:1)*sizeof(*extra));
+    if(!extra) { if(sizes!=local) free(sizes); return 0; }
+    int lead=0;
+    if(!hq_distribute(slack,n,justify,&lead,extra)) {
+        if(sizes!=local) free(sizes);
+        if(extra!=seam_local) free(extra);
+        return 0;
+    }
+
+    int64_t offset=(horizontal ? r.x:r.y)+lead;
     for(size_t i=0;i<n;++i) {
-        if(offset<INT_MIN || offset>INT_MAX) { if(sizes!=local) free(sizes); return 0; }
+        if(offset<INT_MIN || offset>INT_MAX) {
+            if(sizes!=local) free(sizes);
+            if(extra!=seam_local) free(extra);
+            return 0;
+        }
         out[i]=horizontal ? (hq_rect){(int)offset,r.y,sizes[i],r.height} : (hq_rect){r.x,(int)offset,r.width,sizes[i]};
-        offset+=(int64_t)sizes[i]+(i+1<n ? gaps[i]:0);
+        offset+=(int64_t)sizes[i]+(i+1<n ? gaps[i]+extra[i]:0);
     }
     if(sizes!=local) free(sizes);
+    if(extra!=seam_local) free(extra);
     return 1;
 }

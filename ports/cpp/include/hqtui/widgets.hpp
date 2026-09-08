@@ -566,6 +566,7 @@ class UI {
   int gap_;
   std::vector<Node> nodes_;
   bool collapse_ = false;
+  hq_justify justify_ = HQ_JUSTIFY_START;
 
 public:
   std::vector<Region> *regions;
@@ -573,6 +574,11 @@ public:
      std::vector<Region> *regions = nullptr, bool collapse = false)
       : surface_(s), horizontal_(horizontal), gap_(gap), collapse_(collapse),
         regions(regions) {}
+
+  /// Where space the children leave over goes. Only ever applies when there is
+  /// slack: a container holding any fr or fill child has none.
+  void justify(hq_justify value) { justify_ = value; }
+  hq_justify justify() const { return justify_; }
 
   /// Merge the borders of adjacent panels into shared lines, the way CSS
   /// collapses table borders. Inherited by nested containers.
@@ -604,8 +610,9 @@ public:
       for (std::size_t i = 0; i + 1 < nodes_.size(); i++)
         if (nodes_[i].bordered && nodes_[i + 1].bordered)
           seams[i] = -1;
-    if (!hq_stack_gaps(surface_.rect(), sizes.data(), sizes.size(), horizontal_,
-                       seams.empty() ? nullptr : seams.data(), rects.data()))
+    if (!hq_stack_justified(surface_.rect(), sizes.data(), sizes.size(),
+                            horizontal_, seams.empty() ? nullptr : seams.data(),
+                            justify_, rects.data()))
       throw std::runtime_error("hqtui: invalid layout");
     for (std::size_t i = 0; i < nodes_.size(); i++)
       if (rects[i].width > 0 && rects[i].height > 0)
