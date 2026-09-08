@@ -149,13 +149,31 @@ static void hq_put_border(hq_surface s,int border,int collapse,int x,int y,uint3
     hq_surface_set(s,x,y,cp,st);
 }
 
+/* The glyph for a cell where two edges meet, given which of them are drawn. A
+ * single edge has no glyph of its own, so the plain rule stands in: that cell
+ * is part of a run, not a corner. */
+static uint32_t hq_side_glyph(int border,int bits) {
+    if(!bits) return 0;
+    uint32_t g=hq_border_glyph(border,bits);
+    if(g) return g;
+    return bits&(HQ_EDGE_LEFT|HQ_EDGE_RIGHT) ? hq_borders[border][4]:hq_borders[border][5];
+}
+
 hq_surface hq_surface_box(hq_surface s,hq_box_options o) {
     const hq_theme *theme=s.theme ? s.theme:hq_theme_at(0);
     if(o.has_background && !o.no_fill) {
         hq_style bg={0,o.background,0,HQ_STYLE_BG}; hq_surface_fill(s,32,bg);
     }
-    if(o.border==HQ_NO_BORDER) return s;
-    hq_surface inner=hq_surface_region(s,hq_inset(s.rect,1,1,1,1));
+    /* Zero means all four, so a caller that predates this gets what it always
+     * got. HQ_SIDES_NONE is an explicit "no rule at all". */
+    int sides=o.sides==0 ? HQ_SIDES_ALL:(o.sides&HQ_SIDES_NONE ? 0:o.sides&HQ_SIDES_ALL);
+    int s_top=(sides&HQ_SIDE_TOP)!=0, s_right=(sides&HQ_SIDE_RIGHT)!=0;
+    int s_bottom=(sides&HQ_SIDE_BOTTOM)!=0, s_left=(sides&HQ_SIDE_LEFT)!=0;
+
+    if(o.border==HQ_NO_BORDER || !sides) return s;
+    /* The interior follows the sides actually drawn, so a top-only box costs
+     * one row rather than two. */
+    hq_surface inner=hq_surface_region(s,hq_inset(s.rect,s_top,s_right,s_bottom,s_left));
     if(s.rect.width<2 || s.rect.height<1) return inner;
     int border=o.border>=0 && o.border<6 ? o.border:0;
     const uint32_t *c=hq_borders[border];
@@ -164,21 +182,31 @@ hq_surface hq_surface_box(hq_surface s,hq_box_options o) {
     /* With collapsing on a border glyph landing on another becomes the union
      * of the two; without it this is the plain write it always was, so a
      * screen that never asks for collapsing renders byte for byte as before. */
-    hq_put_border(s,border,o.collapse,0,0,c[0],bs);
-    hq_put_border(s,border,o.collapse,w-1,0,c[1],bs);
-    for(int x=1;x<w-1;++x) hq_put_border(s,border,o.collapse,x,0,c[4],bs);
+    /* A corner belongs to the two sides that meet there, so it exists only when
+     * both are drawn; where one is, the rule runs straight through the cell the
+     * corner would have occupied. */
+    #define HQ_CORNER(a,abit,b,bbit) hq_side_glyph(border,((a)?(abit):0)|((b)?(bbit):0))
+    uint32_t tl=HQ_CORNER(s_top,HQ_EDGE_RIGHT,s_left,HQ_EDGE_DOWN);
+    uint32_t tr=HQ_CORNER(s_top,HQ_EDGE_LEFT,s_right,HQ_EDGE_DOWN);
+
+    if(s_top) for(int x=1;x<w-1;++x) hq_put_border(s,border,o.collapse,x,0,c[4],bs);
+    if(tl) hq_put_border(s,border,o.collapse,0,0,tl,bs);
+    if(tr) hq_put_border(s,border,o.collapse,w-1,0,tr,bs);
     if(h>1) {
-        hq_put_border(s,border,o.collapse,0,h-1,c[2],bs);
-        hq_put_border(s,border,o.collapse,w-1,h-1,c[3],bs);
-        for(int x=1;x<w-1;++x) hq_put_border(s,border,o.collapse,x,h-1,c[4],bs);
+        uint32_t bl=HQ_CORNER(s_bottom,HQ_EDGE_RIGHT,s_left,HQ_EDGE_UP);
+        uint32_t br=HQ_CORNER(s_bottom,HQ_EDGE_LEFT,s_right,HQ_EDGE_UP);
+        if(s_bottom) for(int x=1;x<w-1;++x) hq_put_border(s,border,o.collapse,x,h-1,c[4],bs);
+        if(bl) hq_put_border(s,border,o.collapse,0,h-1,bl,bs);
+        if(br) hq_put_border(s,border,o.collapse,w-1,h-1,br,bs);
         for(int y=1;y<h-1;++y) {
-            hq_put_border(s,border,o.collapse,0,y,c[5],bs);
-            hq_put_border(s,border,o.collapse,w-1,y,c[5],bs);
+            if(s_left) hq_put_border(s,border,o.collapse,0,y,c[5],bs);
+            if(s_right) hq_put_border(s,border,o.collapse,w-1,y,c[5],bs);
         }
     }
+    #undef HQ_CORNER
     char sub[4096]="",title[4096],foot[4096]; size_t sw=0;
-    if(o.subtitle) { label(sub,o.subtitle); sw=hq_text_width(sub); if(sw+4>=(size_t)w) sw=0; }
-    if(o.title) {
+    if(o.subtitle && s_top) { label(sub,o.subtitle); sw=hq_text_width(sub); if(sw+4>=(size_t)w) sw=0; }
+    if(o.title && s_top) {
         label(title,o.title);
         int limit=sw ? w-1-(int)sw:w-2,room=hq_max(0,limit-2);
         size_t tw=hq_text_width(title);
@@ -200,7 +228,7 @@ hq_surface hq_surface_box(hq_surface s,hq_box_options o) {
         hq_text_options t={0}; t.style=default_style(o.subtitle_style,theme->muted,o);
         hq_surface_text(s,w-2-(int)sw,0,sub,t);
     }
-    if(o.footer && h>2) {
+    if(o.footer && s_bottom && h>2) {
         label(foot,o.footer);
         if(hq_text_width(foot)+4<(size_t)w) {
             hq_text_options t={0}; t.style=default_style(o.footer_style,theme->muted,o);

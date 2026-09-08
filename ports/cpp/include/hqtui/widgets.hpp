@@ -636,16 +636,20 @@ public:
   void col(Constraint size, int gap, std::function<void(UI &)> body) {
     group(size, gap, false, std::move(body));
   }
+  /// `sides` is a mask of HQ_SIDE_*, or 0 for all four. Use it for chrome that
+  /// is not a box: a header rule, a sidebar rail, a footer that should not look
+  /// boxed in.
   void panel(std::string title, std::function<void(UI &)> body,
              Constraint size = fr(), std::string subtitle = {},
              Color border = 0, std::optional<Color> bg = {},
-             Color subtitle_color = 0) {
+             Color subtitle_color = 0, int sides = 0) {
     auto regions_ = regions;
     auto collapse = collapse_;
     draw_bordered(
         [=](Surface s) {
           hq_box_options o{};
           o.collapse = collapse ? 1 : 0;
+          o.sides = sides;
           o.title = title.empty() ? nullptr : title.c_str();
           o.subtitle = subtitle.empty() ? nullptr : subtitle.c_str();
           if (border)

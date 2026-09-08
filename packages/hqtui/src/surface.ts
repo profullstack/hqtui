@@ -77,6 +77,51 @@ export function borderBits(codepoint: number): number | null {
   return BITS_BY_CODEPOINT.get(codepoint) ?? null;
 }
 
+export type Side = "top" | "right" | "bottom" | "left";
+
+/**
+ * Which edges of a box to draw. "all" is every side, which is what a box was
+ * before this existed; "none" draws no rule but still insets nothing, the same
+ * as a border style of "none".
+ */
+export type Sides = "all" | "none" | readonly Side[];
+
+/** The four sides as flags, in the order the drawing code wants them. */
+export interface DrawnSides {
+  top: boolean;
+  right: boolean;
+  bottom: boolean;
+  left: boolean;
+}
+
+export function resolveSides(sides: Sides | undefined): DrawnSides {
+  if (sides === undefined || sides === "all") {
+    return { top: true, right: true, bottom: true, left: true };
+  }
+  if (sides === "none") return { top: false, right: false, bottom: false, left: false };
+  return {
+    top: sides.includes("top"),
+    right: sides.includes("right"),
+    bottom: sides.includes("bottom"),
+    left: sides.includes("left"),
+  };
+}
+
+/**
+ * The glyph for a cell where two edges meet, given which of them are drawn.
+ *
+ * A corner is only a corner when both its sides are there. A top-only rule
+ * runs straight through the cell a corner would occupy, which is why this
+ * falls back to the plain rule rather than leaving a gap.
+ */
+export function junction(style: Exclude<BorderStyle, "none">, bits: number): string | null {
+  if (bits === 0) return null;
+  const glyph = borderGlyph(style, bits);
+  if (glyph !== null) return glyph;
+  const chars = BORDERS[style];
+  return bits & (EDGE_LEFT | EDGE_RIGHT) ? chars.h : chars.v;
+}
+
 export type Align = "left" | "center" | "right";
 
 export interface TextOptions extends Style {
@@ -88,6 +133,11 @@ export interface TextOptions extends Style {
 
 export interface BoxOptions extends Style {
   border?: BorderStyle;
+  /**
+   * Which edges to draw. Defaults to all four. The interior follows the sides
+   * actually drawn, so a top-only box costs one row rather than two.
+   */
+  sides?: Sides;
   borderColor?: Color;
   title?: string;
   titleAlign?: Align;
@@ -312,8 +362,11 @@ export class Surface {
       this.fill({ bg });
     }
 
-    if (style === "none" || this.width < 2 || this.height < 1) {
-      return this.inset(style === "none" ? 0 : 1);
+    const sides = resolveSides(options.sides);
+    const any = sides.top || sides.right || sides.bottom || sides.left;
+
+    if (style === "none" || !any || this.width < 2 || this.height < 1) {
+      return this.inset(style === "none" || !any ? 0 : 1);
     }
 
     const b = BORDERS[style];
@@ -334,15 +387,25 @@ export class Surface {
       for (let i = 0; i < length; i++) put(x, y + i, ch);
     };
 
-    put(0, 0, b.tl);
-    put(w - 1, 0, b.tr);
-    putH(1, 0, w - 2, b.h);
+    // A corner belongs to the two sides that meet there, so it exists only if
+    // both of them are drawn; where one is, the rule runs straight through.
+    const corner = (a: boolean, aBit: number, c: boolean, cBit: number): string | null =>
+      junction(style, (a ? aBit : 0) | (c ? cBit : 0));
+
+    const tl = corner(sides.top, EDGE_RIGHT, sides.left, EDGE_DOWN);
+    const tr = corner(sides.top, EDGE_LEFT, sides.right, EDGE_DOWN);
+    if (sides.top) putH(1, 0, w - 2, b.h);
+    if (tl !== null) put(0, 0, tl);
+    if (tr !== null) put(w - 1, 0, tr);
+
     if (h > 1) {
-      put(0, h - 1, b.bl);
-      put(w - 1, h - 1, b.br);
-      putH(1, h - 1, w - 2, b.h);
-      putV(0, 1, h - 2, b.v);
-      putV(w - 1, 1, h - 2, b.v);
+      const bl = corner(sides.bottom, EDGE_RIGHT, sides.left, EDGE_UP);
+      const br = corner(sides.bottom, EDGE_LEFT, sides.right, EDGE_UP);
+      if (sides.bottom) putH(1, h - 1, w - 2, b.h);
+      if (bl !== null) put(0, h - 1, bl);
+      if (br !== null) put(w - 1, h - 1, br);
+      if (sides.left) putV(0, 1, h - 2, b.v);
+      if (sides.right) putV(w - 1, 1, h - 2, b.v);
     }
 
     // Measured before the title is drawn: both share the top border row, and
@@ -351,7 +414,7 @@ export class Surface {
     const subtitle = options.subtitle ? ` ${options.subtitle} ` : "";
     const subtitleWidth = subtitle && stringWidth(subtitle) + 4 < w ? stringWidth(subtitle) : 0;
 
-    if (options.title) {
+    if (options.title && sides.top) {
       const titleColor = options.titleColor ?? this.theme.title;
       const label = ` ${options.title} `;
       // The title lives in [2, limit). Reserving the width is not enough on its
@@ -373,14 +436,14 @@ export class Surface {
       this.text(tx, 0, shown, { fg: titleColor, bg, attrs: 1 /* bold */ });
     }
 
-    if (subtitleWidth > 0) {
+    if (subtitleWidth > 0 && sides.top) {
       this.text(w - 2 - subtitleWidth, 0, subtitle, {
         fg: options.subtitleColor ?? this.theme.muted,
         bg,
       });
     }
 
-    if (options.footer && h > 2) {
+    if (options.footer && sides.bottom && h > 2) {
       const foot = ` ${options.footer} `;
       const fw = stringWidth(foot);
       if (fw + 4 < w) {
@@ -388,7 +451,13 @@ export class Surface {
       }
     }
 
-    return this.sub(1, 1, Math.max(0, w - 2), Math.max(0, h - 2));
+    // The interior follows the sides actually drawn, so a top-only box costs
+    // one row rather than two.
+    const left = sides.left ? 1 : 0;
+    const top = sides.top ? 1 : 0;
+    const shrinkX = left + (sides.right ? 1 : 0);
+    const shrinkY = top + (sides.bottom ? 1 : 0);
+    return this.sub(left, top, Math.max(0, w - shrinkX), Math.max(0, h - shrinkY));
   }
 
   /** Absolute rect of this surface, for hit-testing mouse events. */
