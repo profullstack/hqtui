@@ -147,6 +147,7 @@ static void list(UI &p, State &s, std::string id,
   });
 }
 static void graphics(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   auto t = ui.t();
   double time = s.data["time"].n();
   auto wave = [](double phase, double freq) {
@@ -157,7 +158,7 @@ static void graphics(UI &ui, State &s) {
   };
   auto a = wave(time / 3, 9), b = wave(time / 3 + 2, 5), c = wave(time / 2, 17);
   ui.row(fr(), 1, [=](UI &r) {
-    r.col(fr(), 1, [=](UI &p) {
+    r.col(fr(), gap, [=](UI &p) {
       p.panel("Braille (2×4 pixels per cell)", [=](UI &g) {
         Graph o;
         o.series = {{a, t.accent, "", true}};
@@ -181,7 +182,7 @@ static void graphics(UI &ui, State &s) {
         g.graph(o);
       });
     });
-    r.col(fr(), 1, [=](UI &p) {
+    r.col(fr(), gap, [=](UI &p) {
       p.panel("Multi-series", [=](UI &g) {
         Graph o;
         o.series = {{a, t.primary, "alpha", false},
@@ -287,8 +288,9 @@ static void theme_screen(UI &ui, State &s) {
   });
 }
 static void input_screen(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   auto t = ui.t();
-  ui.row(fr(), 1, [&, t](UI &r) {
+  ui.row(fr(), gap, [&, t](UI &r) {
     r.panel("Last Events", [&, t](UI &p) {
       p.keys({kv("Key", s.last_key, t.accent),
               kv("Mouse", s.last_mouse, t.primary)});
@@ -320,8 +322,9 @@ static void input_screen(UI &ui, State &s) {
   });
 }
 static void stress(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   auto t = ui.t();
-  ui.row(cells(3), 1, [&, t](UI &r) {
+  ui.row(cells(3), gap, [&, t](UI &r) {
     std::vector<std::string> titles = {"Render", "Changed cells", "Bytes/frame",
                                        "FPS"},
                              values = {fixed(s.render_ms, 2) + " ms/frame",
@@ -356,7 +359,7 @@ static void components(UI &ui, State &s) {
   auto t = ui.t();
   const auto &c = s.data["cpu"], &m = s.data["memory"], &n = s.data["network"];
   ui.row(fr(), 1, [&, t](UI &r) {
-    r.col(fr(), 1, [&, t](UI &left) {
+    r.col(fr(), s.panel_gap(), [&, t](UI &left) {
       left.panel(
           "Buttons & Inputs",
           [&, t](UI &p) {
@@ -468,7 +471,7 @@ static void components(UI &ui, State &s) {
           },
           cells(11));
     });
-    r.col(fr(), 1, [&, t](UI &right) {
+    r.col(fr(), s.panel_gap(), [&, t](UI &right) {
       right.panel(
           "Process Tree",
           [&, t](UI &p) {

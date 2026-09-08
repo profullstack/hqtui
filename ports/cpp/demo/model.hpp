@@ -92,6 +92,14 @@ struct State {
   bool real = false, paused = false, help = false, modal = false,
        palette = false, filtering = false, editing = false, toggle = true,
        checkbox = true, select_open = false, collapse = false;
+
+  // The seam between panels: zero while collapsed, so their borders merge. The
+  // library merges a seam only where two bordered siblings already touch, so
+  // toggling `collapse` without closing the gap moved nothing.
+  // Read it where the seam is declared, not into a local a nested body
+  // captures by reference: panel bodies are closures the UI runs at flush,
+  // long after the screen function returned.
+  int panel_gap() const { return collapse ? 0 : 1; }
   int screen = 0, theme_index = 0, sort = 0, select_index = 0,
       palette_index = 0;
   double slider = .7, fps = 0, render_ms = 0;

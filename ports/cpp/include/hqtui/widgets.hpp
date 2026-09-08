@@ -150,7 +150,15 @@ public:
     if (!std::isfinite(dx) || !std::isfinite(dy) || dx < -.5 || dy < -.5 ||
         dx >= w || dy >= h)
       return;
-    int x = iround(dx), y = iround(dy);
+    // Round the tie robustly: plot geometry runs through cos and sin, and libm
+    // implementations differ by an ULP at the exact angles where a coordinate
+    // lands on .5 -- cos(120 degrees) is -0.5, and V8 returns a hair under it
+    // where others return a hair over. Rounding the raw value lets that ULP
+    // decide a pixel, so the same widget at the same size differs between
+    // ports. The tolerance is far wider than an ULP and far narrower than
+    // anything geometric.
+    int x = iround(dx >= 0 ? dx + 1e-9 : dx - 1e-9);
+    int y = iround(dy >= 0 ? dy + 1e-9 : dy - 1e-9);
     if (x < 0 || y < 0 || x >= w || y >= h)
       return;
     constexpr int bits[4][2] = {{1, 8}, {2, 16}, {4, 32}, {64, 128}};
