@@ -115,6 +115,15 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
             .values = &series,
             .time_axis = &.{ "60s", "30s", "0s" },
         });
+    } else if (eq(u8, name, "graph-axis-timeaxis")) {
+        // Both axes together. Each was covered alone, which is how the y-axis
+        // minimum came to be drawn onto the time-axis row unnoticed.
+        try w.drawGraph(allocator, s, .{
+            .values = &series,
+            .axis = true,
+            .plot = .{ .min = 0, .max = 100 },
+            .time_axis = &.{ "60s", "30s", "0s" },
+        });
     } else if (eq(u8, name, "sparkline-widget")) {
         w.drawSparkline(s, .{ .values = &series, .label = "net", .text = "1.2M" });
     } else if (eq(u8, name, "table")) {

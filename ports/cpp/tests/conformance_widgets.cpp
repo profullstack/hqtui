@@ -300,6 +300,18 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_graph(s, g);
     return true;
   }
+  // Both axes together. Each was covered alone, which is how the y-axis minimum
+  // came to be drawn onto the time-axis row with no fixture noticing.
+  if (name == "graph-axis-timeaxis") {
+    Graph g;
+    g.series = {{kSeries, 0, "", false}};
+    g.axis = true;
+    g.min = 0;
+    g.max = 100;
+    g.time_axis = {"60s", "30s", "0s"};
+    draw_graph(s, g);
+    return true;
+  }
   if (name == "table-scrollbar") {
     Table table;
     table.columns = {{"#", -1, 1, 0, HQ_RIGHT}, {"VALUE"}};

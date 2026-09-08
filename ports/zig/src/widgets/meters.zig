@@ -263,6 +263,8 @@ pub fn drawGraph(allocator: std.mem.Allocator, s: Surface, options: GraphOptions
     const series = options.series orelse &single;
 
     var plot_surface = s;
+    // Decided before the y-axis labels are written; see the minimum below.
+    const time_axis_row = options.time_axis.len > 0 and s.height() > 2;
     const axis_color = options.axis_color orelse theme.muted;
 
     if (options.axis) {
@@ -298,9 +300,16 @@ pub fn drawGraph(allocator: std.mem.Allocator, s: Surface, options: GraphOptions
         _ = s.text(0, 0, unicode.fit(&padded, max_label, label_width, .right), .{ .fg = axis_color });
         if (s.height() > 1) {
             var padded_min: [64]u8 = undefined;
+            // The minimum marks the bottom of the plot, and a time axis takes
+            // that row away. Writing it at height - 1 regardless put it against
+            // the first time label, so "$0" and "08-10" rendered as "$008-10".
+            const bottom: isize = if (time_axis_row)
+                @intCast(s.height() - 2)
+            else
+                @intCast(s.height() - 1);
             _ = s.text(
                 0,
-                @intCast(s.height() - 1),
+                bottom,
                 unicode.fit(&padded_min, min_label, label_width, .right),
                 .{ .fg = axis_color },
             );

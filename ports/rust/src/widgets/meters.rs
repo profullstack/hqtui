@@ -318,6 +318,13 @@ pub fn draw_graph(surface: &Surface, options: &GraphOptions) {
     let mut plot_surface = surface.clone();
     let axis_color = options.axis_color.unwrap_or(theme.muted);
 
+    // Whether the bottom row belongs to the time axis rather than the plot.
+    // Decided before the y-axis labels are written: the minimum marks the
+    // bottom of the *plot*, and the time axis takes that row away. Writing it
+    // at `height - 1` regardless put it against the first time label, so "$0"
+    // and "08-10" rendered as "$008-10".
+    let time_axis_row = options.time_axis.is_some() && surface.height() > 2;
+
     if options.axis {
         // Match the window the plot itself will use, so the labels stay truthful.
         let columns = if options.plot.mode.unwrap_or(FillMode::Braille) == FillMode::Braille {
@@ -348,9 +355,14 @@ pub fn draw_graph(surface: &Surface, options: &GraphOptions) {
             &TextOptions::new().fg(axis_color),
         );
         if surface.height() > 1 {
+            let bottom = if time_axis_row {
+                surface.height() as isize - 2
+            } else {
+                surface.height() as isize - 1
+            };
             surface.text(
                 0,
-                surface.height() as isize - 1,
+                bottom,
                 &fit(&format(min), label_width, Align::Right),
                 &TextOptions::new().fg(axis_color),
             );

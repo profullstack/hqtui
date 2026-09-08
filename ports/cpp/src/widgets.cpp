@@ -499,12 +499,20 @@ void draw_graph(Surface surface, const Graph &o) {
     return std::abs(v) >= 1000 ? number(std::floor(v / 100 + .5) / 10) + "k"
                                : number(v);
   };
+  // Whether the bottom row belongs to the time axis rather than the plot.
+  // Decided before the y-axis labels are written: the minimum marks the bottom
+  // of the *plot*, and the time axis takes that row away. Writing it at
+  // height - 1 regardless put it against the first time label, so "$0" and
+  // "08-10" rendered as "$008-10".
+  const bool time_axis_row = !o.time_axis.empty() && s.rect().height > 2;
   if (o.axis) {
     double hi = o.max.value_or(highFor(s.rect().width * mult));
     int lw = std::max(width(label(hi)), width(label(o.min))) + 1;
     text(s, 0, 0, fit(label(hi), lw, HQ_RIGHT), t.muted);
-    if (s.rect().height > 1)
-      text(s, 0, s.rect().height - 1, fit(label(o.min), lw, HQ_RIGHT), t.muted);
+    if (s.rect().height > 1) {
+      const int bottom = time_axis_row ? s.rect().height - 2 : s.rect().height - 1;
+      text(s, 0, bottom, fit(label(o.min), lw, HQ_RIGHT), t.muted);
+    }
     s = s.sub({lw, 0, std::max(0, s.rect().width - lw), s.rect().height});
   }
   // The time axis costs the bottom row, and the plot gets what is left.
