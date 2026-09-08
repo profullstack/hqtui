@@ -142,6 +142,16 @@ type state struct {
 	clock                                                                               string
 }
 
+// panelGap is the seam between panels: zero while collapsed, so their borders
+// merge. The library merges a seam only where two bordered siblings already
+// touch, so toggling collapse without closing the gap moved nothing.
+func (s *state) panelGap() int {
+	if s.collapse {
+		return 0
+	}
+	return 1
+}
+
 func newState(real bool, seed uint32) *state {
 	s := &state{sample: loadSample(real), real: real, seed: seed, checked: true, toggle: true, slider: .7, clock: "12:00:00", lastKey: "—", lastMouse: "—", panes: map[string]*pane{}, focused: map[int]string{}}
 	if !real {

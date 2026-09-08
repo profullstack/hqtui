@@ -20,7 +20,15 @@ int main(int argc, char **argv) {
         s.theme_index = i;
     hqtui::Buffer frame(w, h);
     frame.clear(t->background, t->foreground);
-    hqtui::UI ui(frame.surface(t));
+    // --collapsed merges adjacent panel borders, as the `c` key does in the
+    // running demo. The parity fixtures cover both modes because collapsing
+    // changes the layout, not only the glyphs.
+    bool collapsed = false;
+    for (int i = 1; i < argc; i++)
+      if (std::string(argv[i]) == "--collapsed")
+        collapsed = true;
+    s.collapse = collapsed;
+    hqtui::UI ui(frame.surface(t), false, 0, nullptr, collapsed);
     if (s.screen == 0)
       demo::dashboard(ui, s);
     else if (s.screen < 5)

@@ -20,13 +20,14 @@ static Color status_color(const hq_theme &t, std::string c) {
                       : t.muted;
 }
 static void traffic(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   if (s.real)
     ui.label("Protocol/direction: port-based estimates; HTTP rate: estimated "
              "from log growth");
   auto t = ui.t();
   const auto &d = s.data["telemetry"], &net = d["net"], &rates = net["rates"],
              &http = d["http"];
-  ui.row(cells(13), 1, [&, t](UI &r) {
+  ui.row(cells(13), gap, [&, t](UI &r) {
     r.panel(
         "Protocols",
         [&, t](UI &p) {
@@ -97,7 +98,7 @@ static void traffic(UI &ui, State &s) {
         fr(.7), "", color);
   });
   ui.row(fr(), 1, [&, t](UI &r) {
-    r.col(fr(), 1, [&, t](UI &c) {
+    r.col(fr(), s.panel_gap(), [&, t](UI &c) {
       c.panel(
           "HTTP",
           [&, t](UI &p) {
@@ -141,7 +142,7 @@ static void traffic(UI &ui, State &s) {
                       : fixed(http["requestsPerSecond"].n(), 1) + " req/s",
           t.success);
     });
-    r.col(fr(.85), 1, [&, t](UI &c) {
+    r.col(fr(.85), s.panel_gap(), [&, t](UI &c) {
       c.panel(
           "SSH Activity",
           [&, t](UI &p) {
@@ -201,9 +202,10 @@ static void traffic(UI &ui, State &s) {
         cells(10), "", t.primary);
 }
 static void sessions(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   auto t = ui.t();
   const auto &d = s.data["telemetry"];
-  ui.row(cells(9), 1, [&, t](UI &r) {
+  ui.row(cells(9), gap, [&, t](UI &r) {
     r.panel(
         "Active Sessions",
         [&, t](UI &p) {
@@ -261,7 +263,7 @@ static void sessions(UI &ui, State &s) {
         },
         fr(), std::to_string(d["logins"].array().size()) + " from wtmp",
         t.accent);
-    r.col(fr(.8), 1, [&, t](UI &c) {
+    r.col(fr(.8), s.panel_gap(), [&, t](UI &c) {
       c.panel(
           "Failed Logins",
           [&, t](UI &p) {
@@ -287,6 +289,7 @@ static void sessions(UI &ui, State &s) {
   });
 }
 static void network(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   auto t = ui.t();
   const auto &d = s.data["telemetry"];
   auto shown = d["interfaces"].array();
@@ -298,7 +301,7 @@ static void network(UI &ui, State &s) {
     shown = active;
   if (shown.size() > 3)
     shown.resize(3);
-  ui.row(cells(13), 1, [&, t, shown](UI &r) {
+  ui.row(cells(13), gap, [&, t, shown](UI &r) {
     if (shown.empty()) {
       r.panel("Interfaces", [](UI &p) { p.label("No interfaces reported."); });
       return;
@@ -346,7 +349,7 @@ static void network(UI &ui, State &s) {
         },
         fr(), std::to_string(d["connections"].array().size()) + " open",
         t.accent);
-    r.col(fr(.7), 1, [&, t](UI &c) {
+    r.col(fr(.7), s.panel_gap(), [&, t](UI &c) {
       c.panel(
           "Listening Ports",
           [&, t](UI &p) {
@@ -395,7 +398,7 @@ static void services(UI &ui, State &s) {
         failed ? std::to_string(failed) + " failed"
                : std::to_string(d["services"].array().size()) + " units",
         failed ? t.danger : t.success, {}, failed ? t.danger : t.muted);
-    r.col(fr(.85), 1, [&, t](UI &c) {
+    r.col(fr(.85), s.panel_gap(), [&, t](UI &c) {
       c.panel(
           "Kernel",
           [&, t](UI &p) {

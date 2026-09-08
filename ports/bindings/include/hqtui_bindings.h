@@ -19,6 +19,10 @@ void hqb_destroy(hqb_scene *scene);
  * A rejected update leaves the last valid scene intact. See PROTOCOL.md. */
 int hqb_set(hqb_scene *scene, const char *json, size_t length);
 int hqb_resize(hqb_scene *scene, int width, int height);
+/* Merge the borders of adjacent panels into shared lines, the way CSS collapses
+ * table borders. Applies to the next render or demo frame, and to every one
+ * after it until changed. */
+int hqb_collapse(hqb_scene *scene, int enabled);
 /* text, ansi (full frame), diff (against last rendered frame), hashes (tests).
  */
 const char *hqb_render(hqb_scene *scene, const char *format);

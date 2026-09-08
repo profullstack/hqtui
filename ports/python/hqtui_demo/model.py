@@ -127,6 +127,14 @@ class State:
     filter: str = ""
     filtering: bool = False
     collapse: bool = False
+
+    def panel_gap(self) -> int:
+        """The seam between panels: zero while collapsed, so their borders merge.
+
+        The library merges a seam only where two bordered siblings already
+        touch, so toggling ``collapse`` without closing the gap moved nothing.
+        """
+        return 0 if self.collapse else 1
     help: bool = False
     palette: bool = False
     modal: bool = False

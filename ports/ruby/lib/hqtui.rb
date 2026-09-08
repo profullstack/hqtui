@@ -17,6 +17,7 @@ module Hqtui
       extern 'void hqb_destroy(void*)'
       extern 'int hqb_set(void*, const char*, size_t)'
       extern 'int hqb_resize(void*, int, int)'
+      extern 'int hqb_collapse(void*, int)'
       extern 'const char* hqb_render(void*, const char*)'
       extern 'const char* hqb_demo_frame(void*, const char*, const char*)'
       extern 'int hqb_open(void*)'
@@ -101,6 +102,11 @@ module Hqtui
       encoded = JSON.generate(ui.respond_to?(:to_h) ? ui.to_h : ui)
       Hqtui.check(@native.hqb_set(handle, encoded, encoded.bytesize)); self
     end
+    # Merge the borders of adjacent panels into shared lines.
+    def collapse(enabled = true)
+      Hqtui.check(@native.hqb_collapse(handle, enabled ? 1 : 0)); self
+    end
+
     def resize(width, height)
       Hqtui.check(@native.hqb_resize(handle, width, height)); self
     end

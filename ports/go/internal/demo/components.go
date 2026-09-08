@@ -21,10 +21,11 @@ func processTree() []ui.TreeNode {
 	return []ui.TreeNode{node("systemd", "1.3", "0.1", node("bash", "0.1", "0.2"), node("bun", "32.8", "4.2", node("bun:worker", "12.4", "1.8"), node("bun:worker", "8.7", "1.3")), node("node", "18.1", "2.1", node("node:worker", "6.1", "0.8")), node("postgres", "6.7", "1.8"))}
 }
 func (s *state) components(p *ui.Container) {
+	gap := s.panelGap()
 	t := p.Theme()
 	c, m, n := obj(s.sample["cpu"]), obj(s.sample["memory"]), obj(s.sample["network"])
 	row(p, ui.Fr(1), 1, func(r *ui.Container) {
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: 1}}, func(left *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(left *ui.Container) {
 			left.Panel(ui.PanelOptions{Title: "Buttons & Inputs", Layout: fixed(13)}, func(p *ui.Container) {
 				row(p, ui.Cells(1), 1, func(r *ui.Container) {
 					for i, label := range []string{"Primary", "Success", "Warning", "Danger"} {
@@ -75,7 +76,7 @@ func (s *state) components(p *ui.Container) {
 				}})
 			})
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: 1}}, func(right *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(right *ui.Container) {
 			right.Panel(ui.PanelOptions{Title: "Process Tree", Layout: fixed(13)}, func(p *ui.Container) {
 				row(p, ui.Cells(1), 0, func(r *ui.Container) {
 					r.StyledText("Name", ui.TextStyle{Fg: &t.Muted, Bold: true})

@@ -17,8 +17,9 @@ class ReferenceParity(unittest.TestCase):
             with self.subTest(screen=case["screen"],theme=case["theme"],width=case["width"]):
                 s=State(sample=sample,source="simulated");s.theme_index=THEMES.index(case["theme"])
                 s.screen=case["screen"]
+                s.collapse=case.get("collapsed",False)
                 draw={"dashboard":dashboard,"components":components,"graphics":graphics,"themes":themes,"input":input_screen,"stress":stress}.get(s.screen,telemetry)
-                f=render_to_screen(case["width"],case["height"],case["theme"],lambda ui:draw(ui,s))
+                f=render_to_screen(case["width"],case["height"],case["theme"],lambda ui:draw(ui,s),collapse_borders=s.collapse)
                 for y,expected in enumerate(case["hashes"]):
                     h=2166136261
                     for x in range(case["width"]):

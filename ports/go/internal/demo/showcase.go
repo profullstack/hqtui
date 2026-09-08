@@ -14,11 +14,12 @@ func wave(phase, freq float64) []float64 {
 	return out
 }
 func (s *state) graphics(p *ui.Container) {
+	gap := s.panelGap()
 	t := p.Theme()
 	time := num(s.sample["time"])
 	a, b, c := wave(time/3, 9), wave(time/3+2, 5), wave(time/2, 17)
 	row(p, ui.Fr(1), 1, func(r *ui.Container) {
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: 1}}, func(left *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(left *ui.Container) {
 			for i, title := range []string{"Braille (2×4 pixels per cell)", "Block elements", "ASCII fallback"} {
 				left.Panel(ui.PanelOptions{Title: title}, func(p *ui.Container) {
 					o := ui.PlotOptions{Min: ref(0.), Max: ref(100.)}
@@ -38,7 +39,7 @@ func (s *state) graphics(p *ui.Container) {
 				})
 			}
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: 1}}, func(right *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(right *ui.Container) {
 			right.Panel(ui.PanelOptions{Title: "Multi-series"}, func(p *ui.Container) {
 				p.Graph(ui.GraphOptions{Series: []ui.Series{{Values: a, Color: &t.Primary, Label: "alpha"}, {Values: b, Color: &t.Success, Label: "beta"}, {Values: c, Color: &t.Secondary, Label: "gamma"}}, Axis: true, Legend: true, Plot: ui.PlotOptions{Min: ref(0.), Max: ref(100.)}})
 			})
@@ -98,8 +99,9 @@ func (s *state) themeScreen(p *ui.Container) {
 	})
 }
 func (s *state) inputScreen(p *ui.Container) {
+	gap := s.panelGap()
 	t := p.Theme()
-	row(p, ui.Fr(1), 1, func(r *ui.Container) {
+	row(p, ui.Fr(1), gap, func(r *ui.Container) {
 		r.Panel(ui.PanelOptions{Title: "Last Events"}, func(p *ui.Container) {
 			keys(p, []ui.KeyValueRow{kv("Key", s.lastKey, t.Accent), kv("Mouse", s.lastMouse, t.Primary)}, true)
 			p.Spacer(ui.Cells(1))
@@ -131,8 +133,9 @@ func (s *state) inputScreen(p *ui.Container) {
 	})
 }
 func (s *state) stress(p *ui.Container) {
+	gap := s.panelGap()
 	t := p.Theme()
-	row(p, ui.Cells(3), 1, func(r *ui.Container) {
+	row(p, ui.Cells(3), gap, func(r *ui.Container) {
 		for i, title := range []string{"Render", "Changed cells", "Bytes/frame", "FPS"} {
 			r.Panel(ui.PanelOptions{Title: title}, func(p *ui.Container) {
 				txt(p, []string{fmt.Sprintf("%.2f ms/frame", s.renderMs), fmt.Sprint(s.changedCells), fmt.Sprint(s.outputBytes), fmt.Sprintf("%.1f", s.fps)}[i], []ui.Color{t.Success, t.Warning, t.Primary, t.Accent}[i])

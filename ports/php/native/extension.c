@@ -91,6 +91,11 @@ PHP_FUNCTION(hqtui_bridge) {
       RETURN_THROWS();
     RETURN_LONG(hqb_set(r->scene, Z_STRVAL(args[1]), Z_STRLEN(args[1])));
   }
+  if (!strcmp(operation, "hqb_collapse")) {
+    if (!is_int_arg(args, count, 1))
+      RETURN_THROWS();
+    RETURN_LONG(hqb_collapse(r->scene, (int)Z_LVAL(args[1])));
+  }
   if (!strcmp(operation, "hqb_resize")) {
     if (!is_int_arg(args, count, 1) || !is_int_arg(args, count, 2))
       RETURN_THROWS();

@@ -393,13 +393,13 @@ struct hqb_scene {
   const hq_theme *theme;
   Json tree;
   std::string output, input;
-  bool first = true;
+  bool first = true, collapse = false;
   std::unique_ptr<demo::Terminal> terminal;
   hqb_scene(int w, int h, const hq_theme *t)
       : previous(w, h), frame(w, h), theme(t) {}
   void paint(const Json &scene) {
     frame.clear(theme->background, theme->foreground);
-    UI ui(frame.surface(theme));
+    UI ui(frame.surface(theme), false, 0, nullptr, collapse);
     std::vector<PendingOverlay> overlays;
     node(ui, scene, overlays);
     ui.flush();
@@ -487,6 +487,13 @@ int hqb_resize(hqb_scene *s, int w, int h) {
     s->first = true;
   });
 }
+int hqb_collapse(hqb_scene *s, int enabled) {
+  return checked([&] {
+    if (!s)
+      throw std::runtime_error("closed scene");
+    s->collapse = enabled != 0;
+  });
+}
 const char *hqb_render(hqb_scene *s, const char *format) {
   if (!checked([&] {
         if (!s || !format)
@@ -513,8 +520,11 @@ const char *hqb_demo_frame(hqb_scene *s, const char *screen,
         for (int t = 0; t < 9; t++)
           if (std::string(s->theme->name) == demo::themes[t])
             state.theme_index = t;
+        // Collapsing changes the layout, not only the glyphs: the screens close
+        // the seams between panels so their borders have something to merge.
+        state.collapse = s->collapse;
         s->frame.clear(s->theme->background, s->theme->foreground);
-        UI ui(s->frame.surface(s->theme));
+        UI ui(s->frame.surface(s->theme), false, 0, nullptr, s->collapse);
         demo::render(ui, state, true);
         ui.flush();
         s->finish(format);

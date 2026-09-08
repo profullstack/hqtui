@@ -95,6 +95,7 @@ def main():
         frames=[json.loads(line) for line in result.stdout.splitlines()]
         assert len(frames)==len(all_cases),(language,len(frames))
         failures=[(case['screen'],case['width'],case['height'],case['theme'],
+                   'collapsed' if case.get('collapsed') else 'open',
                    [i for i,(a,b) in enumerate(zip(actual,case['hashes'])) if a!=b])
                   for case,actual in zip(cases,frames) if actual!=case['hashes']]
         assert not failures,(language,failures)
@@ -106,7 +107,7 @@ def main():
             output=invoke(language,f'examples/dashboard.{suffix}',
                           ['--real','--snapshot','--screen',screen,'--width','200','--height','60']).stdout
             assert 'simulated' not in output and len(output.splitlines())==60,(language,screen)
-        print(f'{language}: 120 exact reference frames, 6 custom frames, ten tabs, custom app, resize and q/signals passed',flush=True)
+        print(f'{language}: {len(cases)} exact reference frames (both border modes), 6 custom frames, ten tabs, custom app, resize and q/signals passed',flush=True)
     if sys.platform.startswith('linux'):
         demos={language:[*command,str(ROOT/'ports'/language/'examples'/f'dashboard.{EXT[language]}')]
                for language,command in COMMANDS.items()}

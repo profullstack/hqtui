@@ -90,9 +90,9 @@ func meter(p *ui.Container, v float64, c *ui.Color) {
 	p.Meter(ui.MeterOptions{Value: v, Color: c, HideValue: true, Style: ui.BarSegmented})
 }
 
-func (s *state) cpuPanel(p *ui.Container, columns int) {
+func (s *state) cpuPanel(p *ui.Container, columns int, size *ui.Size) {
 	c := obj(s.sample["cpu"])
-	p.Panel(ui.PanelOptions{Title: "CPU Overview", Subtitle: percent(num(c["total"]))}, func(p *ui.Container) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "CPU Overview", Subtitle: percent(num(c["total"]))}, func(p *ui.Container) {
 		t := p.Theme()
 		p.Label(fmt.Sprintf("%s   %.1f GHz", scalar(c["model"]), num(c["frequencyGhz"])))
 		plot(p, c["history"], t.Success, ref(100.), false)
@@ -109,10 +109,10 @@ func (s *state) cpuPanel(p *ui.Container, columns int) {
 		keys(p, []ui.KeyValueRow{kv("Load Avg", fmt.Sprintf("%.2f   %.2f   %.2f", load[0], load[1], load[2]), t.Warning)}, true)
 	})
 }
-func (s *state) memoryPanel(p *ui.Container) {
+func (s *state) memoryPanel(p *ui.Container, size *ui.Size) {
 	m := obj(s.sample["memory"])
 	used, swap := num(m["used"])/math.Max(1, num(m["total"])), num(m["swapUsed"])/math.Max(1, num(m["swapTotal"]))
-	p.Panel(ui.PanelOptions{Title: "Memory & Swap"}, func(p *ui.Container) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "Memory & Swap"}, func(p *ui.Container) {
 		t := p.Theme()
 		txt(p, fmt.Sprintf("Memory      %s / %s (%s)", bytes(num(m["used"]), 2), bytes(num(m["total"]), 2), percent(used)), t.Foreground)
 		meter(p, used, nil)
@@ -125,9 +125,9 @@ func (s *state) memoryPanel(p *ui.Container) {
 		keys(p, []ui.KeyValueRow{kv("Used:", bytes(num(m["swapUsed"]), 2), t.Secondary), kv("Free:", bytes(num(m["swapTotal"])-num(m["swapUsed"]), 2), t.Muted)}, true)
 	})
 }
-func (s *state) disksPanel(p *ui.Container) {
+func (s *state) disksPanel(p *ui.Container, size *ui.Size) {
 	disks := arr(s.sample["disks"])
-	p.Panel(ui.PanelOptions{Title: "Disks"}, func(p *ui.Container) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "Disks"}, func(p *ui.Container) {
 		t := p.Theme()
 		if len(disks) == 0 {
 			p.Label("No disks reported")
@@ -151,9 +151,9 @@ func (s *state) disksPanel(p *ui.Container) {
 		}
 	})
 }
-func (s *state) systemPanel(p *ui.Container) {
+func (s *state) systemPanel(p *ui.Container, size *ui.Size) {
 	sys, c, m := obj(s.sample["system"]), obj(s.sample["cpu"]), obj(s.sample["memory"])
-	p.Panel(ui.PanelOptions{Title: "System"}, func(p *ui.Container) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "System"}, func(p *ui.Container) {
 		t := p.Theme()
 		used := num(m["used"]) / math.Max(1, num(m["total"]))
 		source := "simulated"
@@ -276,8 +276,8 @@ func (s *state) drawDataTable(p *ui.Container, name string, data []any, cols []d
 		}
 	}})
 }
-func (s *state) processesPanel(p *ui.Container) {
-	p.Panel(ui.PanelOptions{Title: "Processes (sorted by " + []string{"CPU", "MEM", "PID", "NAME"}[s.sort] + ")", Subtitle: func() string {
+func (s *state) processesPanel(p *ui.Container, size *ui.Size) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "Processes (sorted by " + []string{"CPU", "MEM", "PID", "NAME"}[s.sort] + ")", Subtitle: func() string {
 		if s.filter != "" {
 			return "filter: " + s.filter
 		}
@@ -298,9 +298,9 @@ func (s *state) processesPanel(p *ui.Container) {
 		s.dataTable(p, "dashboard.processes", s.processes(), cols, false)
 	})
 }
-func (s *state) networkPanel(p *ui.Container) {
+func (s *state) networkPanel(p *ui.Container, size *ui.Size) {
 	n := obj(s.sample["network"])
-	p.Panel(ui.PanelOptions{Title: "Network"}, func(p *ui.Container) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "Network"}, func(p *ui.Container) {
 		t := p.Theme()
 		row(p, ui.Cells(1), 0, func(r *ui.Container) {
 			txt(r, "Download: "+bitRate(num(n["downRate"])), t.Primary)
@@ -319,7 +319,7 @@ func (s *state) networkPanel(p *ui.Container) {
 		})
 	})
 }
-func (s *state) diskUsagePanel(p *ui.Container) {
+func (s *state) diskUsagePanel(p *ui.Container, size *ui.Size) {
 	disks := arr(s.sample["disks"])
 	first := object{}
 	if len(disks) > 0 {
@@ -329,7 +329,7 @@ func (s *state) diskUsagePanel(p *ui.Container) {
 	if len(disks) > 0 {
 		subtitle = scalar(first["device"])
 	}
-	p.Panel(ui.PanelOptions{Title: "Disk Usage", Subtitle: subtitle}, func(p *ui.Container) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "Disk Usage", Subtitle: subtitle}, func(p *ui.Container) {
 		t := p.Theme()
 		for _, v := range disks {
 			d := obj(v)
@@ -396,8 +396,8 @@ func (s *state) sensorsPanel(p *ui.Container) {
 		keys(p, rows, true)
 	})
 }
-func (s *state) logsPanel(p *ui.Container) {
-	p.Panel(ui.PanelOptions{Title: "Logs"}, func(p *ui.Container) {
+func (s *state) logsPanel(p *ui.Container, size *ui.Size) {
+	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "Logs"}, func(p *ui.Container) {
 		data := arr(s.sample["logs"])
 		pane := s.pane("dashboard.logs", len(data))
 		pane.log = true
@@ -414,31 +414,52 @@ func (s *state) logsPanel(p *ui.Container) {
 		}})
 	})
 }
+
+// dashboard is the reference screen. Three layouts, chosen by terminal width.
+//
+// Panels go straight into their row rather than each inside a sizing column. A
+// column is not a bordered child, so a row of them has no seam to merge and c
+// could never change this screen; a size on the panel does the same job and
+// leaves the borders adjacent to each other.
 func (s *state) dashboard(p *ui.Container) {
+	gap := s.panelGap()
 	if p.Width() >= 150 {
 		height := 16
 		if p.Height() >= 44 {
 			height = 19
 		}
-		row(p, ui.Cells(height), 1, func(r *ui.Container) {
-			col(r, ui.Fr(1), func(c *ui.Container) { s.cpuPanel(c, 2) })
-			col(r, ui.Fr(.95), s.memoryPanel)
-			col(r, ui.Fr(.95), s.disksPanel)
-			col(r, ui.Fr(1.35), s.systemPanel)
+		row(p, ui.Cells(height), gap, func(r *ui.Container) {
+			s.cpuPanel(r, 2, ref(ui.Fr(1)))
+			s.memoryPanel(r, ref(ui.Fr(.95)))
+			s.disksPanel(r, ref(ui.Fr(.95)))
+			s.systemPanel(r, ref(ui.Fr(1.35)))
 		})
-		row(p, ui.Fr(1), 1, func(r *ui.Container) {
-			col(r, ui.Fr(2), s.processesPanel)
-			col(r, ui.Fr(1.2), s.networkPanel)
-			col(r, ui.Fr(1.2), s.diskUsagePanel)
+		row(p, ui.Fr(1), gap, func(r *ui.Container) {
+			s.processesPanel(r, ref(ui.Fr(2)))
+			s.networkPanel(r, ref(ui.Fr(1.2)))
+			s.diskUsagePanel(r, ref(ui.Fr(1.2)))
 		})
-		row(p, ui.Cells(12), 1, func(r *ui.Container) { s.temperaturesPanel(r); s.sensorsPanel(r); col(r, ui.Fr(1.6), s.logsPanel) })
+		row(p, ui.Cells(12), gap, func(r *ui.Container) {
+			s.temperaturesPanel(r)
+			s.sensorsPanel(r)
+			s.logsPanel(r, ref(ui.Fr(1.6)))
+		})
 	} else if p.Width() >= 100 {
-		row(p, ui.Cells(14), 1, func(r *ui.Container) { s.cpuPanel(r, 2); s.memoryPanel(r); s.systemPanel(r) })
-		row(p, ui.Fr(1), 1, func(r *ui.Container) { col(r, ui.Fr(1.6), s.processesPanel); col(r, ui.Fill(), s.networkPanel) })
-		row(p, ui.Cells(10), 1, func(r *ui.Container) { s.temperaturesPanel(r); s.logsPanel(r) })
+		row(p, ui.Cells(14), gap, func(r *ui.Container) {
+			s.cpuPanel(r, 2, nil)
+			s.memoryPanel(r, nil)
+			s.systemPanel(r, nil)
+		})
+		row(p, ui.Fr(1), gap, func(r *ui.Container) {
+			s.processesPanel(r, ref(ui.Fr(1.6)))
+			// Fill explicitly: the column this replaced carried it, and a nil
+			// size is not the same thing here.
+			s.networkPanel(r, ref(ui.Fill()))
+		})
+		row(p, ui.Cells(10), gap, func(r *ui.Container) { s.temperaturesPanel(r); s.logsPanel(r, nil) })
 	} else {
-		row(p, ui.Cells(10), 1, func(r *ui.Container) { s.cpuPanel(r, 1); s.memoryPanel(r) })
-		col(p, ui.Fill(), s.processesPanel)
-		row(p, ui.Cells(8), 1, s.networkPanel)
+		row(p, ui.Cells(10), gap, func(r *ui.Container) { s.cpuPanel(r, 1, nil); s.memoryPanel(r, nil) })
+		col(p, ui.Fill(), func(c *ui.Container) { s.processesPanel(c, nil) })
+		row(p, ui.Cells(8), gap, func(r *ui.Container) { s.networkPanel(r, nil) })
 	}
 }

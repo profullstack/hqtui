@@ -19,6 +19,7 @@ sub native {
     $f->attach([hqb_destroy=>'_destroy'],['opaque']=>'void');
     $f->attach([hqb_set=>'_set'],['opaque','string','size_t']=>'int');
     $f->attach([hqb_resize=>'_resize'],['opaque','int','int']=>'int');
+    $f->attach([hqb_collapse=>'_collapse'],['opaque','int']=>'int');
     $f->attach([hqb_render=>'_render'],['opaque','string']=>'string');
     $f->attach([hqb_demo_frame=>'_demo_frame'],['opaque','string','string']=>'string');
     $f->attach([hqb_open=>'_open'],['opaque']=>'int');
@@ -88,6 +89,8 @@ sub set {
     my ($s,$ui)=@_; my $json=Hqtui::json(ref($ui) eq 'Hqtui::UI' ? $ui->data : $ui);
     Hqtui::ok(Hqtui::_set($s->handle,$json,length($json))); return $s;
 }
+# Merge the borders of adjacent panels into shared lines.
+sub collapse {my ($s,$on)=@_;Hqtui::ok(Hqtui::_collapse($s->handle,$on?1:0));return $s;}
 sub resize {my ($s,$w,$h)=@_;Hqtui::ok(Hqtui::_resize($s->handle,$w,$h));return $s;}
 sub render {my ($s,$format)=@_;Hqtui::checked(Hqtui::_render($s->handle,$format//'text'));}
 sub demo_frame {my ($s,$screen,$format)=@_;Hqtui::checked(Hqtui::_demo_frame($s->handle,$screen,$format//'text'));}

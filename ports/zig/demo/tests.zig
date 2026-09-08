@@ -22,7 +22,14 @@ test "native screens match TypeScript reference cells" {
         const theme = m.string(m.get(case, "theme"));
         state.theme = m.index(&m.themes, theme) orelse 0;
         state.screen = screen;
-        var frame = try h.renderToScreen(std.testing.allocator, width, height, theme, if (screen == 0) h.Body.with(&state, @import("dashboard.zig").render) else if (screen <= 4) h.Body.with(&state, @import("telemetry_view.zig").render) else h.Body.with(&state, @import("showcase.zig").render));
+        // Both border modes: collapsing changes the layout, not only the
+        // glyphs, so the fixtures carry each frame twice.
+        state.collapse = m.get(case, "collapsed") == .bool and m.get(case, "collapsed").bool;
+        const body = if (screen == 0) h.Body.with(&state, @import("dashboard.zig").render) else if (screen <= 4) h.Body.with(&state, @import("telemetry_view.zig").render) else h.Body.with(&state, @import("showcase.zig").render);
+        var frame = if (state.collapse)
+            try h.renderCollapsedToScreen(std.testing.allocator, width, height, theme, body)
+        else
+            try h.renderToScreen(std.testing.allocator, width, height, theme, body);
         defer frame.deinit();
         for (0..height) |y| {
             var hash: u32 = 2166136261;
@@ -39,7 +46,7 @@ test "native screens match TypeScript reference cells" {
             }
             const expected: u32 = @intFromFloat(m.num(m.arr(m.get(case, "hashes"))[y]));
             if (hash != expected) {
-                std.debug.print("dashboard {d}x{d}/{s} row {d}: {s}\n", .{ width, height, theme, y, try frame.line(y) });
+                std.debug.print("{s} {d}x{d}/{s}{s} row {d}: {s}\n", .{ m.string(m.get(case, "screen")), width, height, theme, if (state.collapse) " collapsed" else "", y, try frame.line(y) });
                 try std.testing.expectEqual(expected, hash);
             }
         }

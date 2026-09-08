@@ -126,8 +126,19 @@ pub fn render_collapsed_to_text<'v>(
     theme: &str,
     view: impl FnOnce(&mut Container<'v>),
 ) -> String {
+    render_collapsed_to_screen(width, height, theme, view).text()
+}
+
+/// The same, returning the whole screen. Cell-level parity against the
+/// TypeScript reference needs the buffer, not the text.
+pub fn render_collapsed_to_screen<'v>(
+    width: usize,
+    height: usize,
+    theme: &str,
+    view: impl FnOnce(&mut Container<'v>),
+) -> RenderedScreen {
     COLLAPSE.with(|flag| flag.set(true));
-    let out = render_to_screen(width, height, theme, view).text();
+    let out = render_to_screen(width, height, theme, view);
     COLLAPSE.with(|flag| flag.set(false));
     out
 }

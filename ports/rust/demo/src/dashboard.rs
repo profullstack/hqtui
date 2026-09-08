@@ -101,12 +101,27 @@ fn meter(p: &mut Container<'_>, value: f64, color: Option<Color>) {
         ..Default::default()
     });
 }
-fn cpu<'a>(ui: &mut Container<'a>, s: &'a State, columns: usize) {
+/// Apply a size to a panel when the row wants one.
+///
+/// The wide dashboard used to wrap each panel in a sizing column. A column is
+/// not a bordered child, so a row of them has no seam for `collapse_borders` to
+/// merge; sizing the panel itself keeps the borders adjacent.
+fn sized(p: Panel, size: Option<&'static str>) -> Panel {
+    match size {
+        Some(s) => p.size(s),
+        None => p,
+    }
+}
+
+fn cpu<'a>(ui: &mut Container<'a>, s: &'a State, columns: usize, size: Option<&'static str>) {
     let c = &s.sample["cpu"];
     ui.panel(
-        Panel::new()
-            .title("CPU Overview")
-            .subtitle(percent(n(&c["total"]))),
+        sized(
+            Panel::new()
+                .title("CPU Overview")
+                .subtitle(percent(n(&c["total"]))),
+            size,
+        ),
         move |p| {
             let t = p.theme().clone();
             p.label(&format!(
@@ -145,11 +160,11 @@ fn cpu<'a>(ui: &mut Container<'a>, s: &'a State, columns: usize) {
         },
     );
 }
-fn memory<'a>(ui: &mut Container<'a>, s: &'a State) {
+fn memory<'a>(ui: &mut Container<'a>, s: &'a State, size: Option<&'static str>) {
     let m = &s.sample["memory"];
     let used = n(&m["used"]) / n(&m["total"]).max(1.);
     let swap = n(&m["swapUsed"]) / n(&m["swapTotal"]).max(1.);
-    ui.panel(Panel::new().title("Memory & Swap"), move |p| {
+    ui.panel(sized(Panel::new().title("Memory & Swap"), size), move |p| {
         let t = p.theme().clone();
         tx(
             p,
@@ -201,8 +216,8 @@ fn memory<'a>(ui: &mut Container<'a>, s: &'a State) {
         );
     });
 }
-fn disks<'a>(ui: &mut Container<'a>, s: &'a State) {
-    ui.panel(Panel::new().title("Disks"), move |p| {
+fn disks<'a>(ui: &mut Container<'a>, s: &'a State, size: Option<&'static str>) {
+    ui.panel(sized(Panel::new().title("Disks"), size), move |p| {
         let t = p.theme().clone();
         let disks = array(&s.sample["disks"]);
         if disks.is_empty() {
@@ -256,9 +271,9 @@ fn disks<'a>(ui: &mut Container<'a>, s: &'a State) {
         }
     });
 }
-fn system<'a>(ui: &mut Container<'a>, state: &'a State) {
+fn system<'a>(ui: &mut Container<'a>, state: &'a State, size: Option<&'static str>) {
     let s = &state.sample;
-    ui.panel(Panel::new().title("System"), move |p| {
+    ui.panel(sized(Panel::new().title("System"), size), move |p| {
         let t = p.theme().clone();
         p.row(Row::new().size(6).min(6).gap(2), move |r| {
             kv(
@@ -399,7 +414,7 @@ fn system<'a>(ui: &mut Container<'a>, state: &'a State) {
         }
     });
 }
-fn processes<'a>(ui: &mut Container<'a>, s: &'a State) {
+fn processes<'a>(ui: &mut Container<'a>, s: &'a State, size: Option<&'static str>) {
     let mut opts = Panel::new()
         .title(format!(
             "Processes (sorted by {})",
@@ -409,7 +424,7 @@ fn processes<'a>(ui: &mut Container<'a>, s: &'a State) {
     if !s.filter.is_empty() {
         opts = opts.subtitle(format!("filter: {}", s.filter));
     }
-    ui.panel(opts, move |p| {
+    ui.panel(sized(opts, size), move |p| {
         let t = p.theme().clone();
         let data = s.processes();
         let mut panes = s.panes.borrow_mut();
@@ -485,9 +500,9 @@ fn processes<'a>(ui: &mut Container<'a>, s: &'a State) {
         );
     });
 }
-fn network<'a>(ui: &mut Container<'a>, s: &'a State) {
+fn network<'a>(ui: &mut Container<'a>, s: &'a State, size: Option<&'static str>) {
     let net = &s.sample["network"];
-    ui.panel(Panel::new().title("Network"), move |p| {
+    ui.panel(sized(Panel::new().title("Network"), size), move |p| {
         let t = p.theme().clone();
         p.row(Row::new().size(1), move |r| {
             tx(
@@ -523,11 +538,14 @@ fn network<'a>(ui: &mut Container<'a>, s: &'a State) {
         });
     });
 }
-fn disk_usage<'a>(ui: &mut Container<'a>, s: &'a State) {
+fn disk_usage<'a>(ui: &mut Container<'a>, s: &'a State, size: Option<&'static str>) {
     ui.panel(
-        Panel::new()
-            .title("Disk Usage")
-            .subtitle(text(&s.sample["disks"][0]["device"])),
+        sized(
+            Panel::new()
+                .title("Disk Usage")
+                .subtitle(text(&s.sample["disks"][0]["device"])),
+            size,
+        ),
         move |p| {
             for d in array(&s.sample["disks"]) {
                 let used = n(&d["used"]) / n(&d["total"]).max(1.);
@@ -618,8 +636,8 @@ fn sensors<'a>(ui: &mut Container<'a>, s: &'a State) {
         );
     });
 }
-fn logs<'a>(ui: &mut Container<'a>, s: &'a State) {
-    ui.panel(Panel::new().title("Logs"), move |p| {
+fn logs<'a>(ui: &mut Container<'a>, s: &'a State, size: Option<&'static str>) {
+    ui.panel(sized(Panel::new().title("Logs"), size), move |p| {
         let logs = array(&s.sample["logs"]);
         let mut panes = s.panes.borrow_mut();
         let pane = panes.entry("dashboard.logs".into()).or_default();
@@ -645,49 +663,56 @@ fn logs<'a>(ui: &mut Container<'a>, s: &'a State) {
         );
     });
 }
+/// The reference dashboard. Three layouts, chosen by terminal width.
+///
+/// Panels go straight into their row rather than each inside a sizing column.
+/// A column is not a bordered child, so a row of them has no seam to merge and
+/// `c` could never change this screen; a size on the panel does the same job
+/// and leaves the borders adjacent to each other.
 pub fn render<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     if ui.width() >= 150 {
         ui.row(
             Row::new()
                 .size(if ui.height() >= 44 { 19 } else { 16 })
-                .gap(1),
+                .gap(gap),
             move |r| {
-                r.column(Column::new().size("1fr"), move |c| cpu(c, s, 2));
-                r.column(Column::new().size("0.95fr"), move |c| memory(c, s));
-                r.column(Column::new().size("0.95fr"), move |c| disks(c, s));
-                r.column(Column::new().size("1.35fr"), move |c| system(c, s));
+                cpu(r, s, 2, Some("1fr"));
+                memory(r, s, Some("0.95fr"));
+                disks(r, s, Some("0.95fr"));
+                system(r, s, Some("1.35fr"));
             },
         );
-        ui.row(Row::new().size("1fr").gap(1), move |r| {
-            r.column(Column::new().size("2fr"), move |c| processes(c, s));
-            r.column(Column::new().size("1.2fr"), move |c| network(c, s));
-            r.column(Column::new().size("1.2fr"), move |c| disk_usage(c, s));
+        ui.row(Row::new().size("1fr").gap(gap), move |r| {
+            processes(r, s, Some("2fr"));
+            network(r, s, Some("1.2fr"));
+            disk_usage(r, s, Some("1.2fr"));
         });
-        ui.row(Row::new().size(12).gap(1), move |r| {
+        ui.row(Row::new().size(12).gap(gap), move |r| {
             temperatures(r, s);
             sensors(r, s);
-            r.column(Column::new().size("1.6fr"), move |c| logs(c, s));
+            logs(r, s, Some("1.6fr"));
         });
     } else if ui.width() >= 100 {
-        ui.row(Row::new().size(14).gap(1), move |r| {
-            cpu(r, s, 2);
-            memory(r, s);
-            system(r, s);
+        ui.row(Row::new().size(14).gap(gap), move |r| {
+            cpu(r, s, 2, None);
+            memory(r, s, None);
+            system(r, s, None);
         });
-        ui.row(Row::new().size("1fr").gap(1), move |r| {
-            r.column(Column::new().size("1.6fr"), move |c| processes(c, s));
-            r.column(Column::new(), move |c| network(c, s));
+        ui.row(Row::new().size("1fr").gap(gap), move |r| {
+            processes(r, s, Some("1.6fr"));
+            network(r, s, None);
         });
-        ui.row(Row::new().size(10).gap(1), move |r| {
+        ui.row(Row::new().size(10).gap(gap), move |r| {
             temperatures(r, s);
-            logs(r, s);
+            logs(r, s, None);
         });
     } else {
-        ui.row(Row::new().size(10).gap(1), move |r| {
-            cpu(r, s, 1);
-            memory(r, s);
+        ui.row(Row::new().size(10).gap(gap), move |r| {
+            cpu(r, s, 1, None);
+            memory(r, s, None);
         });
-        ui.column(Column::new(), move |c| processes(c, s));
-        ui.row(Row::new().size(8).gap(1), move |r| network(r, s));
+        ui.column(Column::new(), move |c| processes(c, s, None));
+        ui.row(Row::new().size(8).gap(gap), move |r| network(r, s, None));
     }
 }

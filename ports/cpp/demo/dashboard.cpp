@@ -1,6 +1,6 @@
 #include "model.hpp"
 namespace demo {
-static void cpu_panel(UI &ui, State &s, int columns) {
+static void cpu_panel(UI &ui, State &s, int columns, Constraint size = fr()) {
   const auto &c = s.data["cpu"];
   ui.panel(
       "CPU Overview",
@@ -30,9 +30,9 @@ static void cpu_panel(UI &ui, State &s, int columns) {
         }
         p.keys({kv("Load Avg", load, t.warning)});
       },
-      fr(), percent(c["total"].n()));
+      size, percent(c["total"].n()));
 }
-static void memory_panel(UI &ui, State &s) {
+static void memory_panel(UI &ui, State &s, Constraint size = fr()) {
   const auto &m = s.data["memory"];
   ui.panel("Memory & Swap", [&](UI &p) {
     auto t = p.t();
@@ -55,9 +55,9 @@ static void memory_panel(UI &ui, State &s) {
     p.keys(
         {kv("Used:", bytes(m["swapUsed"].n()), t.secondary),
          kv("Free:", bytes(m["swapTotal"].n() - m["swapUsed"].n()), t.muted)});
-  });
+  }, size);
 }
-static void disks_panel(UI &ui, State &s) {
+static void disks_panel(UI &ui, State &s, Constraint size = fr()) {
   ui.panel("Disks", [&](UI &p) {
     auto t = p.t();
     auto &disks = s.data["disks"].array();
@@ -84,9 +84,9 @@ static void disks_panel(UI &ui, State &s) {
       if (i == 0 && disks.size() > 1)
         p.divider();
     }
-  });
+  }, size);
 }
-static void system_panel(UI &ui, State &s) {
+static void system_panel(UI &ui, State &s, Constraint size = fr()) {
   ui.panel("System", [&](UI &p) {
     auto t = p.t();
     auto sys = s.data["system"], c = s.data["cpu"], m = s.data["memory"];
@@ -163,9 +163,9 @@ static void system_panel(UI &ui, State &s) {
               kv("Ctx switches",
                  fixed(sys["contextSwitches"].n() / 1000, 1) + "K", t.accent)});
     }
-  });
+  }, size);
 }
-static void processes_panel(UI &ui, State &s) {
+static void processes_panel(UI &ui, State &s, Constraint size = fr()) {
   std::string sort =
       std::vector<std::string>{"CPU", "MEM", "PID", "NAME"}[s.sort];
   ui.panel(
@@ -193,10 +193,10 @@ static void processes_panel(UI &ui, State &s) {
                dc("user", "User", 10, 1, t.muted),
                dc("command", "Command", -1, 10, t.muted)});
       },
-      fr(), s.filter.empty() ? "" : "filter: " + s.filter,
+      size, s.filter.empty() ? "" : "filter: " + s.filter,
       ui.t().border_focused);
 }
-static void network_panel(UI &ui, State &s) {
+static void network_panel(UI &ui, State &s, Constraint size = fr()) {
   ui.panel("Network", [&](UI &p) {
     auto t = p.t();
     auto n = s.data["network"];
@@ -227,9 +227,9 @@ static void network_panel(UI &ui, State &s) {
             false);
       }
     });
-  });
+  }, size);
 }
-static void disk_usage_panel(UI &ui, State &s) {
+static void disk_usage_panel(UI &ui, State &s, Constraint size = fr()) {
   ui.panel(
       "Disk Usage",
       [&](UI &p) {
@@ -260,7 +260,7 @@ static void disk_usage_panel(UI &ui, State &s) {
           });
         });
       },
-      fr(), s.data["disks"].at(0)["device"].s(""));
+      size, s.data["disks"].at(0)["device"].s(""));
 }
 static void temperatures_panel(UI &ui, State &s) {
   ui.panel("Temperatures", [&](UI &p) {
@@ -311,50 +311,55 @@ static void sensors_panel(UI &ui, State &s) {
     p.keys(rows);
   });
 }
-static void logs_panel(UI &ui, State &s) {
+static void logs_panel(UI &ui, State &s, Constraint size = fr()) {
   ui.panel("Logs", [&](UI &p) {
     p.log(logs(s.data["logs"]), &s.panes["dashboard.logs"], "dashboard.logs");
-  });
+  }, size);
 }
+// Panels go straight into their row rather than each inside a sizing column. A
+// column is not a bordered child, so a row of them has no seam to merge and `c`
+// could never change this screen; a size on the panel does the same job and
+// leaves the borders adjacent to each other.
 void dashboard(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   if (ui.width() >= 150) {
-    ui.row(cells(ui.height() >= 44 ? 19 : 16), 1, [&](UI &r) {
-      r.col(fr(), 0, [&](UI &c) { cpu_panel(c, s, 2); });
-      r.col(fr(.95), 0, [&](UI &c) { memory_panel(c, s); });
-      r.col(fr(.95), 0, [&](UI &c) { disks_panel(c, s); });
-      r.col(fr(1.35), 0, [&](UI &c) { system_panel(c, s); });
+    ui.row(cells(ui.height() >= 44 ? 19 : 16), gap, [&](UI &r) {
+      cpu_panel(r, s, 2, fr());
+      memory_panel(r, s, fr(.95));
+      disks_panel(r, s, fr(.95));
+      system_panel(r, s, fr(1.35));
     });
-    ui.row(fr(), 1, [&](UI &r) {
-      r.col(fr(2), 0, [&](UI &c) { processes_panel(c, s); });
-      r.col(fr(1.2), 0, [&](UI &c) { network_panel(c, s); });
-      r.col(fr(1.2), 0, [&](UI &c) { disk_usage_panel(c, s); });
+    ui.row(fr(), gap, [&](UI &r) {
+      processes_panel(r, s, fr(2));
+      network_panel(r, s, fr(1.2));
+      disk_usage_panel(r, s, fr(1.2));
     });
-    ui.row(cells(12), 1, [&](UI &r) {
+    ui.row(cells(12), gap, [&](UI &r) {
       temperatures_panel(r, s);
       sensors_panel(r, s);
-      r.col(fr(1.6), 0, [&](UI &c) { logs_panel(c, s); });
+      logs_panel(r, s, fr(1.6));
     });
   } else if (ui.width() >= 100) {
-    ui.row(cells(14), 1, [&](UI &r) {
+    ui.row(cells(14), gap, [&](UI &r) {
       cpu_panel(r, s, 2);
       memory_panel(r, s);
       system_panel(r, s);
     });
-    ui.row(fr(), 1, [&](UI &r) {
-      r.col(fr(1.6), 0, [&](UI &c) { processes_panel(c, s); });
-      r.col(fr(), 0, [&](UI &c) { network_panel(c, s); });
+    ui.row(fr(), gap, [&](UI &r) {
+      processes_panel(r, s, fr(1.6));
+      network_panel(r, s, fr());
     });
-    ui.row(cells(10), 1, [&](UI &r) {
+    ui.row(cells(10), gap, [&](UI &r) {
       temperatures_panel(r, s);
       logs_panel(r, s);
     });
   } else {
-    ui.row(cells(10), 1, [&](UI &r) {
+    ui.row(cells(10), gap, [&](UI &r) {
       cpu_panel(r, s, 1);
       memory_panel(r, s);
     });
     ui.col(fr(), 0, [&](UI &c) { processes_panel(c, s); });
-    ui.row(cells(8), 1, [&](UI &r) { network_panel(r, s); });
+    ui.row(cells(8), gap, [&](UI &r) { network_panel(r, s); });
   }
 }
 } // namespace demo

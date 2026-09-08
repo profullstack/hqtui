@@ -138,6 +138,16 @@ pub struct State {
     pub missing: Vec<String>,
 }
 impl State {
+    /// The seam between panels: zero while collapsed, so their borders merge.
+    ///
+    /// The library merges a seam only where two bordered siblings already
+    /// touch, so toggling `collapse` without closing the gap moved nothing.
+    pub fn panel_gap(&self) -> usize {
+        if self.collapse { 0 } else { 1 }
+    }
+}
+
+impl State {
     pub fn new(real: bool, seed: u32) -> Self {
         let mut s = Self {
             clock: "12:00:00".into(),

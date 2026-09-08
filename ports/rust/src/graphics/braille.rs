@@ -40,6 +40,18 @@ pub struct BrailleCanvas {
     dots: Vec<u8>,
 }
 
+/// Round, treating a value within a hair of .5 as the tie it mathematically is.
+///
+/// Plot geometry runs through cos and sin, and libm implementations differ by an
+/// ULP at the exact angles where a coordinate lands on .5 — cos(120°) is -0.5,
+/// and V8 returns a hair under it where Rust returns a hair over. Rounding the
+/// raw value lets that ULP decide a pixel, so the same widget at the same size
+/// differs between ports. The tolerance is far wider than an ULP and far
+/// narrower than anything geometric.
+fn snap_round(v: f64) -> f64 {
+    round_half_up(if v >= 0.0 { v + 1e-9 } else { v - 1e-9 })
+}
+
 impl BrailleCanvas {
     /// Coordinates are clamped to this before anything iterates over them. It
     /// is far larger than any canvas and far below 2^53, where `x += 1` stops
@@ -70,8 +82,8 @@ impl BrailleCanvas {
     /// which compares false against everything, is ignored rather than landing
     /// in cell 0.
     fn locate(&self, x: f64, y: f64) -> Option<(usize, u8)> {
-        let px = round_half_up(x);
-        let py = round_half_up(y);
+        let px = snap_round(x);
+        let py = snap_round(y);
         if !(px >= 0.0 && py >= 0.0 && px < self.width as f64 && py < self.height as f64) {
             return None;
         }

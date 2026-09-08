@@ -75,8 +75,21 @@ func (c *BrailleCanvas) Clear() {
 // locate resolves a pixel coordinate to a cell index and dot bit. The test is
 // written positively so that NaN, which compares false against everything, is
 // ignored rather than landing in cell 0.
+// snapRound rounds, treating a value within a hair of .5 as the tie it
+// mathematically is. Plot geometry runs through cos and sin, and libm
+// implementations differ by an ULP at the exact angles where a coordinate lands
+// on .5 -- cos(120 degrees) is -0.5, and V8 returns a hair under it where Go
+// returns a hair over. Rounding the raw value lets that ULP decide a pixel, so
+// the same widget at the same size differs between ports.
+func snapRound(v float64) float64 {
+	if v >= 0 {
+		return roundHalfUp(v + 1e-9)
+	}
+	return roundHalfUp(v - 1e-9)
+}
+
 func (c *BrailleCanvas) locate(x, y float64) (int, uint8, bool) {
-	px, py := roundHalfUp(x), roundHalfUp(y)
+	px, py := snapRound(x), snapRound(y)
 	if !(px >= 0 && py >= 0 && px < float64(c.Width) && py < float64(c.Height)) {
 		return 0, 0, false
 	}

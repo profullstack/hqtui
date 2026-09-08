@@ -28,8 +28,9 @@ fn node(label: &str, a: &str, b: &str, children: Vec<TreeNode>) -> TreeNode {
     }
 }
 pub fn render<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     ui.row(Row::new().gap(1), move |r| {
-        r.column(Column::new().gap(1), move |left| {
+        r.column(Column::new().gap(gap), move |left| {
             left.panel(Panel::new().title("Buttons & Inputs").size(13), move |p| {
                 p.row(Row::new().size(1).gap(1), |r| {
                     for (label, width, variant) in [
@@ -159,7 +160,7 @@ pub fn render<'a>(ui: &mut Container<'a>, s: &'a State) {
                 );
             });
         });
-        r.column(Column::new().gap(1), move |right| {
+        r.column(Column::new().gap(gap), move |right| {
             right.panel(Panel::new().title("Process Tree").size(13), move |p| {
                 let muted = p.theme().muted;
                 p.row(Row::new().size(1), move |r| {

@@ -90,6 +90,7 @@ pub const TerminalSize = terminal.TerminalSize;
 
 pub const RenderedScreen = testing.RenderedScreen;
 pub const renderToScreen = testing.renderToScreen;
+pub const renderCollapsedToScreen = testing.renderCollapsedToScreen;
 
 test {
     @import("std").testing.refAllDecls(@This());

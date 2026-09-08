@@ -10,9 +10,14 @@ const cases = [];
 for (const [screen,draw] of Object.entries(screens)) {
 for (const theme of ["dark", "dracula", "nord"]) {
   for (const [width,height] of [[80,30],[120,40],[168,46],[200,60]]) {
+  // Both border modes. Collapsing changes the layout rather than only the
+  // glyphs, and covering just the open one is how every port shipped a `c`
+  // key that toggled a flag and moved nothing.
+  for (const collapsed of [false, true]) {
     const state=createState(structuredClone(sample),"simulated",[]);
     state.themeIndex=["dark","dracula","nord"].indexOf(theme);
-    const frame=renderToScreen(({ui,theme})=>draw(ui,state,theme),{width,height,theme});
+    state.collapsed=collapsed;
+    const frame=renderToScreen(({ui,theme})=>draw(ui,state,theme),{width,height,theme,collapseBorders:collapsed});
     const hashes=[];
     for(let y=0;y<height;y++) {
       let h=2166136261;
@@ -25,7 +30,8 @@ for (const theme of ["dark", "dracula", "nord"]) {
       }
       hashes.push(h);
     }
-    cases.push({screen,width,height,theme,text:frame.text(),hashes});
+    cases.push({screen,width,height,theme,collapsed,text:frame.text(),hashes});
+  }
   }
 }
 }
