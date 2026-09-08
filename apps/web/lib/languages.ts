@@ -12,13 +12,18 @@ export type Language = {
   miseDemo: string;
   native: boolean;
   binding?: boolean;
+  /**
+   * Drives the library without linking against it: it writes records that an
+   * adapter renders. Neither a port nor a binding.
+   */
+  bridge?: boolean;
 };
 
 /** Optional developer checkout; public demo commands do not require it. */
 export const CLONE = "git clone https://github.com/profullstack/hqtui";
 export const LAUNCHER = "https://hqtui.com/demo.sh";
 export function latestDemo(language: string, mise = false): string {
-  if (!["typescript", "rust", "go", "python", "zig", "cpp", "ruby", "php", "perl"].includes(language)) throw new Error("Unsupported demo language");
+  if (!["typescript", "rust", "go", "python", "zig", "cpp", "ruby", "php", "perl", "cobol"].includes(language)) throw new Error("Unsupported demo language");
   return `curl -fsSL ${LAUNCHER} | sh -s -- --${mise ? "mise" : "system"} ${language}`;
 }
 
@@ -94,6 +99,21 @@ export const LANGUAGES: readonly Language[] = [
     interactiveDemo: latestDemo("zig"),
     miseDemo: latestDemo("zig", true),
     native: true,
+  },
+  {
+    name: "COBOL",
+    id: "cobol",
+    description:
+      "Writes 80-column records that a TypeScript or Rust adapter renders. Needs GnuCOBOL; there is no mise package for it, so this one is --system only.",
+    href: "/widgets",
+    demo: latestDemo("cobol"),
+    snapshotDemo: latestDemo("cobol"),
+    interactiveDemo: latestDemo("cobol"),
+    // No mise package provides a COBOL compiler, so the pinned form is the
+    // same command. Saying otherwise would print advice that cannot work.
+    miseDemo: latestDemo("cobol"),
+    native: false,
+    bridge: true,
   },
 ];
 

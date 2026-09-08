@@ -9,7 +9,7 @@ main() (
     note() { printf 'hqtui-demo: %s\n' "$*" >&2; }
     usage() {
         printf '%s\n' 'Usage: demo.sh [--mise|--system] [--check] LANGUAGE [demo arguments...]' \
-          'Languages: typescript (ts), rust, go, python, zig, cpp (c++), ruby, php, perl' \
+          'Languages: typescript (ts), rust, go, python, zig, cpp (c++), ruby, php, perl, cobol' \
           'Every invocation fetches latest main. --check prints the revision without building.' \
           'Defaults to mise when installed, otherwise uses your installed compiler/runtime.' \
           'Examples: demo.sh rust --sim; demo.sh --mise rust --snapshot'
@@ -33,12 +33,18 @@ main() (
         rust|go|python|zig|ruby|perl) tool=$language ;;
         php) tool=conda:php ;;
         cpp|c++) language=cpp; tool=cmake ;;
-        *) fail "Unsupported language '$language'. Use typescript, rust, go, python, zig, cpp, ruby, php or perl. The C-only demo is not ready." ;;
+        # COBOL does not link against the library: it writes records that an
+        # adapter renders, so the toolchain it needs is the adapter's.
+        cob|cobol) language=cobol; tool=bun ;;
+        *) fail "Unsupported language '$language'. Use typescript, rust, go, python, zig, cpp, ruby, php, perl or cobol. The C-only demo is not ready." ;;
     esac
     # When invoked through curl | sh, the pipe is not the demo's keyboard.
     # Connect only interactive runs to the controlling terminal; preserve pipes
     # for headless output. Do this before any update/build work.
     headless=$check
+    # The COBOL demo prints its rendered widgets and exits; it never takes over
+    # the terminal, so a pipe is a perfectly good destination for it.
+    [ "$language" != cobol ] || headless=1
     for argument in "$@"; do
         case "$argument" in --snapshot|--help|-h|--version|-V) headless=1 ;; esac
     done
@@ -57,7 +63,7 @@ main() (
         command -v mise >/dev/null 2>&1 || fail 'mise was requested but is not installed. Install mise or omit --mise.'
     fi
     if [ "$manager" = system ] && [ "$check" -eq 0 ]; then
-        case "$language" in rust) driver=cargo ;; typescript) driver=bun ;; python) driver=python3 ;; cpp) driver=cmake ;; *) driver=$language ;; esac
+        case "$language" in rust) driver=cargo ;; typescript|cobol) driver=bun ;; python) driver=python3 ;; cpp) driver=cmake ;; *) driver=$language ;; esac
         driver_path=$(command -v "$driver") || fail "$driver is not installed. Install it, or use --mise."
         # Resolve a mise shim BEFORE entering the fetched checkout. Vanilla must
         # not accidentally load or ask to trust the downloaded mise.toml. Keep the
@@ -160,7 +166,7 @@ main() (
     # apps/demo/scripts/test-updater.py checks this table against those files.
     minimum=
     case "$language" in
-        typescript) minimum=1.4.0 ;;
+        typescript|cobol) minimum=1.4.0 ;;
         rust) minimum=1.75 ;;
         go) minimum=1.22 ;;
         python) minimum=3.10 ;;
@@ -183,7 +189,7 @@ main() (
     }
     if [ "$manager" = system ]; then
         case "$language" in
-            typescript|rust|python|cpp|ruby) installed=$("$driver_path" --version 2>/dev/null) ;;
+            typescript|cobol|rust|python|cpp|ruby) installed=$("$driver_path" --version 2>/dev/null) ;;
             go|zig) installed=$("$driver_path" version 2>/dev/null) ;;
             php) installed=$("$driver_path" -r 'echo PHP_VERSION;' 2>/dev/null) ;;
             perl) installed=$("$driver_path" -e 'printf "%vd", $^V' 2>/dev/null) ;;
@@ -378,6 +384,27 @@ main() (
                 printf '%s\n' "$revision" > "$bins/zig.ready"
             fi
             launch "$bins/zig/bin/hqtui-demo-zig" "$@"
+            ;;
+        cobol)
+            cd "$source"
+            # No mise package provides a COBOL compiler, so this one is the
+            # system's or nothing. Say what to install rather than failing with
+            # "cobc: not found" from three frames down.
+            command -v cobc >/dev/null 2>&1 || case "$(uname -s)" in
+                Darwin) fail 'GnuCOBOL is required. Install it with "brew install gnu-cobol", then run this again.' ;;
+                *) fail 'GnuCOBOL is required. Install it with your package manager (for example "apt install gnucobol4"), then run this again.' ;;
+            esac
+            if [ ! -f "$bins/cobol.ready" ] || [ ! -x "$bins/widgets" ]; then
+                note 'Compiling the COBOL program and building the adapter (first run of this revision)…'
+                run_tool bun install --frozen-lockfile --ignore-scripts
+                run_tool bun run --bun build
+                cobc -x -free "$source/ports/cobol/examples/widgets.cbl" -o "$bins/widgets" >&2
+                printf '%s\n' "$revision" > "$bins/cobol.ready"
+            fi
+            # COBOL writes records; the adapter draws them. That pipe is the
+            # whole design, so the demo runs it rather than hiding it.
+            "$bins/widgets" > "$cache/tmp/cobol-records.txt"
+            launch bun ports/cobol/adapter/render.ts < "$cache/tmp/cobol-records.txt"
             ;;
         typescript)
             cd "$source"

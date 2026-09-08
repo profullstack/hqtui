@@ -15,6 +15,14 @@ import { ThemeGallery, type ThemeCard } from "@/components/site/theme-gallery";
 import { recordView, themeVotes, totalViews } from "@/lib/db";
 import { themes } from "@profullstack/hqtui";
 import { LANGUAGES } from "@/lib/languages";
+
+/**
+ * Written out by hand, these went stale the moment a language was added: the
+ * page still said nine after COBOL made ten. Derive them instead.
+ */
+const COUNT = LANGUAGES.length;
+const SPELLED = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+  "nine", "ten", "eleven", "twelve"][COUNT] ?? String(COUNT);
 import { CommandBlock } from "@/components/site/command";
 
 export const dynamic = "force-dynamic";
@@ -149,7 +157,7 @@ export default async function Home() {
               High Quality Terminal UI for TypeScript, Rust, Go, Python, Zig and C++
             </p>
             <Badge variant="secondary" className="mb-5 font-mono text-xs">
-              v0.2.0 · 9 language demos · MIT
+              v0.2.0 · {COUNT} language demos · MIT
             </Badge>
             <p className="text-balance text-3xl font-bold tracking-tight sm:text-5xl">
               Terminal dashboards that
@@ -227,11 +235,15 @@ export default async function Home() {
       </section>
 
       <section id="languages" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6">
-        <h2 className="text-3xl font-bold tracking-tight">One terminal UI, nine language demos</h2>
+        <h2 className="text-3xl font-bold tracking-tight">
+          One terminal UI, {SPELLED} language demos
+        </h2>
         <p className="mt-3 max-w-3xl text-white/60">
           Build in TypeScript or use a native Rust, Go, Python or Zig implementation.
           C++ now has a native ten-screen demo over the shared C rendering core, with an experimental library API.
           Ruby, PHP and Perl add experimental bindings to that same engine, with APIs for your own CLI applications.
+          COBOL links against nothing at all: it writes fixed-width records that an adapter renders, which is how a
+          language with no binding can still draw a Braille chart.
           The native demos need no JavaScript runtime.
         </p>
         <div className="mt-6 max-w-2xl">
