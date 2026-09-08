@@ -24,6 +24,7 @@ hqb_scene *hqb_create(int, int, const char *);
 void hqb_destroy(hqb_scene *);
 int hqb_set(hqb_scene *, const char *, size_t);
 int hqb_resize(hqb_scene *, int, int);
+int hqb_collapse(hqb_scene *, int);
 const char *hqb_render(hqb_scene *, const char *);
 const char *hqb_demo_frame(hqb_scene *, const char *, const char *);
 int hqb_open(hqb_scene *);
@@ -110,6 +111,8 @@ final class Scene {
         $json = json_encode($ui, JSON_THROW_ON_ERROR);
         Native::check($this->native->hqb_set($this->handle(), $json, strlen($json))); return $this;
     }
+    /** Merge the borders of adjacent panels into shared lines. */
+    public function collapse(bool $enabled = true): self { Native::check($this->native->hqb_collapse($this->handle(),$enabled?1:0)); return $this; }
     public function resize(int $width, int $height): self { Native::check($this->native->hqb_resize($this->handle(),$width,$height)); return $this; }
     public function render(string $format='text'): string { return Native::string(Native::check($this->native->hqb_render($this->handle(),$format))); }
     public function demoFrame(string $screen, string $format='text'): string { return Native::string(Native::check($this->native->hqb_demo_frame($this->handle(),$screen,$format))); }
