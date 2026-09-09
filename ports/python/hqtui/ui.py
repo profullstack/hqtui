@@ -529,6 +529,19 @@ class Container:
             lambda s: g.draw_canvas(s, options),
         )
 
+    def world_map(self, options: w.WorldMapOptions, layout: Layout | None = None):
+        """A world map, and the country under whatever gets clicked.
+
+        The click is answered by turning the cell back into degrees and testing
+        it against the outlines, so the answer is the country actually under the
+        cursor. Bounding boxes would be cheaper and wrong: Russia's covers most
+        of the northern hemisphere and Chile's covers Argentina.
+        """
+        return self._add(
+            self._constraint(layout or Layout(), "fill"),
+            lambda s: w.draw_world_map(s, options),
+        )
+
     def sparkline(self, options: w.SparklineWidgetOptions, layout: Layout | None = None):
         return self._add(self._leaf(layout or Layout(), 1), lambda s: w.draw_sparkline(s, options))
 

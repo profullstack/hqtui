@@ -9,6 +9,7 @@ pub mod meters;
 pub mod scrollbar;
 pub mod shadow;
 pub mod surface;
+pub mod world;
 pub mod table;
 pub mod text;
 
@@ -35,6 +36,7 @@ pub use scrollbar::{
 };
 pub use shadow::{dim_rect, draw_shadow, ShadowOptions};
 pub use surface::{draw_clear, draw_fill, ClearOptions, FillOptions};
+pub use world::{country_at_cell, draw_world_map, WorldMapOptions};
 pub use table::{
     draw_list, draw_log, draw_table, draw_tree, resolve_offset, TableColumn,
     ListItem, ListOptions, LogEntry, LogOptions, TableOptions, TableRow, TreeNode, TreeOptions,

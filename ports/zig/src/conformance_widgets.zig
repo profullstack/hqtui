@@ -137,6 +137,15 @@ fn drawScene(allocator: std.mem.Allocator, name: []const u8, s: Surface) !void {
         w.drawShadow(s, .{ .x = 2, .y = 1, .width = 6, .height = 2 }, .{
             .color = hqtui_color.Color.rgb(0x10, 0x14, 0x18),
         });
+    } else if (eq(u8, name, "world")) {
+        try w.drawWorldMap(allocator, s, .{});
+    } else if (eq(u8, name, "world-zoom")) {
+        try w.drawWorldMap(allocator, s, .{
+            .x = .{ .min = 112, .max = 156 },
+            .y = .{ .min = 24, .max = 50 },
+        });
+    } else if (eq(u8, name, "world-highlight")) {
+        try w.drawWorldMap(allocator, s, .{ .highlight = &.{ "Brazil", "JP" } });
     } else if (eq(u8, name, "badge")) {
         _ = w.drawBadge(s, .{ .text = "LIVE" });
     } else if (eq(u8, name, "badge-outline")) {

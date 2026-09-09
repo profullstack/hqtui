@@ -15,6 +15,18 @@ from .blocks import (
     vertical_glyph,
 )
 from .braille import BrailleCanvas
+from .world import (
+    WORLD_COUNTRIES,
+    WORLD_X,
+    WORLD_Y,
+    CountryOutline,
+    WorldShapeOptions,
+    country_at,
+    country_bounds,
+    degrees_at,
+    find_country,
+    world_shapes,
+)
 from .canvas import (
     Bounds,
     CanvasOptions,
@@ -54,6 +66,16 @@ from .plot import (
 )
 
 __all__ = [
+    "WORLD_COUNTRIES",
+    "WORLD_X",
+    "WORLD_Y",
+    "CountryOutline",
+    "WorldShapeOptions",
+    "country_at",
+    "country_bounds",
+    "degrees_at",
+    "find_country",
+    "world_shapes",
     "Bounds",
     "CanvasOptions",
     "Projection",

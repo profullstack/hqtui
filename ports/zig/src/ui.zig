@@ -375,6 +375,7 @@ const Node = union(enum) {
     calendar: w.CalendarOptions,
     chart: w.ChartOptions,
     shapes: graphics.CanvasOptions,
+    world_map: w.WorldMapOptions,
     clear: w.ClearOptions,
     fill: w.FillOptions,
     sparkline: w.SparklineWidgetOptions,
@@ -467,6 +468,7 @@ fn drawNode(ctx: *Ctx, s: Surface, node: Node) anyerror!void {
         .calendar => |o| w.drawCalendar(s, o),
         .chart => |o| try w.drawChart(allocator, s, o),
         .shapes => |o| try graphics.drawCanvas(allocator, s, o),
+        .world_map => |o| try w.drawWorldMap(allocator, s, o),
         .clear => |o| w.drawClear(s, o),
         .fill => |o| w.drawFill(s, o),
         .sparkline => |o| w.drawSparkline(s, o),
@@ -886,6 +888,16 @@ pub const Container = struct {
     /// This takes bounds and shapes placed inside them, and y goes up.
     pub fn shapes(self: *Container, options: graphics.CanvasOptions) !void {
         try self.add(self.filling(), .{ .shapes = options });
+    }
+
+    /// A world map, and the country under whatever gets clicked.
+    ///
+    /// The click is answered by turning the cell back into degrees and testing
+    /// it against the outlines, so the answer is the country actually under the
+    /// cursor. Bounding boxes would be cheaper and wrong: Russia's covers most
+    /// of the northern hemisphere and Chile's covers Argentina.
+    pub fn worldMap(self: *Container, options: w.WorldMapOptions) !void {
+        try self.add(self.filling(), .{ .world_map = options });
     }
 
     pub fn sparkline(self: *Container, options: w.SparklineWidgetOptions) !void {

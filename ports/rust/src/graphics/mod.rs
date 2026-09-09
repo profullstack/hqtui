@@ -3,6 +3,8 @@
 
 pub mod blocks;
 pub mod canvas;
+pub mod world;
+pub mod world_data;
 pub mod chart;
 pub mod braille;
 pub mod plot;
@@ -12,6 +14,11 @@ pub use blocks::{
     HORIZONTAL_EIGHTHS, QUADRANTS, SHADES, VERTICAL_EIGHTHS,
 };
 pub use braille::BrailleCanvas;
+pub use world::{
+    country_at, country_bounds, degrees_at, find_country, world_shapes, WorldShapeOptions,
+    WORLD_X, WORLD_Y,
+};
+pub use world_data::{CountryOutline, WORLD_COUNTRIES};
 pub use canvas::{
     draw_canvas, projection, Bounds, CanvasOptions, Projection, Shape,
 };

@@ -592,6 +592,51 @@ Projection canvas_projection(const Braille &, Bounds x, Bounds y);
 /// A canvas drawn in the caller's own coordinates rather than in pixels.
 void draw_canvas(Surface, const Canvas &);
 
+struct CountryOutline {
+  std::string name;
+  /// ISO 3166-1 alpha-2, where Natural Earth has one.
+  std::string iso;
+  /// Longitude and latitude, interleaved. More than one ring means more than
+  /// one landmass.
+  std::vector<std::vector<double>> rings;
+};
+/// The country outlines, built once on first use.
+const std::vector<CountryOutline> &world_countries();
+struct WorldShapeOptions {
+  /// Colour for countries with nothing special about them.
+  Color color = 0;
+  /// Countries to pick out, by name or ISO code.
+  std::vector<std::string> highlight;
+  Color highlight_color = 0;
+};
+/// The world as canvas shapes, one closed polyline per landmass.
+std::vector<Shape> world_shapes(const WorldShapeOptions & = {});
+/// The country containing a point, or null for open water.
+const CountryOutline *country_at(double lon, double lat);
+/// Look a country up by name or ISO code.
+const CountryOutline *find_country(std::string_view key);
+/// The window a country fills, with a little room around it.
+void country_bounds(const CountryOutline &, double margin, Bounds *x, Bounds *y);
+/// The degrees under a terminal cell, given the window the map was drawn with.
+bool degrees_at(int column, int row, int width, int height, Bounds x, Bounds y, double *lon,
+                double *lat);
+struct WorldMap {
+  /// The window on the globe. Unset means all of it.
+  std::optional<Bounds> x, y;
+  /// Coastline colour.
+  Color color = 0;
+  /// Countries to pick out, by name or ISO code.
+  std::vector<std::string> highlight;
+  Color highlight_color = 0;
+  std::optional<Color> background;
+  bool grid = false;
+};
+/// A world map drawn in degrees.
+void draw_world_map(Surface, const WorldMap & = {});
+/// The country under a cell of a map drawn with these bounds.
+const CountryOutline *country_at_cell(int column, int row, int width, int height,
+                                      const WorldMap & = {});
+
 struct Shadow {
   /// How far the shadow falls.
   int offset_x = 1, offset_y = 1;
@@ -1074,6 +1119,10 @@ public:
   /// A canvas drawn in your own coordinates rather than in pixels.
   void shapes(Canvas o, Constraint size = fr()) {
     draw([=](Surface s) { draw_canvas(s, o); }, size);
+  }
+  /// A world map, and the country under whatever gets clicked.
+  void world_map(WorldMap o, Constraint size = fr()) {
+    draw([=](Surface s) { draw_world_map(s, o); }, size);
   }
   void sparkline(Sparkline o) {
     draw([=](Surface s) { draw_sparkline(s, o); }, cells(1));

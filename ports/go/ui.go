@@ -523,6 +523,19 @@ func (c *Container) Shapes(o CanvasOptions, layout ...Layout) *Container {
 	return c.add(c.filling(firstLayout(layout)), func(s Surface) { DrawCanvas(s, o) })
 }
 
+// WorldMap draws a world map and reports the country under whatever is clicked.
+//
+// The click is answered by turning the cell back into degrees and testing it
+// against the outlines, so the answer is the country actually under the cursor.
+// Bounding boxes would be cheaper and wrong: Russia's covers most of the
+// northern hemisphere and Chile's covers Argentina.
+func (c *Container) WorldMap(o WorldMapOptions, h ScrollHandlers, layout ...Layout) *Container {
+	return c.add(c.filling(firstLayout(layout)), func(s Surface) {
+		DrawWorldMap(s, o)
+		c.attachScroll(s, h, 0)
+	})
+}
+
 func (c *Container) Sparkline(o SparklineWidgetOptions, layout ...Layout) *Container {
 	return c.add(c.leaf(firstLayout(layout), 1), func(s Surface) { DrawSparkline(s, o) })
 }

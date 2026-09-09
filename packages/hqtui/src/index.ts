@@ -71,9 +71,12 @@ export {
   plot, blit, sparkline, bar, gauge, donut, histogram,
   verticalGlyph, horizontalGlyph, shadeGlyph, bestMode,
   plotPoints, domainOf, drawCanvas, projection,
+  worldShapes, countryAt, findCountry, countryBounds, degreesAt,
+  WORLD_COUNTRIES, WORLD_X, WORLD_Y,
   type Series, type PlotOptions, type FillMode,
   type Point, type MarkType, type ChartSeries, type AxisOptions, type ChartPlotOptions,
   type Domain, type Shape, type Bounds, type CanvasOptions, type Projection,
+  type CountryOutline, type WorldShapeOptions,
 } from "./graphics/index.ts";
 
 // Widgets (for drawing straight onto a Surface)

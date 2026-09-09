@@ -138,6 +138,14 @@ def draw_scene(case, name: str, s: Surface) -> None:
     elif name == "shadow-solid":
         w.draw_fill(s, w.FillOptions(symbol="x"))
         w.draw_shadow(s, Rect(2, 1, 6, 2), w.ShadowOptions(color=rgb(0x10, 0x14, 0x18)))
+    elif name == "world":
+        w.draw_world_map(s, w.WorldMapOptions())
+    elif name == "world-zoom":
+        w.draw_world_map(s, w.WorldMapOptions(
+            x=gc.Bounds(112, 156), y=gc.Bounds(24, 50)
+        ))
+    elif name == "world-highlight":
+        w.draw_world_map(s, w.WorldMapOptions(highlight=("Brazil", "JP")))
     elif name == "badge":
         w.draw_badge(s, w.BadgeOptions(text="LIVE"))
     elif name == "badge-outline":

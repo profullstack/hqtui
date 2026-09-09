@@ -176,6 +176,22 @@ fn draw_scene(name: &str, s: &Surface) {
                 &ShadowOptions { color: Some(Color::rgb(0x10, 0x14, 0x18)), ..Default::default() },
             );
         }
+        "world" => draw_world_map(s, &WorldMapOptions::default()),
+        "world-zoom" => draw_world_map(
+            s,
+            &WorldMapOptions {
+                x: Some(Bounds { min: 112.0, max: 156.0 }),
+                y: Some(Bounds { min: 24.0, max: 50.0 }),
+                ..Default::default()
+            },
+        ),
+        "world-highlight" => draw_world_map(
+            s,
+            &WorldMapOptions {
+                highlight: vec!["Brazil".into(), "JP".into()],
+                ..Default::default()
+            },
+        ),
         "badge" => {
             draw_badge(s, &BadgeOptions::new("LIVE"));
         }
