@@ -86,6 +86,21 @@ type Layout struct {
 	Gap        int
 	Padding    Padding
 	Background *Color
+	// Bordered treats this container's own edges as panel borders when
+	// collapsing.
+	//
+	// Collapsing merges a seam only where two bordered siblings meet, and a row
+	// or column is not itself bordered -- so wrapping a stack of panels in a
+	// column, which is the only way to put a stack beside one tall panel, used
+	// to make the seam down the middle of the screen the one seam that could
+	// never merge. Set this on such a wrapper and its edges join in.
+	//
+	// It is a declaration rather than something inferred, because the children
+	// are built only once the layout has been solved and the seam has to be
+	// known before that. True only if every child is a panel filling the
+	// container across the seam; otherwise a neighbour's border lands on
+	// content.
+	Bordered bool
 }
 
 func firstLayout(layout []Layout) Layout {
@@ -253,7 +268,7 @@ func (c *Container) Flush() {
 
 // Row is a horizontal container. Children default to equal shares.
 func (c *Container) Row(o RowOptions, build func(*Container)) *Container {
-	return c.add(c.constraintOfLayout(o.Layout, Fill(), nil), func(s Surface) {
+	return c.addBordered(c.constraintOfLayout(o.Layout, Fill(), nil), o.Layout.Bordered, func(s Surface) {
 		container := newContainer(s, c.ctx, DirRow, o.Layout)
 		if build != nil {
 			build(container)
@@ -264,7 +279,7 @@ func (c *Container) Row(o RowOptions, build func(*Container)) *Container {
 
 // Column is a vertical container.
 func (c *Container) Column(o ColumnOptions, build func(*Container)) *Container {
-	return c.add(c.constraintOfLayout(o.Layout, Fill(), nil), func(s Surface) {
+	return c.addBordered(c.constraintOfLayout(o.Layout, Fill(), nil), o.Layout.Bordered, func(s Surface) {
 		container := newContainer(s, c.ctx, DirColumn, o.Layout)
 		if build != nil {
 			build(container)
@@ -319,7 +334,7 @@ func (c *Container) Box(o PanelOptions, build func(*Container)) *Container {
 
 // Grid is a CSS-ish grid, filled row-major with optional spans.
 func (c *Container) Grid(o GridOptions, build func(*GridContainer)) *Container {
-	return c.add(c.constraintOfLayout(o.Layout, Fill(), nil), func(s Surface) {
+	return c.addBordered(c.constraintOfLayout(o.Layout, Fill(), nil), o.Layout.Bordered, func(s Surface) {
 		grid := newGridContainer(s, c.ctx, o)
 		if build != nil {
 			build(grid)
@@ -730,8 +745,9 @@ func (c *Container) When(condition bool, build func(*Container)) *Container {
 // ---------------------------------------------------------------------- grid
 
 type gridCell struct {
-	options CellOptions
-	draw    func(Surface)
+	options  CellOptions
+	draw     func(Surface)
+	bordered bool
 }
 
 // GridContainer places cells row-major, with spans.
@@ -766,14 +782,32 @@ func track(spec []Size, count, fallback int) []Size {
 	return out
 }
 
-func (g *GridContainer) push(o CellOptions, draw func(Surface)) *GridContainer {
-	g.cells = append(g.cells, gridCell{options: o, draw: draw})
+func (g *GridContainer) push(o CellOptions, bordered bool, draw func(Surface)) *GridContainer {
+	g.cells = append(g.cells, gridCell{options: o, draw: draw, bordered: bordered})
 	return g
+}
+
+// seam is the gap between tracks, minus one where the whole grid is panels and
+// collapsing is on, so neighbouring borders land in the same column and merge.
+// A grid is one pair of track sizes rather than a list of siblings, so this is
+// all or nothing: a single cell that is not a panel would have a neighbour's
+// border drawn across its content.
+func (g *GridContainer) seam() int {
+	gap := g.options.Gap
+	if !g.ctx.collapseBorders || gap != 0 || len(g.cells) < 2 {
+		return gap
+	}
+	for _, cell := range g.cells {
+		if !cell.bordered {
+			return gap
+		}
+	}
+	return -1
 }
 
 // Panel occupies the next free cell, or several with a span.
 func (g *GridContainer) Panel(o PanelOptions, cell CellOptions, build func(*Container)) *GridContainer {
-	return g.push(cell, func(s Surface) {
+	return g.push(cell, o.Border != BorderNone, func(s Surface) {
 		container := newContainer(s, g.ctx, DirColumn, Layout{})
 		container.Panel(o, build)
 		container.Flush()
@@ -781,7 +815,7 @@ func (g *GridContainer) Panel(o PanelOptions, cell CellOptions, build func(*Cont
 }
 
 func (g *GridContainer) Cell(cell CellOptions, l Layout, build func(*Container)) *GridContainer {
-	return g.push(cell, func(s Surface) {
+	return g.push(cell, l.Bordered, func(s Surface) {
 		container := newContainer(s, g.ctx, DirColumn, l)
 		if build != nil {
 			build(container)
@@ -791,7 +825,7 @@ func (g *GridContainer) Cell(cell CellOptions, l Layout, build func(*Container))
 }
 
 func (g *GridContainer) Row(cell CellOptions, l Layout, build func(*Container)) *GridContainer {
-	return g.push(cell, func(s Surface) {
+	return g.push(cell, l.Bordered, func(s Surface) {
 		container := newContainer(s, g.ctx, DirRow, l)
 		if build != nil {
 			build(container)
@@ -804,7 +838,7 @@ func (g *GridContainer) Flush() {
 	if len(g.cells) == 0 || g.surface.Rect.IsEmpty() {
 		return
 	}
-	gap := g.options.Gap
+	gap := g.seam()
 	columnSpec := track(g.options.Columns, g.options.ColumnCount, min(len(g.cells), 3))
 	rowCount := g.options.RowCount
 	if len(g.options.Rows) > 0 {

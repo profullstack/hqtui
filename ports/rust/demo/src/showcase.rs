@@ -11,8 +11,8 @@ use hqtui::{
 pub fn graphics<'a>(ui: &mut Container<'a>, s: &'a State) {
     let gap = s.panel_gap();
     let time = n(&s.sample["time"]);
-    ui.row(Row::new().gap(1), move |r| {
-        r.column(Column::new().gap(gap), move |left| {
+    ui.row(Row::new().gap(gap), move |r| {
+        r.column(Column::new().gap(gap).bordered(true), move |left| {
             for (title, mode) in [
                 ("Braille (2×4 pixels per cell)", FillMode::Braille),
                 ("Block elements", FillMode::Block),
@@ -36,7 +36,7 @@ pub fn graphics<'a>(ui: &mut Container<'a>, s: &'a State) {
                 });
             }
         });
-        r.column(Column::new().gap(gap), move |right| {
+        r.column(Column::new().gap(gap).bordered(true), move |right| {
             right.panel(Panel::new().title("Multi-series"), move |p| {
                 let t = p.theme();
                 let mut o = GraphOptions::series(vec![
@@ -86,6 +86,7 @@ fn wave(phase: f64, freq: f64) -> Vec<f64> {
         .collect()
 }
 pub fn themes<'a>(ui: &mut Container<'a>, s: &'a State) {
+    let gap = s.panel_gap();
     ui.label(&format!(
         "Theme {}/9: {}   ←/→ or F2 to change",
         s.theme + 1,
@@ -93,7 +94,7 @@ pub fn themes<'a>(ui: &mut Container<'a>, s: &'a State) {
     ));
     ui.spacer(1);
     ui.grid(
-        GridSpec::new().column_count(3).row_count(3).gap(1),
+        GridSpec::new().column_count(3).row_count(3).gap(gap),
         move |g| {
             for (i, (_, entry)) in theme_list().into_iter().enumerate() {
                 let mut opts = Panel::new().title(&entry.name).background(entry.background);

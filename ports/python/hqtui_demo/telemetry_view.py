@@ -41,7 +41,7 @@ def traffic(ui,s):
                 p.meters(w.MetersOptions(items=[w.MeterItem(label=b["class"],value=b["count"]/maximum,color=status_color(t,b["class"]),text=scalar(b["count"])) for b in http["statusClasses"]],label_width=5,value_width=7));p.divider(w.DividerOptions(label="top paths"))
                 data_table(p,s,"traffic.paths",http["topPaths"],[dc("path","Path",minimum=20,color=t.primary),dc("count","Hits",7,color=t.accent,right=True)],header=False)
             c.panel(Panel(title="HTTP",subtitle=f'{http["requestsPerSecond"]:.1f} req/s' if http else "no access log",border_color=t.success),http_panel)
-        r.column(Layout(gap=gap),left)
+        r.column(Layout(gap=gap,bordered=True),left)
         def right(c):
             def ssh(p):
                 if not d["ssh"]: p.label("No sshd events in the journal.");return
@@ -51,8 +51,8 @@ def traffic(ui,s):
                 if not d["remotes"]: p.label("No remote peers.");return
                 data_table(p,s,"traffic.remotes",d["remotes"],[dc("host","Host",minimum=16,color=t.accent),dc("connections","Conns",6,color=t.success,right=True),dc("protocols","Protocols",minimum=12,color=t.muted)],True)
             c.panel(Panel(title="Top Remote Hosts",size=10,border_color=t.secondary),remotes)
-        r.column(Layout(size="0.85fr",gap=gap),right)
-    row(ui,"1fr",1,middle)
+        r.column(Layout(size="0.85fr",gap=gap,bordered=True),right)
+    row(ui,"1fr",gap,middle)
     if http and http["recent"]:
         ui.panel(Panel(title="Recent Requests",size=10,border_color=t.primary),lambda p:data_table(p,s,"traffic.requests",http["recent"],[dc("time","Time",9,color=t.muted),dc("method","Method",7,color=t.secondary),dc("path","Path",minimum=24,color=t.primary),dc("status","Status",7,right=True,cell_color=lambda d:status_color(t,str(d["status"])[0]+"xx")),dc("client","Client",16,color=t.accent),dc("bytes","Bytes",9,color=t.muted,right=True)],True))
 def sessions(ui,s):
@@ -81,8 +81,8 @@ def sessions(ui,s):
                 data_table(p,s,"sessions.failed",d["failedLogins"],[dc("user","User",12,color=t.danger),dc("from","From",minimum=12),dc("when","When",minimum=14,color=t.muted)])
             c.panel(Panel(title="Failed Logins",border_color=t.danger),failed)
             c.panel(Panel(title="Session History",size=8,border_color=t.secondary),lambda p:(p.label("concurrent sessions"),plot(p,d["sessionHistory"],t.success)))
-        r.column(Layout(size="0.8fr",gap=gap),right)
-    row(ui,"1fr",1,bottom)
+        r.column(Layout(size="0.8fr",gap=gap,bordered=True),right)
+    row(ui,"1fr",gap,bottom)
 def network(ui,s):
     gap=s.panel_gap()
     t=ui.theme;d=s.sample["telemetry"];active=[i for i in d["interfaces"] if i["rxTotal"]>0 or i["state"]=="up"];shown=(active or d["interfaces"])[:3]
@@ -103,8 +103,8 @@ def network(ui,s):
         def right(c):
             c.panel(Panel(title="Listening Ports",subtitle=str(len(d["listeners"])),border_color=t.warning),lambda p:data_table(p,s,"network.listeners",d["listeners"],[dc("proto","Proto",6,color=t.muted),dc("port","Port",7,color=t.warning,right=True),dc("address","Address",minimum=10,color=t.muted),dc("process","Process",minimum=10,color=t.primary)],True))
             c.panel(Panel(title="Open Connections",size=6,border_color=t.secondary),lambda p:plot(p,d["connectionHistory"],t.accent))
-        r.column(Layout(size="0.7fr",gap=gap),right)
-    row(ui,"1fr",1,bottom)
+        r.column(Layout(size="0.7fr",gap=gap,bordered=True),right)
+    row(ui,"1fr",gap,bottom)
 def services(ui,s):
     gap=s.panel_gap()
     t=ui.theme;d=s.sample["telemetry"];failed=sum(x["active"]=="failed" for x in d["services"])
@@ -134,8 +134,8 @@ def services(ui,s):
                 if not rows: p.label("No battery or GPU telemetry on this host.");return
                 keys(p,rows)
             c.panel(Panel(title="Hardware",border_color=t.warning),hardware)
-        r.column(Layout(size="0.85fr",gap=gap),right)
-    row(ui,"1fr",1,top)
+        r.column(Layout(size="0.85fr",gap=gap,bordered=True),right)
+    row(ui,"1fr",gap,top)
     def filesystems(p):
         if not d["filesystems"]: p.label("No filesystems reported.");return
         data_table(p,s,"services.filesystems",d["filesystems"],[dc("mount","Mount",minimum=14,color=t.primary),dc("device","Device",minimum=12,color=t.muted),dc("type","Type",8,color=t.muted),dc("size","Size",10,right=True,fmt=lambda d:bytes(d["size"],0)),dc("used","Used",10,right=True,fmt=lambda d:bytes(d["used"],0)),dc("pct","Use%",6,right=True,fmt=lambda d:percent(d["used"]/d["size"]) if d["size"] else "-",cell_color=lambda d:t.danger if d["size"] and d["used"]/d["size"]>.9 else t.warning),dc("inodes","Inodes",16,color=t.muted,right=True,fmt=lambda d:f'{percent(d["inodesUsed"]/d["inodesTotal"])} of {d["inodesTotal"]/1e6:.1f}M' if d["inodesTotal"] else "-")],True)

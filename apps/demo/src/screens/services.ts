@@ -50,7 +50,7 @@ export function servicesScreen(ui: Container, state: DemoState, theme: Theme): v
       });
     });
 
-    row.column({ width: "0.85fr", gap }, (column) => {
+    row.column({ width: "0.85fr", gap, bordered: true }, (column) => {
       column.panel({ title: "Kernel", size: 11, borderColor: theme.accent }, (p) => {
         const k = t.kernel;
         p.keyValues([

@@ -20,7 +20,7 @@ fn draw(c: *C, p: *P) anyerror!void {
         try c.row(p, .{ .cells = 10 }, c.panelGap(), mediumBottom);
     } else {
         try c.row(p, .{ .cells = 10 }, c.panelGap(), compactTop);
-        try c.col(p, .fill, 0, processes);
+        try c.col(p, .fill, 0, false, processes);
         try c.row(p, .{ .cells = 8 }, c.panelGap(), network);
     }
 }
@@ -162,7 +162,7 @@ fn systemBody(c: *C, p: *P) !void {
     try p.row(.{ .layout = .{ .size = .{ .cells = 6 }, .min = 6, .gap = 2 } }, h.Body.with(c, systemSummary));
     try c.panel(p, .{ .title = "CPU History", .layout = .{ .min = 5 } }, cpuHistory);
     if (p.width() >= 46 and p.height() >= 16) {
-        try c.row(p, .{ .cells = 6 }, 1, systemStats);
+        try c.row(p, .{ .cells = 6 }, c.panelGap(), systemStats);
     } else {
         try p.divider(.{});
         try r.keys(p, &.{ r.kv("Threads", try r.scalar(p, c.at("system.threadCount")), t.accent), r.kv("Ctx switches", try p.fmt("{d:.1}K", .{c.n("system.contextSwitches") / 1000}), t.accent) }, true);

@@ -87,7 +87,8 @@ static void disks_panel(UI &ui, State &s, Constraint size = fr()) {
   }, size);
 }
 static void system_panel(UI &ui, State &s, Constraint size = fr()) {
-  ui.panel("System", [&](UI &p) {
+  const int gap = s.panel_gap();
+  ui.panel("System", [&, gap](UI &p) {
     auto t = p.t();
     auto sys = s.data["system"], c = s.data["cpu"], m = s.data["memory"];
     double used = m["used"].n() / std::max(1., m["total"].n());
@@ -124,7 +125,7 @@ static void system_panel(UI &ui, State &s, Constraint size = fr()) {
         [=](UI &g) { g.graph(graph(c["history"], t.success, 100, true)); },
         fr(1, 5));
     if (p.width() >= 46 && p.height() >= 16)
-      p.row(cells(6), 1, [=, &s](UI &r) {
+      p.row(cells(6), gap, [=, &s](UI &r) {
         r.panel("Quick Stats", [=, &s](UI &q) {
           q.keys(
               {kv("Uptime", duration(sys["uptime"].n()), t.accent),

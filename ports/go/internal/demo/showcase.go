@@ -18,8 +18,8 @@ func (s *state) graphics(p *ui.Container) {
 	t := p.Theme()
 	time := num(s.sample["time"])
 	a, b, c := wave(time/3, 9), wave(time/3+2, 5), wave(time/2, 17)
-	row(p, ui.Fr(1), 1, func(r *ui.Container) {
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(left *ui.Container) {
+	row(p, ui.Fr(1), gap, func(r *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap, Bordered: true}}, func(left *ui.Container) {
 			for i, title := range []string{"Braille (2×4 pixels per cell)", "Block elements", "ASCII fallback"} {
 				left.Panel(ui.PanelOptions{Title: title}, func(p *ui.Container) {
 					o := ui.PlotOptions{Min: ref(0.), Max: ref(100.)}
@@ -39,7 +39,7 @@ func (s *state) graphics(p *ui.Container) {
 				})
 			}
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(right *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap, Bordered: true}}, func(right *ui.Container) {
 			right.Panel(ui.PanelOptions{Title: "Multi-series"}, func(p *ui.Container) {
 				p.Graph(ui.GraphOptions{Series: []ui.Series{{Values: a, Color: &t.Primary, Label: "alpha"}, {Values: b, Color: &t.Success, Label: "beta"}, {Values: c, Color: &t.Secondary, Label: "gamma"}}, Axis: true, Legend: true, Plot: ui.PlotOptions{Min: ref(0.), Max: ref(100.)}})
 			})
@@ -68,9 +68,10 @@ func (s *state) graphics(p *ui.Container) {
 	})
 }
 func (s *state) themeScreen(p *ui.Container) {
+	gap := s.panelGap()
 	p.Label(fmt.Sprintf("Theme %d/9: %s   ←/→ or F2 to change", s.theme+1, p.Theme().Name))
 	p.Spacer(ui.Cells(1))
-	p.Grid(ui.GridOptions{ColumnCount: 3, RowCount: 3, Layout: ui.Layout{Gap: 1}}, func(g *ui.GridContainer) {
+	p.Grid(ui.GridOptions{ColumnCount: 3, RowCount: 3, Layout: ui.Layout{Gap: gap}}, func(g *ui.GridContainer) {
 		for i, name := range themes {
 			e := ui.ResolveTheme(name)
 			border := e.Border

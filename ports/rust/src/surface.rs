@@ -541,13 +541,41 @@ impl Surface {
         let fg = options.border_color.unwrap_or(self.theme.border);
         let bg = options.bg;
 
+        let sides = options.sides;
+        let draws_border = style_kind.chars().is_some()
+            && sides.any()
+            && self.width() >= 2
+            && self.height() >= 1;
+
         if options.fill != Some(false) {
             if let Some(bg) = bg {
-                self.fill(&Style::new().with_bg(bg));
+                if draws_border && options.collapse {
+                    // The border ring is left to the border drawing below,
+                    // which merges with whatever a neighbour already put in
+                    // the shared column. Filling it here first would erase
+                    // that border, and the merge would then find a blank cell
+                    // and simply overwrite it -- which is why a panel with a
+                    // background collapsed its seams into a corner rather than
+                    // a junction. Every cell skipped here is painted by the
+                    // border, in the same bg.
+                    let top = if sides.top { 1isize } else { 0 };
+                    let bottom = if self.height() > 1 && sides.bottom { 1isize } else { 0 };
+                    let left = if sides.left { 1isize } else { 0 };
+                    let right = if sides.right { 1isize } else { 0 };
+                    self.fill_rect(
+                        left,
+                        top,
+                        (self.width() as isize - left - right).max(0) as usize,
+                        (self.height() as isize - top - bottom).max(0) as usize,
+                        &Style::new().with_bg(bg),
+                        32,
+                    );
+                } else {
+                    self.fill(&Style::new().with_bg(bg));
+                }
             }
         }
 
-        let sides = options.sides;
         let chars = match style_kind.chars() {
             Some(c) if sides.any() && self.width() >= 2 && self.height() >= 1 => c,
             Some(_) if !sides.any() => return self.inset(Padding::None),

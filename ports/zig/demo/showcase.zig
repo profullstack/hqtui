@@ -22,11 +22,11 @@ fn wave(p: *P, phase: f64, freq: f64) ![]f64 {
     return values;
 }
 fn graphics(c: *C, p: *P) !void {
-    try c.row(p, .{ .fr = 1 }, 1, graphicsColumns);
+    try c.row(p, .{ .fr = 1 }, c.panelGap(), graphicsColumns);
 }
 fn graphicsColumns(c: *C, p: *P) !void {
-    try c.col(p, .fill, c.panelGap(), graphicsLeft);
-    try c.col(p, .fill, c.panelGap(), graphicsRight);
+    try c.col(p, .fill, c.panelGap(), true, graphicsLeft);
+    try c.col(p, .fill, c.panelGap(), true, graphicsRight);
 }
 fn graphicsLeft(c: *C, p: *P) !void {
     for ([_][]const u8{ "Braille (2×4 pixels per cell)", "Block elements", "ASCII fallback" }, 0..) |title, i| {
@@ -96,7 +96,7 @@ fn canvasDraw(c: *C, canvas: *h.graphics.BrailleCanvas) !void {
 fn themes(c: *C, p: *P) !void {
     try p.label(try p.fmt("Theme {d}/9: {s}   ←/→ or F2 to change", .{ c.s.theme + 1, p.theme().name }));
     try p.spacer(.{ .cells = 1 });
-    try p.grid(.{ .column_count = 3, .row_count = 3, .layout = .{ .gap = 1 } }, h.GridBody.with(c, themeGrid));
+    try p.grid(.{ .column_count = 3, .row_count = 3, .layout = .{ .gap = c.panelGap() } }, h.GridBody.with(c, themeGrid));
 }
 fn themeGrid(c: *C, g: *h.Grid) !void {
     for (m.themes, 0..) |name, i| {
@@ -222,11 +222,11 @@ fn churnDraw(c: *C, s: h.Surface) !void {
     }
 }
 fn components(c: *C, p: *P) !void {
-    try c.row(p, .{ .fr = 1 }, 1, componentColumns);
+    try c.row(p, .{ .fr = 1 }, c.panelGap(), componentColumns);
 }
 fn componentColumns(c: *C, p: *P) !void {
-    try c.col(p, .fill, c.panelGap(), componentLeft);
-    try c.col(p, .fill, c.panelGap(), componentRight);
+    try c.col(p, .fill, c.panelGap(), true, componentLeft);
+    try c.col(p, .fill, c.panelGap(), true, componentRight);
 }
 fn componentLeft(c: *C, p: *P) !void {
     try c.panel(p, .{ .title = "Buttons & Inputs", .layout = .{ .size = .{ .cells = 13 } } }, controls);

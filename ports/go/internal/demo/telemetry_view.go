@@ -99,8 +99,8 @@ func (s *state) trafficScreen(p *ui.Container) {
 			keys(p, []ui.KeyValueRow{kv("UDP in/out", rate(num(rates["udpIn"]))+" / "+rate(num(rates["udpOut"])), t.Muted), kv("ICMP", scalar(net["icmpInMsgs"])+" / "+scalar(net["icmpOutMsgs"]), t.Muted)}, true)
 		})
 	})
-	row(p, ui.Fr(1), 1, func(r *ui.Container) {
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(c *ui.Container) {
+	row(p, ui.Fr(1), gap, func(r *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap, Bordered: true}}, func(c *ui.Container) {
 			subtitle := "no access log"
 			if len(http) > 0 {
 				subtitle = fmt.Sprintf("%.1f req/s", num(http["requestsPerSecond"]))
@@ -132,7 +132,7 @@ func (s *state) trafficScreen(p *ui.Container) {
 				s.dataTable(p, "traffic.paths", arr(http["topPaths"]), []dataColumn{dc("path", "Path", 0, 20, &t.Primary, false), dc("count", "Hits", 7, 0, &t.Accent, true)}, false, true)
 			})
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: gap}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: gap, Bordered: true}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "SSH Activity", Subtitle: fmt.Sprint(len(arr(d["ssh"]))), BorderColor: &t.Warning}, func(p *ui.Container) {
 				data := slices.Clone(arr(d["ssh"]))
 				slices.Reverse(data)
@@ -200,7 +200,7 @@ func (s *state) sessionsScreen(p *ui.Container) {
 			keys(p, []ui.KeyValueRow{kv("Total", scalar(states["total"]), t.Accent)}, true)
 		})
 	})
-	row(p, ui.Fr(1), 1, func(r *ui.Container) {
+	row(p, ui.Fr(1), gap, func(r *ui.Container) {
 		r.Panel(ui.PanelOptions{Title: "Recent Logins", Subtitle: fmt.Sprintf("%d from wtmp", len(arr(d["logins"]))), BorderColor: &t.Accent}, func(p *ui.Container) {
 			data := arr(d["logins"])
 			if len(data) == 0 {
@@ -216,7 +216,7 @@ func (s *state) sessionsScreen(p *ui.Container) {
 			}
 			s.dataTable(p, "sessions.logins", data, cols, true)
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.8)), Gap: gap}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.8)), Gap: gap, Bordered: true}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "Failed Logins", BorderColor: &t.Danger}, func(p *ui.Container) {
 				data := arr(d["failedLogins"])
 				if len(data) == 0 {
@@ -267,7 +267,7 @@ func (s *state) networkScreen(p *ui.Container) {
 			})
 		}
 	})
-	row(p, ui.Fr(1), 1, func(r *ui.Container) {
+	row(p, ui.Fr(1), gap, func(r *ui.Container) {
 		r.Panel(ui.PanelOptions{Title: "Connections", Subtitle: fmt.Sprintf("%d open", len(arr(d["connections"]))), BorderColor: &t.Accent}, func(p *ui.Container) {
 			data := arr(d["connections"])
 			if len(data) == 0 {
@@ -276,7 +276,7 @@ func (s *state) networkScreen(p *ui.Container) {
 			}
 			s.dataTable(p, "network.connections", data, []dataColumn{dc("proto", "Proto", 6, 0, &t.Muted, false), dc("local", "Local", 0, 18, nil, false), dc("remote", "Remote", 0, 18, &t.Accent, false), dc("state", "State", 10, 0, &t.Success, false), dc("process", "Process", 0, 12, &t.Primary, false)}, true)
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.7)), Gap: gap}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.7)), Gap: gap, Bordered: true}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "Listening Ports", Subtitle: fmt.Sprint(len(arr(d["listeners"]))), BorderColor: &t.Warning}, func(p *ui.Container) {
 				s.dataTable(p, "network.listeners", arr(d["listeners"]), []dataColumn{dc("proto", "Proto", 6, 0, &t.Muted, false), dc("port", "Port", 7, 0, &t.Warning, true), dc("address", "Address", 0, 10, &t.Muted, false), dc("process", "Process", 0, 10, &t.Primary, false)}, true)
 			})
@@ -294,7 +294,7 @@ func (s *state) servicesScreen(p *ui.Container) {
 			failed++
 		}
 	}
-	row(p, ui.Fr(1), 1, func(r *ui.Container) {
+	row(p, ui.Fr(1), gap, func(r *ui.Container) {
 		subtitle := fmt.Sprintf("%d units", len(arr(d["services"])))
 		border, subcolor := t.Success, t.Muted
 		if failed > 0 {
@@ -320,7 +320,7 @@ func (s *state) servicesScreen(p *ui.Container) {
 			}
 			s.dataTable(p, "services.units", data, cols, true)
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: gap}}, func(c *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Size: ref(ui.Fr(.85)), Gap: gap, Bordered: true}}, func(c *ui.Container) {
 			c.Panel(ui.PanelOptions{Title: "Kernel", Layout: fixed(11), BorderColor: &t.Accent}, func(p *ui.Container) {
 				k := obj(d["kernel"])
 				blocked, entropy := t.Muted, t.Success

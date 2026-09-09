@@ -87,7 +87,7 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
   });
 
   ui.row({ size: "1fr", gap }, (row) => {
-    row.column({ gap }, (column) => {
+    row.column({ gap, bordered: true }, (column) => {
       column.panel({
         title: "HTTP",
         subtitle: http ? `${num(http.requestsPerSecond, 1)} req/s` : "no access log",
@@ -136,7 +136,7 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
       });
     });
 
-    row.column({ width: "0.85fr", gap }, (column) => {
+    row.column({ width: "0.85fr", gap, bordered: true }, (column) => {
       column.panel({ title: "SSH Activity", subtitle: String(t.ssh.length), borderColor: theme.warning }, (p) => {
         if (t.ssh.length === 0) {
           p.label("No sshd events in the journal.");

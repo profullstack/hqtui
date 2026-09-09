@@ -58,7 +58,7 @@ export function worldScreen(ui: Container, state: DemoState, theme: Theme): void
       });
     });
 
-    row.column({ width: 34, gap }, (column) => {
+    row.column({ width: 34, gap, bordered: true }, (column) => {
       column.panel({ title: "Selection", size: 9, borderColor: theme.accent }, (p) => {
         if (!selected) {
           p.label("Nothing selected.");

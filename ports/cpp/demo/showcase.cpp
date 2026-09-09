@@ -157,7 +157,7 @@ static void graphics(UI &ui, State &s) {
     return a;
   };
   auto a = wave(time / 3, 9), b = wave(time / 3 + 2, 5), c = wave(time / 2, 17);
-  ui.row(fr(), 1, [=](UI &r) {
+  ui.row(fr(), gap, [=](UI &r) {
     r.col(fr(), gap, [=](UI &p) {
       p.panel("Braille (2×4 pixels per cell)", [=](UI &g) {
         Graph o;
@@ -181,7 +181,7 @@ static void graphics(UI &ui, State &s) {
         o.mode = "ascii";
         g.graph(o);
       });
-    });
+    }, true);
     r.col(fr(), gap, [=](UI &p) {
       p.panel("Multi-series", [=](UI &g) {
         Graph o;
@@ -238,16 +238,17 @@ static void graphics(UI &ui, State &s) {
           canvas.blit(surface, t.accent);
         });
       });
-    });
+    }, true);
   });
 }
 static void theme_screen(UI &ui, State &s) {
+  const int gap = s.panel_gap();
   ui.label("Theme " + std::to_string(s.theme_index + 1) + "/9: " + ui.t().name +
            "   ←/→ or F2 to change");
   ui.spacer(cells(1));
-  ui.col(fr(), 1, [&](UI &grid) {
+  ui.col(fr(), gap, [&, gap](UI &grid) {
     for (int row = 0; row < 3; row++)
-      grid.row(fr(), 1, [&, row](UI &r) {
+      grid.row(fr(), gap, [&, row](UI &r) {
         for (int column = 0; column < 3; column++) {
           int i = row * 3 + column;
           auto e = *hq_theme_named(themes[i]);
@@ -284,7 +285,7 @@ static void theme_screen(UI &ui, State &s) {
               fr(), "", i == s.theme_index ? e.border_focused : e.border,
               e.background);
         }
-      });
+      }, true);
   });
 }
 static void input_screen(UI &ui, State &s) {
@@ -357,8 +358,9 @@ static void stress(UI &ui, State &s) {
 }
 static void components(UI &ui, State &s) {
   auto t = ui.t();
+  const int gap = s.panel_gap();
   const auto &c = s.data["cpu"], &m = s.data["memory"], &n = s.data["network"];
-  ui.row(fr(), 1, [&, t](UI &r) {
+  ui.row(fr(), gap, [&, t](UI &r) {
     r.col(fr(), s.panel_gap(), [&, t](UI &left) {
       left.panel(
           "Buttons & Inputs",
@@ -470,7 +472,7 @@ static void components(UI &ui, State &s) {
                   "components.logs");
           },
           cells(11));
-    });
+    }, true);
     r.col(fr(), s.panel_gap(), [&, t](UI &right) {
       right.panel(
           "Process Tree",
@@ -557,7 +559,7 @@ static void components(UI &ui, State &s) {
              {"apps/demo", "packages/hqtui", "apps/web", "docs"}, "▸", true,
              true);
       });
-    });
+    }, true);
   });
 }
 void showcase(UI &ui, State &s) {

@@ -186,6 +186,21 @@ pub const Layout = struct {
     gap: usize = 0,
     padding: Padding = .{},
     background: ?Color = null,
+    /// Treat this container's own edges as panel borders when collapsing.
+    ///
+    /// Collapsing merges a seam only where two bordered siblings meet, and a
+    /// row or column is not itself bordered -- so wrapping a stack of panels
+    /// in a column, which is the only way to put a stack beside one tall
+    /// panel, used to make the seam down the middle of the screen the one seam
+    /// that could never merge. Set this on such a wrapper and its edges join
+    /// in.
+    ///
+    /// It is a declaration rather than something inferred, because the
+    /// children are built only once the layout has been solved and the seam
+    /// has to be known before that. True only if every child is a panel
+    /// filling the container across the seam; otherwise a neighbour's border
+    /// lands on content.
+    bordered: bool = false,
 };
 
 pub const RowOptions = struct { layout: Layout = .{} };
@@ -697,17 +712,19 @@ pub const Container = struct {
 
     /// A horizontal container. Children default to equal shares.
     pub fn row(self: *Container, options: RowOptions, body: Body) !void {
-        try self.add(
+        try self.addBordered(
             self.constraintOf(options.layout, .fill, null),
             .{ .nested = .{ .direction = .row, .layout = options.layout, .body = body } },
+            options.layout.bordered,
         );
     }
 
     /// A vertical container.
     pub fn column(self: *Container, options: ColumnOptions, body: Body) !void {
-        try self.add(
+        try self.addBordered(
             self.constraintOf(options.layout, .fill, null),
             .{ .nested = .{ .direction = .column, .layout = options.layout, .body = body } },
+            options.layout.bordered,
         );
     }
 
@@ -737,9 +754,10 @@ pub const Container = struct {
 
     /// A CSS-ish grid, filled row-major with optional spans.
     pub fn grid(self: *Container, options: GridOptions, body: GridBody) !void {
-        try self.add(
+        try self.addBordered(
             self.constraintOf(options.layout, .fill, null),
             .{ .grid = .{ .options = options, .body = body } },
+            options.layout.bordered,
         );
     }
 
@@ -987,6 +1005,7 @@ pub const Container = struct {
 const Cell = struct {
     span: Span,
     node: Node,
+    bordered: bool = false,
 };
 
 /// Grid placement with spans. Cells are filled row-major.
@@ -1013,8 +1032,25 @@ pub const Grid = struct {
         return self.surface.height();
     }
 
-    fn push(self: *Grid, span: Span, node: Node) !void {
-        try self.cells.append(self.ctx.allocator, .{ .span = span, .node = node });
+    fn push(self: *Grid, span: Span, node: Node, bordered: bool) !void {
+        try self.cells.append(
+            self.ctx.allocator,
+            .{ .span = span, .node = node, .bordered = bordered },
+        );
+    }
+
+    /// The gap between tracks, minus one where the whole grid is panels and
+    /// collapsing is on, so neighbouring borders land in the same column and
+    /// merge. A grid is one pair of track sizes rather than a list of
+    /// siblings, so this is all or nothing: a single cell that is not a panel
+    /// would have a neighbour's border drawn across its content.
+    fn seam(self: Grid) isize {
+        const gap: isize = @intCast(self.spec.layout.gap);
+        if (!self.ctx.collapse_borders or gap != 0 or self.cells.items.len < 2) return gap;
+        for (self.cells.items) |item| {
+            if (!item.bordered) return gap;
+        }
+        return -1;
     }
 
     /// A panel occupying the next free cell, or several with a span.
@@ -1029,7 +1065,7 @@ pub const Grid = struct {
             .options = options,
             .focused = focused,
             .body = body,
-        } });
+        } }, (options.border orelse .rounded) != .none);
     }
 
     /// A bare cell: a column the body fills however it likes.
@@ -1038,7 +1074,7 @@ pub const Grid = struct {
             .direction = .column,
             .layout = .{},
             .body = body,
-        } });
+        } }, false);
     }
 
     fn track(allocator: std.mem.Allocator, spec: []const Size, fallback: usize) ![]Size {
@@ -1053,7 +1089,7 @@ pub const Grid = struct {
         if (self.cells.items.len == 0 or self.surface.rect.isEmpty()) return;
 
         const allocator = self.ctx.allocator;
-        const gap = self.spec.layout.gap;
+        const gap = self.seam();
 
         const column_spec = try track(
             allocator,
@@ -1080,18 +1116,25 @@ pub const Grid = struct {
         defer allocator.free(row_constraints);
         for (row_spec, 0..) |s, i| row_constraints[i] = .{ .size = s };
 
-        const col_widths = try layout_mod.solve(
+        const col_gaps = try allocator.alloc(isize, col_constraints.len -| 1);
+        defer allocator.free(col_gaps);
+        @memset(col_gaps, gap);
+        const row_gaps = try allocator.alloc(isize, row_constraints.len -| 1);
+        defer allocator.free(row_gaps);
+        @memset(row_gaps, gap);
+
+        const col_widths = try layout_mod.solveWithGaps(
             allocator,
             self.surface.width(),
             col_constraints,
-            gap,
+            col_gaps,
         );
         defer allocator.free(col_widths);
-        const row_heights = try layout_mod.solve(
+        const row_heights = try layout_mod.solveWithGaps(
             allocator,
             self.surface.height(),
             row_constraints,
-            gap,
+            row_gaps,
         );
         defer allocator.free(row_heights);
 
@@ -1147,24 +1190,24 @@ pub const Grid = struct {
                 }
 
                 var x = self.surface.rect.x;
-                for (col_widths[0..col]) |cw| x += @intCast(cw + gap);
+                for (col_widths[0..col]) |cw| x += @as(isize, @intCast(cw)) + gap;
                 var y = self.surface.rect.y;
-                for (row_heights[0..row]) |rh| y += @intCast(rh + gap);
+                for (row_heights[0..row]) |rh| y += @as(isize, @intCast(rh)) + gap;
 
-                var cell_width: usize = 0;
+                var cell_width: isize = 0;
                 for (col_widths[col..@min(col + col_span, col_widths.len)]) |cw| {
-                    cell_width += cw + gap;
+                    cell_width += @as(isize, @intCast(cw)) + gap;
                 }
-                var cell_height: usize = 0;
+                var cell_height: isize = 0;
                 for (row_heights[row..@min(row + row_span, row_heights.len)]) |rh| {
-                    cell_height += rh + gap;
+                    cell_height += @as(isize, @intCast(rh)) + gap;
                 }
 
                 placement = .{
                     .x = x,
                     .y = y,
-                    .width = cell_width -| gap,
-                    .height = cell_height -| gap,
+                    .width = @intCast(@max(0, cell_width - gap)),
+                    .height = @intCast(@max(0, cell_height - gap)),
                 };
                 cursor += 1;
                 break;

@@ -273,6 +273,7 @@ fn disks<'a>(ui: &mut Container<'a>, s: &'a State, size: Option<&'static str>) {
 }
 fn system<'a>(ui: &mut Container<'a>, state: &'a State, size: Option<&'static str>) {
     let s = &state.sample;
+    let gap = state.panel_gap();
     ui.panel(sized(Panel::new().title("System"), size), move |p| {
         let t = p.theme().clone();
         p.row(Row::new().size(6).min(6).gap(2), move |r| {
@@ -340,7 +341,7 @@ fn system<'a>(ui: &mut Container<'a>, state: &'a State, size: Option<&'static st
             },
         );
         if p.width() >= 46 && p.height() >= 16 {
-            p.row(Row::new().size(6).gap(1), move |r| {
+            p.row(Row::new().size(6).gap(gap), move |r| {
                 r.panel(Panel::new().title("Quick Stats"), move |q| {
                     let c = q.theme().accent;
                     kv(

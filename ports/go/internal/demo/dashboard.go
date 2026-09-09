@@ -152,6 +152,7 @@ func (s *state) disksPanel(p *ui.Container, size *ui.Size) {
 	})
 }
 func (s *state) systemPanel(p *ui.Container, size *ui.Size) {
+	gap := s.panelGap()
 	sys, c, m := obj(s.sample["system"]), obj(s.sample["cpu"]), obj(s.sample["memory"])
 	p.Panel(ui.PanelOptions{Layout: ui.Layout{Size: size}, Title: "System"}, func(p *ui.Container) {
 		t := p.Theme()
@@ -178,7 +179,7 @@ func (s *state) systemPanel(p *ui.Container, size *ui.Size) {
 		})
 		p.Panel(ui.PanelOptions{Title: "CPU History", Layout: ui.Layout{Min: ref(5)}}, func(g *ui.Container) { plot(g, c["history"], t.Success, ref(100.), true) })
 		if p.Width() >= 46 && p.Height() >= 16 {
-			row(p, ui.Cells(6), 1, func(r *ui.Container) {
+			row(p, ui.Cells(6), gap, func(r *ui.Container) {
 				r.Panel(ui.PanelOptions{Title: "Quick Stats"}, func(q *ui.Container) {
 					threads := scalar(sys["threadCount"])
 					if num(sys["threadCount"]) == 0 {

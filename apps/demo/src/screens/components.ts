@@ -41,7 +41,7 @@ const TREE = [
 export function componentsScreen(ui: Container, state: DemoState, theme: Theme): void {
   const gap = panelGap(state);
   ui.row({ size: "1fr", gap }, (row) => {
-    row.column({ gap }, (left) => {
+    row.column({ gap, bordered: true }, (left) => {
       left.panel({ title: "Buttons & Inputs", size: 13 }, (p) => {
         p.row({ size: 1, gap: 1 }, (r) => {
           r.button({ label: "Primary", width: 11, size: 11, onPress: () => { state.showModal = true; } });
@@ -116,7 +116,7 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
       });
     });
 
-    row.column({ gap }, (right) => {
+    row.column({ gap, bordered: true }, (right) => {
       right.panel({ title: "Process Tree", size: 13 }, (p) => {
         p.row({ size: 1 }, (r) => {
           r.text("Name", { fg: theme.muted, bold: true });

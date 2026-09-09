@@ -161,14 +161,29 @@ static uint32_t hq_side_glyph(int border,int bits) {
 
 hq_surface hq_surface_box(hq_surface s,hq_box_options o) {
     const hq_theme *theme=s.theme ? s.theme:hq_theme_at(0);
-    if(o.has_background && !o.no_fill) {
-        hq_style bg={0,o.background,0,HQ_STYLE_BG}; hq_surface_fill(s,32,bg);
-    }
     /* Zero means all four, so a caller that predates this gets what it always
      * got. HQ_SIDES_NONE is an explicit "no rule at all". */
     int sides=o.sides==0 ? HQ_SIDES_ALL:(o.sides&HQ_SIDES_NONE ? 0:o.sides&HQ_SIDES_ALL);
     int s_top=(sides&HQ_SIDE_TOP)!=0, s_right=(sides&HQ_SIDE_RIGHT)!=0;
     int s_bottom=(sides&HQ_SIDE_BOTTOM)!=0, s_left=(sides&HQ_SIDE_LEFT)!=0;
+    int draws_border=o.border!=HQ_NO_BORDER && sides && s.rect.width>=2 && s.rect.height>=1;
+
+    if(o.has_background && !o.no_fill) {
+        hq_style bg={0,o.background,0,HQ_STYLE_BG};
+        if(draws_border && o.collapse) {
+            /* The border ring is left to the border drawing below, which merges
+             * with whatever a neighbour already put in the shared column.
+             * Filling it here first would erase that border, and the merge
+             * would then find a blank cell and simply overwrite it -- which is
+             * why a panel with a background collapsed its seams into a corner
+             * rather than a junction. Every cell skipped here is painted by the
+             * border, in the same bg. */
+            hq_surface_fill(hq_surface_region(s,hq_inset(s.rect,s_top,s_right,
+                (s.rect.height>1 && s_bottom)?1:0,s_left)),32,bg);
+        } else {
+            hq_surface_fill(s,32,bg);
+        }
+    }
 
     if(o.border==HQ_NO_BORDER || !sides) return s;
     /* The interior follows the sides actually drawn, so a top-only box costs
