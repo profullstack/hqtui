@@ -795,6 +795,24 @@ impl<'a> Container<'a> {
         self.add(constraint, move |s| crate::graphics::draw_canvas(&s, &options))
     }
 
+    /// A world map, and the country under whatever gets clicked.
+    ///
+    /// The click is answered by turning the cell back into degrees and testing
+    /// it against the outlines, so the answer is the country actually under the
+    /// cursor. Bounding boxes would be cheaper and wrong: Russia's covers most
+    /// of the northern hemisphere and Chile's covers Argentina.
+    pub fn world_map(&mut self, options: w::WorldMapOptions, id: &str) -> &mut Self {
+        let constraint = self.filling();
+        let ctx = self.ctx.clone();
+        let id = id.to_string();
+        self.add(constraint, move |s| {
+            w::draw_world_map(&s, &options);
+            if !id.is_empty() {
+                ctx.hit(&id, s.hit_rect(), 0);
+            }
+        })
+    }
+
     pub fn sparkline(&mut self, options: w::SparklineWidgetOptions) -> &mut Self {
         let constraint = self.leaf(1);
         self.add(constraint, move |s| w::draw_sparkline(&s, &options))

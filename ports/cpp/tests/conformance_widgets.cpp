@@ -251,6 +251,23 @@ bool draw_scene(const std::string &name, Surface s) {
     draw_shadow(s, Rect{2, 1, 6, 2}, sh);
     return true;
   }
+  if (name == "world") {
+    draw_world_map(s, {});
+    return true;
+  }
+  if (name == "world-zoom") {
+    WorldMap m;
+    m.x = Bounds{112, 156};
+    m.y = Bounds{24, 50};
+    draw_world_map(s, m);
+    return true;
+  }
+  if (name == "world-highlight") {
+    WorldMap m;
+    m.highlight = {"Brazil", "JP"};
+    draw_world_map(s, m);
+    return true;
+  }
   if (name == "badge") {
     {
       Badge badge;

@@ -77,6 +77,7 @@ from .calendar import (
 )
 from .chart import ChartOptions, draw_chart
 from .shadow import ShadowOptions, dim_rect, draw_shadow
+from .world import WorldMapOptions, country_at_cell, draw_world_map
 from .surface import ClearOptions, FillOptions, draw_clear, draw_fill
 from .scrollbar import (
     ScrollbarOptions,
@@ -122,6 +123,7 @@ __all__ = [
     "draw_calendar", "is_leap_year", "CALENDAR_WIDTH",
     "ChartOptions", "draw_chart", "ClearOptions", "FillOptions", "draw_clear", "draw_fill",
     "ShadowOptions", "dim_rect", "draw_shadow",
+    "WorldMapOptions", "country_at_cell", "draw_world_map",
     "ScrollbarOptions", "ScrollbarOrientation", "is_vertical", "offset_for_position",
     "thumb", "draw_scrollbar", "draw_scrollbar_widget", "draw_select", "draw_sparkline", "draw_status_bar",
     "draw_table", "draw_tabs", "draw_text", "draw_text_input", "draw_tooltip",

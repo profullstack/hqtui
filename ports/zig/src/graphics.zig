@@ -4,6 +4,8 @@
 pub const blocks = @import("graphics/blocks.zig");
 pub const braille = @import("graphics/braille.zig");
 pub const canvas_mod = @import("graphics/canvas.zig");
+pub const world = @import("graphics/world.zig");
+pub const world_data = @import("graphics/world_data.zig");
 pub const chart_mod = @import("graphics/chart.zig");
 pub const plot_mod = @import("graphics/plot.zig");
 
@@ -35,6 +37,13 @@ pub const gauge = plot_mod.gauge;
 pub const histogram = plot_mod.histogram;
 pub const plot = plot_mod.plot;
 pub const Bounds = canvas_mod.Bounds;
+pub const CountryOutline = world_data.CountryOutline;
+pub const WORLD_COUNTRIES = world_data.WORLD_COUNTRIES;
+pub const countryAt = world.countryAt;
+pub const findCountry = world.findCountry;
+pub const countryBounds = world.countryBounds;
+pub const degreesAt = world.degreesAt;
+pub const worldShapes = world.worldShapes;
 pub const CanvasOptions = canvas_mod.CanvasOptions;
 pub const Shape = canvas_mod.Shape;
 pub const ShapeKind = canvas_mod.ShapeKind;

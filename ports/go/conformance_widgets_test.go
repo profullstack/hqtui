@@ -129,6 +129,13 @@ func drawWidgetScene(t *testing.T, name string, s Surface) {
 		solid := RGB(0x10, 0x14, 0x18)
 		DrawShadow(s, Rect{X: 2, Y: 1, Width: 6, Height: 2},
 			ShadowOptions{OffsetX: 1, OffsetY: 1, Color: &solid})
+	case "world":
+		DrawWorldMap(s, WorldMapOptions{})
+	case "world-zoom":
+		zx, zy := Bounds{112, 156}, Bounds{24, 50}
+		DrawWorldMap(s, WorldMapOptions{X: &zx, Y: &zy})
+	case "world-highlight":
+		DrawWorldMap(s, WorldMapOptions{Highlight: []string{"Brazil", "JP"}})
 	case "badge":
 		DrawBadge(s, BadgeOptions{Text: "LIVE"})
 	case "badge-outline":
