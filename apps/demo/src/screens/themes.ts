@@ -1,13 +1,14 @@
 import type { Container, Theme } from "@profullstack/hqtui";
 import { themeList } from "@profullstack/hqtui";
-import type { DemoState } from "../state.ts";
+import { panelGap, type DemoState } from "../state.ts";
 
 /** Live theme switching. Every theme renders the same content side by side. */
 export function themesScreen(ui: Container, state: DemoState, theme: Theme): void {
   const values = state.sample.cpu.history;
+  const gap = panelGap(state);
   ui.label(`Theme ${state.themeIndex + 1}/${themeList.length}: ${theme.name}   ←/→ or F2 to change`, { size: 1 });
   ui.spacer(1);
-  ui.grid({ columns: 3, rows: Math.ceil(themeList.length / 3), gap: 1 }, (grid) => {
+  ui.grid({ columns: 3, rows: Math.ceil(themeList.length / 3), gap }, (grid) => {
     themeList.forEach((entry, i) => {
       grid.panel({
         title: entry.name,

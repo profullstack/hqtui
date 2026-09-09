@@ -58,7 +58,7 @@ npx --yes @profullstack/hqtui-demo@latest     # Node 22.6+ works too
 --fps <n>          Frame cap (default 30, 15 over SSH)
 --theme <name>     dark, dracula, nord, tokyoNight, gruvbox, matrix,
                    monochrome, highContrast, light
---screen <name>    dashboard, components, graphics, themes, input, stress
+--screen <name>    dashboard, components, graphics, themes, input, stress, world
 --interval <ms>    Metric refresh interval (default 1000)
 -h, --help         Show help
 -v, --version      Show the version
@@ -68,7 +68,7 @@ npx --yes @profullstack/hqtui-demo@latest     # Node 22.6+ works too
 
 | Key | Action |
 |---|---|
-| `1`–`6`, `Tab` | Switch screens |
+| `1`–`0`, `w`, `Tab` | Switch screens |
 | `F1` | Help |
 | `F2` | Cycle theme |
 | `F3` | Filter processes |
@@ -117,6 +117,12 @@ with inode usage.
 ![Components](https://raw.githubusercontent.com/profullstack/hqtui/main/assets/screens/components.png)
 
 Every widget in the library, interactive.
+
+### world
+A clickable world map. Hover to see what is under the cursor, click to select a
+country, `z` to zoom to the selection and `r` to go back to the whole globe. The
+country list and the map are two views of one selection, so the arrows move the
+highlight too.
 
 ### graphics, themes, input, stress
 Braille vs block vs ASCII rendering, all nine themes side by side, a keyboard and

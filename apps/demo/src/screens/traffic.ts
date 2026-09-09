@@ -86,7 +86,7 @@ export function trafficScreen(ui: Container, state: DemoState, theme: Theme): vo
     });
   });
 
-  ui.row({ size: "1fr", gap: 1 }, (row) => {
+  ui.row({ size: "1fr", gap }, (row) => {
     row.column({ gap }, (column) => {
       column.panel({
         title: "HTTP",

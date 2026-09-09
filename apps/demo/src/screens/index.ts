@@ -8,3 +8,4 @@ export { graphicsScreen } from "./graphics.ts";
 export { themesScreen } from "./themes.ts";
 export { inputScreen } from "./input.ts";
 export { stressScreen } from "./stress.ts";
+export { worldScreen } from "./world.ts";

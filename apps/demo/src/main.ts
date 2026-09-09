@@ -10,10 +10,10 @@
 import { createApp, themeList, themes, type KeyEvent } from "@profullstack/hqtui";
 import { createCollector } from "./system/index.ts";
 import { intervalMs } from "./options.ts";
-import { createState, focusedPane, moveSelection, SCREENS, type ScreenName } from "./state.ts";
+import { createState, focusedPane, moveSelection, SCREENS, SCREEN_KEYS, type ScreenName } from "./state.ts";
 import {
   componentsScreen, dashboardScreen, graphicsScreen, inputScreen, networkScreen, servicesScreen,
-  sessionsScreen, stressScreen, themesScreen, trafficScreen, visibleProcesses,
+  sessionsScreen, stressScreen, themesScreen, trafficScreen, visibleProcesses, worldScreen,
 } from "./screens/index.ts";
 import { clock, num } from "./format.ts";
 
@@ -69,13 +69,13 @@ Options:
   --seed <n>         Simulation seed (default 1337)
   --fps <n>          Frame cap (default 30, 15 over SSH)
   --theme <name>     dark, dracula, nord, tokyoNight, gruvbox, matrix, monochrome, highContrast, light
-  --screen <name>    dashboard, components, graphics, themes, input, stress
+  --screen <name>    dashboard, components, graphics, themes, input, stress, world
   --interval <ms>    Metric refresh interval (default 1000)
   -h, --help         Show this help
   -v, --version      Show the version
 
 Keys:
-  1-6 / Tab screens   F2 theme   F3 filter   F6 sort   Ctrl+K palette
+  1-0/w / Tab screens F2 theme   F3 filter   F6 sort   Ctrl+K palette
   ↑/↓ select          Space pause            F1 help   q quit
 `);
 }
@@ -91,6 +91,7 @@ const PALETTE_COMMANDS: { label: string; hint: string; run: (state: ReturnType<t
   { label: "Go to Themes", hint: "8", run: (s) => { s.screen = "themes"; } },
   { label: "Go to Input", hint: "9", run: (s) => { s.screen = "input"; } },
   { label: "Go to Stress Test", hint: "0", run: (s) => { s.screen = "stress"; } },
+  { label: "Go to World Map", hint: "w", run: (s) => { s.screen = "world"; } },
   { label: "Sort by CPU", hint: "F6", run: (s) => { s.sort = "cpu"; } },
   { label: "Sort by Memory", hint: "F6", run: (s) => { s.sort = "mem"; } },
   { label: "Pause updates", hint: "Space", run: (s) => { s.paused = !s.paused; } },
@@ -224,6 +225,14 @@ async function main(): Promise<void> {
         state.sort = order[(order.indexOf(state.sort) + 1) % order.length];
         return;
       }
+      case "w": state.screen = "world"; return;
+      case "z":
+        // The map is the only screen with somewhere to zoom to.
+        if (state.screen === "world") state.worldZoom = !state.worldZoom;
+        return;
+      case "r":
+        if (state.screen === "world") state.worldZoom = false;
+        return;
       case "f10": app.quit(); return;
       case "ctrl+k":
         state.showPalette = true;
@@ -266,7 +275,7 @@ async function main(): Promise<void> {
     ui.row({ size: 1 }, (header) => {
       header.text(" hqtui.com", { fg: theme.title, bold: true, size: 12 });
       header.tabs({
-        tabs: SCREENS.map((s, i) => `${(i + 1) % 10} ${s}`),
+        tabs: SCREENS.map((s) => `${SCREEN_KEYS[s]} ${s}`),
         active: SCREENS.indexOf(state.screen),
         onSelect: (index) => { state.screen = SCREENS[index]; },
       });
@@ -288,6 +297,7 @@ async function main(): Promise<void> {
         case "themes": themesScreen(body, state, theme); break;
         case "input": inputScreen(body, state, theme); break;
         case "stress": stressScreen(body, state, theme); break;
+        case "world": worldScreen(body, state, theme); break;
         default: dashboardScreen(body, state, theme); break;
       }
     });
@@ -313,7 +323,7 @@ async function main(): Promise<void> {
         width: 62,
         height: 18,
         message:
-          "1-6 or Tab switch screens.\n" +
+          "1-0, w or Tab switch screens; w is the clickable world map.\n" +
           "F2 cycles themes, F3 filters processes, F6 changes sort.\n" +
           "c collapses adjacent panel borders into shared lines.\n" +
           "Ctrl+K opens the command palette, Space pauses updates.\n" +
