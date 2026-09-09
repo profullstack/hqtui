@@ -44,7 +44,7 @@ export function networkScreen(ui: Container, state: DemoState, theme: Theme): vo
     });
   });
 
-  ui.row({ size: "1fr", gap: 1 }, (row) => {
+  ui.row({ size: "1fr", gap }, (row) => {
     row.panel({
       title: "Connections",
       subtitle: `${t.connections.length} open`,

@@ -3,12 +3,22 @@ import type { SystemSample } from "./system/index.ts";
 
 export type ScreenName =
   | "dashboard" | "traffic" | "sessions" | "network" | "services"
-  | "components" | "graphics" | "themes" | "input" | "stress";
+  | "components" | "graphics" | "themes" | "input" | "stress" | "world";
 
 export const SCREENS: ScreenName[] = [
   "dashboard", "traffic", "sessions", "network", "services",
-  "components", "graphics", "themes", "input", "stress",
+  "components", "graphics", "themes", "input", "stress", "world",
 ];
+
+/**
+ * The key that jumps straight to each screen. Digits run out at ten, so the
+ * eleventh takes a letter rather than a second "1" that would shadow the first.
+ */
+export const SCREEN_KEYS: Record<ScreenName, string> = {
+  dashboard: "1", traffic: "2", sessions: "3", network: "4", services: "5",
+  components: "6", graphics: "7", themes: "8", input: "9", stress: "0",
+  world: "w",
+};
 
 export interface DemoState {
   sample: SystemSample;
@@ -42,6 +52,10 @@ export interface DemoState {
   paletteIndex: number;
   themeIndex: number;
   /** Component-showcase interactive state. */
+  /** The country under the pointer on the world map, by name; "" for open water. */
+  worldHovered: string;
+  /** Whether the world map is framed on the selection rather than the globe. */
+  worldZoom: boolean;
   toggle: boolean;
   checkbox: boolean;
   selectOpen: boolean;
@@ -142,6 +156,8 @@ export function createState(
     focused: {},
     sort: "cpu",
     collapsed: false,
+    worldHovered: "",
+    worldZoom: false,
     filter: "",
     filtering: false,
     showHelp: false,

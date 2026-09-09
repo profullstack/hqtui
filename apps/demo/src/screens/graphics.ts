@@ -14,7 +14,7 @@ export function graphicsScreen(ui: Container, state: DemoState, theme: Theme): v
   const b = wave(240, t / 3 + 2, 5);
   const c = wave(240, t / 2, 17);
 
-  ui.row({ size: "1fr", gap: 1 }, (row) => {
+  ui.row({ size: "1fr", gap }, (row) => {
     row.column({ gap }, (left) => {
       left.panel({ title: "Braille (2×4 pixels per cell)" }, (p) => {
         p.graph({ values: a, min: 0, max: 100, fill: true, color: theme.accent, grid: true });

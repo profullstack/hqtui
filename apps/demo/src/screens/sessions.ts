@@ -43,7 +43,7 @@ export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): v
     });
   });
 
-  ui.row({ size: "1fr", gap: 1 }, (row) => {
+  ui.row({ size: "1fr", gap }, (row) => {
     row.panel({ title: "Recent Logins", subtitle: `${t.logins.length} from wtmp`, borderColor: theme.accent }, (p) => {
       if (t.logins.length === 0) {
         p.label("No login history available.");

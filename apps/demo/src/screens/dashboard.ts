@@ -89,6 +89,7 @@ function disksPanel(ui: Container, state: DemoState, theme: Theme, width?: Size)
 
 function systemPanel(ui: Container, state: DemoState, theme: Theme, width?: Size): void {
   const s = state.sample;
+  const gap = panelGap(state);
   ui.panel({ title: "System", width }, (p) => {
     p.row({ size: 6, gap: 2, min: 6 }, (r) => {
       r.keyValues([
@@ -114,7 +115,7 @@ function systemPanel(ui: Container, state: DemoState, theme: Theme, width?: Size
     // Sub-panels need both width and height to be legible; otherwise they are
     // replaced by a single dense stat line.
     if (p.width >= 46 && p.height >= 16) {
-      p.row({ size: 6, gap: 1 }, (r) => {
+      p.row({ size: 6, gap }, (r) => {
         r.panel({ title: "Quick Stats" }, (q) => {
           q.keyValues([
             { label: "Uptime", value: duration(s.system.uptime), color: theme.accent },

@@ -13,7 +13,7 @@ export function servicesScreen(ui: Container, state: DemoState, theme: Theme): v
   const t = state.sample.telemetry;
   const failed = t.services.filter((s) => s.active === "failed");
 
-  ui.row({ size: "1fr", gap: 1 }, (row) => {
+  ui.row({ size: "1fr", gap }, (row) => {
     row.panel({
       title: "Services",
       subtitle: failed.length ? `${failed.length} failed` : `${t.services.length} units`,

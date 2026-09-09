@@ -40,7 +40,7 @@ const TREE = [
 /** Every widget in the library, in one screen. Also the interaction sandbox. */
 export function componentsScreen(ui: Container, state: DemoState, theme: Theme): void {
   const gap = panelGap(state);
-  ui.row({ size: "1fr", gap: 1 }, (row) => {
+  ui.row({ size: "1fr", gap }, (row) => {
     row.column({ gap }, (left) => {
       left.panel({ title: "Buttons & Inputs", size: 13 }, (p) => {
         p.row({ size: 1, gap: 1 }, (r) => {
