@@ -10,6 +10,7 @@ import { stringWidth, wrap } from "./unicode.ts";
 import { isRich, toSpanLines, wrapRich, type RichText } from "./richtext.ts";
 import { BrailleCanvas } from "./graphics/braille.ts";
 import { drawCanvas, type CanvasOptions } from "./graphics/canvas.ts";
+import type { CountryOutline } from "./graphics/world.ts";
 import * as W from "./widgets/index.ts";
 
 export interface HitRegion {
@@ -629,6 +630,33 @@ export class Container {
    */
   shapes(options: CanvasOptions & ContainerOptions): this {
     return this.add((s) => drawCanvas(s, options), this.sizeOf(options, "fill"));
+  }
+
+  /**
+   * A world map, and the country under whatever gets clicked.
+   *
+   * The click is answered by turning the cell back into degrees and testing it
+   * against the outlines, so the answer is the country actually under the
+   * cursor. Bounding boxes would be cheaper and wrong: Russia's covers most of
+   * the northern hemisphere and Chile's covers Argentina.
+   */
+  worldMap(
+    options: W.WorldMapOptions & ContainerOptions & {
+      onSelect?: (country: CountryOutline | undefined) => void;
+      onHover?: (country: CountryOutline | undefined) => void;
+    } = {},
+  ): this {
+    return this.add((s) => {
+      W.drawWorldMap(s, options);
+      if (!options.onSelect && !options.onHover) return;
+      const at = (x: number, y: number) =>
+        W.countryAtCell(x, y, s.width, s.height, options);
+      this.ctx.hit({
+        rect: s.hitRect(),
+        onClick: options.onSelect ? (x, y) => options.onSelect?.(at(x, y)) : undefined,
+        onHover: options.onHover ? (x, y) => options.onHover?.(at(x, y)) : undefined,
+      });
+    }, this.sizeOf(options, "fill"));
   }
 
   /** A Braille pixel canvas sized to the region, blitted when you are done. */
