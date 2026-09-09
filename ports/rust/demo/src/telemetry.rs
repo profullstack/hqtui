@@ -179,7 +179,7 @@ fn status_color(t: &hqtui::theme::Theme, class: &str) -> Color {
 pub fn services<'a>(ui: &mut Container<'a>, s: &'a State) {
     let gap = s.panel_gap();
     let d = &s.sample["telemetry"];
-    ui.row(Row::new().gap(1), move |r| {
+    ui.row(Row::new().gap(gap), move |r| {
         let failed = array(&d["services"])
             .iter()
             .filter(|v| text(&v["active"]) == "failed")
@@ -224,7 +224,7 @@ pub fn services<'a>(ui: &mut Container<'a>, s: &'a State) {
                 true,
             );
         });
-        r.column(Column::new().size("0.85fr").gap(gap), move |c| {
+        r.column(Column::new().size("0.85fr").gap(gap).bordered(true), move |c| {
             c.panel(panel("Kernel", c.theme().accent).size(11), move |p| {
                 let t = p.theme().clone();
                 let k = &d["kernel"];
@@ -515,8 +515,8 @@ pub fn traffic<'a>(ui: &mut Container<'a>, s: &'a State) {
             },
         );
     });
-    ui.row(Row::new().gap(1), move |r| {
-        r.column(Column::new().gap(gap), move |c| {
+    ui.row(Row::new().gap(gap), move |r| {
+        r.column(Column::new().gap(gap).bordered(true), move |c| {
             c.panel(
                 panel("HTTP", c.theme().success).subtitle(if http.is_object() {
                     format!("{:.1} req/s", n(&http["requestsPerSecond"]))
@@ -586,7 +586,7 @@ pub fn traffic<'a>(ui: &mut Container<'a>, s: &'a State) {
                 },
             );
         });
-        r.column(Column::new().size("0.85fr").gap(gap), move |c| {
+        r.column(Column::new().size("0.85fr").gap(gap).bordered(true), move |c| {
             c.panel(
                 panel("SSH Activity", c.theme().warning)
                     .subtitle(array(&d["ssh"]).len().to_string()),
@@ -723,7 +723,7 @@ pub fn sessions<'a>(ui: &mut Container<'a>, s: &'a State) {
             },
         );
     });
-    ui.row(Row::new().gap(1), move |r| {
+    ui.row(Row::new().gap(gap), move |r| {
         r.panel(
             panel("Recent Logins", r.theme().accent)
                 .subtitle(format!("{} from wtmp", array(&d["logins"]).len())),
@@ -751,7 +751,7 @@ pub fn sessions<'a>(ui: &mut Container<'a>, s: &'a State) {
                 );
             },
         );
-        r.column(Column::new().size("0.8fr").gap(gap), move |c| {
+        r.column(Column::new().size("0.8fr").gap(gap).bordered(true), move |c| {
             c.panel(panel("Failed Logins", c.theme().danger), move |p| {
                 if array(&d["failedLogins"]).is_empty() {
                     p.label("None recorded.");
@@ -856,7 +856,7 @@ pub fn network<'a>(ui: &mut Container<'a>, s: &'a State) {
             );
         }
     });
-    ui.row(Row::new().gap(1), move |r| {
+    ui.row(Row::new().gap(gap), move |r| {
         r.panel(
             panel("Connections", r.theme().accent)
                 .subtitle(format!("{} open", array(&d["connections"]).len())),
@@ -884,7 +884,7 @@ pub fn network<'a>(ui: &mut Container<'a>, s: &'a State) {
                 );
             },
         );
-        r.column(Column::new().size("0.7fr").gap(gap), move |c| {
+        r.column(Column::new().size("0.7fr").gap(gap).bordered(true), move |c| {
             c.panel(
                 panel("Listening Ports", c.theme().warning)
                     .subtitle(array(&d["listeners"]).len().to_string()),

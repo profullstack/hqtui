@@ -92,6 +92,7 @@ def disks_panel(ui,s,size=None):
             if i==0 and len(disks)>1: p.divider()
     ui.panel(Panel(title="Disks",size=size),draw)
 def system_panel(ui,s,size=None):
+    gap=s.panel_gap()
     sys,c,m=s.sample["system"],s.sample["cpu"],s.sample["memory"];used=m["used"]/max(1,m["total"]);count=sys["processCount"] or len(s.sample["processes"])
     def draw(p):
         t=p.theme
@@ -106,7 +107,7 @@ def system_panel(ui,s,size=None):
                 r.panel(Panel(title="Memory"),lambda q:(txt(q,percent(used),t.warning),plot(q,m["history"],t.primary,100)))
                 temp=next(iter(s.sample["temperatures"]),None)
                 r.panel(Panel(title="Temp",size=14),lambda q:q.gauge(GaugeOptions(value=min(1,temp["value"]/(temp["max"] or 100)) if temp else c["total"],label=f'{math.floor(temp["value"]+.5)}°C' if temp else percent(c["total"]))))
-            row(p,6,1,stats)
+            row(p,6,gap,stats)
         else:
             p.divider();keys(p,[kv("Threads",sys["threadCount"],t.accent),kv("Ctx switches",f'{sys["contextSwitches"]/1000:.1f}K',t.accent)])
     ui.panel(Panel(title="System",size=size),draw)

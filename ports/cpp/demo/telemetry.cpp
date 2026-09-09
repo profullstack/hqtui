@@ -97,7 +97,7 @@ static void traffic(UI &ui, State &s) {
         },
         fr(.7), "", color);
   });
-  ui.row(fr(), 1, [&, t](UI &r) {
+  ui.row(fr(), gap, [&, t](UI &r) {
     r.col(fr(), s.panel_gap(), [&, t](UI &c) {
       c.panel(
           "HTTP",
@@ -141,7 +141,7 @@ static void traffic(UI &ui, State &s) {
           http.null() ? "no access log"
                       : fixed(http["requestsPerSecond"].n(), 1) + " req/s",
           t.success);
-    });
+    }, true);
     r.col(fr(.85), s.panel_gap(), [&, t](UI &c) {
       c.panel(
           "SSH Activity",
@@ -180,7 +180,7 @@ static void traffic(UI &ui, State &s) {
                   true);
           },
           cells(10), "", t.secondary);
-    });
+    }, true);
   });
   if (!http.null() && !http["recent"].array().empty())
     ui.panel(
@@ -242,7 +242,7 @@ static void sessions(UI &ui, State &s) {
         },
         cells(34), "", t.primary);
   });
-  ui.row(fr(), 1, [&, t](UI &r) {
+  ui.row(fr(), gap, [&, t](UI &r) {
     r.panel(
         "Recent Logins",
         [&, t](UI &p) {
@@ -285,7 +285,7 @@ static void sessions(UI &ui, State &s) {
             p.graph(graph(d["sessionHistory"], t.success));
           },
           cells(8), "", t.secondary);
-    });
+    }, true);
   });
 }
 static void network(UI &ui, State &s) {
@@ -331,7 +331,7 @@ static void network(UI &ui, State &s) {
           fr(), iface["ip"].s(""), color);
     }
   });
-  ui.row(fr(), 1, [&, t](UI &r) {
+  ui.row(fr(), gap, [&, t](UI &r) {
     r.panel(
         "Connections",
         [&, t](UI &p) {
@@ -365,16 +365,17 @@ static void network(UI &ui, State &s) {
           "Open Connections",
           [&, t](UI &p) { p.graph(graph(d["connectionHistory"], t.accent)); },
           cells(6), "", t.secondary);
-    });
+    }, true);
   });
 }
 static void services(UI &ui, State &s) {
   auto t = ui.t();
+  const int gap = s.panel_gap();
   const auto &d = s.data["telemetry"];
   int failed = 0;
   for (auto &v : d["services"].array())
     failed += v["active"].s() == "failed";
-  ui.row(fr(), 1, [&, t, failed](UI &r) {
+  ui.row(fr(), gap, [&, t, failed](UI &r) {
     r.panel(
         "Services",
         [&, t](UI &p) {
@@ -481,7 +482,7 @@ static void services(UI &ui, State &s) {
             p.keys(rows);
           },
           fr(), "", t.warning);
-    });
+    }, true);
   });
   ui.panel(
       "Filesystems",

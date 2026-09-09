@@ -85,6 +85,21 @@ export interface ContainerOptions {
   min?: number;
   max?: number;
   background?: Color;
+  /**
+   * Treat this container's own edges as panel borders when collapsing.
+   *
+   * Collapsing merges a seam only where two bordered siblings meet, and a row
+   * or column is not itself bordered -- so wrapping a stack of panels in a
+   * column, which is the only way to put a stack beside one tall panel, used to
+   * make the seam down the middle of the screen the one seam that could never
+   * merge. Set this on such a wrapper and its edges join in.
+   *
+   * It is a declaration rather than something inferred, because the children
+   * are built only once the layout has been solved and the seam has to be
+   * known before that. True only if every child is a panel filling the
+   * container across the seam; otherwise a neighbour's border lands on content.
+   */
+  bordered?: boolean;
 }
 
 export interface PanelOptions extends ContainerOptions {
@@ -238,7 +253,7 @@ export class Container {
       const container = new Container(surface, this.ctx, "row", options);
       build?.(container);
       container.flush();
-    }, this.sizeOf(options, "fill"));
+    }, this.sizeOf(options, "fill"), options.bordered ?? false);
   }
 
   /** A vertical container. */
@@ -247,7 +262,7 @@ export class Container {
       const container = new Container(surface, this.ctx, "column", options);
       build?.(container);
       container.flush();
-    }, this.sizeOf(options, "fill"));
+    }, this.sizeOf(options, "fill"), options.bordered ?? false);
   }
 
   /**
@@ -263,7 +278,7 @@ export class Container {
       const container = new GridContainer(surface, this.ctx, options);
       build?.(container);
       container.flush();
-    }, this.sizeOf(options, "fill"));
+    }, this.sizeOf(options, "fill"), options.bordered ?? false);
   }
 
   /** A bordered panel. The callback receives its interior as a column. */
@@ -702,7 +717,11 @@ export class GridContainer {
   private surface: Surface;
   private ctx: RenderContext;
   private options: GridOptions;
-  private cells: { options: PanelOptions & CellOptions; draw: (surface: Surface) => void }[] = [];
+  private cells: {
+    options: PanelOptions & CellOptions;
+    draw: (surface: Surface) => void;
+    bordered: boolean;
+  }[] = [];
 
   constructor(surface: Surface, ctx: RenderContext, options: GridOptions) {
     this.surface = options.padding ? surface.inset(options.padding) : surface;
@@ -720,9 +739,26 @@ export class GridContainer {
     return new Array(Math.max(1, count)).fill("1fr");
   }
 
-  private push(options: PanelOptions & CellOptions, draw: (surface: Surface) => void): this {
-    this.cells.push({ options, draw });
+  private push(
+    options: PanelOptions & CellOptions,
+    draw: (surface: Surface) => void,
+    bordered = false,
+  ): this {
+    this.cells.push({ options, draw, bordered });
     return this;
+  }
+
+  /**
+   * The gap between tracks, minus one where the whole grid is panels and
+   * collapsing is on, so neighbouring borders land in the same column and
+   * merge. A grid is one pair of track sizes rather than a list of siblings,
+   * so this is all or nothing: a single cell that is not a panel would have a
+   * neighbour's border drawn across its content.
+   */
+  private seam(): number {
+    const gap = this.options.gap ?? 0;
+    if (!this.ctx.collapseBorders || gap !== 0 || this.cells.length < 2) return gap;
+    return this.cells.every((cell) => cell.bordered) ? -1 : gap;
   }
 
   /** A panel occupying the next free cell (or several, with colSpan/rowSpan). */
@@ -731,7 +767,7 @@ export class GridContainer {
       const container = new Container(surface, this.ctx, "column");
       container.panel(options, build);
       container.flush();
-    });
+    }, (options.border ?? "rounded") !== "none");
   }
 
   cell(options: CellOptions & ContainerOptions = {}, build?: (cell: Container) => void): this {
@@ -739,7 +775,7 @@ export class GridContainer {
       const container = new Container(surface, this.ctx, "column", options);
       build?.(container);
       container.flush();
-    });
+    }, options.bordered ?? false);
   }
 
   row(options: CellOptions & ContainerOptions = {}, build?: (row: Container) => void): this {
@@ -747,12 +783,12 @@ export class GridContainer {
       const container = new Container(surface, this.ctx, "row", options);
       build?.(container);
       container.flush();
-    });
+    }, options.bordered ?? false);
   }
 
   flush(): void {
     if (this.cells.length === 0 || isEmpty(this.surface.rect)) return;
-    const gap = this.options.gap ?? 0;
+    const gap = this.seam();
     const columnSpec = this.track(this.options.columns, Math.min(this.cells.length, 3));
     const rowCount = Array.isArray(this.options.rows)
       ? this.options.rows.length

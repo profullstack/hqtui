@@ -24,8 +24,8 @@ func (s *state) components(p *ui.Container) {
 	gap := s.panelGap()
 	t := p.Theme()
 	c, m, n := obj(s.sample["cpu"]), obj(s.sample["memory"]), obj(s.sample["network"])
-	row(p, ui.Fr(1), 1, func(r *ui.Container) {
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(left *ui.Container) {
+	row(p, ui.Fr(1), gap, func(r *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap, Bordered: true}}, func(left *ui.Container) {
 			left.Panel(ui.PanelOptions{Title: "Buttons & Inputs", Layout: fixed(13)}, func(p *ui.Container) {
 				row(p, ui.Cells(1), 1, func(r *ui.Container) {
 					for i, label := range []string{"Primary", "Success", "Warning", "Danger"} {
@@ -76,7 +76,7 @@ func (s *state) components(p *ui.Container) {
 				}})
 			})
 		})
-		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap}}, func(right *ui.Container) {
+		r.Column(ui.ColumnOptions{Layout: ui.Layout{Gap: gap, Bordered: true}}, func(right *ui.Container) {
 			right.Panel(ui.PanelOptions{Title: "Process Tree", Layout: fixed(13)}, func(p *ui.Container) {
 				row(p, ui.Cells(1), 0, func(r *ui.Container) {
 					r.StyledText("Name", ui.TextStyle{Fg: &t.Muted, Bold: true})

@@ -425,12 +425,38 @@ func (s Surface) Box(o BoxOptions) Surface {
 	}
 	bg := o.Bg
 
-	if !o.NoFill && bg != nil {
-		s.Fill(Style{Bg: bg})
-	}
-
 	sides := o.Sides.resolve()
 	chars, hasBorder := o.Border.Chars()
+	drawsBorder := hasBorder && sides.any() && s.Width() >= 2 && s.Height() >= 1
+
+	if !o.NoFill && bg != nil {
+		if drawsBorder && o.Collapse {
+			// The border ring is left to the border drawing below, which merges
+			// with whatever a neighbour already put in the shared column.
+			// Filling it here first would erase that border, and the merge
+			// would then find a blank cell and simply overwrite it -- which is
+			// why a panel with a background collapsed its seams into a corner
+			// rather than a junction. Every cell skipped here is painted by the
+			// border, in the same bg.
+			top, bottom, left, right := 0, 0, 0, 0
+			if sides.Top {
+				top = 1
+			}
+			if s.Height() > 1 && sides.Bottom {
+				bottom = 1
+			}
+			if sides.Left {
+				left = 1
+			}
+			if sides.Right {
+				right = 1
+			}
+			s.FillRect(left, top, max(0, s.Width()-left-right), max(0, s.Height()-top-bottom), Style{Bg: bg}, 32)
+		} else {
+			s.Fill(Style{Bg: bg})
+		}
+	}
+
 	if !hasBorder || !sides.any() {
 		return s.Inset(Padding{})
 	}

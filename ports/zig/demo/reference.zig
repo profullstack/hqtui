@@ -45,8 +45,11 @@ pub const C = struct {
     pub fn row(c: *C, p: *P, size: Size, gap: usize, comptime f: fn (*C, *P) anyerror!void) !void {
         try p.row(.{ .layout = .{ .size = size, .gap = gap } }, h.Body.with(c, f));
     }
-    pub fn col(c: *C, p: *P, size: Size, gap: usize, comptime f: fn (*C, *P) anyerror!void) !void {
-        try p.column(.{ .layout = .{ .size = size, .gap = gap } }, h.Body.with(c, f));
+    pub fn col(c: *C, p: *P, size: Size, gap: usize, bordered: bool, comptime f: fn (*C, *P) anyerror!void) !void {
+        try p.column(
+            .{ .layout = .{ .size = size, .gap = gap, .bordered = bordered } },
+            h.Body.with(c, f),
+        );
     }
     pub fn panel(c: *C, p: *P, o: h.ui.PanelOptions, comptime f: fn (*C, *P) anyerror!void) !void {
         try p.panel(o, h.Body.with(c, f));
