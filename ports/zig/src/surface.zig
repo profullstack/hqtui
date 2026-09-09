@@ -398,12 +398,41 @@ pub const Surface = struct {
         const fg = options.border_color orelse self.theme.border;
         const bg = options.bg;
 
+        const sides = options.sides;
+        const maybe_chars = options.border.chars();
+        const draws_border = maybe_chars != null and sides.any() and
+            self.width() >= 2 and self.height() >= 1;
+
         if (options.fill) {
-            if (bg) |v| self.fill(.{ .bg = v });
+            if (bg) |v| {
+                if (draws_border and options.collapse) {
+                    // The border ring is left to the border drawing below,
+                    // which merges with whatever a neighbour already put in
+                    // the shared column. Filling it here first would erase
+                    // that border, and the merge would then find a blank cell
+                    // and simply overwrite it -- which is why a panel with a
+                    // background collapsed its seams into a corner rather than
+                    // a junction. Every cell skipped here is painted by the
+                    // border, in the same bg.
+                    const top: isize = if (sides.top) 1 else 0;
+                    const bottom: isize = if (self.height() > 1 and sides.bottom) 1 else 0;
+                    const left: isize = if (sides.left) 1 else 0;
+                    const right: isize = if (sides.right) 1 else 0;
+                    self.fillRect(
+                        left,
+                        top,
+                        @intCast(@max(0, @as(isize, @intCast(self.width())) - left - right)),
+                        @intCast(@max(0, @as(isize, @intCast(self.height())) - top - bottom)),
+                        .{ .bg = v },
+                        ' ',
+                    );
+                } else {
+                    self.fill(.{ .bg = v });
+                }
+            }
         }
 
-        const sides = options.sides;
-        const chars = options.border.chars() orelse return self.inset(.none);
+        const chars = maybe_chars orelse return self.inset(.none);
         if (!sides.any()) return self.inset(.none);
         if (self.width() < 2 or self.height() < 1) return self.inset(Padding.all(1));
 

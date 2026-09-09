@@ -322,10 +322,34 @@ class Surface:
         fg = options.border_color if options.border_color is not None else self.theme.border
         bg = options.bg
 
-        if options.fill and bg is not None:
-            self.fill(Style(bg=bg))
-
         sides = resolve_sides(options.sides)
+        draws_border = (
+            border != "none" and any(sides.values()) and self.width >= 2 and self.height >= 1
+        )
+
+        if options.fill and bg is not None:
+            if draws_border and options.collapse:
+                # The border ring is left to the border drawing below, which
+                # merges with whatever a neighbour already put in the shared
+                # column. Filling it here first would erase that border, and
+                # the merge would then find a blank cell and simply overwrite
+                # it -- which is why a panel with a background collapsed its
+                # seams into a corner rather than a junction. Every cell
+                # skipped here is painted by the border, in the same bg.
+                top = 1 if sides["top"] else 0
+                bottom = 1 if self.height > 1 and sides["bottom"] else 0
+                left = 1 if sides["left"] else 0
+                right = 1 if sides["right"] else 0
+                self.fill_rect(
+                    left,
+                    top,
+                    max(0, self.width - left - right),
+                    max(0, self.height - top - bottom),
+                    Style(bg=bg),
+                )
+            else:
+                self.fill(Style(bg=bg))
+
         if border == "none" or not any(sides.values()):
             return self.inset(0)
         if self.width < 2 or self.height < 1:

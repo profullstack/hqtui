@@ -7,6 +7,6 @@
     "start": "bun src/main.ts"
   },
   "dependencies": {
-    "@profullstack/hqtui": "^0.3.0"
+    "@profullstack/hqtui": "^0.4.0"
   }
 }

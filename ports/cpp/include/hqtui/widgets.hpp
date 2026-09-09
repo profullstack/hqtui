@@ -969,23 +969,39 @@ public:
       if (rects[i].width > 0 && rects[i].height > 0)
         nodes_[i].draw(surface_.region(rects[i]));
   }
+  /// `bordered` treats this container's own edges as panel borders when
+  /// collapsing.
+  ///
+  /// Collapsing merges a seam only where two bordered siblings meet, and a row
+  /// or column is not itself bordered -- so wrapping a stack of panels in a
+  /// column, which is the only way to put a stack beside one tall panel, used
+  /// to make the seam down the middle of the screen the one seam that could
+  /// never merge. Set it on such a wrapper and its edges join in.
+  ///
+  /// It is a declaration rather than something inferred, because the children
+  /// are built only once the layout has been solved and the seam has to be
+  /// known before that. True only if every child is a panel filling the
+  /// container across the seam; otherwise a neighbour's border lands on
+  /// content.
   void group(Constraint size, int gap, bool horizontal,
-             std::function<void(UI &)> body) {
+             std::function<void(UI &)> body, bool bordered = false) {
     auto regions_ = regions;
     auto collapse = collapse_;
-    draw(
+    draw_bordered(
         [=](Surface s) {
           UI p(s, horizontal, gap, regions_, collapse);
           body(p);
           p.flush();
         },
-        size);
+        size, bordered);
   }
-  void row(Constraint size, int gap, std::function<void(UI &)> body) {
-    group(size, gap, true, std::move(body));
+  void row(Constraint size, int gap, std::function<void(UI &)> body,
+           bool bordered = false) {
+    group(size, gap, true, std::move(body), bordered);
   }
-  void col(Constraint size, int gap, std::function<void(UI &)> body) {
-    group(size, gap, false, std::move(body));
+  void col(Constraint size, int gap, std::function<void(UI &)> body,
+           bool bordered = false) {
+    group(size, gap, false, std::move(body), bordered);
   }
   /// `sides` is a mask of HQ_SIDE_*, or 0 for all four. Use it for chrome that
   /// is not a box: a header rule, a sidebar rail, a footer that should not look

@@ -117,6 +117,20 @@ class Layout:
     gap: int = 0
     padding: "int | tuple | None" = None
     background: Color | None = None
+    bordered: bool = False
+    """Treat this container's own edges as panel borders when collapsing.
+
+    Collapsing merges a seam only where two bordered siblings meet, and a row
+    or column is not itself bordered -- so wrapping a stack of panels in a
+    column, which is the only way to put a stack beside one tall panel, used to
+    make the seam down the middle of the screen the one seam that could never
+    merge. Set this on such a wrapper and its edges join in.
+
+    It is a declaration rather than something inferred, because the children
+    are built only once the layout has been solved and the seam has to be known
+    before that. True only if every child is a panel filling the container
+    across the seam; otherwise a neighbour's border lands on content.
+    """
 
 
 @dataclass(slots=True)
@@ -274,7 +288,7 @@ class Container:
                 build(container)
             container.flush()
 
-        return self._add(self._constraint(l, "fill"), draw)
+        return self._add(self._constraint(l, "fill"), draw, l.bordered)
 
     def column(self, layout: Layout | None = None, build: Callable[["Container"], None] | None = None):
         """A vertical container."""
@@ -286,7 +300,7 @@ class Container:
                 build(container)
             container.flush()
 
-        return self._add(self._constraint(l, "fill"), draw)
+        return self._add(self._constraint(l, "fill"), draw, l.bordered)
 
     def panel(self, options: Panel | None = None, build: Callable[["Container"], None] | None = None):
         """A bordered panel."""
@@ -333,7 +347,7 @@ class Container:
                 build(grid)
             grid.flush()
 
-        return self._add(self._constraint(o, "fill"), draw)
+        return self._add(self._constraint(o, "fill"), draw, o.bordered)
 
     def spacer(self, size: "int | str" = "fill"):
         """Blank space."""
@@ -716,7 +730,7 @@ class Grid:
         self.surface = surface.inset(options.padding) if options.padding is not None else surface
         self.ctx = ctx
         self.options = options
-        self._cells: list[tuple[Cell, Callable[[Surface], None]]] = []
+        self._cells: list[tuple[Cell, Callable[[Surface], None], bool]] = []
 
     @property
     def theme(self) -> Theme:
@@ -729,9 +743,23 @@ class Grid:
         count = spec if isinstance(spec, int) else fallback
         return ["1fr"] * max(1, count)
 
-    def _push(self, cell: Cell, draw: Callable[[Surface], None]) -> "Grid":
-        self._cells.append((cell, draw))
+    def _push(
+        self, cell: Cell, draw: Callable[[Surface], None], bordered: bool = False
+    ) -> "Grid":
+        self._cells.append((cell, draw, bordered))
         return self
+
+    def _seam(self) -> int:
+        """The gap between tracks, minus one where the whole grid is panels.
+
+        A grid is one pair of track sizes rather than a list of siblings, so
+        this is all or nothing: a single cell that is not a panel would have a
+        neighbour's border drawn across its content.
+        """
+        gap = self.options.gap
+        if not self.ctx.collapse_borders or gap != 0 or len(self._cells) < 2:
+            return gap
+        return -1 if all(cell[2] for cell in self._cells) else gap
 
     def panel(
         self, options: Panel | None = None, cell: Cell | None = None,
@@ -745,7 +773,9 @@ class Grid:
             container.panel(o, build)
             container.flush()
 
-        return self._push(cell or Cell(), draw)
+        return self._push(
+            cell or Cell(), draw, str(getattr(o.border, "value", o.border)) != "none"
+        )
 
     def cell(
         self, cell: Cell | None = None, layout: Layout | None = None,
@@ -757,7 +787,7 @@ class Grid:
                 build(container)
             container.flush()
 
-        return self._push(cell or Cell(), draw)
+        return self._push(cell or Cell(), draw, bool(layout and layout.bordered))
 
     def row(
         self, cell: Cell | None = None, layout: Layout | None = None,
@@ -769,12 +799,12 @@ class Grid:
                 build(container)
             container.flush()
 
-        return self._push(cell or Cell(), draw)
+        return self._push(cell or Cell(), draw, bool(layout and layout.bordered))
 
     def flush(self) -> None:
         if not self._cells or self.surface.rect.is_empty:
             return
-        gap = self.options.gap
+        gap = self._seam()
         column_spec = Grid._track(self.options.columns, min(len(self._cells), 3))
         if isinstance(self.options.rows, (list, tuple)):
             row_count = len(self.options.rows)
@@ -794,7 +824,7 @@ class Grid:
         occupied: set[tuple[int, int]] = set()
         cursor = 0
 
-        for cell, draw in self._cells:
+        for cell, draw, _bordered in self._cells:
             # Clamp to the grid. A span wider than the track count can never
             # satisfy `col + col_span <= len(col_widths)`, so the placement loop
             # below used to burn the shared cursor to exhaustion — dropping this

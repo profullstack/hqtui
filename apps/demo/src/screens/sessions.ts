@@ -75,7 +75,7 @@ export function sessionsScreen(ui: Container, state: DemoState, theme: Theme): v
       });
     });
 
-    row.column({ width: "0.8fr", gap }, (column) => {
+    row.column({ width: "0.8fr", gap, bordered: true }, (column) => {
       column.panel({ title: "Failed Logins", borderColor: theme.danger }, (p) => {
         if (t.failedLogins.length === 0) {
           p.label("None recorded.");

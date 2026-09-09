@@ -358,14 +358,35 @@ export class Surface {
     const fg = options.borderColor ?? this.theme.border;
     const bg = options.bg;
 
-    if (options.fill !== false && bg !== undefined) {
-      this.fill({ bg });
-    }
-
     const sides = resolveSides(options.sides);
     const any = sides.top || sides.right || sides.bottom || sides.left;
+    const drawsBorder = style !== "none" && any && this.width >= 2 && this.height >= 1;
 
-    if (style === "none" || !any || this.width < 2 || this.height < 1) {
+    if (options.fill !== false && bg !== undefined) {
+      if (drawsBorder && options.collapse) {
+        // The border ring is left to the border drawing below, which merges
+        // with whatever a neighbour already put in the shared column. Filling
+        // it here first would erase that border, and the merge would then find
+        // a blank cell and simply overwrite it -- which is why a panel with a
+        // background collapsed its seams into a corner rather than a junction.
+        // Every cell skipped here is painted by the border, in the same bg.
+        const top = sides.top ? 1 : 0;
+        const bottom = this.height > 1 && sides.bottom ? 1 : 0;
+        const left = sides.left ? 1 : 0;
+        const right = sides.right ? 1 : 0;
+        this.fillRect(
+          left,
+          top,
+          Math.max(0, this.width - left - right),
+          Math.max(0, this.height - top - bottom),
+          { bg },
+        );
+      } else {
+        this.fill({ bg });
+      }
+    }
+
+    if (!drawsBorder) {
       return this.inset(style === "none" || !any ? 0 : 1);
     }
 

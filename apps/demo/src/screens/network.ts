@@ -75,7 +75,7 @@ export function networkScreen(ui: Container, state: DemoState, theme: Theme): vo
       });
     });
 
-    row.column({ width: "0.7fr", gap }, (column) => {
+    row.column({ width: "0.7fr", gap, bordered: true }, (column) => {
       column.panel({ title: "Listening Ports", subtitle: String(t.listeners.length), borderColor: theme.warning }, (p) => {
         const listeners = pane(state, "network.listeners", t.listeners.length);
         p.table({

@@ -90,3 +90,68 @@ test("edge bits round-trip through the glyph tables", () => {
   const union = (borderBits("╮".codePointAt(0) ?? 0) ?? 0) | (borderBits("╭".codePointAt(0) ?? 0) ?? 0);
   assert.equal(borderGlyph("rounded", union), "┬");
 });
+
+test("a wrapping column blocks the merge unless it says its edges are borders", () => {
+  // The only way to put a stack of panels beside one tall panel is to wrap the
+  // stack in a column, and a column is not itself bordered -- so the seam down
+  // the middle of the screen was the one seam that could never merge.
+  const render = (bordered: boolean) =>
+    renderToText(
+      ({ ui }) => {
+        ui.row({ size: 6 }, (row) => {
+          row.panel({ title: "A", size: 8 }, () => {});
+          row.column({ size: 8, bordered }, (col) => {
+            col.panel({ title: "B", size: 3 }, () => {});
+            col.panel({ title: "C", size: 3 }, () => {});
+          });
+        });
+      },
+      { width: 16, height: 6, collapseBorders: true },
+    ).split("\n");
+
+  const plain = render(false);
+  assert.match(plain[0] ?? "", /╮╭/);
+  assert.match(plain[1] ?? "", /││/);
+
+  const merged = render(true);
+  assert.match(merged[0] ?? "", /┬/);
+  assert.doesNotMatch(merged[0] ?? "", /╮╭/);
+  assert.doesNotMatch(merged[1] ?? "", /││/);
+});
+
+test("a grid of panels merges its tracks, and one cell that is not a panel stops it", () => {
+  const grid = (allPanels: boolean) =>
+    renderToText(
+      ({ ui }) => {
+        ui.grid({ columns: 2, rows: 1 }, (g) => {
+          g.panel({ title: "A" }, () => {});
+          if (allPanels) g.panel({ title: "B" }, () => {});
+          else g.cell({}, (c) => c.label("B"));
+        });
+      },
+      { width: 16, height: 3, collapseBorders: true },
+    ).split("\n");
+
+  assert.match(grid(true)[0] ?? "", /┬/);
+  assert.doesNotMatch(grid(true)[0] ?? "", /╮╭/);
+  // A cell drawing no border would have a neighbour's line across its text.
+  assert.doesNotMatch(grid(false)[0] ?? "", /┬/);
+});
+
+test("a panel with a background still merges, rather than filling the seam away", () => {
+  // The fill runs before the border is drawn, so filling the whole rect wiped
+  // the neighbour's border out of the shared column; the merge then found a
+  // blank cell and overwrote it, leaving a corner where a junction belonged.
+  const lines = renderToText(
+    ({ ui }) => {
+      ui.row({ size: 3 }, (row) => {
+        row.panel({ title: "A", size: 8, background: 0x202020 }, () => {});
+        row.panel({ title: "B", size: 8, background: 0x303030 }, () => {});
+      });
+    },
+    { width: 16, height: 3, collapseBorders: true },
+  ).split("\n");
+  assert.match(lines[0] ?? "", /┬/);
+  assert.doesNotMatch(lines[0] ?? "", /╮╭/);
+  assert.match(lines[2] ?? "", /┴/);
+});

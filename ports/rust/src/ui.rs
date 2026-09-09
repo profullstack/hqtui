@@ -192,6 +192,21 @@ pub struct Layout {
     pub gap: usize,
     pub padding: Padding,
     pub background: Option<Color>,
+    /// Treat this container's own edges as panel borders when collapsing.
+    ///
+    /// Collapsing merges a seam only where two bordered siblings meet, and a
+    /// row or column is not itself bordered -- so wrapping a stack of panels
+    /// in a column, which is the only way to put a stack beside one tall
+    /// panel, used to make the seam down the middle of the screen the one seam
+    /// that could never merge. Set this on such a wrapper and its edges join
+    /// in.
+    ///
+    /// It is a declaration rather than something inferred, because the
+    /// children are built only once the layout has been solved and the seam
+    /// has to be known before that. True only if every child is a panel
+    /// filling the container across the seam; otherwise a neighbour's border
+    /// lands on content.
+    pub bordered: bool,
 }
 
 macro_rules! layout_builders {
@@ -219,6 +234,10 @@ macro_rules! layout_builders {
             }
             pub fn background(mut self, c: Color) -> Self {
                 self.layout.background = Some(c);
+                self
+            }
+            pub fn bordered(mut self, b: bool) -> Self {
+                self.layout.bordered = b;
                 self
             }
         }
@@ -503,7 +522,8 @@ impl<'a> Container<'a> {
     pub fn row(&mut self, options: Row, build: impl FnOnce(&mut Container<'a>) + 'a) -> &mut Self {
         let ctx = self.ctx.clone();
         let constraint = self.constraint_of(&options.layout, Size::Fill, None);
-        self.add(constraint, move |surface| {
+        let bordered = options.layout.bordered;
+        self.add_bordered(constraint, bordered, move |surface| {
             let mut container = Container::new(surface, ctx, Direction::Row, &options.layout);
             build(&mut container);
             container.flush();
@@ -514,7 +534,8 @@ impl<'a> Container<'a> {
     pub fn column(&mut self, options: Column, build: impl FnOnce(&mut Container<'a>) + 'a) -> &mut Self {
         let ctx = self.ctx.clone();
         let constraint = self.constraint_of(&options.layout, Size::Fill, None);
-        self.add(constraint, move |surface| {
+        let bordered = options.layout.bordered;
+        self.add_bordered(constraint, bordered, move |surface| {
             let mut container = Container::new(surface, ctx, Direction::Column, &options.layout);
             build(&mut container);
             container.flush();
@@ -574,7 +595,8 @@ impl<'a> Container<'a> {
     pub fn grid(&mut self, options: GridSpec, build: impl FnOnce(&mut Grid<'a>) + 'a) -> &mut Self {
         let ctx = self.ctx.clone();
         let constraint = self.constraint_of(&options.layout, Size::Fill, None);
-        self.add(constraint, move |surface| {
+        let bordered = options.layout.bordered;
+        self.add_bordered(constraint, bordered, move |surface| {
             let mut grid = Grid::new(surface, ctx, options);
             build(&mut grid);
             grid.flush();
@@ -979,6 +1001,7 @@ impl<'a> Container<'a> {
 struct Cell<'a> {
     span: Span,
     draw: DrawFn<'a>,
+    bordered: bool,
 }
 
 /// Grid placement with spans. Cells are filled row-major.
@@ -1003,9 +1026,26 @@ impl<'a> Grid<'a> {
         }
     }
 
-    fn push(&mut self, span: Span, draw: impl FnOnce(Surface) + 'a) -> &mut Self {
-        self.cells.push(Cell { span, draw: Box::new(draw) });
+    fn push(&mut self, span: Span, bordered: bool, draw: impl FnOnce(Surface) + 'a) -> &mut Self {
+        self.cells.push(Cell { span, draw: Box::new(draw), bordered });
         self
+    }
+
+    /// The gap between tracks, minus one where the whole grid is panels and
+    /// collapsing is on, so neighbouring borders land in the same column and
+    /// merge. A grid is one pair of track sizes rather than a list of
+    /// siblings, so this is all or nothing: a single cell that is not a panel
+    /// would have a neighbour's border drawn across its content.
+    fn seam(&self) -> isize {
+        let gap = self.spec.layout.gap as isize;
+        if !self.ctx.collapse_borders || gap != 0 || self.cells.len() < 2 {
+            return gap;
+        }
+        if self.cells.iter().all(|cell| cell.bordered) {
+            -1
+        } else {
+            gap
+        }
     }
 
     /// A panel occupying the next free cell, or several with a span.
@@ -1016,7 +1056,8 @@ impl<'a> Grid<'a> {
         build: impl FnOnce(&mut Container<'a>) + 'a,
     ) -> &mut Self {
         let ctx = self.ctx.clone();
-        self.push(span, move |surface| {
+        let bordered = options.border.unwrap_or(BorderStyle::Rounded) != BorderStyle::None;
+        self.push(span, bordered, move |surface| {
             let mut container =
                 Container::new(surface, ctx, Direction::Column, &Layout::default());
             container.panel(options, build);
@@ -1030,7 +1071,7 @@ impl<'a> Grid<'a> {
         build: impl FnOnce(&mut Container<'a>) + 'a,
     ) -> &mut Self {
         let ctx = self.ctx.clone();
-        self.push(span, move |surface| {
+        self.push(span, false, move |surface| {
             let mut container =
                 Container::new(surface, ctx, Direction::Column, &Layout::default());
             build(&mut container);
@@ -1042,7 +1083,7 @@ impl<'a> Grid<'a> {
         if self.cells.is_empty() || self.surface.rect.is_empty() {
             return;
         }
-        let gap = self.spec.layout.gap;
+        let gap = self.seam();
         let column_spec = Grid::track(&self.spec.columns, self.cells.len().min(3));
         let row_count = if self.spec.rows.is_empty() {
             self.cells.len().div_ceil(column_spec.len())
@@ -1051,15 +1092,15 @@ impl<'a> Grid<'a> {
         };
         let row_spec = Grid::track(&self.spec.rows, row_count);
 
-        let col_widths = crate::layout::solve(
+        let col_widths = crate::layout::solve_with_gaps(
             self.surface.width(),
             &column_spec.iter().map(|s| Constraint::new(*s)).collect::<Vec<_>>(),
-            gap,
+            &vec![gap; column_spec.len().saturating_sub(1)],
         );
-        let row_heights = crate::layout::solve(
+        let row_heights = crate::layout::solve_with_gaps(
             self.surface.height(),
             &row_spec.iter().map(|s| Constraint::new(*s)).collect::<Vec<_>>(),
-            gap,
+            &vec![gap; row_spec.len().saturating_sub(1)],
         );
 
         let mut occupied: Vec<(usize, usize)> = Vec::new();
@@ -1110,26 +1151,26 @@ impl<'a> Grid<'a> {
 
                 let mut x = self.surface.rect.x;
                 for c in 0..col {
-                    x += (col_widths[c] + gap) as isize;
+                    x += col_widths[c] as isize + gap;
                 }
                 let mut y = self.surface.rect.y;
                 for r in 0..row {
-                    y += (row_heights[r] + gap) as isize;
+                    y += row_heights[r] as isize + gap;
                 }
-                let mut width = 0usize;
+                let mut width = 0isize;
                 for c in col..(col + col_span).min(col_widths.len()) {
-                    width += col_widths[c] + gap;
+                    width += col_widths[c] as isize + gap;
                 }
-                let mut height = 0usize;
+                let mut height = 0isize;
                 for r in row..(row + row_span).min(row_heights.len()) {
-                    height += row_heights[r] + gap;
+                    height += row_heights[r] as isize + gap;
                 }
 
                 placement = Some(Rect {
                     x,
                     y,
-                    width: width.saturating_sub(gap),
-                    height: height.saturating_sub(gap),
+                    width: (width - gap).max(0) as usize,
+                    height: (height - gap).max(0) as usize,
                 });
                 cursor += 1;
                 break;
