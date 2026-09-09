@@ -145,8 +145,8 @@ test("a panel with a background still merges, rather than filling the seam away"
   const lines = renderToText(
     ({ ui }) => {
       ui.row({ size: 3 }, (row) => {
-        row.panel({ title: "A", size: 8, background: "#202020" }, () => {});
-        row.panel({ title: "B", size: 8, background: "#303030" }, () => {});
+        row.panel({ title: "A", size: 8, background: 0x202020 }, () => {});
+        row.panel({ title: "B", size: 8, background: 0x303030 }, () => {});
       });
     },
     { width: 16, height: 3, collapseBorders: true },
