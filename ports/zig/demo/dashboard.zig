@@ -224,8 +224,8 @@ fn ioGraph(c: *C, p: *P) !void {
 fn ioColumns(c: *C, p: *P) !void {
     const read = try c.sub(p, c.v, 0);
     const write = try c.sub(p, c.v, 1);
-    try read.col(p, .fill, 0, ioGraph);
-    try write.col(p, .fill, 0, ioGraph);
+    try read.col(p, .fill, 0, false, ioGraph);
+    try write.col(p, .fill, 0, false, ioGraph);
 }
 fn ioBody(c: *C, p: *P) !void {
     try c.row(p, .fill, 2, ioColumns);
