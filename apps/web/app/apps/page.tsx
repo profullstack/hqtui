@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Apps",
-  description: "Programs built with HQTUI: a REST client, a git interface, and an audio player.",
+  description: "Programs built with HQTUI: a REST client, a git interface, an audio player, an nmap console and more.",
 };
 
 interface App {
@@ -153,6 +153,22 @@ const APPS: App[] = [
       "Its views were pure functions of state from the start, which is why the whole client is "
       + "asserted on as text rather than described in a test.",
   },
+  {
+    shot: "nmaptui",
+    name: "nmaptui",
+    tagline: "An admin console for nmap",
+    repo: "https://github.com/profullstack/nmaptui",
+    install: "curl -fsSL https://raw.githubusercontent.com/profullstack/nmaptui/main/install.sh | sh",
+    body:
+      "Eighteen scan profiles and a form for every nmap option that matters, with the exact command "
+      + "shown before it runs. nmap's XML is read as it streams, so tasks, percent and finished hosts "
+      + "appear while the scan is still going. Hosts, services and a findings triage list follow, "
+      + "every scan is kept, and any two can be diffed or exported as text, JSON, CSV, Markdown or HTML.",
+    found:
+      "Its screens are pure functions of one state object, so the test suite renders the real frames "
+      + "headlessly and asserts on the text. A meter with a leading track bar and a panel subtitle "
+      + "that ate its title both showed up that way, in a test, before anyone opened a terminal.",
+  },
 ];
 
 export default async function Apps() {
@@ -168,7 +184,7 @@ export default async function Apps() {
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight">Apps built with HQTUI</h1>
           <p className="mt-4 text-lg text-white/60">
-            Nine programs people actually run. They exist partly to keep the library honest: a
+            Ten programs people actually run. They exist partly to keep the library honest: a
             real application finds the gaps a widget gallery does not, and several of these have
             already changed HQTUI — styled spans, collapsed borders and the braille metrics in
             these very screenshots all came from building one of them.
