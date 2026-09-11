@@ -34,5 +34,9 @@
   "nixamp": {
     "width": 2301,
     "height": 1067
+  },
+  "nmaptui": {
+    "width": 2244,
+    "height": 1265
   }
 }
