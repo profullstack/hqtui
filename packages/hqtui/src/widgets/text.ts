@@ -176,6 +176,15 @@ export interface StatusItem {
   color?: Color;
   /** Highlight this entry, e.g. the active tab or a live indicator. */
   active?: boolean;
+  /** A click on this entry. The bar claims the cells it drew for it. */
+  onPress?: () => void;
+}
+
+/** Where one status item ended up, so a click can be handed back to it. */
+export interface StatusItemSpan {
+  item: StatusItem;
+  x: number;
+  width: number;
 }
 
 export interface StatusBarOptions {
@@ -187,18 +196,26 @@ export interface StatusBarOptions {
   keyStyle?: "caps" | "plain";
 }
 
-/** The F1/F2/F10 bar along the bottom of every serious TUI. */
-export function drawStatusBar(surface: Surface, options: StatusBarOptions): void {
-  if (surface.empty) return;
+/**
+ * The F1/F2/F10 bar along the bottom of every serious TUI.
+ *
+ * Returns the cells each item took, in the order they were drawn, so the
+ * caller can make them clickable: a key cap that says `F1 Help` and does
+ * nothing when clicked is a promise the bar does not keep.
+ */
+export function drawStatusBar(surface: Surface, options: StatusBarOptions): StatusItemSpan[] {
+  if (surface.empty) return [];
   const theme = surface.theme;
   const bg = options.background ?? elevate(theme, 0.04);
   surface.fill({ bg });
+  const spans: StatusItemSpan[] = [];
 
   let x = 1;
   const drawItems = (items: StatusItem[], startX: number): number => {
     let cx = startX;
     for (const item of items) {
       if (cx >= surface.width) break;
+      const startedAt = cx;
       if (item.key) {
         const cap = options.keyStyle === "plain" ? item.key : item.key;
         const capStyle: Style =
@@ -213,6 +230,9 @@ export function drawStatusBar(surface: Surface, options: StatusBarOptions): void
         bg,
         attrs: item.active ? Attr.Bold : 0,
       });
+      // The span is the cap and the label, not the gap after them: two items
+      // side by side must not both answer a click on the space between.
+      spans.push({ item, x: startedAt, width: Math.max(0, Math.min(cx, surface.width) - startedAt) });
       cx += surface.text(cx, 0, "  ", { bg });
     }
     return cx;
@@ -227,4 +247,5 @@ export function drawStatusBar(surface: Surface, options: StatusBarOptions): void
     );
     drawItems(options.right, Math.max(x, surface.width - width - 1));
   }
+  return spans;
 }

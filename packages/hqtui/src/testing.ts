@@ -1,7 +1,7 @@
 import { FrameBuffer } from "./buffer.ts";
 import { Encoder } from "./diff.ts";
 import { createSurface, Surface } from "./surface.ts";
-import { Container, type RenderContext, type HitRegion } from "./ui.ts";
+import { Container, dispatchHit, type RenderContext, type HitRegion } from "./ui.ts";
 import { type Theme, type ThemeName, resolveTheme } from "./theme.ts";
 import { detectCapabilities, type Capabilities, type CapabilityOverrides } from "./capabilities.ts";
 import { CONTINUATION, cellText } from "./unicode.ts";
@@ -37,6 +37,15 @@ export interface RenderedScreen {
    * only observable by running a real terminal.
    */
   regions: HitRegion[];
+  /**
+   * Press the mouse on a screen cell, exactly as the app would deliver it:
+   * the topmost region containing the cell takes it. Returns whether any
+   * region did, so a test can prove a click lands on the thing it looks like
+   * it lands on. `clicks: 2` is a double-click.
+   */
+  click(x: number, y: number, options?: { button?: "left" | "middle" | "right"; clicks?: number }): boolean;
+  /** Turn the wheel over a cell. `delta` is -1 up, 1 down. */
+  scroll(x: number, y: number, delta: number): boolean;
   /** Plain text, one line per row, trailing spaces trimmed. */
   text(): string;
   /** One row of plain text. */
@@ -117,6 +126,16 @@ export function renderToScreen(
     height,
     buffer,
     regions,
+    click: (x, y, options = {}) =>
+      dispatchHit(regions, {
+        action: "press",
+        x,
+        y,
+        button: options.button ?? "left",
+        scroll: 0,
+        clicks: options.clicks ?? 1,
+      }),
+    scroll: (x, y, delta) => dispatchHit(regions, { action: "scroll", x, y, button: "none", scroll: delta, clicks: 0 }),
     text: () => buffer.toText(),
     line: (y: number) => buffer.rowText(y).replace(/\s+$/, ""),
     ansi: () => {

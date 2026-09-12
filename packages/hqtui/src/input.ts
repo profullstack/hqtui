@@ -26,6 +26,13 @@ export interface MouseEvent {
   y: number;
   /** -1 up, 1 down; 0 when this is not a scroll. */
   scroll: number;
+  /**
+   * How many presses this one makes in quick succession on the same cell: 1
+   * for a click, 2 for a double-click. The parser sees one press at a time and
+   * always says 1; the app counts them, so a handler that wants a double-click
+   * reads it from the event the app delivers.
+   */
+  clicks: number;
   ctrl: boolean;
   alt: boolean;
   shift: boolean;
@@ -316,6 +323,7 @@ export class InputParser {
       x: Math.max(0, col - 1),
       y: Math.max(0, row - 1),
       scroll,
+      clicks: 1,
       ctrl,
       alt,
       shift,

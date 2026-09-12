@@ -344,6 +344,13 @@ app.on("mouse", (event) => {
   if (event.action === "scroll") offset += event.scroll;
 });
 
+// Or let the widgets answer: the row under a click, the key under a click,
+// the button under a click. A double-click arrives as clicks: 2.
+ui.table({ rows, onSelectRow: select, onActivateRow: open });
+ui.statusBar({ items: [{ key: "F1", label: "Help", onPress: showHelp }] });
+ui.modal({ title: "Delete?", onDismiss: close,
+           buttons: [{ label: "Yes", onPress: confirm }] });
+
 // Controls that take an action join the Tab order automatically.
 p.button({ label: "Restart", onPress: () => restart() });`}
           />

@@ -220,7 +220,7 @@ demo tells you which of those it could not read.
 | **Graphics** | Braille canvas (2×4 pixels per cell), block/half-block/quadrant/ASCII modes, gradients, software alpha blending |
 | **Color** | 24-bit truecolor, automatic 256 and 16-colour quantization, `NO_COLOR`, monochrome and high-contrast modes |
 | **Themes** | dark (default), dracula, nord, tokyo night, gruvbox, matrix, monochrome, high contrast, light — plus `defineTheme()` |
-| **Input** | normalized keys with modifiers, SGR mouse (click, drag, scroll, move), bracketed paste, focus events, Tab focus traversal |
+| **Input** | normalized keys with modifiers, SGR mouse (click, double-click, drag, scroll, move) delivered per widget — rows, status bar keys, dialog buttons and panels all take a click — bracketed paste, focus events, Tab focus traversal |
 | **Testing** | headless renderer: `renderToText`, `renderToScreen`, `renderToAnsi`, `renderToHtml` — no TTY required |
 
 ## Testing your TUI

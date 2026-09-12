@@ -32,6 +32,9 @@ screen.line(3);         // one row
 screen.find("CPU");     // { x, y } or null
 screen.cell(4, 3);      // { char, fg, bg, attrs }
 screen.regions;         // the mouse regions widgets registered
+screen.click(x, y);     // press there, exactly as the app would deliver it
+screen.click(x, y, { clicks: 2 });   // a double-click
+screen.scroll(x, y, 1); // turn the wheel over a cell
 ```
 
 ## Assert on meaning, not on pixels
@@ -57,6 +60,17 @@ expect(screen.regions.some((r) => r.id === "procs")).toBe(true);
 That last one is worth calling out. A scroll handler that is never registered
 because the widget was drawn in a zero-height region is invisible in a text
 snapshot and obvious in `regions`.
+
+`click` goes one step further and runs the same hit-test the app runs, so a
+test can prove that the cell showing `F2 Theme` is the cell that changes the
+theme, and that a click on a dialog's backdrop closes it without also
+selecting the row it was drawn over:
+
+```ts
+const at = screen.find("Theme")!;
+expect(screen.click(at.x, at.y)).toBe(true);
+expect(state.themeIndex).toBe(1);
+```
 
 ## Colour and attributes
 
