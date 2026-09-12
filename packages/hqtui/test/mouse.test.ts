@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { renderToScreen } from "../src/testing.ts";
+import { hoverBg } from "../src/widgets/table.ts";
+import { resolveTheme } from "../src/theme.ts";
 import { countClicks, DOUBLE_CLICK_MS } from "../src/ui.ts";
 import { InputParser } from "../src/input.ts";
 import type { MouseEvent } from "../src/input.ts";
@@ -213,4 +215,55 @@ test("presses are counted into clicks by time, row and button", () => {
 test("the parser reports every press as a single click", () => {
   const [event] = new InputParser().parse("\x1b[<0;10;5M") as MouseEvent[];
   assert.equal(event.clicks, 1);
+});
+
+test("a hovered row is lit, and the pointer reaches onHoverRow", () => {
+  const seen: (number | null)[] = [];
+  const theme = resolveTheme(undefined);
+  const screen = renderToScreen(({ ui }) => {
+    ui.table({
+      rows: [{ n: "a" }, { n: "b" }, { n: "c" }],
+      columns: [{ key: "n" }],
+      selected: 0,
+      hovered: 1,
+      onHoverRow: (row) => seen.push(row),
+    });
+  }, { width: 20, height: 5 });
+  // Row 0 is the header; body row 1 is "b", drawn on screen row 2.
+  assert.equal(screen.cell(0, 2).bg, hoverBg(theme));
+  assert.equal(screen.cell(0, 1).bg, theme.selection, "selection wins over hover");
+  assert.equal(screen.cell(0, 3).bg, theme.background);
+  assert.ok(screen.hover(0, 3));
+  assert.ok(screen.hover(0, 0));
+  assert.deepEqual(seen, [2, null]);
+});
+
+test("a tree reports every row it drew, and lights the hovered one", () => {
+  const drawn: [string, number, number][] = [];
+  const theme = resolveTheme(undefined);
+  const screen = renderToScreen(({ ui }) => {
+    ui.tree({
+      nodes: [
+        { label: "src", expanded: true, children: [{ label: "a.ts" }, { label: "b.ts" }] },
+        { label: "README" },
+      ],
+      selected: 3,
+      hovered: 1,
+      onRow: (node, index, y) => drawn.push([node.label, index, y]),
+    });
+  }, { width: 20, height: 4 });
+  assert.deepEqual(drawn, [["src", 0, 0], ["a.ts", 1, 1], ["b.ts", 2, 2], ["README", 3, 3]]);
+  assert.equal(screen.cell(0, 1).bg, hoverBg(theme));
+  assert.equal(screen.cell(0, 3).bg, theme.selection);
+});
+
+test("a tree can scroll with a bar, and onRow tells where the window starts", () => {
+  const drawn: number[] = [];
+  const nodes = Array.from({ length: 12 }, (_, i) => ({ label: `row-${i}` }));
+  const screen = renderToScreen(({ ui }) => {
+    ui.tree({ nodes, selected: 9, followSelection: true, scrollbar: true, onRow: (_n, i) => drawn.push(i) });
+  }, { width: 20, height: 4 });
+  assert.deepEqual(drawn, [6, 7, 8, 9]);
+  assert.ok(screen.contains("row-9"));
+  assert.ok(!screen.contains("row-0"));
 });

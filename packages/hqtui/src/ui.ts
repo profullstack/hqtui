@@ -118,6 +118,14 @@ export interface ScrollHandlers {
   onActivateRow?: (visibleRow: number) => void;
   /** Click anywhere on the widget, including its header. */
   onFocus?: () => void;
+  /**
+   * The mouse moved over a visible row, counted from the first body row, or
+   * over the header (`null`). Pair it with the widget's `hovered` option to
+   * light the row up. The widget only hears about the pointer while it is
+   * inside; clear the hover from the app's own `mouse` listener when a move
+   * arrives that no row claimed.
+   */
+  onHoverRow?: (visibleRow: number | null) => void;
 }
 
 interface Child {
@@ -495,10 +503,13 @@ export class Container {
 
   /** Register the widget's rect so the wheel and clicks reach it. */
   private attachScroll(surface: Surface, handlers: ScrollHandlers, headerRows = 0): void {
-    if (!handlers.onScroll && !handlers.onSelectRow && !handlers.onActivateRow && !handlers.onFocus) return;
+    if (
+      !handlers.onScroll && !handlers.onSelectRow && !handlers.onActivateRow && !handlers.onFocus && !handlers.onHoverRow
+    ) return;
     this.ctx.hit({
       rect: surface.hitRect(),
       onScroll: handlers.onScroll ? (delta) => handlers.onScroll?.(delta) : undefined,
+      onHover: handlers.onHoverRow ? (_x, y) => handlers.onHoverRow?.(y >= headerRows ? y - headerRows : null) : undefined,
       onClick: (_x, y, _button, clicks = 1) => {
         handlers.onFocus?.();
         // Row 0 is the header when there is one; clicks there only focus.

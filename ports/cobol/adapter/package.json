@@ -1,7 +1,7 @@
 {
   "name": "@profullstack/hqtui-cobol-adapter",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "module",
   "description": "Reads 80-column COBOL scene records and draws them with HQTUI.",
   "dependencies": {

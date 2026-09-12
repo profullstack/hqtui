@@ -46,6 +46,8 @@ export interface RenderedScreen {
   click(x: number, y: number, options?: { button?: "left" | "middle" | "right"; clicks?: number }): boolean;
   /** Turn the wheel over a cell. `delta` is -1 up, 1 down. */
   scroll(x: number, y: number, delta: number): boolean;
+  /** Move the pointer over a cell without pressing. */
+  hover(x: number, y: number): boolean;
   /** Plain text, one line per row, trailing spaces trimmed. */
   text(): string;
   /** One row of plain text. */
@@ -136,6 +138,7 @@ export function renderToScreen(
         clicks: options.clicks ?? 1,
       }),
     scroll: (x, y, delta) => dispatchHit(regions, { action: "scroll", x, y, button: "none", scroll: delta, clicks: 0 }),
+    hover: (x, y) => dispatchHit(regions, { action: "move", x, y, button: "none", scroll: 0, clicks: 0 }),
     text: () => buffer.toText(),
     line: (y: number) => buffer.rowText(y).replace(/\s+$/, ""),
     ansi: () => {

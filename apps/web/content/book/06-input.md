@@ -83,6 +83,21 @@ its label, a button, a row. The gap between two items belongs to neither, so a
 click between `F1 Help` and `F2 Theme` does nothing rather than doing the wrong
 thing.
 
+Hover is the same shape. `onHoverRow` reports the row under the pointer, and
+`hovered` draws it a shade lighter, so the eye finds the target before the
+click. The widget only hears the pointer while it is inside, so clear the
+hover in your own `mouse` listener when a move arrives that no row claimed:
+
+```ts
+ui.tree({ nodes, selected, hovered: state.hover,
+          onHoverRow: (row) => { state.hover = row; state.hoverSeen = true; } });
+
+app.on("mouse", (event) => {
+  if (event.action === "move" && !state.hoverSeen) state.hover = undefined;
+  state.hoverSeen = false;
+});
+```
+
 ## Controls, and how focus happens
 
 ```ts
