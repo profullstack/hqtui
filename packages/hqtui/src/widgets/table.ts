@@ -9,7 +9,7 @@ import { drawScrollbar } from "./scrollbar.ts";
 // its own, and the widgets here still draw with it.
 export { drawScrollbar } from "./scrollbar.ts";
 import { solve } from "../layout.ts";
-import { elevate } from "../theme.ts";
+import { elevate, type Theme } from "../theme.ts";
 
 export interface Column<Row = Record<string, unknown>> {
   /** Property to read, or use `render` for computed cells. */
@@ -43,6 +43,11 @@ export interface TableOptions<Row = Record<string, unknown>> {
   rowColor?: (row: Row, index: number) => Color | undefined;
   /** Show a scrollbar in the last column when rows overflow. */
   scrollbar?: boolean;
+  /**
+   * The row under the mouse, drawn a shade lighter so the pointer has a
+   * visible target before anything is clicked. Selection wins where they meet.
+   */
+  hovered?: number;
   onRow?: (row: Row, index: number, y: number) => void;
 }
 
@@ -124,7 +129,14 @@ export function drawTable<Row>(surface: Surface, options: TableOptions<Row>): vo
     if (row === undefined) break;
     const y = i + headerRows;
     const selected = options.selected === rowIndex;
-    const rowBg = selected ? theme.selection : options.zebra && rowIndex % 2 === 1 ? zebraBg : options.background;
+    const hovered = !selected && options.hovered === rowIndex;
+    const rowBg = selected
+      ? theme.selection
+      : hovered
+        ? hoverBg(theme)
+        : options.zebra && rowIndex % 2 === 1
+          ? zebraBg
+          : options.background;
 
     if (rowBg !== undefined) surface.fillRect(0, y, bodyWidth, 1, { bg: rowBg });
 
@@ -153,9 +165,16 @@ export function drawTable<Row>(surface: Surface, options: TableOptions<Row>): vo
   }
 }
 
+/** The background of the row under the mouse: lifted, but well short of selected. */
+export function hoverBg(theme: Theme): Color {
+  return elevate(theme, 0.1);
+}
+
 export interface ListOptions {
   items: (string | { label: string; color?: Color; badge?: string })[];
   selected?: number;
+  /** The row under the mouse. See TableOptions.hovered. */
+  hovered?: number;
   offset?: number;
   /** Scroll so `selected` stays visible. */
   followSelection?: boolean;
@@ -177,12 +196,14 @@ export function drawList(surface: Surface, options: ListOptions): void {
     if (raw === undefined) break;
     const item = typeof raw === "string" ? { label: raw } : raw;
     const selected = options.selected === index;
+    const hovered = !selected && options.hovered === index;
     const bullet = options.bullet ? `${options.bullet} ` : "";
     const label = `${bullet}${item.label}`;
-    if (selected) surface.fillRect(0, i, width, 1, { bg: theme.selection });
+    const bg = selected ? theme.selection : hovered ? hoverBg(theme) : options.background;
+    if (selected || hovered) surface.fillRect(0, i, width, 1, { bg });
     surface.text(0, i, fit(truncate(label, width), width), {
       fg: selected ? theme.selectionText : item.color ?? theme.foreground,
-      bg: selected ? theme.selection : options.background,
+      bg,
       attrs: selected ? Attr.Bold : 0,
     });
   }
@@ -202,7 +223,10 @@ export interface TreeNode {
 
 export interface TreeOptions {
   nodes: TreeNode[];
+  /** Index into the flattened, expanded tree, the order the rows are drawn in. */
   selected?: number;
+  /** The row under the mouse. See TableOptions.hovered. */
+  hovered?: number;
   offset?: number;
   /** Scroll so `selected` stays visible. */
   followSelection?: boolean;
@@ -210,6 +234,14 @@ export interface TreeOptions {
   /** Draw the ├─ └─ connectors. */
   guides?: boolean;
   guideColor?: Color;
+  /** Show a scrollbar in the last column when rows overflow. */
+  scrollbar?: boolean;
+  /**
+   * Every row drawn, with its index into the flattened tree and its screen
+   * row. A click reports the row it landed on counted from the top of the
+   * visible window, and only the tree knows where that window starts.
+   */
+  onRow?: (node: TreeNode, index: number, y: number) => void;
 }
 
 interface FlatNode {
@@ -235,6 +267,8 @@ export function drawTree(surface: Surface, options: TreeOptions): void {
   const flat: FlatNode[] = [];
   flatten(options.nodes, 0, [], flat);
 
+  const scrollbar = options.scrollbar ?? false;
+  const width = surface.width - (scrollbar ? 1 : 0);
   const offset = resolveOffset(
     options.offset, options.selected, surface.height, flat.length, options.followSelection,
   );
@@ -246,8 +280,9 @@ export function drawTree(surface: Surface, options: TreeOptions): void {
     const entry = flat[index];
     if (!entry) break;
     const selected = options.selected === index;
-    const bg = selected ? theme.selection : options.background;
-    if (selected) surface.fillRect(0, i, surface.width, 1, { bg: theme.selection });
+    const hovered = !selected && options.hovered === index;
+    const bg = selected ? theme.selection : hovered ? hoverBg(theme) : options.background;
+    if (selected || hovered) surface.fillRect(0, i, width, 1, { bg });
 
     let prefix = "";
     if (guides) {
@@ -258,7 +293,7 @@ export function drawTree(surface: Surface, options: TreeOptions): void {
     }
 
     const valuesWidth = (entry.node.values ?? []).reduce((a, v) => a + v.width + 1, 0);
-    const labelWidth = Math.max(0, surface.width - valuesWidth);
+    const labelWidth = Math.max(0, width - valuesWidth);
     surface.text(0, i, truncate(prefix, labelWidth), { fg: guideColor, bg });
     const px = Math.min(stringWidth(prefix), labelWidth);
     surface.text(px, i, truncate(entry.node.label, Math.max(0, labelWidth - px)), {
@@ -275,6 +310,11 @@ export function drawTree(surface: Surface, options: TreeOptions): void {
       });
       vx += value.width + 1;
     }
+    options.onRow?.(entry.node, index, i);
+  }
+
+  if (scrollbar && flat.length > surface.height && surface.height > 0) {
+    drawScrollbar(surface, surface.width - 1, 0, surface.height, flat.length, offset);
   }
 }
 
