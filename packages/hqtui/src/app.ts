@@ -5,7 +5,7 @@ import { Terminal, type TerminalOptions, emergencyRestore } from "./terminal.ts"
 import type { Capabilities } from "./capabilities.ts";
 import { type Theme, type ThemeName, resolveTheme, themes } from "./theme.ts";
 import { Surface, createSurface } from "./surface.ts";
-import { Container, type RenderContext, type HitRegion, type FocusRegistration } from "./ui.ts";
+import { Container, countClicks, dispatchHit, type RenderContext, type HitRegion, type FocusRegistration } from "./ui.ts";
 import type { InputEvent, KeyEvent, MouseEvent, PasteEvent, FocusEvent } from "./input.ts";
 import { matchKey } from "./input.ts";
 
@@ -346,8 +346,9 @@ export class App {
       return;
     }
     if (event.type === "mouse") {
-      this.dispatchMouse(event);
-      this.emit("mouse", event);
+      const counted = this.countPress(event);
+      this.dispatchMouse(counted);
+      this.emit("mouse", counted);
       return;
     }
     if (event.type === "paste") {
@@ -358,18 +359,19 @@ export class App {
     this.emit("focus", event);
   }
 
+  private lastPress: { at: number; x: number; y: number; button: string; clicks: number } | null = null;
+
+  /** The parser reports one press at a time; a double-click is two of them close together. */
+  private countPress(event: MouseEvent): MouseEvent {
+    if (event.action !== "press") return event;
+    const press = { at: Date.now(), x: event.x, y: event.y, button: event.button };
+    const clicks = countClicks(this.lastPress, press);
+    this.lastPress = { ...press, clicks };
+    return { ...event, clicks };
+  }
+
   private dispatchMouse(event: MouseEvent): void {
-    // Later regions are drawn on top, so hit-test in reverse.
-    for (let i = this.hits.length - 1; i >= 0; i--) {
-      const hit = this.hits[i];
-      const r = hit.rect;
-      if (event.x < r.x || event.y < r.y || event.x >= r.x + r.width || event.y >= r.y + r.height) continue;
-      if (event.action === "scroll") hit.onScroll?.(event.scroll);
-      else if (event.action === "press") hit.onClick?.(event.x - r.x, event.y - r.y, event.button);
-      else if (event.action === "move") hit.onHover?.(event.x - r.x, event.y - r.y);
-      this.dirty = true;
-      return;
-    }
+    if (dispatchHit(this.hits, event)) this.dirty = true;
   }
 
   /** Build one frame and push the difference to the terminal. */

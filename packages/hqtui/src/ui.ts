@@ -15,9 +15,65 @@ import * as W from "./widgets/index.ts";
 
 export interface HitRegion {
   rect: Rect;
-  onClick?: (x: number, y: number, button: string) => void;
+  /**
+   * A press inside the region, in coordinates relative to it. `clicks` is 1
+   * for a click and 2 for the second press of a double-click; the app always
+   * supplies it, and a test that calls the handler by hand may leave it out.
+   */
+  onClick?: (x: number, y: number, button: string, clicks?: number) => void;
   onScroll?: (delta: number) => void;
   onHover?: (x: number, y: number) => void;
+}
+
+/** What a hit-test needs to know about a mouse event. */
+export interface HitEvent {
+  action: "press" | "release" | "move" | "drag" | "scroll";
+  x: number;
+  y: number;
+  button: string;
+  scroll: number;
+  clicks: number;
+}
+
+/**
+ * Hand a mouse event to the region under it. Later regions are drawn on top,
+ * so they are tested first, and the first one that contains the point takes
+ * the event whether or not it has a handler for it: a dialog with no click
+ * handler still stops the click reaching what it covers. Returns whether any
+ * region took it.
+ */
+export function dispatchHit(regions: readonly HitRegion[], event: HitEvent): boolean {
+  for (let i = regions.length - 1; i >= 0; i--) {
+    const hit = regions[i];
+    const r = hit.rect;
+    if (event.x < r.x || event.y < r.y || event.x >= r.x + r.width || event.y >= r.y + r.height) continue;
+    if (event.action === "scroll") hit.onScroll?.(event.scroll);
+    else if (event.action === "press") hit.onClick?.(event.x - r.x, event.y - r.y, event.button, event.clicks);
+    else if (event.action === "move") hit.onHover?.(event.x - r.x, event.y - r.y);
+    return true;
+  }
+  return false;
+}
+
+/** How long two presses on the same cell may be apart and still count as one double-click. */
+export const DOUBLE_CLICK_MS = 400;
+
+/**
+ * How many clicks a press makes, given the press before it: 2 when it lands
+ * on the same row, within a cell either way, inside the double-click window.
+ * Terminal cells are wide enough that a hand does not slip a whole column
+ * between presses, but it does slip a pixel, which is why the row is exact
+ * and the column is not.
+ */
+export function countClicks(
+  previous: { at: number; x: number; y: number; button: string; clicks: number } | null,
+  press: { at: number; x: number; y: number; button: string },
+): number {
+  if (!previous) return 1;
+  if (previous.button !== press.button || previous.y !== press.y) return 1;
+  if (Math.abs(previous.x - press.x) > 1) return 1;
+  if (press.at - previous.at > DOUBLE_CLICK_MS) return 1;
+  return previous.clicks + 1;
 }
 
 export interface FocusRegistration {
@@ -54,6 +110,12 @@ export interface ScrollHandlers {
   onScroll?: (delta: number) => void;
   /** Click on a visible row, counted from the first body row. */
   onSelectRow?: (visibleRow: number) => void;
+  /**
+   * Double-click on a visible row. Fires after `onSelectRow` for the same
+   * press, so a directory is selected and then opened, the way a file manager
+   * does it.
+   */
+  onActivateRow?: (visibleRow: number) => void;
   /** Click anywhere on the widget, including its header. */
   onFocus?: () => void;
 }
@@ -121,6 +183,13 @@ export interface PanelOptions extends ContainerOptions {
   focusable?: boolean;
   focused?: boolean;
   scroll?: number;
+  /**
+   * A click anywhere on the panel that no child claimed: the border, the
+   * title row, the padding, the empty space below a short list. Coordinates
+   * are relative to the panel's outer rect, so `y === 0` is the title row.
+   * The usual use is focusing the pane a click landed in.
+   */
+  onClick?: (x: number, y: number, button: string, clicks: number) => void;
 }
 
 export interface GridOptions extends ContainerOptions {
@@ -285,6 +354,12 @@ export class Container {
   panel(options: PanelOptions = {}, build?: (panel: Container) => void): this {
     const focus = options.focusable ? this.ctx.registerFocus() : undefined;
     return this.add((surface) => {
+      // Registered before the children draw, so a table inside the panel is
+      // tested first and the panel only answers for the cells nothing else did.
+      if (options.onClick) {
+        const onClick = options.onClick;
+        this.ctx.hit({ rect: surface.hitRect(), onClick: (x, y, button, clicks = 1) => onClick(x, y, button, clicks) });
+      }
       const focused = options.focused ?? focus?.focused ?? false;
       const boxOptions: BoxOptions = {
         title: options.title,
@@ -420,14 +495,16 @@ export class Container {
 
   /** Register the widget's rect so the wheel and clicks reach it. */
   private attachScroll(surface: Surface, handlers: ScrollHandlers, headerRows = 0): void {
-    if (!handlers.onScroll && !handlers.onSelectRow && !handlers.onFocus) return;
+    if (!handlers.onScroll && !handlers.onSelectRow && !handlers.onActivateRow && !handlers.onFocus) return;
     this.ctx.hit({
       rect: surface.hitRect(),
       onScroll: handlers.onScroll ? (delta) => handlers.onScroll?.(delta) : undefined,
-      onClick: (_x, y) => {
+      onClick: (_x, y, _button, clicks = 1) => {
         handlers.onFocus?.();
         // Row 0 is the header when there is one; clicks there only focus.
-        if (handlers.onSelectRow && y >= headerRows) handlers.onSelectRow(y - headerRows);
+        if (y < headerRows) return;
+        handlers.onSelectRow?.(y - headerRows);
+        if (clicks >= 2) handlers.onActivateRow?.(y - headerRows);
       },
     });
   }
@@ -601,7 +678,17 @@ export class Container {
   }
 
   statusBar(options: W.StatusBarOptions & ContainerOptions): this {
-    return this.add((s) => W.drawStatusBar(s, options), this.sizeOf(options, "auto", 1));
+    return this.add((s) => {
+      const spans = W.drawStatusBar(s, options);
+      const origin = s.hitRect();
+      for (const span of spans) {
+        if (!span.item.onPress || span.width <= 0) continue;
+        this.ctx.hit({
+          rect: { x: origin.x + span.x, y: origin.y, width: span.width, height: 1 },
+          onClick: () => span.item.onPress?.(),
+        });
+      }
+    }, this.sizeOf(options, "auto", 1));
   }
 
   // -------------------------------------------------------------- overlays
@@ -610,6 +697,26 @@ export class Container {
   modal(options: W.ModalOptions, build?: (modal: Container) => void): this {
     this.ctx.overlay((root) => {
       const inner = W.drawModal(root, options);
+      // The whole screen belongs to the dialog while it is up. The backdrop
+      // takes every click outside it (and dismisses, if asked to), the dialog
+      // takes every click inside it, and only then do the buttons and whatever
+      // the caller builds inside claim their own cells on top.
+      this.ctx.hit({ rect: root.hitRect(), onClick: () => options.onDismiss?.() });
+      const interior = inner.hitRect();
+      this.ctx.hit({
+        rect: { x: interior.x - 1, y: interior.y - 1, width: interior.width + 2, height: interior.height + 2 },
+      });
+      if (options.buttons?.length) {
+        const rects = W.modalButtonLayout(inner, options.buttons);
+        options.buttons.forEach((button, i) => {
+          if (!button.onPress) return;
+          const rect = rects[i];
+          this.ctx.hit({
+            rect: { x: interior.x + rect.x, y: interior.y + rect.y, width: rect.width, height: 1 },
+            onClick: () => button.onPress?.(),
+          });
+        });
+      }
       if (build) {
         const container = new Container(inner, this.ctx, "column", { padding: [1, 1] });
         build(container);

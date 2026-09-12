@@ -52,6 +52,37 @@ Pass `onScroll` and the widget claims the region it drew; the wheel over that
 region scrolls it, and the wheel over the panel next to it scrolls that one
 instead. There is no global "which list has the mouse" state to maintain.
 
+A click is answered by the topmost region under it, and a double-click is the
+same press delivered with `clicks: 2`. Every chrome element that looks
+clickable takes a handler:
+
+```ts
+// A row: click selects, double-click opens.
+ui.table({ rows, onSelectRow: select, onActivateRow: open });
+
+// The key bar: each item that has an action is a button.
+ui.statusBar({ items: [
+  { key: "F1", label: "Help", onPress: showHelp },
+  { key: "q", label: "Quit", onPress: () => app.quit() },
+]});
+
+// A dialog: its buttons press, and a click on the backdrop dismisses it.
+// While it is up, nothing underneath hears a click at all.
+ui.modal({
+  title: "Delete?",
+  buttons: [{ label: "Yes", onPress: confirm }, { label: "No", onPress: close }],
+  onDismiss: close,
+});
+
+// A panel: whatever its children did not claim — border, title, blank space.
+ui.panel({ title: " Remote ", onClick: () => focus("remote") }, build);
+```
+
+The rule is that a region answers for exactly the cells it drew: a key cap and
+its label, a button, a row. The gap between two items belongs to neither, so a
+click between `F1 Help` and `F2 Theme` does nothing rather than doing the wrong
+thing.
+
 ## Controls, and how focus happens
 
 ```ts

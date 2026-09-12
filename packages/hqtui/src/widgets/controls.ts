@@ -189,9 +189,42 @@ export interface ModalOptions {
   height?: number;
   /** Dim the screen behind the dialog. Default true. */
   backdrop?: boolean;
-  buttons?: { label: string; variant?: ButtonOptions["variant"]; focused?: boolean }[];
+  buttons?: { label: string; variant?: ButtonOptions["variant"]; focused?: boolean; onPress?: () => void }[];
   color?: Color;
   align?: Align;
+  /**
+   * A click on the backdrop, outside the dialog. Without it the click is
+   * swallowed: a dialog owns the screen while it is up, and whatever is drawn
+   * underneath must not act on a click aimed at the dialog and missed.
+   */
+  onDismiss?: () => void;
+}
+
+/** Where a modal's buttons go, relative to its interior. */
+export interface ModalButtonRect {
+  x: number;
+  y: number;
+  width: number;
+}
+
+/**
+ * The row of buttons along the bottom of a dialog, centred and sized to their
+ * labels. Shared by the drawing and by whoever registers the click regions, so
+ * the cell that shows a button is the cell that presses it.
+ */
+export function modalButtonLayout(
+  inner: { width: number; height: number },
+  buttons: NonNullable<ModalOptions["buttons"]>,
+): ModalButtonRect[] {
+  const widths = buttons.map((b) => stringWidth(b.label) + 4);
+  const total = widths.reduce((a, b) => a + b + 2, -2);
+  let bx = Math.max(0, Math.floor((inner.width - total) / 2));
+  const by = inner.height - 2;
+  return widths.map((width) => {
+    const rect = { x: bx, y: by, width };
+    bx += width + 2;
+    return rect;
+  });
 }
 
 /**
@@ -232,18 +265,15 @@ export function drawModal(root: Surface, options: ModalOptions): Surface {
   }
 
   if (options.buttons?.length) {
-    const widths = options.buttons.map((b) => stringWidth(b.label) + 4);
-    const total = widths.reduce((a, b) => a + b + 2, -2);
-    let bx = Math.max(0, Math.floor((inner.width - total) / 2));
-    const by = inner.height - 2;
+    const rects = modalButtonLayout(inner, options.buttons);
     options.buttons.forEach((button, i) => {
-      drawButton(inner.sub(bx, by, widths[i], 1), {
+      const rect = rects[i];
+      drawButton(inner.sub(rect.x, rect.y, rect.width, 1), {
         label: button.label,
         variant: button.variant,
         focused: button.focused,
-        width: widths[i],
+        width: rect.width,
       });
-      bx += widths[i] + 2;
     });
   }
 

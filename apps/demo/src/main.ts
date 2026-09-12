@@ -51,7 +51,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.4.0"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.5.0"); process.exit(0);
     }
   }
   return options;
@@ -167,7 +167,7 @@ async function main(): Promise<void> {
     // whatever sits under the pointer rather than by one list per screen.
   });
 
-  app.on("key", (event: KeyEvent) => {
+  const onKey = (event: KeyEvent): void => {
     state.lastKey = event.key;
     state.keyLog.push(`${clock()}  ${event.key}${event.char ? `  "${event.char}"` : ""}`);
     if (state.keyLog.length > 100) state.keyLog.shift();
@@ -267,9 +267,13 @@ async function main(): Promise<void> {
       const index = digit === 0 ? 9 : digit - 1;
       if (index < SCREENS.length) state.screen = SCREENS[index];
     }
+  };
+  app.on("key", onKey);
 
-
-  });
+  // A key cap in the status bar is a button: clicking `F2 Theme` does what
+  // pressing F2 does, through the same handler, so the two can never drift.
+  const press = (key: string) =>
+    onKey({ type: "key", name: key, key, ctrl: key.startsWith("ctrl+"), alt: false, shift: false, raw: "" });
 
   app.render(({ ui, theme, height }) => {
     ui.row({ size: 1 }, (header) => {
@@ -305,14 +309,19 @@ async function main(): Promise<void> {
     ui.spacer(1);
     ui.statusBar({
       items: [
-        { key: "F1", label: "Help" },
-        { key: "F2", label: `Theme (${theme.name})` },
-        { key: "F3", label: state.filtering ? `Filter: ${state.filter}_` : "Filter", active: state.filtering },
-        { key: "c", label: "Collapse", active: app.collapseBorders },
-        { key: "F6", label: `Sort: ${state.sort}` },
-        { key: "^K", label: "Palette" },
-        { key: "Tab", label: "Screen" },
-        { key: "q", label: "Quit" },
+        { key: "F1", label: "Help", onPress: () => press("f1") },
+        { key: "F2", label: `Theme (${theme.name})`, onPress: () => press("f2") },
+        {
+          key: "F3",
+          label: state.filtering ? `Filter: ${state.filter}_` : "Filter",
+          active: state.filtering,
+          onPress: () => press("f3"),
+        },
+        { key: "c", label: "Collapse", active: app.collapseBorders, onPress: () => press("c") },
+        { key: "F6", label: `Sort: ${state.sort}`, onPress: () => press("f6") },
+        { key: "^K", label: "Palette", onPress: () => press("ctrl+k") },
+        { key: "Tab", label: "Screen", onPress: () => press("tab") },
+        { key: "q", label: "Quit", onPress: () => press("q") },
       ],
       right: [{ label: `${num(state.renderMs, 2)}ms  ${state.changedCells} cells  ${state.bytes}B` }],
     });
@@ -339,7 +348,8 @@ async function main(): Promise<void> {
                   "  sudo -E env \"PATH=$PATH\" bunx @profullstack/hqtui-demo")
             : "All metrics available on this platform.") +
           "\n\nPress any key to close.",
-        buttons: [{ label: "Close", focused: true }],
+        buttons: [{ label: "Close", focused: true, onPress: () => { state.showHelp = false; } }],
+        onDismiss: () => { state.showHelp = false; },
       });
     }
     if (state.showModal) {
@@ -347,9 +357,10 @@ async function main(): Promise<void> {
         title: "Confirm Action",
         message: `Are you sure you want to terminate process ${visibleProcesses(state)[focusedPane(state)?.selected ?? 0]?.pid ?? "—"} (${visibleProcesses(state)[focusedPane(state)?.selected ?? 0]?.name ?? "—"})?`,
         buttons: [
-          { label: "Yes", variant: "success", focused: true },
-          { label: "No", variant: "ghost" },
+          { label: "Yes", variant: "success", focused: true, onPress: () => { state.showModal = false; } },
+          { label: "No", variant: "ghost", onPress: () => { state.showModal = false; } },
         ],
+        onDismiss: () => { state.showModal = false; },
       });
     }
     if (state.showPalette) {
