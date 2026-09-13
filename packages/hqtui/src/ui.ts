@@ -98,6 +98,11 @@ export interface RenderContext {
    * changes every layout that has two panels side by side.
    */
   collapseBorders: boolean;
+  /**
+   * The app was started with `reducedMotion`: widgets that drive their own
+   * redraws (the spinner) draw a still frame and ask for nothing more.
+   */
+  reducedMotion: boolean;
   registerFocus(action?: () => void): FocusRegistration;
   hit(region: HitRegion): void;
   overlay(draw: (root: Surface) => void): void;
@@ -446,8 +451,11 @@ export class Container {
    * `active: false` when the work is done and the line settles on a tick.
    */
   spinner(options: Omit<W.SpinnerOptions, "elapsed"> & { elapsed?: number } & ContainerOptions): this {
-    if (options.active ?? true) this.ctx.invalidate();
-    const elapsed = options.elapsed ?? this.ctx.elapsed;
+    // Under reducedMotion the glyph holds its first frame and the app is not
+    // asked to redraw: the line still says "busy", it just does not move.
+    const still = this.ctx.reducedMotion;
+    if ((options.active ?? true) && !still) this.ctx.invalidate();
+    const elapsed = still ? 0 : (options.elapsed ?? this.ctx.elapsed);
     // A terminal without Unicode gets the ASCII set and a plain done mark.
     const unicode = this.ctx.capabilities.unicode;
     const frames = options.frames ?? (unicode ? "dots" : "ascii");

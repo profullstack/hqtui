@@ -256,6 +256,7 @@ export class App {
       elapsed: Date.now() - this.startedAt,
       focusIndex: -1,
       collapseBorders: this.options.collapseBorders ?? false,
+      reducedMotion: this.options.reducedMotion ?? false,
       registerFocus: () => ({ index: -1, focused: false }),
       hit: () => {},
       overlay: () => {},
@@ -402,6 +403,7 @@ export class App {
       elapsed: Date.now() - this.startedAt,
       focusIndex: this.focusIndex,
       collapseBorders: this.options.collapseBorders ?? false,
+      reducedMotion: this.options.reducedMotion ?? false,
       registerFocus: (action?: () => void): FocusRegistration => {
         const index = focusCursor++;
         if (action) this.focusActions[index] = action;

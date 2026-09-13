@@ -18,6 +18,8 @@ export interface RenderOptions {
   focus?: number;
   /** Merge the borders of adjacent panels, as `createApp` can. */
   collapseBorders?: boolean;
+  /** Hold animated widgets still, as `createApp({ reducedMotion: true })` does. */
+  reducedMotion?: boolean;
 }
 
 export interface CellSnapshot {
@@ -108,6 +110,7 @@ export function renderToScreen(
     elapsed: options.elapsed ?? 0,
     focusIndex: options.focus ?? 0,
     collapseBorders: options.collapseBorders ?? false,
+    reducedMotion: options.reducedMotion ?? false,
     registerFocus: () => {
       const index = focusCursor++;
       return { index, focused: index === (options.focus ?? 0) };
