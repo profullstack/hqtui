@@ -21,6 +21,8 @@ interface App {
   body: string;
   /** What this one proved about the library, which is why it exists. */
   found: string;
+  /** A second frame, for an application with more than one screen worth showing. */
+  more?: { shot: string; title: string; alt: string; caption: string };
 }
 
 const APPS: App[] = [
@@ -44,15 +46,26 @@ const APPS: App[] = [
     name: "g1tz",
     tagline: "A git TUI that shows you the repository",
     repo: "https://github.com/profullstack/g1tz",
-    install: "bunx g1tz",
+    install: "bunx @profullstack/g1tz",
     body:
       "Files, branches and log down the left; the diff for whatever is selected on the right. "
       + "Changed lines emphasise the words that actually differ, rather than turning the whole line "
       + "green. Reads git through porcelain formats with -z, because parsing output meant for humans "
-      + "is how a TUI corrupts a working tree.",
+      + "is how a TUI corrupts a working tree. Press p for Pulse: what moved in the repository over "
+      + "a day, a week, a month or ever, from git alone, from GitHub through gh when it is logged in, "
+      + "and from a gh-pulse report when one is on the machine.",
     found:
       "Word-level diff highlighting is the same span work as r3q, from the opposite direction: "
-      + "emphasis inside a line that already has a colour.",
+      + "emphasis inside a line that already has a colour. Pulse is why it moved to 0.6.0: buttons, "
+      + "key-value rows, a histogram, sparklines and a spinner on one screen, and hqtui's focus "
+      + "navigation turned out to fire Enter on the first button of an app that handles its own keys.",
+    more: {
+      shot: "g1tz-pulse",
+      title: "pulse",
+      alt: "g1tz Pulse — what moved in the repository over the last week",
+      caption: "The Pulse screen: commits, authors and the files that changed from git; pull requests, "
+        + "issues, releases and stars from GitHub; views and clones from gh-pulse. The range buttons are clickable.",
+    },
   },
   {
     shot: "nixamp",
@@ -221,6 +234,13 @@ export default async function Apps() {
                   priority={index === 0}
                 />
               </div>
+
+              {app.more && (
+                <div className="mt-4">
+                  <AppFrame shot={app.more.shot} title={`${app.name} ${app.more.title}`} alt={app.more.alt} />
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/45">{app.more.caption}</p>
+                </div>
+              )}
 
               <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
                 <CommandBlock command={app.install} />
