@@ -31,7 +31,7 @@ const APPS: App[] = [
     name: "r3q",
     tagline: "A REST client for your terminal",
     repo: "https://github.com/profullstack/r3q",
-    install: "bunx r3q ~/api",
+    install: "bunx @profullstack/r3q ~/api",
     body:
       "Requests are .http files you commit, so they diff and review with the code they belong to. "
       + "{{VARS}} resolve from a gitignored .env, so the file holds the template and the secret stays "
@@ -87,11 +87,11 @@ const APPS: App[] = [
     name: "diskpush",
     tagline: "Two panes and an rsync between them",
     repo: "https://github.com/profullstack/diskpush",
-    install: "bunx diskpush",
+    install: "curl -fsSL https://diskpush.com/install.sh | sh",
     body:
       "Local on one side, an SSH host on the other, and a transfer panel that shows the plan before "
       + "it runs and every path as it lands. rsync does the work; the interface exists so you can see "
-      + "what it is about to do.",
+      + "what it is about to do. The installer puts diskpush on your PATH.",
     found:
       "The transfer panel updates several times a second against a full file listing, which is where "
       + "a renderer that diffs frames stops being an optimisation and starts being the reason it is usable.",
@@ -101,7 +101,7 @@ const APPS: App[] = [
     name: "ThreatCrush",
     tagline: "A security daemon you can watch",
     repo: "https://github.com/profullstack/threatcrush",
-    install: "threatcrush tui",
+    install: "npx @profullstack/threatcrush tui",
     body:
       "Modules, a live event feed, top threats and a severity breakdown, fed by a daemon over a unix "
       + "socket. When no daemon is running it says so and tells you how to start one, rather than "
@@ -115,7 +115,7 @@ const APPS: App[] = [
     name: "CoinPay",
     tagline: "A merchant's money, in one screen",
     repo: "https://github.com/profullstack/coinpayportal",
-    install: "coinpay finances",
+    install: "npx @profullstack/coinpay finances",
     body:
       "Earnings, bank position and pipeline across seven screens, with a live payment feed over "
       + "server-sent events. Bank syncs are a keypress, never automatic — the bridge allows about "
@@ -129,7 +129,7 @@ const APPS: App[] = [
     name: "myna",
     tagline: "Post once, everywhere",
     repo: "https://github.com/profullstack/mynaposter",
-    install: "bunx myna",
+    install: "curl -fsSL https://mynaposter.com/install.sh | sh",
     body:
       "Compose in the terminal and publish to every network you have connected, with per-network "
       + "character counts and thread splitting shown as you type. Credentials live in an encrypted "
@@ -143,7 +143,7 @@ const APPS: App[] = [
     name: "logicsrc",
     tagline: "Team vaults, without the plaintext",
     repo: "https://github.com/profullstack/logicsrc",
-    install: "logicsrc teams tui",
+    install: "curl -fsSL https://logicsrc.com/install.sh | sh",
     body:
       "Which vaults exist, what their secrets are called, who can decrypt them and what changed. It "
       + "never fetches a decryption key and has no keybinding that would: a value that can appear on "
@@ -157,7 +157,7 @@ const APPS: App[] = [
     name: "tsbb",
     tagline: "A message board in your terminal",
     repo: "https://github.com/profullstack/tsbb",
-    install: "bunx tsbb",
+    install: "git clone https://github.com/profullstack/tsbb && cd tsbb && pnpm install && node apps/tui/bin/tsbb-tui.mjs bbs.hqtui.com",
     body:
       "Forums, topics, threads, search and notifications against any tsbb board. Unread, solved and "
       + "locked are glyphs in the margin rather than colours alone, so the list still reads on a "
@@ -212,7 +212,9 @@ export default async function Apps() {
           {APPS.map((app, index) => (
             <section key={app.shot}>
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <h2 className="font-mono text-2xl font-semibold">{app.name}</h2>
+                <h2 className="font-mono text-2xl font-semibold">
+                  <a href={app.repo} target="_blank" rel="noreferrer" className="hover:underline">{app.name}</a>
+                </h2>
                 <span className="text-white/50">{app.tagline}</span>
                 <a
                   href={app.repo}
