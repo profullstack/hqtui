@@ -10,10 +10,11 @@
 import { createApp, themeList, themes, type KeyEvent } from "@profullstack/hqtui";
 import { createCollector } from "./system/index.ts";
 import { intervalMs } from "./options.ts";
-import { createState, focusedPane, moveSelection, SCREENS, SCREEN_KEYS, type ScreenName } from "./state.ts";
+import { createState, moveSelection, SCREENS, SCREEN_KEYS, type ScreenName } from "./state.ts";
+import { openKillDialog, renderKillDialog } from "./kill-dialog.ts";
 import {
   componentsScreen, dashboardScreen, graphicsScreen, inputScreen, networkScreen, servicesScreen,
-  sessionsScreen, stressScreen, themesScreen, trafficScreen, visibleProcesses, worldScreen,
+  sessionsScreen, stressScreen, themesScreen, trafficScreen, worldScreen,
 } from "./screens/index.ts";
 import { clock, num } from "./format.ts";
 
@@ -51,7 +52,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.6.1"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.6.2"); process.exit(0);
     }
   }
   return options;
@@ -77,6 +78,7 @@ Options:
 Keys:
   1-0/w / Tab screens F2 theme   F3 filter   F6 sort   Ctrl+K palette
   ↑/↓ select          Space pause            F1 help   q quit
+  Enter terminate selected process (SIGTERM; optional Force -9 in dialog)
 `);
 }
 
@@ -185,12 +187,7 @@ async function main(): Promise<void> {
       else if (event.char) state.paletteQuery += event.char;
       return;
     }
-    if (state.showModal) {
-      if (event.name === "escape" || event.name === "enter" || event.name === "n" || event.name === "y") {
-        state.showModal = false;
-      }
-      return;
-    }
+    if (state.showModal) return;
     if (state.showHelp) {
       state.showHelp = false;
       return;
@@ -246,7 +243,7 @@ async function main(): Promise<void> {
       case "pagedown": moveSelection(state, 10); break;
       case "home": moveSelection(state, -Number.MAX_SAFE_INTEGER); break;
       case "end": moveSelection(state, Number.MAX_SAFE_INTEGER); break;
-      case "enter": state.showModal = true; return;
+      case "enter": openKillDialog(state); return;
       case "left":
         if (state.screen === "themes") {
           state.themeIndex = (state.themeIndex - 1 + themeList.length) % themeList.length;
@@ -319,6 +316,7 @@ async function main(): Promise<void> {
         },
         { key: "c", label: "Collapse", active: app.collapseBorders, onPress: () => press("c") },
         { key: "F6", label: `Sort: ${state.sort}`, onPress: () => press("f6") },
+        ...(state.screen === "dashboard" ? [{ key: "Enter", label: "Kill", onPress: () => openKillDialog(state) }] : []),
         { key: "^K", label: "Palette", onPress: () => press("ctrl+k") },
         { key: "Tab", label: "Screen", onPress: () => press("tab") },
         { key: "q", label: "Quit", onPress: () => press("q") },
@@ -330,13 +328,15 @@ async function main(): Promise<void> {
       ui.modal({
         title: "HQTUI Demo — Help",
         width: 62,
-        height: 18,
+        height: 20,
         message:
           "1-0, w or Tab switch screens; w is the clickable world map.\n" +
           "F2 cycles themes, F3 filters processes, F6 changes sort.\n" +
           "c collapses adjacent panel borders into shared lines.\n" +
           "Ctrl+K opens the command palette, Space pauses updates.\n" +
           "Arrows, PageUp/PageDown, Home/End move the selection.\n" +
+          "Enter opens process termination: SIGTERM by default.\n" +
+          "Tab/arrows select Yes, No or Force (-9); Space toggles.\n" +
           "Mouse: click tabs and buttons, scroll the process list.\n\n" +
           (state.unavailable.length
             ? `Unavailable here: ${state.unavailable.join(", ")}.\n` +
@@ -352,17 +352,7 @@ async function main(): Promise<void> {
         onDismiss: () => { state.showHelp = false; },
       });
     }
-    if (state.showModal) {
-      ui.modal({
-        title: "Confirm Action",
-        message: `Are you sure you want to terminate process ${visibleProcesses(state)[focusedPane(state)?.selected ?? 0]?.pid ?? "—"} (${visibleProcesses(state)[focusedPane(state)?.selected ?? 0]?.name ?? "—"})?`,
-        buttons: [
-          { label: "Yes", variant: "success", focused: true, onPress: () => { state.showModal = false; } },
-          { label: "No", variant: "ghost", onPress: () => { state.showModal = false; } },
-        ],
-        onDismiss: () => { state.showModal = false; },
-      });
-    }
+    renderKillDialog(ui, state);
     if (state.showPalette) {
       const matches = PALETTE_COMMANDS.filter((c) => c.label.toLowerCase().includes(state.paletteQuery.toLowerCase()));
       ui.commandPalette({

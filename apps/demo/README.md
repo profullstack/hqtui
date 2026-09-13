@@ -76,10 +76,18 @@ npx --yes @profullstack/hqtui-demo@latest     # Node 22.6+ works too
 | `Ctrl+K` | Command palette |
 | `Space` | Pause updates |
 | `↑` `↓` `PgUp` `PgDn` `Home` `End` | Move selection |
-| `Enter` | Confirmation dialog |
+| `Enter` | Terminate the selected dashboard process |
 | `q`, `Ctrl+C` | Quit |
 
 Mouse works too: click the tabs and buttons, scroll the process list.
+
+The termination dialog sends **SIGTERM** by default, allowing the process to
+clean up. **Force kill (-9 / SIGKILL)** starts unchecked each time. Use Tab,
+Shift+Tab or the arrow keys to move between Yes, No and the checkbox; Space
+toggles the checkbox and Enter activates the focused control. `y` confirms;
+`n`, Escape or a click outside the dialog cancels. The selected PID stays fixed
+while metrics refresh. Signal errors appear in the dialog, and simulation mode
+never signals a real process.
 
 ## Screens
 

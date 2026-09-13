@@ -138,6 +138,16 @@ const results: Result[] = [];
     renderToScreen(({ ui }) => ui.table({ rows, columns, zebra: true }), { width: 100, height: 40 });
   }, "60 rows x 4 columns"));
 
+  results.push(bench("widgets.modal.controls", 500, (i) => {
+    renderToScreen(({ ui }) => {
+      ui.button({ label: "Background" });
+      ui.modal({
+        title: "Terminate Process", height: 10,
+        buttons: [{ label: "Yes", onPress: () => {} }, { label: "No", onPress: () => {} }],
+      }, (body) => body.checkbox({ label: "Force kill (-9)", checked: false, onToggle: () => {} }));
+    }, { width: 80, height: 24, focus: i % 3 });
+  }, "2 buttons, checkbox, isolated focus"));
+
   results.push(bench("widgets.dashboard", 200, () => {
     renderToScreen(({ ui }) => {
       ui.grid({ columns: 3, rows: 2, gap: 1 }, (grid) => {
