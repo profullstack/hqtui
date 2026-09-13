@@ -439,6 +439,22 @@ export class Container {
     return this.add((s) => W.drawBadge(s, options), this.sizeOf(options, "auto", 1));
   }
 
+  /**
+   * A busy indicator that animates on its own. The frame comes from the app
+   * clock, and while the spinner is active the container asks for another
+   * frame after this one, so the caller never runs a timer. Pass
+   * `active: false` when the work is done and the line settles on a tick.
+   */
+  spinner(options: Omit<W.SpinnerOptions, "elapsed"> & { elapsed?: number } & ContainerOptions): this {
+    if (options.active ?? true) this.ctx.invalidate();
+    const elapsed = options.elapsed ?? this.ctx.elapsed;
+    // A terminal without Unicode gets the ASCII set and a plain done mark.
+    const unicode = this.ctx.capabilities.unicode;
+    const frames = options.frames ?? (unicode ? "dots" : "ascii");
+    const doneGlyph = options.doneGlyph ?? (unicode ? "✓" : "*");
+    return this.add((s) => W.drawSpinner(s, { ...options, elapsed, frames, doneGlyph }), this.sizeOf(options, "auto", 1));
+  }
+
   /** Aligned label/value pairs. */
   keyValues(rows: W.KeyValueRow[], options: Omit<W.KeyValueOptions, "rows"> & ContainerOptions = {}): this {
     return this.add((s) => W.drawKeyValues(s, { ...options, rows }), this.sizeOf(options, "auto", rows.length));
