@@ -60,22 +60,31 @@ export function drawSpinner(surface: Surface, options: SpinnerOptions): number {
   const labelColor = options.labelColor ?? theme.foreground;
   const bg = options.background;
 
-  const label = options.label ? ` ${options.label}` : "";
-  const readout = options.text ?? "";
-  const left = `${glyph}${label}`;
-  const leftWidth = stringWidth(left);
-  const readWidth = stringWidth(readout);
-  const total = readout ? Math.min(surface.width, leftWidth + 1 + readWidth) : Math.min(surface.width, leftWidth);
-  const x0 = options.align === "right" ? surface.width - total : options.align === "center" ? Math.floor((surface.width - total) / 2) : 0;
+  const glyphWidth = stringWidth(glyph);
+  const width = surface.width;
+  // The label gets what the glyph leaves; a one-column remainder stays blank
+  // rather than becoming a lone ellipsis, so the separating space is drawn on
+  // its own and only the words are truncated.
+  const labelRoom = Math.max(0, width - glyphWidth - 1);
+  const label = options.label && labelRoom > 0 ? truncate(options.label, labelRoom) : "";
+  const labelWidth = label ? 1 + stringWidth(label) : 0;
+  const leftWidth = glyphWidth + labelWidth;
+  // A readout is a number people read at a glance; "34…" for 349/1200 is a
+  // different number, so it is drawn whole or not at all.
+  const readWidth = options.text ? stringWidth(options.text) : 0;
+  const readout = readWidth > 0 && leftWidth + 1 + readWidth <= width ? options.text! : "";
+  const total = Math.min(width, readout ? leftWidth + 1 + readWidth : leftWidth);
+  const x0 = options.align === "right" ? width - total : options.align === "center" ? Math.floor((width - total) / 2) : 0;
   const x = Math.max(0, x0);
 
   if (bg !== undefined) surface.fill({ bg });
   surface.text(x, 0, glyph, { fg: color, bg, attrs: Attr.Bold });
-  const glyphWidth = stringWidth(glyph);
-  if (label) surface.text(x + glyphWidth, 0, truncate(label, Math.max(0, surface.width - x - glyphWidth)), { fg: labelColor, bg });
+  if (label) surface.text(x + glyphWidth + 1, 0, label, { fg: labelColor, bg });
   if (readout) {
-    const room = surface.width - (x + leftWidth + 1);
-    if (room > 0) surface.text(surface.width - Math.min(readWidth, room), 0, truncate(readout, room), { fg: theme.muted, bg });
+    // Left and right pin the readout to the right edge; centre keeps the
+    // block together, at the position `total` was measured for.
+    const rx = options.align === "center" ? x + leftWidth + 1 : width - readWidth;
+    surface.text(rx, 0, readout, { fg: theme.muted, bg });
   }
   return total;
 }
