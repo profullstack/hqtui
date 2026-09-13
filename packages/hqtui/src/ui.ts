@@ -239,6 +239,7 @@ export interface CellOptions {
  * layout once and draws — which is why `"1fr"` works without a retained tree.
  */
 export class Container {
+  private summary?: MarkdownSummary;
   readonly surface: Surface;
   readonly ctx: RenderContext;
   readonly direction: "row" | "column";
@@ -252,8 +253,9 @@ export class Container {
     ctx: RenderContext,
     direction: "row" | "column" = "column",
     options: ContainerOptions = {},
-    private summary?: MarkdownSummary,
+    summary?: MarkdownSummary,
   ) {
+    this.summary = summary;
     this.surface = surface;
     this.ctx = ctx;
     this.direction = direction;
@@ -941,6 +943,7 @@ export class Container {
 
 /** Grid placement with spans. Cells are filled row-major. */
 export class GridContainer {
+  private summary?: MarkdownSummary;
   private surface: Surface;
   private ctx: RenderContext;
   private options: GridOptions;
@@ -950,7 +953,8 @@ export class GridContainer {
     bordered: boolean;
   }[] = [];
 
-  constructor(surface: Surface, ctx: RenderContext, options: GridOptions, private summary?: MarkdownSummary) {
+  constructor(surface: Surface, ctx: RenderContext, options: GridOptions, summary?: MarkdownSummary) {
+    this.summary = summary;
     this.surface = options.padding ? surface.inset(options.padding) : surface;
     this.ctx = ctx;
     this.options = options;
