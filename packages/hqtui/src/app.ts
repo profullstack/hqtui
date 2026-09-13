@@ -5,7 +5,7 @@ import { Terminal, type TerminalOptions, emergencyRestore } from "./terminal.ts"
 import type { Capabilities } from "./capabilities.ts";
 import { type Theme, type ThemeName, resolveTheme, themes } from "./theme.ts";
 import { Surface, createSurface } from "./surface.ts";
-import { Container, countClicks, dispatchHit, type RenderContext, type HitRegion, type FocusRegistration } from "./ui.ts";
+import { Container, countClicks, dispatchHit, type RenderContext, type HitRegion, type FocusRegistration, type OverlayOptions } from "./ui.ts";
 import type { InputEvent, KeyEvent, MouseEvent, PasteEvent, FocusEvent } from "./input.ts";
 import { matchKey } from "./input.ts";
 
@@ -102,7 +102,9 @@ export class App {
   private focusCount = 0;
   private focusActions: (() => void)[] = [];
   private hits: HitRegion[] = [];
-  private overlays: ((root: Surface) => void)[] = [];
+  private overlays: { draw: (root: Surface) => void; options?: OverlayOptions }[] = [];
+  private modal: OverlayOptions | undefined;
+  private backgroundFocusIndex = 0;
   private lastStats: FrameStats = { frame: 0, renderMs: 0, changedCells: 0, dirtyRows: 0, bytes: 0, fps: 0 };
 
   constructor(options: AppOptions = {}) {
@@ -338,9 +340,27 @@ export class App {
       if (this.options.focusNavigation !== false) {
         if (event.name === "tab") {
           this.focusNext(event.shift ? -1 : 1);
+          if (this.modal) return;
+        } else if (this.modal && ["left", "right", "up", "down"].includes(event.name)) {
+          this.focusNext(event.name === "left" || event.name === "up" ? -1 : 1);
+          return;
         } else if (event.name === "enter" || event.name === "space") {
+          const consumed = this.modal && this.focusActions[this.focusIndex];
           this.activateFocused();
+          // A callback may have closed the dialog. Its Enter must not then
+          // reach the app's key handler and open it again (or pause a demo).
+          if (consumed) return;
         }
+      }
+      if (this.modal && event.name === "escape" && this.modal.onDismiss) {
+        this.modal.onDismiss();
+        this.dirty = true;
+        return;
+      }
+      if (this.modal?.onKey) {
+        this.modal.onKey(event);
+        this.dirty = true;
+        return;
       }
       this.emit("key", event);
       this.dirty = true;
@@ -393,6 +413,11 @@ export class App {
     this.overlays = [];
     this.focusActions = [];
     let focusCursor = 0;
+    const wasModal = this.modal !== undefined;
+    const modalFocusIndex = this.focusIndex;
+    if (wasModal) this.focusIndex = this.backgroundFocusIndex;
+    else this.backgroundFocusIndex = this.focusIndex;
+    this.modal = undefined;
 
     const ctx: RenderContext = {
       theme: this.theme,
@@ -410,7 +435,7 @@ export class App {
         return { index, focused: index === this.focusIndex };
       },
       hit: (region) => this.hits.push(region),
-      overlay: (draw) => this.overlays.push(draw),
+      overlay: (draw, options) => this.overlays.push({ draw, options }),
       invalidate: () => this.invalidate(),
     };
 
@@ -428,10 +453,26 @@ export class App {
       app: this,
     });
     container.flush();
-    for (const overlay of this.overlays) overlay(root);
+    for (const overlay of this.overlays) {
+      if (overlay.options?.modal) {
+        // Built-in buttons and custom controls form one focus order. Reset
+        // for each modal so only the topmost dialog can receive activation.
+        this.focusIndex = wasModal ? modalFocusIndex : 0;
+        ctx.focusIndex = this.focusIndex;
+        focusCursor = 0;
+        this.focusActions = [];
+        this.modal = overlay.options;
+      }
+      overlay.draw(root);
+    }
 
     this.focusCount = Math.max(focusCursor, 0);
-    if (this.focusCount > 0 && this.focusIndex >= this.focusCount) this.focusIndex = 0;
+    if (this.focusCount > 0 && this.focusIndex >= this.focusCount) {
+      this.focusIndex = 0;
+      // The controls were already painted with the old index. Repaint the
+      // new focus even when no further input or metric update arrives.
+      this.dirty = true;
+    }
 
     const result = this.encoder.encode(this.previous, this.current, this.forceRepaint);
     this.forceRepaint = false;

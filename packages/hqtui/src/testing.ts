@@ -116,7 +116,10 @@ export function renderToScreen(
       return { index, focused: index === (options.focus ?? 0) };
     },
     hit: (region) => regions.push(region),
-    overlay: (draw) => overlays.push(draw),
+    overlay: (draw, overlayOptions) => overlays.push((root) => {
+      if (overlayOptions?.modal) focusCursor = 0;
+      draw(root);
+    }),
     invalidate: () => {},
   };
 

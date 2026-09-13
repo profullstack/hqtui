@@ -3,6 +3,7 @@ import { Attr, type Style } from "../buffer.ts";
 import { type Color, mix } from "../color.ts";
 import { fit, stringWidth, truncate, wrap } from "../unicode.ts";
 import { elevate } from "../theme.ts";
+import type { KeyEvent } from "../input.ts";
 
 export interface ButtonOptions {
   label: string;
@@ -193,11 +194,13 @@ export interface ModalOptions {
   color?: Color;
   align?: Align;
   /**
-   * A click on the backdrop, outside the dialog. Without it the click is
+   * Escape or a click on the backdrop, outside the dialog. Without it the click is
    * swallowed: a dialog owns the screen while it is up, and whatever is drawn
    * underneath must not act on a click aimed at the dialog and missed.
    */
   onDismiss?: () => void;
+  /** Other keys while open, e.g. y/n shortcuts. Navigation stays in the dialog. */
+  onKey?: (event: KeyEvent) => void;
 }
 
 /** Where a modal's buttons go, relative to its interior. */

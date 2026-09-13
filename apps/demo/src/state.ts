@@ -1,5 +1,6 @@
 import type { Theme } from "@profullstack/hqtui";
 import type { SystemSample } from "./system/index.ts";
+import type { KillDialog } from "./kill-dialog.ts";
 
 export type ScreenName =
   | "dashboard" | "traffic" | "sessions" | "network" | "services"
@@ -48,6 +49,7 @@ export interface DemoState {
   showHelp: boolean;
   showPalette: boolean;
   showModal: boolean;
+  killDialog: KillDialog | null;
   paletteQuery: string;
   paletteIndex: number;
   themeIndex: number;
@@ -163,6 +165,7 @@ export function createState(
     showHelp: false,
     showPalette: false,
     showModal: false,
+    killDialog: null,
     paletteQuery: "",
     paletteIndex: 0,
     themeIndex: 0,

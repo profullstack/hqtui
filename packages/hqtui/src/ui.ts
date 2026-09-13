@@ -3,6 +3,7 @@ import type { Style } from "./buffer.ts";
 import type { Color } from "./color.ts";
 import type { Theme } from "./theme.ts";
 import type { Capabilities } from "./capabilities.ts";
+import type { KeyEvent } from "./input.ts";
 import {
   type Constraint, type Justify, type Rect, type Padding, type Size, inset, stack, solve, isEmpty,
 } from "./layout.ts";
@@ -81,6 +82,13 @@ export interface FocusRegistration {
   focused: boolean;
 }
 
+export interface OverlayOptions {
+  /** Give this overlay its own keyboard focus, excluding background controls. */
+  modal?: boolean;
+  onDismiss?: () => void;
+  onKey?: (event: KeyEvent) => void;
+}
+
 /** Per-frame services the builder needs from the app. */
 export interface RenderContext {
   theme: Theme;
@@ -105,7 +113,7 @@ export interface RenderContext {
   reducedMotion: boolean;
   registerFocus(action?: () => void): FocusRegistration;
   hit(region: HitRegion): void;
-  overlay(draw: (root: Surface) => void): void;
+  overlay(draw: (root: Surface) => void, options?: OverlayOptions): void;
   invalidate(): void;
 }
 
@@ -728,10 +736,15 @@ export class Container {
 
   // -------------------------------------------------------------- overlays
 
-  /** A centred dialog drawn above everything else this frame. */
+  /** A centred dialog. Tab/arrows move focus; Enter/Space activate; Esc dismisses. */
   modal(options: W.ModalOptions, build?: (modal: Container) => void): this {
     this.ctx.overlay((root) => {
-      const inner = W.drawModal(root, options);
+      const buttons = options.buttons?.map((button) => {
+        if (!button.onPress) return button;
+        const focus = this.ctx.registerFocus(button.onPress);
+        return { ...button, focused: button.focused ?? focus.focused };
+      });
+      const inner = W.drawModal(root, { ...options, buttons });
       // The whole screen belongs to the dialog while it is up. The backdrop
       // takes every click outside it (and dismisses, if asked to), the dialog
       // takes every click inside it, and only then do the buttons and whatever
@@ -757,7 +770,7 @@ export class Container {
         build(container);
         container.flush();
       }
-    });
+    }, { modal: true, onDismiss: options.onDismiss, onKey: options.onKey });
     return this;
   }
 

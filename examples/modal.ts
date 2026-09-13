@@ -2,24 +2,37 @@
 import { createApp } from "@profullstack/hqtui";
 
 let open = false;
+let result = "No action taken yet.";
+function answer(accepted: boolean): void {
+  result = accepted ? "Confirmed." : "Cancelled.";
+  open = false;
+}
 const app = await createApp({ quitKeys: ["ctrl+c"] });
 
 app.on("key", (event) => {
   if (event.name === "enter") open = true;
-  else if (event.name === "escape" || event.name === "y" || event.name === "n") open = false;
   else if (event.name === "q" && !open) app.quit();
 });
 
 app.render(({ ui }) => {
   ui.panel({ title: "Background" }, (p) => {
     p.text("Press Enter to open the dialog.");
-    p.label("Esc, y or n closes it. q quits.");
+    p.label("Tab/arrows select, Enter activates, Esc cancels. q quits.");
+    p.text(result);
   });
   if (open) {
     ui.modal({
       title: "Confirm Action",
-      message: "Are you sure you want to terminate process 48231 (bun)?",
-      buttons: [{ label: "Yes", variant: "success", focused: true }, { label: "No", variant: "ghost" }],
+      message: "Apply this change?",
+      buttons: [
+        { label: "Yes", variant: "success", onPress: () => answer(true) },
+        { label: "No", variant: "ghost", onPress: () => answer(false) },
+      ],
+      onDismiss: () => answer(false),
+      onKey: (event) => {
+        if (event.key === "y") answer(true);
+        else if (event.key === "n") answer(false);
+      },
     });
   }
 });
