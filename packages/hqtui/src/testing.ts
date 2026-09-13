@@ -8,6 +8,8 @@ import { CONTINUATION, cellText } from "./unicode.ts";
 import { DEFAULT_COLOR, type Color } from "./color.ts";
 
 export interface RenderOptions {
+  copyMarkdown?: boolean;
+  markdownContext?: string;
   width?: number;
   height?: number;
   theme?: Theme | ThemeName | string;
@@ -30,6 +32,8 @@ export interface CellSnapshot {
 }
 
 export interface RenderedScreen {
+  /** Markdown delivered by copy controls. Tests never touch the clipboard. */
+  copied: string[];
   width: number;
   height: number;
   buffer: FrameBuffer;
@@ -100,6 +104,7 @@ export function renderToScreen(
 
   const overlays: ((root: Surface) => void)[] = [];
   const regions: HitRegion[] = [];
+  const copied: string[] = [];
   let focusCursor = 0;
   const ctx: RenderContext = {
     theme,
@@ -111,6 +116,9 @@ export function renderToScreen(
     focusIndex: options.focus ?? 0,
     collapseBorders: options.collapseBorders ?? false,
     reducedMotion: options.reducedMotion ?? false,
+    copyMarkdown: options.copyMarkdown,
+    markdownContext: options.markdownContext,
+    copyText: (text) => { copied.push(typeof text === "function" ? text() : text); },
     registerFocus: () => {
       const index = focusCursor++;
       return { index, focused: index === (options.focus ?? 0) };
@@ -130,6 +138,7 @@ export function renderToScreen(
   for (const overlay of overlays) overlay(root);
 
   return {
+    copied,
     width,
     height,
     buffer,

@@ -52,7 +52,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.6.2"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.6.3"); process.exit(0);
     }
   }
   return options;
@@ -76,7 +76,8 @@ Options:
   -v, --version      Show the version
 
 Keys:
-  1-0/w / Tab screens F2 theme   F3 filter   F6 sort   Ctrl+K palette
+  1-0/w screens       F2 theme   F3 filter   F6 sort   Ctrl+K palette
+  Tab focus / Enter copy summary
   ↑/↓ select          Space pause            F1 help   q quit
   Enter terminate selected process (SIGTERM; optional Force -9 in dialog)
 `);
@@ -109,6 +110,8 @@ async function main(): Promise<void> {
   state.themeIndex = Math.max(0, themeList.findIndex((t) => t.name === options.theme || t === (themes as never)[options.theme]));
 
   const app = await createApp({
+    copyMarkdown: true,
+    markdownContext: () => `HQTUI demo · ${state.sample.system.hostname} · ${state.screen}\nSource: ${state.source} · ${state.paused ? "paused" : "live"}`,
     theme: themeList[state.themeIndex] ?? themes.dark,
     fps: options.fps,
     title: "hqtui demo",
@@ -318,7 +321,7 @@ async function main(): Promise<void> {
         { key: "F6", label: `Sort: ${state.sort}`, onPress: () => press("f6") },
         ...(state.screen === "dashboard" ? [{ key: "Enter", label: "Kill", onPress: () => openKillDialog(state) }] : []),
         { key: "^K", label: "Palette", onPress: () => press("ctrl+k") },
-        { key: "Tab", label: "Screen", onPress: () => press("tab") },
+        { key: "Tab", label: "Focus", onPress: () => app.focusNext() },
         { key: "q", label: "Quit", onPress: () => press("q") },
       ],
       right: [{ label: `${num(state.renderMs, 2)}ms  ${state.changedCells} cells  ${state.bytes}B` }],
@@ -330,7 +333,8 @@ async function main(): Promise<void> {
         width: 62,
         height: 20,
         message:
-          "1-0, w or Tab switch screens; w is the clickable world map.\n" +
+          "1-0 or w switch screens; w is the clickable world map.\n" +
+          "⧉ MD copies a pane summary. Tab focuses, Enter copies.\n" +
           "F2 cycles themes, F3 filters processes, F6 changes sort.\n" +
           "c collapses adjacent panel borders into shared lines.\n" +
           "Ctrl+K opens the command palette, Space pauses updates.\n" +
@@ -347,8 +351,8 @@ async function main(): Promise<void> {
                   "and the full journal. It does not add temperatures.\n" +
                   "  sudo -E env \"PATH=$PATH\" bunx @profullstack/hqtui-demo")
             : "All metrics available on this platform.") +
-          "\n\nPress any key to close.",
-        buttons: [{ label: "Close", focused: true, onPress: () => { state.showHelp = false; } }],
+          "\n\nEsc or Close dismisses help.",
+        buttons: [{ label: "Close", onPress: () => { state.showHelp = false; } }],
         onDismiss: () => { state.showHelp = false; },
       });
     }

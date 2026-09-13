@@ -8,8 +8,16 @@ import { Surface, createSurface } from "./surface.ts";
 import { Container, countClicks, dispatchHit, type RenderContext, type HitRegion, type FocusRegistration, type OverlayOptions } from "./ui.ts";
 import type { InputEvent, KeyEvent, MouseEvent, PasteEvent, FocusEvent } from "./input.ts";
 import { matchKey } from "./input.ts";
+import { clipboardSequence } from "./markdown.ts";
+import { truncate, stringWidth } from "./unicode.ts";
 
 export interface AppOptions extends TerminalOptions {
+  /** Add Markdown copy icons to summary panes. Data rows are excluded. */
+  copyMarkdown?: boolean;
+  /** Fresh context attached to summaries each frame, e.g. host and period. */
+  markdownContext?: string | (() => string);
+  /** Override OSC 52 clipboard delivery, e.g. for a browser terminal. */
+  clipboard?: (text: string) => void | Promise<void>;
   /** Theme object or built-in name. Defaults to the dark theme. */
   theme?: Theme | ThemeName | string;
   /** Cap on frames per second. Default 30, or 15 over SSH. */
@@ -101,6 +109,10 @@ export class App {
   private focusIndex = 0;
   private focusCount = 0;
   private focusActions: (() => void)[] = [];
+  private focusConsumesKey: boolean[] = [];
+  private focusEngaged = false;
+  private copyNotice: { text: string; failed: boolean } | null = null;
+  private copyTimer: NodeJS.Timeout | null = null;
   private hits: HitRegion[] = [];
   private overlays: { draw: (root: Surface) => void; options?: OverlayOptions }[] = [];
   private modal: OverlayOptions | undefined;
@@ -133,6 +145,25 @@ export class App {
   /** Stats for the most recent frame. */
   get stats(): FrameStats {
     return this.lastStats;
+  }
+
+  /** Copy a user-requested summary. OSC 52 requires terminal clipboard support. */
+  async copyToClipboard(value: string | (() => string)): Promise<void> {
+    try {
+      const text = typeof value === "function" ? value() : value;
+      if (this.options.clipboard) await this.options.clipboard(text);
+      else {
+        if (!this.capabilities.tty) throw new Error("Clipboard needs an interactive terminal.");
+        this.terminal.write(clipboardSequence(text, !!process.env.TMUX));
+      }
+      this.copyNotice = { text: this.options.clipboard ? "Markdown copied" : "Markdown copy sent", failed: false };
+    } catch (error) {
+      this.copyNotice = { text: `Copy failed: ${error instanceof Error ? error.message : String(error)}`, failed: true };
+    }
+    if (this.copyTimer) clearTimeout(this.copyTimer);
+    this.copyTimer = setTimeout(() => { this.copyNotice = null; this.copyTimer = null; this.invalidate(); }, 3000);
+    this.copyTimer.unref?.();
+    this.invalidate();
   }
 
   /** Register the view. Called on every frame; keep it pure and cheap. */
@@ -194,7 +225,10 @@ export class App {
   /** Move keyboard focus. Wraps around. */
   focusNext(delta = 1): void {
     if (this.focusCount === 0) return;
-    this.focusIndex = (this.focusIndex + delta + this.focusCount) % this.focusCount;
+    this.focusIndex = this.focusConsumesKey.some(Boolean) && !this.focusEngaged && !this.modal
+      ? delta < 0 ? this.focusCount - 1 : 0
+      : (this.focusIndex + delta + this.focusCount) % this.focusCount;
+    this.focusEngaged = true;
     this.dirty = true;
   }
 
@@ -312,6 +346,9 @@ export class App {
 
   /** Stop the loop and restore the terminal. */
   stop(): void {
+    if (this.copyTimer) clearTimeout(this.copyTimer);
+    this.copyTimer = null;
+    this.copyNotice = null;
     if (!this.running) return;
     this.running = false;
     if (this.timer) clearInterval(this.timer);
@@ -338,15 +375,18 @@ export class App {
         return;
       }
       if (this.options.focusNavigation !== false) {
+        if (!this.modal && !["tab", "enter", "space"].includes(event.name)) this.focusEngaged = false;
         if (event.name === "tab") {
           this.focusNext(event.shift ? -1 : 1);
-          if (this.modal) return;
+          if (this.modal || this.focusConsumesKey.some(Boolean)) return;
         } else if (this.modal && ["left", "right", "up", "down"].includes(event.name)) {
           this.focusNext(event.name === "left" || event.name === "up" ? -1 : 1);
           return;
         } else if (event.name === "enter" || event.name === "space") {
-          const consumed = this.modal && this.focusActions[this.focusIndex];
-          this.activateFocused();
+          const copyFocused = this.focusConsumesKey[this.focusIndex];
+          const active = !copyFocused || this.focusEngaged || this.modal;
+          const consumed = active && (this.modal || copyFocused) && this.focusActions[this.focusIndex];
+          if (active) this.activateFocused();
           // A callback may have closed the dialog. Its Enter must not then
           // reach the app's key handler and open it again (or pause a demo).
           if (consumed) return;
@@ -392,6 +432,7 @@ export class App {
   }
 
   private dispatchMouse(event: MouseEvent): void {
+    if (event.action === "press" && !this.modal) this.focusEngaged = false;
     if (dispatchHit(this.hits, event)) this.dirty = true;
   }
 
@@ -412,6 +453,7 @@ export class App {
     this.hits = [];
     this.overlays = [];
     this.focusActions = [];
+    this.focusConsumesKey = [];
     let focusCursor = 0;
     const wasModal = this.modal !== undefined;
     const modalFocusIndex = this.focusIndex;
@@ -429,10 +471,14 @@ export class App {
       focusIndex: this.focusIndex,
       collapseBorders: this.options.collapseBorders ?? false,
       reducedMotion: this.options.reducedMotion ?? false,
-      registerFocus: (action?: () => void): FocusRegistration => {
+      copyMarkdown: this.options.copyMarkdown,
+      markdownContext: typeof this.options.markdownContext === "function" ? this.options.markdownContext() : this.options.markdownContext,
+      copyText: (text) => { void this.copyToClipboard(text); },
+      registerFocus: (action?: () => void, consumeKey = false): FocusRegistration => {
         const index = focusCursor++;
         if (action) this.focusActions[index] = action;
-        return { index, focused: index === this.focusIndex };
+        this.focusConsumesKey[index] = consumeKey;
+        return { index, focused: index === this.focusIndex && (!consumeKey || this.focusEngaged || !!this.modal) };
       },
       hit: (region) => this.hits.push(region),
       overlay: (draw, options) => this.overlays.push({ draw, options }),
@@ -461,9 +507,18 @@ export class App {
         ctx.focusIndex = this.focusIndex;
         focusCursor = 0;
         this.focusActions = [];
+        this.focusConsumesKey = [];
         this.modal = overlay.options;
       }
       overlay.draw(root);
+    }
+
+    if (this.copyNotice) {
+      const label = truncate(` ${this.copyNotice.text} `, root.width);
+      root.text(Math.max(0, root.width - stringWidth(label)), root.height - 1, label, {
+        fg: this.copyNotice.failed ? this.theme.danger : this.theme.success,
+        bg: this.theme.surface,
+      });
     }
 
     this.focusCount = Math.max(focusCursor, 0);

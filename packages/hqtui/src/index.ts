@@ -16,7 +16,7 @@
 export { App, createApp, type AppOptions, type RenderArgs, type RenderFn, type FrameStats } from "./app.ts";
 export { Container, GridContainer } from "./ui.ts";
 export type {
-  RenderContext, ContainerOptions, PanelOptions, GridOptions, CellOptions, HitRegion, HitEvent, ScrollHandlers,
+  RenderContext, ContainerOptions, PanelOptions, GridOptions, CellOptions, HitRegion, HitEvent, ScrollHandlers, MarkdownCopy,
 } from "./ui.ts";
 export { dispatchHit, countClicks, DOUBLE_CLICK_MS } from "./ui.ts";
 
@@ -35,6 +35,7 @@ export {
   type BorderStyle, type BoxOptions, type Align, type Side, type Sides,
 } from "./surface.ts";
 export { ansi, stripAnsi, moveTo, setTitle } from "./ansi.ts";
+export { clipboardSequence, markdownText } from "./markdown.ts";
 
 // Color
 export {

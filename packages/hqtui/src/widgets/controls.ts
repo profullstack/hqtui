@@ -184,6 +184,7 @@ export function drawTabs(surface: Surface, options: TabsOptions): void {
 }
 
 export interface ModalOptions {
+  titleRightPadding?: number;
   title?: string;
   message?: string;
   width?: number;
@@ -253,6 +254,7 @@ export function drawModal(root: Surface, options: ModalOptions): Surface {
   const surface = root.sub(x, y, width, height);
   const inner = surface.box({
     title: options.title,
+    titleRightPadding: options.titleRightPadding,
     titleAlign: options.align ?? "center",
     border: "rounded",
     borderColor: options.color ?? theme.borderFocused,
