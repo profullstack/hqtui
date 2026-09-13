@@ -15,6 +15,7 @@ export function inputScreen(ui: Container, state: DemoState, theme: Theme): void
       p.list({ items: state.keyLog.slice(-20).reverse() });
     });
     row.panel({ title: "Try it" }, (p) => {
+      p.text("⧉ MD copies this pane as Markdown for people and agents.", { wrap: true });
       p.text("Press any key — modifiers are normalized.", { fg: theme.foreground, size: 1 });
       p.label("Arrows, Function keys, Ctrl/Alt/Shift combinations,", { size: 1 });
       p.label("paste, focus, mouse move, click, drag and scroll.", { size: 1 });

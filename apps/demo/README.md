@@ -68,7 +68,8 @@ npx --yes @profullstack/hqtui-demo@latest     # Node 22.6+ works too
 
 | Key | Action |
 |---|---|
-| `1`–`0`, `w`, `Tab` | Switch screens |
+| `1`–`0`, `w` | Switch screens |
+| `Tab`, `Shift+Tab` | Focus controls; Enter / Space copies a focused summary |
 | `F1` | Help |
 | `F2` | Cycle theme |
 | `F3` | Filter processes |
@@ -80,6 +81,10 @@ npx --yes @profullstack/hqtui-demo@latest     # Node 22.6+ works too
 | `q`, `Ctrl+C` | Quit |
 
 Mouse works too: click the tabs and buttons, scroll the process list.
+
+Click **⧉ MD** in a summary pane to copy its facts as Markdown, with the host,
+screen, metric source and update state. Process and journal rows are excluded.
+The terminal must support OSC 52 clipboard writes (also usable over SSH).
 
 The termination dialog sends **SIGTERM** by default, allowing the process to
 clean up. **Force kill (-9 / SIGKILL)** starts unchecked each time. Use Tab,

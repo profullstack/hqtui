@@ -21,12 +21,12 @@
     },
     "apps/demo": {
       "name": "@profullstack/hqtui-demo",
-      "version": "0.6.2",
+      "version": "0.6.3",
       "bin": {
-        "hqtui-demo": "./src/main.ts",
+        "hqtui-demo": "./bin/hqtui-demo.mjs",
       },
       "dependencies": {
-        "@profullstack/hqtui": "workspace:*",
+        "@profullstack/hqtui": "^0.6.3",
       },
     },
     "apps/web": {
@@ -63,7 +63,7 @@
     },
     "packages/hqtui": {
       "name": "@profullstack/hqtui",
-      "version": "0.6.2",
+      "version": "0.6.3",
       "bin": {
         "hqtui": "./bin/hqtui.mjs",
       },

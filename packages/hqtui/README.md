@@ -149,3 +149,45 @@ gracefully on limited terminals (no mouse, quantized color, ASCII instead of Bra
 ## License
 
 MIT.
+
+## Copy summaries as Markdown
+
+Enable copy icons for summary panes throughout an app:
+
+```ts
+const app = await createApp({
+  copyMarkdown: true,
+  markdownContext: () => `Host: ${hostname}\nReporting period: ${period}`,
+});
+
+app.render(({ ui }) => {
+  ui.panel({ title: "Status" }, (p) => {
+    p.keyValues([{ label: "Connection", value: "Ready" }]);
+  });
+  ui.copyButton({ markdown: () => "## Status\n\nReady\n", width: 6 });
+});
+```
+
+Click **⧉ MD**, or Tab / Shift+Tab to focus a control and Enter / Space to copy.
+Other navigation keys return focus to the app. ASCII terminals display `C MD`;
+narrow panes show only the icon. A short notice confirms the clipboard request.
+
+Automatic exports include the pane title, subtitle, context, text, labeled values,
+meters, progress, and graph summaries (latest/min/max/sample count). Values are
+captured before wrapping and clipping. Tables, lists, logs, trees, input fields,
+and raw drawing callbacks are excluded. Panels containing only data rows have no
+copy icon. Layout branches that the app does not build cannot be exported.
+
+Set `copyMarkdown: true` on one panel or modal to enable it individually,
+`copyMarkdown: false` to exclude it (including from parent exports), or provide
+a Markdown string/callback for a custom summary. `ui.copyButton()` places the
+same control in a status strip or custom layout. Custom Markdown is copied as
+provided; `markdownText(value)` escapes plain values for interpolation.
+
+The default clipboard writer uses OSC 52 through the terminal, including over
+SSH, and wraps the sequence for tmux. Terminal clipboard support must be enabled;
+“Markdown copy sent” confirms delivery of the request, since terminals do not
+acknowledge clipboard writes. Oversized exports fail explicitly instead of being
+truncated. Supply `clipboard: (text) => ...` on `createApp()` to use another writer.
+No shell command is run. `renderToScreen()` records copies in `screen.copied` for
+interaction tests without changing the clipboard.

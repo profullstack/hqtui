@@ -145,6 +145,8 @@ export interface BoxOptions extends Style {
   /** Right-aligned text on the top border, e.g. a value or a hint. */
   subtitle?: string;
   subtitleColor?: Color;
+  /** Cells reserved at the right of the title row for header actions. */
+  titleRightPadding?: number;
   /** Paint the interior with `bg` before drawing. */
   fill?: boolean;
   /**
@@ -432,8 +434,9 @@ export class Surface {
     // Measured before the title is drawn: both share the top border row, and
     // the title used to be truncated against the full width and then painted
     // over by the subtitle.
+    const headerWidth = Math.max(0, w - Math.max(0, options.titleRightPadding ?? 0));
     const subtitle = options.subtitle ? ` ${options.subtitle} ` : "";
-    const subtitleWidth = subtitle && stringWidth(subtitle) + 4 < w ? stringWidth(subtitle) : 0;
+    const subtitleWidth = subtitle && stringWidth(subtitle) + 4 < headerWidth ? stringWidth(subtitle) : 0;
 
     if (options.title && sides.top) {
       const titleColor = options.titleColor ?? this.theme.title;
@@ -444,7 +447,7 @@ export class Surface {
       // straddling the boundary bisects it, leaving an orphaned half-character.
       // Both labels carry a space of padding, and those two spaces may share a
       // column, so the region ends one past the subtitle when there is one.
-      const limit = subtitleWidth > 0 ? w - 1 - subtitleWidth : w - 2;
+      const limit = subtitleWidth > 0 ? headerWidth - 1 - subtitleWidth : headerWidth - 2;
       const room = Math.max(0, limit - 2);
       const shown = truncate(label, room);
       const tw = stringWidth(shown);
@@ -453,12 +456,12 @@ export class Surface {
         ? 2
         : align === "right"
           ? Math.max(2, limit - tw)
-          : Math.max(2, Math.min(limit - tw, Math.floor((w - tw) / 2)));
+          : Math.max(2, Math.min(limit - tw, Math.floor((headerWidth - tw) / 2)));
       this.text(tx, 0, shown, { fg: titleColor, bg, attrs: 1 /* bold */ });
     }
 
     if (subtitleWidth > 0 && sides.top) {
-      this.text(w - 2 - subtitleWidth, 0, subtitle, {
+      this.text(headerWidth - 2 - subtitleWidth, 0, subtitle, {
         fg: options.subtitleColor ?? this.theme.muted,
         bg,
       });

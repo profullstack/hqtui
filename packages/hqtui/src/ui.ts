@@ -13,6 +13,10 @@ import { BrailleCanvas } from "./graphics/braille.ts";
 import { drawCanvas, type CanvasOptions } from "./graphics/canvas.ts";
 import type { CountryOutline } from "./graphics/world.ts";
 import * as W from "./widgets/index.ts";
+import { MarkdownSummary } from "./markdown.ts";
+import { resolveSides } from "./surface.ts";
+
+export type MarkdownCopy = boolean | string | (() => string);
 
 export interface HitRegion {
   rect: Rect;
@@ -111,7 +115,12 @@ export interface RenderContext {
    * redraws (the spinner) draw a still frame and ask for nothing more.
    */
   reducedMotion: boolean;
-  registerFocus(action?: () => void): FocusRegistration;
+  registerFocus(action?: () => void, consumeKey?: boolean): FocusRegistration;
+  /** Opt in to summary copy controls on panels throughout this view. */
+  copyMarkdown?: boolean;
+  /** Context included in automatic exports, e.g. host, range and source. */
+  markdownContext?: string;
+  copyText?: (text: string | (() => string)) => void;
   hit(region: HitRegion): void;
   overlay(draw: (root: Surface) => void, options?: OverlayOptions): void;
   invalidate(): void;
@@ -186,6 +195,8 @@ export interface ContainerOptions {
 }
 
 export interface PanelOptions extends ContainerOptions {
+  /** true exports summary widgets; a string/callback supplies custom Markdown. */
+  copyMarkdown?: MarkdownCopy;
   title?: string;
   titleAlign?: Align;
   titleColor?: Color;
@@ -241,6 +252,7 @@ export class Container {
     ctx: RenderContext,
     direction: "row" | "column" = "column",
     options: ContainerOptions = {},
+    private summary?: MarkdownSummary,
   ) {
     this.surface = surface;
     this.ctx = ctx;
@@ -339,8 +351,9 @@ export class Container {
 
   /** A horizontal container. Children default to equal shares. */
   row(options: ContainerOptions = {}, build?: (row: Container) => void): this {
+    const summary = this.summary?.child();
     return this.add((surface) => {
-      const container = new Container(surface, this.ctx, "row", options);
+      const container = new Container(surface, this.ctx, "row", options, summary);
       build?.(container);
       container.flush();
     }, this.sizeOf(options, "fill"), options.bordered ?? false);
@@ -348,8 +361,9 @@ export class Container {
 
   /** A vertical container. */
   column(options: ContainerOptions = {}, build?: (column: Container) => void): this {
+    const summary = this.summary?.child();
     return this.add((surface) => {
-      const container = new Container(surface, this.ctx, "column", options);
+      const container = new Container(surface, this.ctx, "column", options, summary);
       build?.(container);
       container.flush();
     }, this.sizeOf(options, "fill"), options.bordered ?? false);
@@ -364,8 +378,9 @@ export class Container {
    *   });
    */
   grid(options: GridOptions = {}, build?: (grid: GridContainer) => void): this {
+    const summary = this.summary?.child();
     return this.add((surface) => {
-      const container = new GridContainer(surface, this.ctx, options);
+      const container = new GridContainer(surface, this.ctx, options, summary);
       build?.(container);
       container.flush();
     }, this.sizeOf(options, "fill"), options.bordered ?? false);
@@ -374,6 +389,9 @@ export class Container {
   /** A bordered panel. The callback receives its interior as a column. */
   panel(options: PanelOptions = {}, build?: (panel: Container) => void): this {
     const focus = options.focusable ? this.ctx.registerFocus() : undefined;
+    const copy = options.copyMarkdown ?? this.ctx.copyMarkdown ?? false;
+    const summary = options.copyMarkdown !== false && (copy || this.summary) ? new MarkdownSummary() : undefined;
+    if (summary) this.summary?.add(() => summary.body() ? summary.document(options.title, options.subtitle, undefined, options.footer) : "");
     return this.add((surface) => {
       // Registered before the children draw, so a table inside the panel is
       // tested first and the panel only answers for the cells nothing else did.
@@ -382,12 +400,16 @@ export class Container {
         this.ctx.hit({ rect: surface.hitRect(), onClick: (x, y, button, clicks = 1) => onClick(x, y, button, clicks) });
       }
       const focused = options.focused ?? focus?.focused ?? false;
+      const canCopy = copy !== false && !!this.ctx.copyText && surface.width >= 9
+        && (options.border ?? "rounded") !== "none" && resolveSides(options.sides).top;
+      const copyWidth = surface.width >= 18 ? 6 : 3;
       const boxOptions: BoxOptions = {
         title: options.title,
         titleAlign: options.titleAlign,
         titleColor: options.titleColor,
         subtitle: options.subtitle,
         subtitleColor: options.subtitleColor,
+        titleRightPadding: canCopy ? copyWidth + 2 : 0,
         footer: options.footer,
         border: options.border ?? "rounded",
         ...(options.sides === undefined ? {} : { sides: options.sides }),
@@ -399,9 +421,23 @@ export class Container {
       const container = new Container(interior, this.ctx, "column", {
         gap: options.gap,
         padding: options.padding ?? [0, 1],
-      });
+      }, summary);
       build?.(container);
       container.flush();
+      // Tables, logs and raw row widgets do not contribute to this summary.
+      // No empty icon on a data-only pane. Custom Markdown can describe it.
+      if (canCopy && (copy !== true || summary?.body())) {
+        const action = () => this.ctx.copyText?.(() => typeof copy === "function" ? copy()
+          : typeof copy === "string" ? copy
+          : summary!.document(options.title, options.subtitle, this.ctx.markdownContext, options.footer));
+        const copyFocus = this.ctx.registerFocus(action, true);
+        const target = surface.sub(surface.width - copyWidth - 2, 0, copyWidth, 1);
+        const glyph = this.ctx.capabilities.unicode ? "⧉" : "C";
+        W.drawButton(target, { label: copyWidth === 6 ? `${glyph} MD` : glyph, variant: "ghost", focused: copyFocus.focused });
+        this.ctx.hit({ rect: target.hitRect(), onClick: (_x, _y, button) => { if (button === "left") action(); } });
+      } else if (canCopy) {
+        surface.box({ ...boxOptions, titleRightPadding: 0, fill: false });
+      }
     }, this.sizeOf(options, "fill"), (options.border ?? "rounded") !== "none");
   }
 
@@ -432,6 +468,7 @@ export class Container {
    * paragraph reserves the rows it will actually occupy once wrapped.
    */
   text(content: RichText, options: W.TextOptions & ContainerOptions = {}): this {
+    this.summary?.text(content);
     const lines = isRich(content)
       ? (options.wrap ? wrapRich(content, this.crossWidth) : toSpanLines(content)).length
       : (options.wrap ? wrap(content, this.crossWidth).length : content.split("\n").length);
@@ -449,6 +486,7 @@ export class Container {
   }
 
   badge(options: W.BadgeOptions & ContainerOptions): this {
+    this.summary?.text(options.text);
     return this.add((s) => W.drawBadge(s, options), this.sizeOf(options, "auto", 1));
   }
 
@@ -459,6 +497,7 @@ export class Container {
    * `active: false` when the work is done and the line settles on a tick.
    */
   spinner(options: Omit<W.SpinnerOptions, "elapsed"> & { elapsed?: number } & ContainerOptions): this {
+    if (options.label) this.summary?.values([{ label: "Status", value: options.label }]);
     // Under reducedMotion the glyph holds its first frame and the app is not
     // asked to redraw: the line still says "busy", it just does not move.
     const still = this.ctx.reducedMotion;
@@ -473,6 +512,7 @@ export class Container {
 
   /** Aligned label/value pairs. */
   keyValues(rows: W.KeyValueRow[], options: Omit<W.KeyValueOptions, "rows"> & ContainerOptions = {}): this {
+    this.summary?.values(rows);
     return this.add((s) => W.drawKeyValues(s, { ...options, rows }), this.sizeOf(options, "auto", rows.length));
   }
 
@@ -563,22 +603,28 @@ export class Container {
 
   /** `label ████████░░░ 42%` */
   meter(options: W.MeterOptions & ContainerOptions): this {
+    this.summary?.values([{ label: options.label ?? "Value", value: options.text ?? `${Math.round((options.max ? options.value / options.max : options.value) * 100)}%` }]);
     return this.add((s) => W.drawMeter(s, options), this.sizeOfData(options, "auto", "max", 1));
   }
 
   /** A stack or grid of meters. */
   meters(items: W.MetersOptions["items"], options: Omit<W.MetersOptions, "items"> & ContainerOptions = {}): this {
+    this.summary?.values(items.map((item) => ({ label: item.label ?? "Value", value: item.text ?? `${Math.round((item.max ? item.value / item.max : item.value) * 100)}%` })));
     const columns = Math.max(1, options.columns ?? 1);
     const rows = Math.ceil(items.length / columns);
     return this.add((s) => W.drawMeters(s, { ...options, items }), this.sizeOf(options, "auto", rows));
   }
 
   progress(options: W.ProgressOptions & ContainerOptions): this {
+    this.summary?.values([{ label: options.label ?? "Progress", value: options.showCount ? `${options.value}/${options.max ?? 1}` : `${Math.round(options.value / (options.max ?? 1) * 100)}%` }]);
     return this.add((s) => W.drawProgress(s, options), this.sizeOfData(options, "auto", "max", 1));
   }
 
   /** Braille line/area graph. Fills the space it is given. */
   graph(options: W.GraphOptions & ContainerOptions): this {
+    for (const series of options.series ?? [{ values: options.values ?? [] }]) {
+      this.summary?.series(series.values, series.label, options.axisFormat);
+    }
     return this.add((s) => W.drawGraph(s, options), this.sizeOfData(options, "fill", "min-max"));
   }
 
@@ -631,6 +677,8 @@ export class Container {
   }
 
   sparkline(options: W.SparklineOptions & ContainerOptions): this {
+    if (options.text) this.summary?.values([{ label: options.label ?? "Value", value: options.text }]);
+    else this.summary?.series(options.values, options.label);
     return this.add((s) => W.drawSparklineWidget(s, options), this.sizeOfData(options, "auto", "min-max", 1));
   }
 
@@ -640,6 +688,7 @@ export class Container {
 
   /** A semicircular dial. Wants at least 9x5. */
   gauge(options: W.GaugeOptions & ContainerOptions): this {
+    this.summary?.values([{ label: "Gauge", value: options.label ?? `${Math.round(options.value * 100)}%` }]);
     return this.add((s) => W.drawGauge(s, options), this.sizeOf(options, "fill"));
   }
 
@@ -653,6 +702,17 @@ export class Container {
   }
 
   // ---------------------------------------------------------------- inputs
+
+  /** A compact copy-as-Markdown button for a status strip or custom pane. */
+  copyButton(options: ContainerOptions & { markdown: string | (() => string); label?: string }): this {
+    const action = () => this.ctx.copyText?.(options.markdown);
+    const focus = this.ctx.registerFocus(action, true);
+    const label = options.label ?? (this.ctx.capabilities.unicode ? "⧉ MD" : "C MD");
+    return this.add((surface) => {
+      W.drawButton(surface, { label, focused: focus.focused, variant: "ghost", disabled: !this.ctx.copyText });
+      this.ctx.hit({ rect: surface.hitRect(), onClick: (_x, _y, button) => { if (button === "left") action(); } });
+    }, this.sizeOf({ ...options, width: options.width ?? stringWidth(label) + 2 }, "auto", 1));
+  }
 
   /** A button. Pass `onPress` and it joins the Tab order automatically. */
   button(options: W.ButtonOptions & ContainerOptions & { onPress?: () => void }): this {
@@ -737,14 +797,18 @@ export class Container {
   // -------------------------------------------------------------- overlays
 
   /** A centred dialog. Tab/arrows move focus; Enter/Space activate; Esc dismisses. */
-  modal(options: W.ModalOptions, build?: (modal: Container) => void): this {
+  modal(options: W.ModalOptions & { copyMarkdown?: MarkdownCopy }, build?: (modal: Container) => void): this {
     this.ctx.overlay((root) => {
+      const copy = options.copyMarkdown ?? this.ctx.copyMarkdown ?? false;
+      const summary = new MarkdownSummary();
+      if (options.message) summary.text(options.message);
+      const canCopy = copy !== false && !!this.ctx.copyText && Math.min(options.width ?? 60, root.width - 4) >= 18;
       const buttons = options.buttons?.map((button) => {
         if (!button.onPress) return button;
         const focus = this.ctx.registerFocus(button.onPress);
         return { ...button, focused: button.focused ?? focus.focused };
       });
-      const inner = W.drawModal(root, { ...options, buttons });
+      const inner = W.drawModal(root, { ...options, buttons, titleRightPadding: canCopy ? 8 : 0 });
       // The whole screen belongs to the dialog while it is up. The backdrop
       // takes every click outside it (and dismisses, if asked to), the dialog
       // takes every click inside it, and only then do the buttons and whatever
@@ -766,9 +830,17 @@ export class Container {
         });
       }
       if (build) {
-        const container = new Container(inner, this.ctx, "column", { padding: [1, 1] });
+        const container = new Container(inner, this.ctx, "column", { padding: [1, 1] }, summary);
         build(container);
         container.flush();
+      }
+      if (canCopy && (copy !== true || summary.body())) {
+        const action = () => this.ctx.copyText?.(() => typeof copy === "function" ? copy()
+          : typeof copy === "string" ? copy : summary.document(options.title, undefined, this.ctx.markdownContext));
+        const focus = this.ctx.registerFocus(action, true);
+        const target = root.region({ x: interior.x + interior.width - 7, y: interior.y - 1, width: 6, height: 1 });
+        W.drawButton(target, { label: this.ctx.capabilities.unicode ? "⧉ MD" : "C MD", variant: "ghost", focused: focus.focused });
+        this.ctx.hit({ rect: target.hitRect(), onClick: (_x, _y, button) => { if (button === "left") action(); } });
       }
     }, { modal: true, onDismiss: options.onDismiss, onKey: options.onKey });
     return this;
@@ -878,7 +950,7 @@ export class GridContainer {
     bordered: boolean;
   }[] = [];
 
-  constructor(surface: Surface, ctx: RenderContext, options: GridOptions) {
+  constructor(surface: Surface, ctx: RenderContext, options: GridOptions, private summary?: MarkdownSummary) {
     this.surface = options.padding ? surface.inset(options.padding) : surface;
     this.ctx = ctx;
     this.options = options;
@@ -918,24 +990,27 @@ export class GridContainer {
 
   /** A panel occupying the next free cell (or several, with colSpan/rowSpan). */
   panel(options: PanelOptions & CellOptions = {}, build?: (panel: Container) => void): this {
+    const summary = this.summary?.child();
     return this.push(options, (surface) => {
-      const container = new Container(surface, this.ctx, "column");
+      const container = new Container(surface, this.ctx, "column", {}, summary);
       container.panel(options, build);
       container.flush();
     }, (options.border ?? "rounded") !== "none");
   }
 
   cell(options: CellOptions & ContainerOptions = {}, build?: (cell: Container) => void): this {
+    const summary = this.summary?.child();
     return this.push(options, (surface) => {
-      const container = new Container(surface, this.ctx, "column", options);
+      const container = new Container(surface, this.ctx, "column", options, summary);
       build?.(container);
       container.flush();
     }, options.bordered ?? false);
   }
 
   row(options: CellOptions & ContainerOptions = {}, build?: (row: Container) => void): this {
+    const summary = this.summary?.child();
     return this.push(options, (surface) => {
-      const container = new Container(surface, this.ctx, "row", options);
+      const container = new Container(surface, this.ctx, "row", options, summary);
       build?.(container);
       container.flush();
     }, options.bordered ?? false);
