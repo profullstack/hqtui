@@ -8,3 +8,4 @@ export * from "./scrollbar.ts";
 export * from "./table.ts";
 export * from "./meters.ts";
 export * from "./controls.ts";
+export * from "./spinner.ts";
