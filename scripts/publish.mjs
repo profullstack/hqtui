@@ -430,8 +430,14 @@ export async function waitForAvailability({
   shasum = "",
   registry = DEFAULT_REGISTRY,
   fetchImpl = fetch,
-  attempts = 10,
-  delay = 5000,
+  // Ten attempts five seconds apart was under a minute of patience, and npm
+  // says so itself when it accepts a provenance publish: "Your package is
+  // being processed and may take a few minutes to become available." On
+  // v0.7.0 the demo took 3m30s to become readable and the library 7m30s, so
+  // the release failed on a publish that had entirely succeeded. Ten minutes
+  // costs nothing on a run that is already done uploading.
+  attempts = 40,
+  delay = 15000,
   sleep = wait,
 }) {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -618,14 +624,33 @@ export async function publishAll({
 /* CLI                                                                          */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * `--key value` pairs and bare `--flag` switches, as strings.
+ *
+ * @param {string[]} argv
+ * @returns {Record<string, string>}
+ */
 export function parseArgs(argv) {
+  /** @type {Record<string, string>} */
   const flags = {};
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (!arg.startsWith("--")) continue;
     const key = arg.slice(2);
-    if (argv[i + 1] && !argv[i + 1].startsWith("--")) flags[key] = argv[++i];
-    else flags[key] = "true";
+    const value = argv[i + 1];
+    // `--tag ""` is a flag carrying an empty value, not a boolean flag. The
+    // workflow always passes `--tag "$DIST_TAG"`, and DIST_TAG is empty on
+    // every trigger that does not name one by hand, so testing this for
+    // truthiness made an empty dist-tag mean the *string* "true". That is how
+    // v0.7.0 reached npm under the dist-tag `true` instead of `latest`, which
+    // left `npm install @profullstack/hqtui` resolving 0.6.3 after a release
+    // the workflow reported as a success.
+    if (value !== undefined && !value.startsWith("--")) {
+      flags[key] = value;
+      i += 1;
+    } else {
+      flags[key] = "true";
+    }
   }
   return flags;
 }
