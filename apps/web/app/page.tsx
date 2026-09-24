@@ -24,6 +24,7 @@ const COUNT = LANGUAGES.length;
 const SPELLED = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
   "nine", "ten", "eleven", "twelve"][COUNT] ?? String(COUNT);
 import { CommandBlock } from "@/components/site/command";
+import { OpenSets } from "@/components/site/open-sets";
 
 export const dynamic = "force-dynamic";
 
@@ -171,6 +172,11 @@ export default async function Home() {
             </p>
             <Link href="/blog/native-rust-go-python-zig" className="mt-5 inline-flex items-center gap-2 text-sm text-[#5fff87] underline underline-offset-4">
               New: native Rust, Go, Python and Zig ports <ArrowRight className="h-4 w-4 shrink-0" />
+            </Link>
+            <Link href="#icons-emoji" className="mt-2 flex items-center justify-center gap-2 text-sm text-[#5fff87] underline underline-offset-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/open/emoji/1f680.webp" alt="" width={18} height={18} className="h-[18px] w-[18px]" />
+              New: 370 icons and 3,963 emoji, built in <ArrowRight className="h-4 w-4 shrink-0" />
             </Link>
             {/* The strongest thing this project can say is "run one command and
                 look at it", so that command leads — it used to sit in the last
@@ -410,6 +416,8 @@ export default async function Home() {
           </TabsContent>
         </Tabs>
       </section>
+
+      <OpenSets />
 
       {/* Themes */}
       <section id="themes" className="border-y border-white/10 bg-white/[0.015]">
