@@ -67,6 +67,12 @@ export {
   type Span, type SpanLine, type RichText,
 } from "./richtext.ts";
 
+// Icons: the OpenIcon pack, on by default
+export {
+  icon, iconGlyphs, iconMode, setIconMode, useIconPack, currentIconPack, iconPackFrom, iconNames, openIcon,
+  type IconMode, type IconGlyphs, type IconPack, type IconOptions,
+} from "./icons.ts";
+
 // Graphics
 export { BrailleCanvas } from "./graphics/braille.ts";
 export {

@@ -22,6 +22,7 @@ const SECTIONS = [
   { id: "widgets", label: "Widgets" },
   { id: "graphics", label: "Graphics" },
   { id: "themes", label: "Themes" },
+  { id: "icons", label: "Icons" },
   { id: "input", label: "Input" },
   { id: "testing", label: "Testing" },
   { id: "escape-hatches", label: "Escape hatches" },
@@ -322,6 +323,43 @@ const brand = defineTheme({
 const app = await createApp({ theme: brand });
 app.setTheme(themes.nord); // switch at runtime`}
           />
+
+          <H2 id="icons">Icons</H2>
+          <P>
+            The <a className="underline" href="https://logicsrc.com/openicon">OpenIcon</a> pack is built in and
+            on by default: 370 icons, from <code className="font-mono text-white/80">mail</code> and{" "}
+            <code className="font-mono text-white/80">git-branch</code> to{" "}
+            <code className="font-mono text-white/80">github</code> and{" "}
+            <code className="font-mono text-white/80">bluesky</code>. Each has three glyphs, and{" "}
+            <code className="font-mono text-white/80">icon()</code> returns the best one this terminal can draw: a
+            Nerd Font glyph, a Unicode symbol, or ASCII. Aliases work too, so{" "}
+            <code className="font-mono text-white/80">icon(&quot;email&quot;)</code> is{" "}
+            <code className="font-mono text-white/80">icon(&quot;mail&quot;)</code>.
+          </P>
+          <Code
+            className="mt-4"
+            code={`import { icon, setIconMode } from "@profullstack/hqtui";
+
+ui.text(\`\${icon("mail")} Inbox  \${icon("git-branch")} main\`);
+// 󰇰 Inbox   main   with a Nerd Font
+// ✉ Inbox  ⎇ main    in a UTF-8 terminal
+// @ Inbox  Y main    anywhere else
+
+icon("github", { mode: "ascii" });  // "gh", for this call only
+setIconMode("nerd");                 // for the whole app`}
+          />
+          <P>
+            A Nerd Font cannot be detected from inside a terminal, so it is never assumed. Set{" "}
+            <code className="font-mono text-white/80">NERD_FONT=1</code>, or{" "}
+            <code className="font-mono text-white/80">OPENICON_GLYPHS=nerd|unicode|ascii</code>, or call{" "}
+            <code className="font-mono text-white/80">setIconMode()</code>. Otherwise you get Unicode where the
+            terminal draws it and ASCII where it does not. An icon Nerd Fonts has no glyph for falls back to Unicode,
+            and an unknown name draws nothing. Swap in another OpenIcon set with{" "}
+            <code className="font-mono text-white/80">useIconPack(iconPackFrom(json))</code>. The Rust, Go and Python
+            ports carry the same table: <code className="font-mono text-white/80">icon(&quot;mail&quot;)</code>,{" "}
+            <code className="font-mono text-white/80">hqtui.Icon(&quot;mail&quot;)</code>,{" "}
+            <code className="font-mono text-white/80">hqtui.icon(&quot;mail&quot;)</code>.
+          </P>
 
           <H2 id="input">Input</H2>
           <P>
