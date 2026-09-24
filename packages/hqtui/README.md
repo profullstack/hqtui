@@ -127,6 +127,22 @@ ui.text(`${icon("mail")} Inbox  ${icon("git-branch")} main`);
 // @ Inbox  Y main    anywhere else
 ```
 
+The HQ (full colour) style of a few of them:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/mail.webp" alt="mail" title="mail" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/phone.webp" alt="phone" title="phone" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/link.webp" alt="link" title="link" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/search.webp" alt="search" title="search" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/settings.webp" alt="settings" title="settings" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/terminal.webp" alt="terminal" title="terminal" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/git-branch.webp" alt="git-branch" title="git-branch" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/bell.webp" alt="bell" title="bell" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/calendar.webp" alt="calendar" title="calendar" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/lock.webp" alt="lock" title="lock" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/discord.svg" alt="discord" title="discord" width="40" height="40">
+</p>
+
 A Nerd Font is never assumed, because it cannot be detected from inside the
 terminal: set `NERD_FONT=1`, `OPENICON_GLYPHS=nerd|unicode|ascii`, or call
 `setIconMode()`. Aliases resolve (`icon("email")`), an icon Nerd Fonts lacks
@@ -149,6 +165,28 @@ ui.text(emojify("deploy :tada: :+1:"));      // deploy 🎉 👍   (deploy [part
 emoji("thumbs_up_t3");                        // 👍🏽  skin tones are _t1 … _t5
 emojiSearch("lol")[0].char;                   // 😂  CLDR keywords
 ```
+
+A few of the set:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f600.webp" alt="😀" title="grinning face" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f602.webp" alt="😂" title="face with tears of joy" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f60d.webp" alt="😍" title="smiling face with heart-eyes" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f914.webp" alt="🤔" title="thinking face" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f525.webp" alt="🔥" title="fire" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/2764-fe0f.webp" alt="❤️" title="red heart" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f44d.webp" alt="👍" title="thumbs up" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f680.webp" alt="🚀" title="rocket" width="40" height="40">
+  <br>
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f4a1.webp" alt="💡" title="light bulb" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f389.webp" alt="🎉" title="party popper" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f4af.webp" alt="💯" title="hundred points" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f440.webp" alt="👀" title="eyes" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/2705.webp" alt="✅" title="check mark button" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/26a0-fe0f.webp" alt="⚠️" title="warning" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f431.webp" alt="🐱" title="cat face" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f1ef-1f1f5.webp" alt="🇯🇵" title="flag: Japan" width="40" height="40">
+</p>
 
 A name can be the shortcode (`fire`, `oe_fire`, `:fire:`), the CLDR name, a
 common alias (`thumbsup`, `+1`, `heart`) or the emoji itself. Text mode is an
