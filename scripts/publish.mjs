@@ -453,16 +453,18 @@ export async function waitForAvailability({
 /* The two commands                                                             */
 /* -------------------------------------------------------------------------- */
 
-function run(command, args, cwd) {
-  const result = spawnSync(command, args, {
-    cwd,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "inherit"],
-  });
+function spawn(command, args, cwd, stdio) {
+  const result = spawnSync(command, args, { cwd, encoding: "utf8", stdio });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`${command} ${args.join(" ")} exited ${result.status}`);
-  return result.stdout;
+  return result.stdout ?? "";
 }
+
+/** `npm pack --json`, whose stdout is the answer rather than a log. */
+const capture = (command, args, cwd) => spawn(command, args, cwd, ["ignore", "pipe", "inherit"]);
+
+/** `npm publish`, whose output belongs in the run log where it can be read. */
+const run = (command, args, cwd) => spawn(command, args, cwd, "inherit");
 
 /**
  * @param {{ out: string, root?: string, event?: string, ref?: string, distTag?: string }} options
@@ -482,7 +484,7 @@ export function packAll({ root = ROOT, out, event = "", ref = "", distTag = "" }
   mkdirSync(out, { recursive: true });
 
   const packages = dirs.map(({ dir, label, pkg }) => {
-    const stdout = run("npm", ["pack", "--json", "--pack-destination", resolve(out)], join(root, dir));
+    const stdout = capture("npm", ["pack", "--json", "--pack-destination", resolve(out)], join(root, dir));
     const [packed] = JSON.parse(stdout);
     const gzipped = readFileSync(join(out, packed.filename));
     const files = tarFiles(gzipped);
