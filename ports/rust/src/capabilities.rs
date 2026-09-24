@@ -180,7 +180,7 @@ fn detect_colors(env: &Env, tty: bool) -> ColorDepth {
     ColorDepth::Ansi16
 }
 
-fn detect_unicode(env: &Env) -> bool {
+pub(crate) fn detect_unicode(env: &Env) -> bool {
     // A dumb terminal has no glyph repertoire to speak of. The Linux console is
     // not in that category — its default font draws box and block elements
     // perfectly well — so only Braille is withheld from it, below.

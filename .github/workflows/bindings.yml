@@ -23,7 +23,7 @@ jobs:
       - name: Install only binding test toolchains
         run: mise install ruby@4.0.6 conda:php@8.5.9 perl@5.44.0.0 cmake@4.4.3 python@3.12.13
       - name: Install private Perl dependencies
-        run: mise exec perl@5.44.0.0 -- cpanm --local-lib-contained "${{ runner.temp }}/hqtui-perl" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.11
+        run: mise exec perl@5.44.0.0 -- cpanm --local-lib-contained "${{ runner.temp }}/hqtui-perl" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.12
       - name: Build optimized binding library and PHP adapter
         shell: bash
         run: |

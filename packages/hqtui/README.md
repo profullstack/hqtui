@@ -112,6 +112,28 @@ activity, sessions, services and the full widget catalogue.
 | **Input** | normalized keys with modifiers, SGR mouse (click, drag, scroll, move), bracketed paste, focus events, Tab focus traversal |
 | **Testing** | headless renderer: `renderToText`, `renderToScreen`, `renderToAnsi`, `renderToHtml` — no TTY required |
 
+## Icons
+
+The [OpenIcon](https://logicsrc.com/openicon) pack is built in and on by
+default: 370 icons, each with a Nerd Font glyph, a Unicode symbol and an ASCII
+spelling. `icon()` returns the best one this terminal can draw.
+
+```ts
+import { icon, setIconMode } from "@profullstack/hqtui";
+
+ui.text(`${icon("mail")} Inbox  ${icon("git-branch")} main`);
+// 󰇰 Inbox   main   with a Nerd Font
+// ✉ Inbox  ⎇ main    in a UTF-8 terminal
+// @ Inbox  Y main    anywhere else
+```
+
+A Nerd Font is never assumed, because it cannot be detected from inside the
+terminal: set `NERD_FONT=1`, `OPENICON_GLYPHS=nerd|unicode|ascii`, or call
+`setIconMode()`. Aliases resolve (`icon("email")`), an icon Nerd Fonts lacks
+falls back to Unicode, and an unknown name draws nothing. `useIconPack()` swaps
+in any other OpenIcon set. The table is generated from the set by
+`scripts/generate-icons.ts`, for this library and the Rust, Go and Python ports.
+
 ## Testing your TUI
 
 Terminal apps are usually untestable. Here they are not:
