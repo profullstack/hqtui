@@ -1,20 +1,64 @@
 name: Publish
 
+# A release is two irreversible uploads and one public announcement, and run
+# 33854645746 proved they were in the wrong order: the library went to npm, the
+# demo's build failed, and the GitHub release for v0.1.10 stayed public for a
+# version nobody could install in full. Retrying the whole workflow hit the
+# library again, which npm refuses, so recovery burned 0.1.11.
+#
+# The order here is pack, upload, verify, announce:
+#
+#   * both tarballs are built before either is uploaded, and kept as a run
+#     artifact, so a failed run can be resumed from the exact bytes it packed;
+#   * each upload is skipped only against a *verified* published artifact, and
+#     an unreadable registry is a failure rather than a guess;
+#   * the GitHub release is published last, once both versions are readable on
+#     the registry, so a half-done release is never announced.
+#
+# All three of those live in scripts/publish.mjs, which is tested in
+# packages/hqtui/test/publish.test.ts.
+#
+# Pushing the tag is what starts a release, because a draft release starts
+# nothing: GitHub does not trigger workflows for the `created` activity type on
+# drafts. So the notes are written as a draft, the tag push does the registry
+# work, and the last step turns that draft into the release. Publishing a
+# release by hand still works and still publishes both packages — it just
+# announces the version before the registry has it.
+
 on:
+  push:
+    tags: ["v*"]
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: "npm dist-tag"
-        default: latest
+        description: "npm dist-tag (default: latest, or next for a prerelease)"
+        default: ""
+
+# One release at a time, keyed on the version. `gh release create` without
+# --draft fires both triggers; the second run finds everything published and
+# does nothing, but it must not run while the first is still deciding.
+concurrency:
+  group: publish-${{ github.event.release.tag_name || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   npm:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # `contents: write` is only for announcing the release at the end;
+      # nothing else here writes to the repository.
+      contents: write
       id-token: write
+    env:
+      RELEASE_REF: ${{ github.event.release.tag_name || github.ref_name }}
+      # A tag and a release both name a version. A dispatch names a branch, so
+      # there is nothing for the version check to compare against.
+      RELEASE_EVENT: ${{ github.event_name == 'workflow_dispatch' && 'dispatch' || 'release' }}
+      # Empty means "decide from the version": 'latest', or 'next' when it is a
+      # prerelease. Naming one by hand is for republishing under another tag.
+      DIST_TAG: ${{ inputs.tag }}
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
@@ -23,69 +67,66 @@ jobs:
           node-version: 24.x
           registry-url: https://registry.npmjs.org
       - run: bun install --frozen-lockfile
+      # `build` is not incidental here. Publishing a tarball does not run
+      # `prepublishOnly`, so this is the only thing that produces the demo's
+      # dist, and `pack` below refuses to package a tarball without it.
       - run: bun run typecheck && bun test packages/hqtui/test && bun run build
-      # Nothing tied the release tag to what actually gets published, so a tag
-      # could ship a version it does not name. This runs on every trigger, not
-      # only `release`: a workflow_dispatch publishes just as readily, and
-      # gating the check on the event left that path unchecked. The ref goes
-      # through the environment rather than the shell, as the dist-tag does.
-      - name: Check the versions being published
+
+      - name: Pack both packages
+        run: >-
+          node scripts/publish.mjs pack
+          --out "$RUNNER_TEMP/release"
+          --event "$RELEASE_EVENT"
+          --ref "$RELEASE_REF"
+          --tag "$DIST_TAG"
+
+      # Kept before the first upload, so a run that dies mid-publish leaves the
+      # exact artifacts behind to resume from.
+      - name: Keep the packed artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          # A branch name can contain a slash, which an artifact name cannot.
+          name: release-${{ github.ref_type == 'tag' && github.ref_name || github.run_id }}
+          path: ${{ runner.temp }}/release
+          if-no-files-found: warn
+
+      - name: Publish what is not already published
+        run: node scripts/publish.mjs publish --from "$RUNNER_TEMP/release"
         env:
-          RELEASE_REF: ${{ github.ref_name }}
-          EVENT: ${{ github.event_name }}
-          DIST_TAG: ${{ inputs.tag || 'latest' }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Only now is the release true. On the `release: published` path there is
+      # nothing left to announce, which is exactly why the tag push is the
+      # better way in.
+      - name: Announce the release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          lib="$(node -p "require('./packages/hqtui/package.json').version")"
-          demo="$(node -p "require('./apps/demo/package.json').version")"
-
-          # Both are published together from one commit, on every trigger.
-          if [ "$lib" != "$demo" ]; then
-            echo "the two packages disagree about the version being published:"
-            echo "  packages/hqtui  $lib"
-            echo "  apps/demo       $demo"
-            exit 1
-          fi
-
-          # A prerelease must not become what `npm install` resolves to.
-          case "$lib" in
+          # A prerelease tag stays marked as one, so it does not become the
+          # release GitHub shows as current.
+          fields=(-F draft=false)
+          flags=()
+          case "$RELEASE_REF" in
             *-*)
-              if [ "$DIST_TAG" = "latest" ]; then
-                echo "$lib is a prerelease and would be published as 'latest'."
-                echo "re-run with a dist-tag such as 'next'."
-                exit 1
-              fi
-              echo "prerelease $lib publishing under dist-tag '$DIST_TAG'"
+              fields+=(-F prerelease=true)
+              flags+=(--prerelease)
               ;;
           esac
 
-          # On a release the tag names the version; on a dispatch ref_name is a
-          # branch, so there is nothing to compare it against.
-          if [ "$EVENT" = "release" ]; then
-            tag="${RELEASE_REF#v}"
-            if [ "$tag" != "$lib" ]; then
-              echo "release tag '$RELEASE_REF' does not name the version it would publish ($lib)"
-              exit 1
-            fi
-            echo "tag '$RELEASE_REF' matches both packages at $lib"
+          # A draft has no git tag, so it cannot be looked up by one. The list
+          # is the only place it exists.
+          draft="$(gh api "repos/$GH_REPO/releases" --paginate \
+            --jq "[.[] | select(.draft == true and .tag_name == \"$RELEASE_REF\")][0].id // empty")"
+
+          if [ -n "$draft" ]; then
+            echo "publishing the draft release $RELEASE_REF"
+            gh api --method PATCH "repos/$GH_REPO/releases/$draft" "${fields[@]}" >/dev/null
+          elif gh release view "$RELEASE_REF" >/dev/null 2>&1; then
+            echo "$RELEASE_REF is already a public release"
           else
-            echo "$EVENT: publishing $lib under dist-tag '$DIST_TAG'"
+            echo "no release for $RELEASE_REF, creating one from the commit log"
+            gh release create "$RELEASE_REF" --verify-tag --generate-notes "${flags[@]}"
           fi
-      # `id-token: write` above is what provenance needs, but without the flag
-      # nothing is attested — the permission was granted and unused.
-      #
-      # The dist-tag goes through the environment rather than being
-      # interpolated into the shell: `${{ inputs.tag }}` is attacker-controlled
-      # text on a workflow_dispatch, and expressions are substituted before the
-      # shell ever sees them.
-      - name: Publish library
-        run: npm publish --access public --provenance --tag "$DIST_TAG"
-        working-directory: packages/hqtui
-        env:
-          DIST_TAG: ${{ inputs.tag || 'latest' }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish demo
-        run: npm publish --access public --provenance --tag "$DIST_TAG"
-        working-directory: apps/demo
-        env:
-          DIST_TAG: ${{ inputs.tag || 'latest' }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
