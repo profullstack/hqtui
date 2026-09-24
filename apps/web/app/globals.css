@@ -184,3 +184,14 @@
   color: rgb(255 255 255 / 0.55);
 }
 .post-body hr { margin-top: 2rem; border-color: rgb(255 255 255 / 0.1); }
+
+/* Nerd Font symbols, subset to the glyphs OpenIcon uses (MIT, public/open/nerd-fonts-LICENSE.txt). */
+@font-face {
+  font-family: "OpenIcon Nerd Symbols";
+  src: url("/open/nerd-openicon.woff2") format("woff2");
+  font-display: block;
+}
+
+.font-nerd {
+  font-family: "OpenIcon Nerd Symbols", ui-monospace, monospace;
+}
