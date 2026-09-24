@@ -53,9 +53,10 @@ jobs:
       id-token: write
     env:
       RELEASE_REF: ${{ github.event.release.tag_name || github.ref_name }}
-      # A tag and a release both name a version. A dispatch names a branch, so
-      # there is nothing for the version check to compare against.
-      RELEASE_EVENT: ${{ github.event_name == 'workflow_dispatch' && 'dispatch' || 'release' }}
+      # A tag names a version, whichever trigger arrived on it — including a
+      # dispatch aimed at a tag. A branch names nothing the version check can
+      # compare against.
+      RELEASE_EVENT: ${{ github.ref_type == 'tag' && 'release' || 'dispatch' }}
       # Empty means "decide from the version": 'latest', or 'next' when it is a
       # prerelease. Naming one by hand is for republishing under another tag.
       DIST_TAG: ${{ inputs.tag }}
