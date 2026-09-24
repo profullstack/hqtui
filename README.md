@@ -253,6 +253,102 @@ Nothing above needs root. Running with `sudo` additionally unlocks socket proces
 names, failed logins, HTTP access logs, per-process I/O and the full journal — the
 demo tells you which of those it could not read.
 
+## Icons and emoji, built in
+
+370 icons and 3,963 emoji ship with HQTUI and are on by default. Each draws the
+best thing your terminal can show: a Nerd Font glyph, a Unicode symbol, or plain
+ASCII, so a status bar never turns into boxes over SSH.
+
+### OpenIcon: 370 icons ([the spec](https://logicsrc.com/openicon))
+
+| `icon()` | Nerd Font | Unicode | ASCII |
+|---|---|---|---|
+| `"mail"` | U+F01F0 | ✉ | `@` |
+| `"phone"` | U+F0DF0 | ☎ | `tel` |
+| `"link"` | U+F0339 | 🔗 | `~` |
+| `"search"` | U+F0349 | 🔍 | `?` |
+| `"settings"` | U+F0493 | ⚙ | `*` |
+| `"terminal"` | U+F018D | ⌨ | `>_` |
+| `"git-branch"` | U+F418 | ⎇ | `Y` |
+| `"bell"` | U+F009C | 🔔 | `(!)` |
+| `"github"` | U+F02A4 | 🐙 | `gh` |
+
+Every icon also comes as an SVG in two styles, Simple (line) and HQ (full
+colour). The HQ set:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/mail.webp" alt="mail" title="mail" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/phone.webp" alt="phone" title="phone" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/link.webp" alt="link" title="link" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/search.webp" alt="search" title="search" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/settings.webp" alt="settings" title="settings" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/terminal.webp" alt="terminal" title="terminal" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/git-branch.webp" alt="git-branch" title="git-branch" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/bell.webp" alt="bell" title="bell" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/calendar.webp" alt="calendar" title="calendar" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/lock.webp" alt="lock" title="lock" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/icon/hq/discord.svg" alt="discord" title="discord" width="40" height="40">
+</p>
+
+### OpenEmoji: 3,963 emoji ([the spec](https://logicsrc.com/openemoji))
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f600.webp" alt="😀" title="grinning face" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f602.webp" alt="😂" title="face with tears of joy" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f60d.webp" alt="😍" title="smiling face with heart-eyes" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f914.webp" alt="🤔" title="thinking face" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f525.webp" alt="🔥" title="fire" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/2764-fe0f.webp" alt="❤️" title="red heart" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f44d.webp" alt="👍" title="thumbs up" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f680.webp" alt="🚀" title="rocket" width="40" height="40">
+  <br>
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f4a1.webp" alt="💡" title="light bulb" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f389.webp" alt="🎉" title="party popper" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f4af.webp" alt="💯" title="hundred points" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f440.webp" alt="👀" title="eyes" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/2705.webp" alt="✅" title="check mark button" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/26a0-fe0f.webp" alt="⚠️" title="warning" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f431.webp" alt="🐱" title="cat face" width="40" height="40">
+  <img src="https://raw.githubusercontent.com/profullstack/hqtui/main/apps/web/public/open/emoji/1f1ef-1f1f5.webp" alt="🇯🇵" title="flag: Japan" width="40" height="40">
+</p>
+
+| `emoji()` | emoji mode | text mode |
+|---|---|---|
+| `"fire"` | 🔥 | `[fire]` |
+| `"smile"` | 😄 | `:D` |
+| `"heart"` | ❤️ | `<3` |
+| `"+1"` | 👍 | `+1` |
+
+Put the OpenEmoji artwork in the terminal itself: install the colour font and
+point fontconfig, Kitty or WezTerm at it. Kitty, Ghostty, iTerm2 and WezTerm can
+also draw the high-resolution PNGs inline.
+
+```sh
+bunx @profullstack/hqtui fonts install
+```
+
+### One import
+
+```ts
+import { icon, emoji, emojify } from "@profullstack/hqtui";
+
+icon("mail");      // the Nerd Font glyph, "✉" in Unicode, "@" in ASCII
+icon("github");    // brands too: Nerd glyph, "🐙", "gh"
+
+emoji("rocket");   // "🚀", or "[rocket]" where emoji cannot render
+emoji("+1");       // aliases and shortcodes: "👍"
+emojify("ship it :oe_rocket: :fire:");
+```
+
+Both sets follow open specifications on LogicSRC, so a set someone else draws
+works with the same calls. The same functions exist in the Go, Python and Rust
+ports. Modes, environment variables and the font installer are covered in the
+[package README](packages/hqtui/README.md#icons).
+
+- [All 370 icons](https://logicsrc.com/openicon#gallery): search, filter, Simple and HQ, Nerd/Unicode/ASCII views
+- [All 3,963 emoji](https://logicsrc.com/openemoji/catalog): search, skin tones, and install packs for 22 networks
+- The sets: [profullstack/openicon](https://github.com/profullstack/openicon), [profullstack/openemoji](https://github.com/profullstack/openemoji)
+
 ## What is in the box
 
 | | |
@@ -261,6 +357,7 @@ demo tells you which of those it could not read.
 | **Widgets** | panel, table, tree, list, log viewer, key/values, meter, gauge, donut, progress, sparkline, line/area/multi-series graph, histogram, heat bar, tabs, status bar, button, checkbox, toggle, radio, select, text input, modal, command palette, tooltip, badge, spinner, divider |
 | **Graphics** | Braille canvas (2×4 pixels per cell), block/half-block/quadrant/ASCII modes, gradients, software alpha blending |
 | **Color** | 24-bit truecolor, automatic 256 and 16-colour quantization, `NO_COLOR`, monochrome and high-contrast modes |
+| **Icons and emoji** | 370 OpenIcon icons (`icon()`: Nerd Font, Unicode or ASCII) and 3,963 OpenEmoji emoji (`emoji()`, `emojify()`, `emojiSearch()`), on by default |
 | **Themes** | dark (default), dracula, nord, tokyo night, gruvbox, matrix, monochrome, high contrast, light — plus `defineTheme()` |
 | **Input** | normalized keys with modifiers, SGR mouse (click, double-click, drag, scroll, move) delivered per widget — rows, status bar keys, dialog buttons and panels all take a click — bracketed paste, focus events, Tab focus traversal |
 | **Testing** | headless renderer: `renderToText`, `renderToScreen`, `renderToAnsi`, `renderToHtml` — no TTY required |
