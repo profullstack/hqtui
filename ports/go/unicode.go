@@ -126,7 +126,12 @@ func InternCluster(text string) Cell {
 	}
 	if len(clusters.texts) >= maxClusters {
 		// Degrade to the base character rather than grow the table for ever.
+		// When the base alone is narrower than the cluster (a flag's first
+		// half, ❤ from ❤️), a blank ideographic space holds its two columns.
 		first, _ := utf8.DecodeRuneInString(safe)
+		if clusterWidth(safe) == 2 && CharWidth(first) != 2 {
+			return 0x3000
+		}
 		if CharWidth(first) > 0 {
 			return Cell(first)
 		}
@@ -236,17 +241,47 @@ func CharWidth(cp rune) int {
 	return 1
 }
 
+func isRegional(cp rune) bool     { return cp >= 0x1f1e6 && cp <= 0x1f1ff }
+func isToneModifier(cp rune) bool { return cp >= 0x1f3fb && cp <= 0x1f3ff }
+func isTag(cp rune) bool          { return cp >= 0xe0020 && cp <= 0xe007f }
+func isKeycapBase(cp rune) bool   { return (cp >= '0' && cp <= '9') || cp == '#' || cp == '*' }
+
+// clusterWidth is the columns a multi-codepoint cluster occupies, one rule
+// for measuring and for cells. Emoji presentation makes a cluster two
+// columns even when its base alone is one: a flag (two regional indicators),
+// a keycap, and a text-default pictograph with U+FE0F or a skin tone.
+func clusterWidth(text string) int {
+	first, size := utf8.DecodeRuneInString(text)
+	if CharWidth(first) == 2 {
+		return 2
+	}
+	if isRegional(first) {
+		second, _ := utf8.DecodeRuneInString(text[size:])
+		if isRegional(second) {
+			return 2
+		}
+		return 1
+	}
+	if isKeycapBase(first) && strings.ContainsRune(text, 0x20e3) {
+		return 2
+	}
+	if inRanges(first, pictographic) {
+		for _, r := range text {
+			if r == 0xfe0f || isToneModifier(r) {
+				return 2
+			}
+		}
+	}
+	return 1
+}
+
 // CellWidth is the number of columns a cell value occupies, handling clusters.
 func CellWidth(value Cell) int {
 	if value == Continuation {
 		return 0
 	}
 	if value >= ClusterBase {
-		first, _ := utf8.DecodeRuneInString(ClusterText(value))
-		if CharWidth(first) == 2 {
-			return 2
-		}
-		return 1
+		return clusterWidth(ClusterText(value))
 	}
 	return CharWidth(rune(value))
 }
@@ -305,6 +340,16 @@ func Graphemes(text string) []Grapheme {
 				parts += 2
 				continue
 			}
+			// Emoji that are one picture but several codepoints: a skin tone
+			// after a person or hand, the second half of a flag, and the tags
+			// that spell a subdivision flag. Each belongs to the cell before it.
+			if (inRanges(cp, pictographic) && (isToneModifier(next) || isTag(next))) ||
+				(isRegional(cp) && isRegional(next) && clusterEnd < 0) {
+				size += nsize
+				clusterEnd = i + size
+				parts++
+				continue
+			}
 			if CharWidth(next) != 0 {
 				break
 			}
@@ -323,7 +368,9 @@ func Graphemes(text string) []Grapheme {
 			// or a stray ZWJ. It paints no column, so handing it one would walk
 			// the cursor ahead of the screen. Drop it, and what it absorbed.
 		case clusterEnd >= 0:
-			out = append(out, Grapheme{Value: InternCluster(text[i:clusterEnd]), Width: width})
+			// The width comes from the stored cell, the number the buffer uses.
+			value := InternCluster(text[i:clusterEnd])
+			out = append(out, Grapheme{Value: value, Width: CellWidth(value)})
 		default:
 			out = append(out, Grapheme{Value: Cell(cp), Width: width})
 		}

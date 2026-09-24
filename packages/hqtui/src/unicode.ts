@@ -100,8 +100,11 @@ export function internCluster(text: string): number {
   const existing = clusterIds.get(safe);
   if (existing !== undefined) return existing;
   if (clusters.length >= MAX_CLUSTERS) {
-    // Degrade to the base character rather than grow the table for ever.
+    // Degrade to the base character rather than grow the table for ever. When
+    // the base alone is narrower than the cluster (a flag's first half, ❤ from
+    // ❤️), a blank ideographic space holds the cluster's two columns instead.
     const first = safe.codePointAt(0) ?? 32;
+    if (clusterWidth(safe) === 2 && charWidth(first) !== 2) return 0x3000;
     return charWidth(first) > 0 ? first : 32;
   }
   const id = CLUSTER_BASE + clusters.length;
@@ -184,14 +187,42 @@ export function charWidth(cp: number): 0 | 1 | 2 {
   return 1;
 }
 
+/** A regional indicator: half of a flag. */
+const isRegional = (cp: number) => cp >= 0x1f1e6 && cp <= 0x1f1ff;
+/** A Fitzpatrick skin-tone modifier. */
+const isToneModifier = (cp: number) => cp >= 0x1f3fb && cp <= 0x1f3ff;
+/** A tag character: spells out subdivision flags such as England's. */
+const isTag = (cp: number) => cp >= 0xe0020 && cp <= 0xe007f;
+/** The bases of keycap emoji: 0-9, # and *. */
+const isKeycapBase = (cp: number) => (cp >= 0x30 && cp <= 0x39) || cp === 0x23 || cp === 0x2a;
+
+/**
+ * Columns a multi-codepoint cluster occupies. One rule for measuring and for
+ * cells, so a cell never disagrees with the width its text was measured at.
+ *
+ * Emoji presentation makes a cluster two columns even when its base alone is
+ * one: a flag (two regional indicators), a keycap (#, digit or * with U+20E3),
+ * and a text-default pictograph asking for emoji with U+FE0F (❤️) or wearing
+ * a skin tone (☝🏽).
+ */
+export function clusterWidth(text: string): 1 | 2 {
+  const first = text.codePointAt(0) ?? 32;
+  const base = charWidth(first);
+  if (base === 2) return 2;
+  if (isRegional(first)) {
+    const second = text.codePointAt(2);
+    return second !== undefined && isRegional(second) ? 2 : 1;
+  }
+  if (isKeycapBase(first) && text.includes("\u20e3")) return 2;
+  // U+FE0F asks for emoji presentation; a skin tone implies it (☝🏽).
+  if (inRanges(first, PICTOGRAPHIC) && (text.includes("\ufe0f") || /[\u{1f3fb}-\u{1f3ff}]/u.test(text))) return 2;
+  return 1;
+}
+
 /** Columns a cell value occupies (handles interned clusters). */
 export function cellWidth(value: number): 0 | 1 | 2 {
   if (value === CONTINUATION) return 0;
-  if (value >= CLUSTER_BASE) {
-    const t = clusterText(value);
-    const first = t.codePointAt(0) ?? 32;
-    return charWidth(first) === 2 ? 2 : 1;
-  }
+  if (value >= CLUSTER_BASE) return clusterWidth(clusterText(value));
   return charWidth(value);
 }
 
@@ -252,6 +283,20 @@ export function graphemes(text: string): Grapheme[] {
         parts += 2;
         continue;
       }
+      // Emoji that are one picture but several codepoints: a skin tone after a
+      // person or hand, the second half of a flag, and the tags that spell a
+      // subdivision flag. Each belongs to the cell before it.
+      const pictographicBase = inRanges(cp, PICTOGRAPHIC);
+      const joins =
+        (pictographicBase && (isToneModifier(next) || isTag(next))) ||
+        (isRegional(cp) && isRegional(next) && size === 2 && !cluster);
+      if (joins) {
+        cluster = cluster || text.slice(i, i + size);
+        cluster += text.slice(i + size, i + size + nsize);
+        size += nsize;
+        parts += 1;
+        continue;
+      }
       if (charWidth(next) !== 0) break;
       // Leave anything unsafe to the outer loop, which drops it. Only zero-width
       // codepoints reach here, so this costs nothing on ordinary text.
@@ -266,7 +311,10 @@ export function graphemes(text: string): Grapheme[] {
       // stray ZWJ. It paints no column, so handing it one would walk the cursor
       // ahead of the screen. Drop it, along with anything it absorbed.
     } else if (cluster) {
-      out.push({ value: internCluster(cluster), width });
+      // The width comes from the stored cell, the same number the buffer uses,
+      // so even a cluster degraded to its base (a full cluster table) agrees.
+      const value = internCluster(cluster);
+      out.push({ value, width: cellWidth(value) as 1 | 2 });
     } else {
       out.push({ value: cp, width });
     }

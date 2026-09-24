@@ -192,7 +192,7 @@
     },
     {
       "s": "❤️ heart",
-      "width": 7
+      "width": 8
     },
     {
       "s": "─│╭╮╰╯┌┐└┘",
@@ -209,6 +209,30 @@
     {
       "s": "mixed 日本 abc 🚀 end",
       "width": 21
+    },
+    {
+      "s": "👍🏽 ok",
+      "width": 5
+    },
+    {
+      "s": "☝🏽 up",
+      "width": 5
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "width": 11
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "width": 10
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "width": 10
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "width": 7
     },
     {
       "s": "tab\there",
@@ -665,12 +689,12 @@
     {
       "s": "❤️ heart",
       "max": 3,
-      "out": "❤️ …"
+      "out": "❤️…"
     },
     {
       "s": "❤️ heart",
       "max": 5,
-      "out": "❤️ he…"
+      "out": "❤️ h…"
     },
     {
       "s": "❤️ heart",
@@ -826,6 +850,216 @@
       "s": "mixed 日本 abc 🚀 end",
       "max": 100,
       "out": "mixed 日本 abc 🚀 end"
+    },
+    {
+      "s": "👍🏽 ok",
+      "max": 0,
+      "out": ""
+    },
+    {
+      "s": "👍🏽 ok",
+      "max": 1,
+      "out": "…"
+    },
+    {
+      "s": "👍🏽 ok",
+      "max": 3,
+      "out": "👍🏽…"
+    },
+    {
+      "s": "👍🏽 ok",
+      "max": 5,
+      "out": "👍🏽 ok"
+    },
+    {
+      "s": "👍🏽 ok",
+      "max": 8,
+      "out": "👍🏽 ok"
+    },
+    {
+      "s": "👍🏽 ok",
+      "max": 20,
+      "out": "👍🏽 ok"
+    },
+    {
+      "s": "👍🏽 ok",
+      "max": 100,
+      "out": "👍🏽 ok"
+    },
+    {
+      "s": "☝🏽 up",
+      "max": 0,
+      "out": ""
+    },
+    {
+      "s": "☝🏽 up",
+      "max": 1,
+      "out": "…"
+    },
+    {
+      "s": "☝🏽 up",
+      "max": 3,
+      "out": "☝🏽…"
+    },
+    {
+      "s": "☝🏽 up",
+      "max": 5,
+      "out": "☝🏽 up"
+    },
+    {
+      "s": "☝🏽 up",
+      "max": 8,
+      "out": "☝🏽 up"
+    },
+    {
+      "s": "☝🏽 up",
+      "max": 20,
+      "out": "☝🏽 up"
+    },
+    {
+      "s": "☝🏽 up",
+      "max": 100,
+      "out": "☝🏽 up"
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "max": 0,
+      "out": ""
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "max": 1,
+      "out": "…"
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "max": 3,
+      "out": "🇯🇵…"
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "max": 5,
+      "out": "🇯🇵🇺🇸…"
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "max": 8,
+      "out": "🇯🇵🇺🇸🇯 f…"
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "max": 20,
+      "out": "🇯🇵🇺🇸🇯 flags"
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "max": 100,
+      "out": "🇯🇵🇺🇸🇯 flags"
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "max": 0,
+      "out": ""
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "max": 1,
+      "out": "…"
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "max": 3,
+      "out": "🏴󠁧󠁢󠁥󠁮󠁧󠁿…"
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "max": 5,
+      "out": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 e…"
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "max": 8,
+      "out": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 engl…"
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "max": 20,
+      "out": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england"
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "max": 100,
+      "out": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england"
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "max": 0,
+      "out": ""
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "max": 1,
+      "out": "…"
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "max": 3,
+      "out": "#️⃣…"
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "max": 5,
+      "out": "#️⃣ …"
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "max": 8,
+      "out": "#️⃣ 1️⃣ k…"
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "max": 20,
+      "out": "#️⃣ 1️⃣ keys"
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "max": 100,
+      "out": "#️⃣ 1️⃣ keys"
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "max": 0,
+      "out": ""
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "max": 1,
+      "out": "…"
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "max": 3,
+      "out": "🧑🏻‍❤️‍💋‍🧑🏾…"
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "max": 5,
+      "out": "🧑🏻‍❤️‍💋‍🧑🏾 k…"
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "max": 8,
+      "out": "🧑🏻‍❤️‍💋‍🧑🏾 kiss"
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "max": 20,
+      "out": "🧑🏻‍❤️‍💋‍🧑🏾 kiss"
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "max": 100,
+      "out": "🧑🏻‍❤️‍💋‍🧑🏾 kiss"
     },
     {
       "s": "tab\there",
@@ -2410,7 +2644,7 @@
       "s": "❤️ heart",
       "cells": [
         {
-          "width": 1,
+          "width": 2,
           "cluster": true,
           "text": "❤️",
           "cp": null
@@ -2716,6 +2950,276 @@
           "cluster": false,
           "text": "d",
           "cp": 100
+        }
+      ]
+    },
+    {
+      "s": "👍🏽 ok",
+      "cells": [
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "👍🏽",
+          "cp": null
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": " ",
+          "cp": 32
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "o",
+          "cp": 111
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "k",
+          "cp": 107
+        }
+      ]
+    },
+    {
+      "s": "☝🏽 up",
+      "cells": [
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "☝🏽",
+          "cp": null
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": " ",
+          "cp": 32
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "u",
+          "cp": 117
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "p",
+          "cp": 112
+        }
+      ]
+    },
+    {
+      "s": "🇯🇵🇺🇸🇯 flags",
+      "cells": [
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "🇯🇵",
+          "cp": null
+        },
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "🇺🇸",
+          "cp": null
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "🇯",
+          "cp": 127471
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": " ",
+          "cp": 32
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "f",
+          "cp": 102
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "l",
+          "cp": 108
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "a",
+          "cp": 97
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "g",
+          "cp": 103
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "s",
+          "cp": 115
+        }
+      ]
+    },
+    {
+      "s": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 england",
+      "cells": [
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+          "cp": null
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": " ",
+          "cp": 32
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "e",
+          "cp": 101
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "n",
+          "cp": 110
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "g",
+          "cp": 103
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "l",
+          "cp": 108
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "a",
+          "cp": 97
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "n",
+          "cp": 110
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "d",
+          "cp": 100
+        }
+      ]
+    },
+    {
+      "s": "#️⃣ 1️⃣ keys",
+      "cells": [
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "#️⃣",
+          "cp": null
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": " ",
+          "cp": 32
+        },
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "1️⃣",
+          "cp": null
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": " ",
+          "cp": 32
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "k",
+          "cp": 107
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "e",
+          "cp": 101
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "y",
+          "cp": 121
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "s",
+          "cp": 115
+        }
+      ]
+    },
+    {
+      "s": "🧑🏻‍❤️‍💋‍🧑🏾 kiss",
+      "cells": [
+        {
+          "width": 2,
+          "cluster": true,
+          "text": "🧑🏻‍❤️‍💋‍🧑🏾",
+          "cp": null
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": " ",
+          "cp": 32
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "k",
+          "cp": 107
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "i",
+          "cp": 105
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "s",
+          "cp": 115
+        },
+        {
+          "width": 1,
+          "cluster": false,
+          "text": "s",
+          "cp": 115
         }
       ]
     },

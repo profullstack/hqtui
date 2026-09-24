@@ -72,6 +72,17 @@ export {
   icon, iconGlyphs, iconMode, setIconMode, useIconPack, currentIconPack, iconPackFrom, iconNames, openIcon,
   type IconMode, type IconGlyphs, type IconPack, type IconOptions,
 } from "./icons.ts";
+export {
+  emoji, emojify, emojiInfo, emojiText, emojiSearch, emojiNames, emojiMode, setEmojiMode, emojiWidth,
+  openEmoji,
+} from "./emoji.ts";
+export type { EmojiMode, EmojiInfo, EmojiOptions } from "./emoji.ts";
+export {
+  emojiImage, emojiPng, artProtocol, artSize, queryCellSize, cellSizeFromEnv, kittyImage, itermImage,
+} from "./emoji-art.ts";
+export type { ArtProtocol, CellSize, EmojiImageOptions } from "./emoji-art.ts";
+export { installEmojiFont, emojiFontStatus, removeEmojiFont, terminalSnippets } from "./fonts.ts";
+export type { FontStatus, InstallResult } from "./fonts.ts";
 
 // Graphics
 export { BrailleCanvas } from "./graphics/braille.ts";

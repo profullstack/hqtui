@@ -23,6 +23,7 @@ const SECTIONS = [
   { id: "graphics", label: "Graphics" },
   { id: "themes", label: "Themes" },
   { id: "icons", label: "Icons" },
+  { id: "emoji", label: "Emoji" },
   { id: "input", label: "Input" },
   { id: "testing", label: "Testing" },
   { id: "escape-hatches", label: "Escape hatches" },
@@ -359,6 +360,48 @@ setIconMode("nerd");                 // for the whole app`}
             ports carry the same table: <code className="font-mono text-white/80">icon(&quot;mail&quot;)</code>,{" "}
             <code className="font-mono text-white/80">hqtui.Icon(&quot;mail&quot;)</code>,{" "}
             <code className="font-mono text-white/80">hqtui.icon(&quot;mail&quot;)</code>.
+          </P>
+
+          <H2 id="emoji">Emoji</H2>
+          <P>
+            The <a className="underline" href="https://logicsrc.com/openemoji">OpenEmoji</a> pack is built in and
+            on by default: every standard emoji, 3,963 in Emoji 18.0, with its CLDR name, an{" "}
+            <code className="font-mono text-white/80">oe_</code> shortcode and search keywords.{" "}
+            <code className="font-mono text-white/80">emoji()</code> is the emoji where the terminal draws emoji and readable text where it
+            cannot: an emoticon where one fits, the name in brackets elsewhere.
+          </P>
+          <Code
+            className="mt-4"
+            code={`import { emoji, emojify, emojiSearch, setEmojiMode } from "@profullstack/hqtui";
+
+ui.text(\`\${emoji("rocket")} shipped\`);   // 🚀 shipped     [rocket] shipped as text
+ui.text(emojify("deploy :tada: :+1:"));   // deploy 🎉 👍    deploy [party popper] +1
+emoji("thumbs_up_t3");                     // 👍🏽  skin tones are _t1 … _t5
+emojiSearch("lol")[0].char;                // 😂  CLDR keywords
+setEmojiMode("text");                      // or HQTUI_EMOJI=emoji|text`}
+          />
+          <P>
+            A name can be the shortcode (<code className="font-mono text-white/80">fire</code>, <code className="font-mono text-white/80">oe_fire</code>,{" "}
+            <code className="font-mono text-white/80">:fire:</code>), the CLDR name, a common alias (<code className="font-mono text-white/80">thumbsup</code>,{" "}
+            <code className="font-mono text-white/80">+1</code>) or the emoji itself. <code className="font-mono text-white/80">stringWidth</code> counts every emoji as two
+            columns, skin tones, flags, keycaps and ZWJ sequences included, so tables and borders stay aligned in
+            every port.
+          </P>
+          <P>
+            <strong>Our artwork in your terminal.</strong> A TUI cannot pick the terminal&apos;s font, so{" "}
+            <code className="font-mono text-white/80">hqtui fonts install</code> installs the OpenEmoji colour font and makes it the emoji
+            fallback: fontconfig on Linux (Alacritty, foot, GNOME Terminal and Konsole follow it; Kitty and WezTerm
+            get a one-line snippet) and <code className="font-mono text-white/80">~/Library/Fonts</code> on macOS, where Kitty, WezTerm and iTerm2
+            can use it and Terminal.app cannot. <code className="font-mono text-white/80">hqtui fonts status</code> checks it;{" "}
+            <code className="font-mono text-white/80">hqtui fonts remove</code> undoes it. Nothing is installed except by that command.
+          </P>
+          <P>
+            <strong>Inline artwork.</strong> With <code className="font-mono text-white/80">HQTUI_EMOJI_ART=1</code>,{" "}
+            <code className="font-mono text-white/80">await emojiImage(&quot;rocket&quot;)</code> draws the OpenEmoji PNG two cells wide in
+            Kitty and Ghostty (Kitty graphics) and iTerm2 and WezTerm (inline images), picking 128, 256 or 512 px
+            at twice the cell height, and falls back to the character everywhere else. In a browser terminal, load{" "}
+            <code className="font-mono text-white/80">openemoji.css</code> from the set and add <code className="font-mono text-white/80">OpenEmoji</code> to xterm.js&apos;s{" "}
+            <code className="font-mono text-white/80">fontFamily</code>.
           </P>
 
           <H2 id="input">Input</H2>

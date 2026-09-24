@@ -134,6 +134,55 @@ falls back to Unicode, and an unknown name draws nothing. `useIconPack()` swaps
 in any other OpenIcon set. The table is generated from the set by
 `scripts/generate-icons.ts`, for this library and the Rust, Go and Python ports.
 
+## Emoji
+
+The [OpenEmoji](https://logicsrc.com/openemoji) pack is built in and on by
+default: every standard emoji (3,963 in Emoji 18.0) with its CLDR name, an
+`oe_` shortcode and search keywords. `emoji()` is the emoji where the terminal
+draws emoji and readable text where it cannot.
+
+```ts
+import { emoji, emojify, emojiSearch } from "@profullstack/hqtui";
+
+ui.text(`${emoji("rocket")} shipped`);      // 🚀 shipped    ([rocket] shipped as text)
+ui.text(emojify("deploy :tada: :+1:"));      // deploy 🎉 👍   (deploy [party popper] +1)
+emoji("thumbs_up_t3");                        // 👍🏽  skin tones are _t1 … _t5
+emojiSearch("lol")[0].char;                   // 😂  CLDR keywords
+```
+
+A name can be the shortcode (`fire`, `oe_fire`, `:fire:`), the CLDR name, a
+common alias (`thumbsup`, `+1`, `heart`) or the emoji itself. Text mode is an
+emoticon where one fits (`:)`, `<3`, `:D`) and the name in brackets elsewhere;
+it is chosen with `setEmojiMode()`, `HQTUI_EMOJI=emoji|text`, or detected (the
+Linux console gets text). `stringWidth` counts every emoji as two columns,
+skin tones, flags, keycaps and ZWJ sequences included, so tables and borders
+stay aligned. The Rust, Go and Python ports carry the same table.
+
+**Our artwork in your terminal.** A TUI cannot pick the terminal's font, so
+`hqtui fonts install` installs the OpenEmoji colour font and makes it the
+emoji fallback: fontconfig on Linux (Alacritty, foot, GNOME Terminal, Konsole
+and others follow it; Kitty and WezTerm get a one-line snippet), and
+`~/Library/Fonts` on macOS, where Kitty, WezTerm and iTerm2 can use it and
+Terminal.app cannot. `hqtui fonts status` checks it, and `hqtui fonts remove`
+undoes everything, restoring any file it replaced. Nothing is installed except
+by that command.
+
+**Inline artwork.** In terminals that show images, `await emojiImage("rocket")`
+returns the escape sequence that draws the OpenEmoji PNG two cells wide: the
+Kitty graphics protocol in Kitty and Ghostty, iTerm2 inline images in iTerm2
+and WezTerm. It is off unless `HQTUI_EMOJI_ART=1` (or `{ art: true }`); the PNG
+is picked from 128, 256 and 512 px at twice the cell height
+(`queryCellSize()` or `HQTUI_CELL_PX=10x20`) and cached under
+`~/.cache/hqtui/openemoji`. Everywhere else it returns the emoji character.
+
+**In a browser terminal** (xterm.js), load the set's stylesheet and name the
+family, so emoji draw with the same art:
+
+```html
+<link rel="stylesheet" href="https://raw.githubusercontent.com/profullstack/openemoji/main/openemoji.css">
+<script>new Terminal({ fontFamily: '"JetBrains Mono", OpenEmoji, monospace' })</script>
+```
+
 ## Testing your TUI
 
 Terminal apps are usually untestable. Here they are not:
