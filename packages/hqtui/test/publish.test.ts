@@ -12,6 +12,7 @@ import {
   lookupPublished,
   lookupWithRetry,
   missingEntryPoints,
+  parseArgs,
   publishAll,
   requiredEntryPoints,
   resolveAction,
@@ -504,6 +505,57 @@ test("an unreadable registry fails the run instead of guessing", async () => {
     /did not give a usable answer/,
   );
   assert.deepEqual(uploaded, []);
+});
+
+/* -------------------------------------------------------------------------- */
+/* Reading the flags the workflow passes                                        */
+/* -------------------------------------------------------------------------- */
+
+test("an empty flag value stays empty instead of becoming the string 'true'", () => {
+  // v0.7.0 shipped under the dist-tag `true`. The workflow passes
+  // `--tag "$DIST_TAG"` on every trigger and DIST_TAG is empty unless someone
+  // names one, so an empty value has to read as empty.
+  assert.deepEqual(parseArgs(["--tag", ""]), { tag: "" });
+  assert.deepEqual(parseArgs(["--tag", "next"]), { tag: "next" });
+  assert.deepEqual(parseArgs(["--dry-run"]), { "dry-run": "true" });
+  assert.deepEqual(parseArgs(["--from", "", "--dry-run"]), { from: "", "dry-run": "true" });
+  assert.deepEqual(parseArgs(["--out", "--dry-run"]), { out: "true", "dry-run": "true" });
+});
+
+test("an empty dist-tag from the workflow publishes as latest, never as 'true'", () => {
+  // The whole path, from the flags the workflow passes to the tag npm is given.
+  const flags = parseArgs(["pack", "--out", "/tmp/x", "--event", "release", "--ref", "v1.2.3", "--tag", ""]);
+  const { distTag } = checkVersions({
+    versions: { "packages/hqtui": "1.2.3", "apps/demo": "1.2.3" },
+    event: flags.event ?? "",
+    ref: flags.ref ?? "",
+    distTag: flags.tag ?? "",
+  });
+  assert.equal(distTag, "latest");
+});
+
+test("a provenance publish gets minutes, not seconds, to become readable", () => {
+  // npm accepts a provenance publish and processes it asynchronously: on
+  // v0.7.0 the library took 7m30s to appear. Under a minute of patience failed
+  // a release that had succeeded, so the default budget has to stay generous.
+  const waited: number[] = [];
+  return assert
+    .rejects(
+      waitForAvailability({
+        name: "x",
+        version: "1.0.0",
+        fetchImpl: (async () => response(404)) as unknown as typeof fetch,
+        sleep: async (ms: number) => void waited.push(ms),
+      }),
+      /did not become readable/,
+    )
+    .then(() => {
+      const total = waited.reduce((sum, ms) => sum + ms, 0);
+      assert.ok(
+        total >= 300_000,
+        `gives up after ${total}ms, which is less than the five minutes npm can take`,
+      );
+    });
 });
 
 /* -------------------------------------------------------------------------- */
