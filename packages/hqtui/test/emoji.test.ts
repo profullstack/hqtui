@@ -160,8 +160,9 @@ test("emojiImage fetches the right size once, caches it, and falls back to the c
   const notFound = (async () => new Response("<html>404</html>", { status: 404 })) as typeof fetch;
   assert.equal(await emojiImage("rocket", { protocol: "iterm", fetch: notFound, cacheDir, env: { HQTUI_EMOJI: "emoji" } }), "🚀");
   const html = (async () => new Response("<html>not a png</html>")) as typeof fetch;
-  assert.equal(await emojiImage("rocket", { protocol: "kitty", fetch: html, cacheDir, env: {} }), emoji("rocket"));
-  assert.equal(await emojiImage("fire", { env: { TERM: "xterm-kitty" } }), emoji("fire"), "art off: the character");
+  assert.equal(await emojiImage("rocket", { protocol: "kitty", fetch: html, cacheDir, env: { HQTUI_EMOJI: "emoji" } }), "🚀");
+  assert.equal(await emojiImage("fire", { env: { TERM: "xterm-kitty", HQTUI_EMOJI: "emoji" } }), "🔥", "art off: the character");
+  assert.equal(await emojiImage("fire", { env: { TERM: "dumb" } }), "[fire]", "and text where emoji cannot draw");
   assert.equal(await emojiImage("no such emoji", { protocol: "kitty" }), "");
 });
 
@@ -202,7 +203,7 @@ test("fonts install falls back from the release to the repository and wires font
   assert.ok(result.snippets.some((x) => x.terminal === "Kitty" && x.snippet.startsWith("symbol_map U+1F300")));
   assert.deepEqual(await emojiFontStatus({ ...s, platform: "linux" }), {
     installed: true,
-    files: [join(s.home, ".local/share/fonts/OpenEmoji-CBDT.ttf")],
+    files: [`${s.env.XDG_DATA_HOME}/fonts/OpenEmoji-CBDT.ttf`],
     fontconfig: true,
     emojiFont: "OpenEmoji",
     active: true,
@@ -239,7 +240,7 @@ test("macOS gets the sbix font, no fontconfig, and the Terminal.app caveat", asy
   const fakeFetch = (async (url: string) => (urls.push(url), new Response(TTF))) as typeof fetch;
   const result = await installEmojiFont({ ...s, platform: "darwin", fetch: fakeFetch });
   assert.ok(urls[0]!.endsWith("/OpenEmoji-sbix.ttf"));
-  assert.deepEqual(result.installed, [join(s.home, "Library/Fonts/OpenEmoji-sbix.ttf")]);
+  assert.deepEqual(result.installed, [`${s.home}/Library/Fonts/OpenEmoji-sbix.ttf`]);
   assert.equal(result.fontconfig, undefined);
   assert.ok(result.notes.some((n) => n.includes("Terminal.app")));
   assert.ok(terminalSnippets("darwin").some((x) => x.terminal === "iTerm2"));

@@ -26,7 +26,7 @@
  */
 
 import { detectCapabilities } from "./capabilities.ts";
-import { emoji, emojiInfo } from "./emoji.ts";
+import { emoji, emojiInfo, emojiMode } from "./emoji.ts";
 
 export type ArtProtocol = "kitty" | "iterm" | "none";
 
@@ -167,12 +167,14 @@ export async function emojiImage(name: string, options: EmojiImageOptions = {}):
   if (!info) return "";
   const env = options.env ?? process.env;
   const protocol = options.protocol ?? artProtocol(env, options.art);
-  if (protocol === "none") return emoji(info.key);
+  // The fallback follows the same environment the caller passed in.
+  const fallback = () => emoji(info.key, { mode: emojiMode(env) });
+  if (protocol === "none") return fallback();
   const size = options.size ?? artSize(options.cell ?? cellSizeFromEnv(env));
   const png = await emojiPng(info.key, size, { env, fetch: options.fetch, cacheDir: options.cacheDir }).catch(
     () => undefined,
   );
-  if (!png) return emoji(info.key);
+  if (!png) return fallback();
   const cells = options.cells ?? 2;
   return protocol === "kitty" ? kittyImage(png, cells) : itermImage(png, cells);
 }
