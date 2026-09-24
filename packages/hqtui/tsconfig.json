@@ -15,6 +15,7 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
+    "allowJs": true,
     "noEmit": true
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
