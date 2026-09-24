@@ -23,6 +23,17 @@ from .color import Color, DEFAULT_COLOR, Gradient, from_256
 from .diff import EncodeResult, Encoder, encode_full
 from .graphics import BrailleCanvas, FillMode
 from .icons import IconGlyphs, icon, icon_glyphs, icon_mode, icon_names, set_icon_mode
+from .emoji import (
+    EmojiInfo,
+    emoji,
+    emoji_info,
+    emoji_mode,
+    emoji_names,
+    emoji_search,
+    emoji_text,
+    emojify,
+    set_emoji_mode,
+)
 from .input import InputParser, KeyEvent, MouseAction, MouseEvent, match_key
 from .layout import Constraint, Direction, Rect, solve, stack
 from .surface import BorderStyle, BoxOptions, Surface, TextOptions
@@ -51,6 +62,8 @@ __all__ = [
     "emergency_restore", "match_key", "render_to_ansi", "render_to_html",
     "render_to_screen", "render_to_text", "widgets",
     "IconGlyphs", "icon", "icon_glyphs", "icon_mode", "icon_names", "set_icon_mode",
+    "EmojiInfo", "emoji", "emoji_info", "emoji_mode", "emoji_names", "emoji_search", "emoji_text",
+    "emojify", "set_emoji_mode",
 ]
 
 from . import widgets  # noqa: E402  (re-exported for `hqtui.widgets.*`)

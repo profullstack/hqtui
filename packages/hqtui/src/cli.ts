@@ -4,6 +4,7 @@
  *   hqtui              a built-in showcase of the widget set
  *   hqtui doctor       what your terminal can actually do
  *   hqtui demo         the showcase, explicitly
+ *   hqtui fonts        install, check or remove the OpenEmoji font
  *
  * The full system dashboard lives in `@profullstack/hqtui-demo`, which is a
  * separate package so this one keeps its promise of touching nothing.
@@ -25,6 +26,9 @@ Commands:
   demo               Interactive showcase of the widget set (default)
   doctor             Report what this terminal supports
   themes             Print every built-in theme name
+  fonts install      Install the OpenEmoji colour font as the terminal's emoji
+  fonts status       Is it installed, and does the terminal use it?
+  fonts remove       Undo fonts install (restores anything it replaced)
 
 Options:
   --theme <name>     dark, dracula, nord, tokyoNight, gruvbox, matrix,
@@ -175,6 +179,33 @@ async function demo(themeName: string, fps: number): Promise<void> {
   await app.start();
 }
 
+async function fonts(action: string | undefined): Promise<void> {
+  // Loaded on demand: the rest of the CLI never touches the filesystem.
+  const { installEmojiFont, emojiFontStatus, removeEmojiFont } = await import("./fonts.ts");
+  if (action === "install") {
+    const result = await installEmojiFont();
+    for (const note of result.notes) console.log(`note: ${note}`);
+    console.log("\nTerminals that choose their own fonts need one line each:");
+    for (const s of result.snippets) console.log(`  ${s.terminal} (${s.file}):\n    ${s.snippet}`);
+    console.log("\nRestart the terminal, then run `hqtui fonts status`.");
+    return;
+  }
+  if (action === "status") {
+    const status = await emojiFontStatus();
+    console.log(`installed: ${status.installed ? status.files.join(", ") : "no"}`);
+    if (status.emojiFont !== undefined) console.log(`fontconfig emoji font: ${status.emojiFont || "none"}`);
+    console.log(`active: ${status.active ? "yes" : "no"}`);
+    return;
+  }
+  if (action === "remove") {
+    const done = await removeEmojiFont();
+    if (!done.length) console.log("Nothing to remove: `hqtui fonts install` has not been run.");
+    return;
+  }
+  console.error("hqtui fonts: install, status or remove");
+  process.exitCode = 1;
+}
+
 export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
   let theme = "dark";
   let fps = 30;
@@ -200,6 +231,8 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
       return doctor();
     case "themes":
       return console.log(themeList.map((t) => t.name).join("\n"));
+    case "fonts":
+      return fonts(commands[1]);
     case undefined:
     case "demo":
       return demo(theme, fps);

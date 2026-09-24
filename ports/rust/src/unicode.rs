@@ -105,7 +105,12 @@ pub fn intern_cluster(text: &str) -> Cell {
     }
     if table.texts.len() >= MAX_CLUSTERS {
         // Degrade to the base character rather than grow the table for ever.
+        // When the base alone is narrower than the cluster (a flag's first
+        // half, ❤ from ❤️), a blank ideographic space holds its two columns.
         let first = safe.chars().next().map(|c| c as u32).unwrap_or(32);
+        if cluster_width(&safe) == 2 && char_width(first) != 2 {
+            return 0x3000;
+        }
         return if char_width(first) > 0 { first } else { 32 };
     }
     let id = CLUSTER_BASE + table.texts.len() as u32;
@@ -212,15 +217,48 @@ pub fn char_width(cp: u32) -> usize {
     1
 }
 
+fn is_regional(cp: u32) -> bool {
+    (0x1f1e6..=0x1f1ff).contains(&cp)
+}
+fn is_tone_modifier(cp: u32) -> bool {
+    (0x1f3fb..=0x1f3ff).contains(&cp)
+}
+fn is_tag(cp: u32) -> bool {
+    (0xe0020..=0xe007f).contains(&cp)
+}
+fn is_keycap_base(cp: u32) -> bool {
+    (0x30..=0x39).contains(&cp) || cp == 0x23 || cp == 0x2a
+}
+
+/// Columns a multi-codepoint cluster occupies, one rule for measuring and for
+/// cells. Emoji presentation makes a cluster two columns even when its base
+/// alone is one: a flag (two regional indicators), a keycap, and a
+/// text-default pictograph with U+FE0F or a skin tone.
+pub(crate) fn cluster_width(text: &str) -> usize {
+    let mut chars = text.chars().map(|c| c as u32);
+    let first = chars.next().unwrap_or(32);
+    if char_width(first) == 2 {
+        return 2;
+    }
+    if is_regional(first) {
+        return if chars.next().map(is_regional).unwrap_or(false) { 2 } else { 1 };
+    }
+    if is_keycap_base(first) && text.contains('\u{20e3}') {
+        return 2;
+    }
+    if in_ranges(first, PICTOGRAPHIC) && text.chars().any(|c| c == '\u{fe0f}' || is_tone_modifier(c as u32)) {
+        return 2;
+    }
+    1
+}
+
 /// Columns a cell value occupies (handles interned clusters).
 pub fn cell_width(value: Cell) -> usize {
     if value == CONTINUATION {
         return 0;
     }
     if value >= CLUSTER_BASE {
-        let text = cluster_text(value);
-        let first = text.chars().next().map(|c| c as u32).unwrap_or(32);
-        return if char_width(first) == 2 { 2 } else { 1 };
+        return cluster_width(&cluster_text(value));
     }
     char_width(value)
 }
@@ -287,6 +325,18 @@ pub fn graphemes(text: &str) -> Vec<Grapheme> {
                 parts += 2;
                 continue;
             }
+            // Emoji that are one picture but several codepoints: a skin tone
+            // after a person or hand, the second half of a flag, and the tags
+            // that spell a subdivision flag. Each belongs to the cell before it.
+            let (c, n) = (cp as u32, next as u32);
+            if (in_ranges(c, PICTOGRAPHIC) && (is_tone_modifier(n) || is_tag(n)))
+                || (is_regional(c) && is_regional(n) && cluster_end.is_none())
+            {
+                size += nsize;
+                cluster_end = Some(i + size);
+                parts += 1;
+                continue;
+            }
             if char_width(next as u32) != 0 {
                 break;
             }
@@ -304,7 +354,9 @@ pub fn graphemes(text: &str) -> Vec<Grapheme> {
             // or a stray ZWJ. It paints no column, so handing it one would walk
             // the cursor ahead of the screen. Drop it, and anything it absorbed.
         } else if let Some(end) = cluster_end {
-            out.push(Grapheme { value: intern_cluster(&text[i..end]), width });
+            // The width comes from the stored cell, the number the buffer uses.
+            let value = intern_cluster(&text[i..end]);
+            out.push(Grapheme { value, width: cell_width(value) });
         } else {
             out.push(Grapheme { value: cp as u32, width });
         }

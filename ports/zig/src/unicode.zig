@@ -149,9 +149,12 @@ pub fn internCluster(text: []const u8) Cell {
         ClusterTable.used + safe.len > ClusterTable.storage.len)
     {
         // Degrade to the base character rather than grow the table for ever.
+        // When the base alone is narrower than the cluster (a flag's first
+        // half, ❤ from ❤️), a blank ideographic space holds its two columns.
         const first = std.unicode.utf8Decode(
             safe[0 .. std.unicode.utf8ByteSequenceLength(safe[0]) catch 1],
         ) catch 32;
+        if (clusterWidth(safe) == 2 and charWidth(first) != 2) return 0x3000;
         return if (charWidth(first) > 0) @as(Cell, first) else 32;
     }
 
@@ -276,16 +279,46 @@ pub fn charWidth(cp: u32) usize {
     return 1;
 }
 
+fn isRegional(cp: u32) bool {
+    return cp >= 0x1f1e6 and cp <= 0x1f1ff;
+}
+fn isToneModifier(cp: u32) bool {
+    return cp >= 0x1f3fb and cp <= 0x1f3ff;
+}
+fn isTag(cp: u32) bool {
+    return cp >= 0xe0020 and cp <= 0xe007f;
+}
+fn isKeycapBase(cp: u32) bool {
+    return (cp >= '0' and cp <= '9') or cp == '#' or cp == '*';
+}
+
+/// Columns a multi-codepoint cluster occupies, one rule for measuring and for
+/// cells. Emoji presentation makes a cluster two columns even when its base
+/// alone is one: a flag (two regional indicators), a keycap, and a
+/// text-default pictograph with U+FE0F or a skin tone.
+pub fn clusterWidth(text: []const u8) usize {
+    if (text.len == 0) return 1;
+    var view = std.unicode.Utf8View.init(text) catch return 1;
+    var it = view.iterator();
+    const first: u32 = it.nextCodepoint() orelse return 1;
+    if (charWidth(first) == 2) return 2;
+    if (isRegional(first)) {
+        const second: u32 = it.nextCodepoint() orelse return 1;
+        return if (isRegional(second)) 2 else 1;
+    }
+    const keycap = isKeycapBase(first);
+    const pict = inRanges(first, &pictographic);
+    while (it.nextCodepoint()) |c| {
+        if (keycap and c == 0x20e3) return 2;
+        if (pict and (c == 0xfe0f or isToneModifier(c))) return 2;
+    }
+    return 1;
+}
+
 /// Columns a cell value occupies, handling interned clusters.
 pub fn cellWidth(value: Cell) usize {
     if (value == continuation) return 0;
-    if (value >= cluster_base) {
-        const text = clusterText(value);
-        if (text.len == 0) return 1;
-        const len = std.unicode.utf8ByteSequenceLength(text[0]) catch return 1;
-        const first = std.unicode.utf8Decode(text[0..len]) catch return 1;
-        return if (charWidth(first) == 2) 2 else 1;
-    }
+    if (value >= cluster_base) return clusterWidth(clusterText(value));
     return charWidth(value);
 }
 
@@ -360,6 +393,18 @@ pub const GraphemeIterator = struct {
                     parts += 2;
                     continue;
                 }
+                // Emoji that are one picture but several codepoints: a skin tone
+                // after a person or hand, the second half of a flag, and the
+                // tags that spell a subdivision flag. Each belongs to the cell
+                // before it.
+                if ((inRanges(cp, &pictographic) and (isToneModifier(nxt) or isTag(nxt))) or
+                    (isRegional(cp) and isRegional(nxt) and cluster_end == null))
+                {
+                    size += next_len;
+                    cluster_end = self.i + size;
+                    parts += 1;
+                    continue;
+                }
                 if (charWidth(nxt) != 0) break;
                 // Leave anything unsafe to the outer loop, which drops it.
                 if (isUnsafeCodepoint(nxt)) break;
@@ -378,7 +423,9 @@ pub const GraphemeIterator = struct {
                 continue;
             }
             if (cluster_end) |end| {
-                return .{ .value = internCluster(self.text[start..end]), .width = width };
+                // The width comes from the stored cell, the number the buffer uses.
+                const value = internCluster(self.text[start..end]);
+                return .{ .value = value, .width = cellWidth(value) };
             }
             return .{ .value = @as(Cell, cp), .width = width };
         }

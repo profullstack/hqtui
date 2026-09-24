@@ -71,6 +71,25 @@ size_t hq_utf8(uint32_t cp,char out[5]) {
     else { out[0]=(char)(0xf0|(cp>>18)); out[1]=(char)(0x80|(cp>>12&63)); out[2]=(char)(0x80|(cp>>6&63)); out[3]=(char)(0x80|(cp&63)); n=4; }
     out[n]=0; return n;
 }
+static int is_regional(uint32_t cp) { return cp>=0x1f1e6 && cp<=0x1f1ff; }
+static int is_tone(uint32_t cp) { return cp>=0x1f3fb && cp<=0x1f3ff; }
+static int is_tag(uint32_t cp) { return cp>=0xe0020 && cp<=0xe007f; }
+static int is_keycap_base(uint32_t cp) { return (cp>='0' && cp<='9') || cp=='#' || cp=='*'; }
+/* Columns a multi-codepoint cluster occupies. Emoji presentation makes it two
+   even when its base alone is one: a flag (two regional indicators), a keycap,
+   and a text-default pictograph with U+FE0F or a skin tone. */
+static int cluster_width(const char *s,size_t n,uint32_t first,int base) {
+    if(base==2) return 2;
+    size_t off,u; decode(s,n,&off);
+    if(is_regional(first)) return off<n && is_regional(decode(s+off,n-off,&u)) ? 2:1;
+    int keycap=is_keycap_base(first), pict=IN(first,pictographic);
+    while(off<n) {
+        uint32_t c=decode(s+off,n-off,&u); off+=u;
+        if(keycap && c==0x20e3) return 2;
+        if(pict && (c==0xfe0f || is_tone(c))) return 2;
+    }
+    return base;
+}
 int hq_next_grapheme(const char *s,size_t n,size_t *offset,hq_grapheme *g) {
     while(*offset<n) {
         size_t start=*offset, bytes;
@@ -86,11 +105,19 @@ int hq_next_grapheme(const char *s,size_t n,size_t *offset,hq_grapheme *g) {
                 if(!IN(cp,pictographic) || !IN(after,pictographic) || parts+2>16) break;
                 bytes+=nb+ab; parts+=2; continue;
             }
+            /* Emoji that are one picture but several codepoints: a skin tone
+               after a person or hand, the second half of a flag, and the tags
+               that spell a subdivision flag. Each belongs to the cell before it. */
+            if((IN(cp,pictographic) && (is_tone(next) || is_tag(next))) ||
+               (is_regional(cp) && is_regional(next) && parts==1)) {
+                bytes+=nb; ++parts; continue;
+            }
             if(hq_char_width(next)!=0 || hq_unsafe(next)) break;
             bytes+=nb; ++parts;
         }
         *offset=start+bytes;
         if(!width) continue;
+        if(parts>1) width=cluster_width(s+start,bytes,cp,width);
         g->start=s+start; g->bytes=bytes; g->cp=cp; g->width=width;
         return 1;
     }

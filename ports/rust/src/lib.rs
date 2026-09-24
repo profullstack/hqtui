@@ -28,6 +28,8 @@ pub mod diff;
 pub mod graphics;
 pub mod icons;
 mod icons_data;
+pub mod emoji;
+mod emoji_data;
 pub mod input;
 pub mod layout;
 pub mod surface;
@@ -47,6 +49,10 @@ pub use color::{Color, Gradient};
 pub use diff::{encode_full, EncodeResult, Encoder, EncoderOptions};
 pub use graphics::BrailleCanvas;
 pub use icons::{icon, icon_glyphs, icon_in, icon_mode_in, icon_names, set_icon_mode, IconGlyphs, IconMode};
+pub use emoji::{
+    emoji, emoji_in, emoji_info, emoji_mode_in, emoji_names, emoji_search, emoji_text, emojify, emojify_in,
+    set_emoji_mode, EmojiInfo, EmojiMode,
+};
 pub use input::{FocusEvent, InputEvent, InputParser, KeyEvent, MouseAction, MouseButton, MouseEvent, PasteEvent};
 pub use layout::{solve, stack, Constraint, Direction, Padding, Rect, Size};
 pub use surface::{BorderStyle, Surface};

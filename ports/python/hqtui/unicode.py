@@ -132,7 +132,11 @@ def intern_cluster(text: str) -> int:
             return existing
         if len(_cluster_texts) >= _MAX_CLUSTERS:
             # Degrade to the base character rather than grow the table for ever.
+            # When the base alone is narrower than the cluster (a flag's first
+            # half, ❤ from ❤️), a blank ideographic space holds its two columns.
             first = ord(safe[0])
+            if cluster_width(safe) == 2 and char_width(first) != 2:
+                return 0x3000
             return first if char_width(first) > 0 else 32
         value = CLUSTER_BASE + len(_cluster_texts)
         _cluster_texts.append(safe)
@@ -225,13 +229,49 @@ def char_width(cp: int) -> int:
     return 1
 
 
+def _is_regional(cp: int) -> bool:
+    return 0x1F1E6 <= cp <= 0x1F1FF
+
+
+def _is_tone_modifier(cp: int) -> bool:
+    return 0x1F3FB <= cp <= 0x1F3FF
+
+
+def _is_tag(cp: int) -> bool:
+    return 0xE0020 <= cp <= 0xE007F
+
+
+def _is_keycap_base(cp: int) -> bool:
+    return 0x30 <= cp <= 0x39 or cp in (0x23, 0x2A)
+
+
+def cluster_width(text: str) -> int:
+    """Columns a multi-codepoint cluster occupies, one rule for measuring and cells.
+
+    Emoji presentation makes a cluster two columns even when its base alone is
+    one: a flag (two regional indicators), a keycap, and a text-default
+    pictograph with U+FE0F or a skin tone.
+    """
+    first = ord(text[0]) if text else 32
+    if char_width(first) == 2:
+        return 2
+    if _is_regional(first):
+        return 2 if len(text) > 1 and _is_regional(ord(text[1])) else 1
+    if _is_keycap_base(first) and "\u20e3" in text:
+        return 2
+    if _in_ranges(first, _PICT_LO, _PICT_HI) and any(
+        c == "\ufe0f" or _is_tone_modifier(ord(c)) for c in text
+    ):
+        return 2
+    return 1
+
+
 def cell_width(value: int) -> int:
     """Columns a cell value occupies, handling interned clusters."""
     if value == CONTINUATION:
         return 0
     if value >= CLUSTER_BASE:
-        text = cluster_text(value)
-        return 2 if char_width(ord(text[0])) == 2 else 1
+        return cluster_width(cluster_text(value))
     return char_width(value)
 
 
@@ -292,6 +332,17 @@ def graphemes(text: str) -> list[Grapheme]:
                 cluster_end = i + size
                 parts += 2
                 continue
+            # Emoji that are one picture but several codepoints: a skin tone
+            # after a person or hand, the second half of a flag, and the tags
+            # that spell a subdivision flag. Each belongs to the cell before it.
+            if (
+                _in_ranges(cp, _PICT_LO, _PICT_HI)
+                and (_is_tone_modifier(nxt) or _is_tag(nxt))
+            ) or (_is_regional(cp) and _is_regional(nxt) and cluster_end < 0):
+                size += 1
+                cluster_end = i + size
+                parts += 1
+                continue
             if char_width(nxt) != 0:
                 break
             # Leave anything unsafe to the outer loop, which drops it.
@@ -307,7 +358,9 @@ def graphemes(text: str) -> list[Grapheme]:
             # the cursor ahead of the screen. Drop it, and what it absorbed.
             pass
         elif cluster_end >= 0:
-            out.append(Grapheme(intern_cluster(text[i:cluster_end]), width))
+            # The width comes from the stored cell, the number the buffer uses.
+            value = intern_cluster(text[i:cluster_end])
+            out.append(Grapheme(value, cell_width(value)))
         else:
             out.append(Grapheme(cp, width))
         i += size
