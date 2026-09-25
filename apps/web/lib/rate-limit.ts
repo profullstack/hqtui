@@ -4,7 +4,7 @@
  * The site runs as a single Railway container (see railway.json), so process
  * memory is the whole picture. Scaled out this becomes per-instance and the
  * limit multiplies by the instance count, at which point the counter belongs
- * in Turso alongside the votes.
+ * in the database alongside the votes.
  */
 const WINDOW_MS = 60_000;
 /**
@@ -15,7 +15,7 @@ const WINDOW_MS = 60_000;
  * the limit degrades toward one allowance per eviction cycle. Sustaining that
  * means tens of thousands of distinct addresses per minute, at which point
  * per-address counting on a single container is the wrong layer and the count
- * belongs in Turso or at the edge.
+ * belongs in the database or at the edge.
  *
  * Keys are capped in length, so the table's memory is bounded in bytes as well
  * as in entries: roughly 50k x (64-char key + up to 10 timestamps).

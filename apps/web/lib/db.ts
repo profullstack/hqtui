@@ -1,11 +1,13 @@
 /**
- * A tiny Turso client over the HTTP pipeline API.
- *
- * The official @libsql/client drags in a websocket transport that Next's
- * standalone tracer does not follow, which breaks the deployed build. This
- * workload is a handful of short statements, so plain fetch is both smaller
- * and more reliable — and it keeps the site dependency-free like the library.
+ * The site's database: theme votes, page views and cookbook sales in Postgres
+ * (the shared cluster on dev2), reached through @profullstack/libsql-pg. It
+ * keeps the small `execute(statements)` shape the rest of this module was
+ * written against for Turso's HTTP pipeline: a list of statements in one
+ * round trip, one row set per statement. The SQL below is still SQLite's
+ * (`datetime('now')`, `INSERT ... ON CONFLICT`); the client rewrites it per
+ * statement, and the CREATE TABLEs go through its schema converter.
  */
+import { createClient, type Client } from "@profullstack/libsql-pg";
 
 /**
  * Next inlines `process.env.NAME` at build time, so a runtime secret read
@@ -18,94 +20,50 @@ function env(name: string): string | undefined {
 
 type Value = string | number | null;
 
-interface TursoValue {
-  type: "null" | "integer" | "float" | "text" | "blob";
-  value?: string | number;
-}
-
-function encode(value: Value): TursoValue {
-  if (value === null || value === undefined) return { type: "null" };
-  if (typeof value === "number") {
-    return Number.isInteger(value)
-      ? { type: "integer", value: String(value) }
-      : { type: "float", value };
-  }
-  return { type: "text", value: String(value) };
-}
-
-function decode(value: TursoValue | null): Value {
-  if (!value || value.type === "null") return null;
-  if (value.type === "integer") return Number(value.value);
-  if (value.type === "float") return Number(value.value);
-  return String(value.value ?? "");
-}
-
 export interface Row {
   [column: string]: Value;
 }
 
-function endpoint(): { url: string; token: string } | null {
-  const raw = env("TURSO_DATABASE_URL");
-  const token = env("TURSO_AUTH_TOKEN");
-  if (!raw || !token) return null;
-  const url = raw.replace(/^libsql:\/\//, "https://").replace(/\/$/, "");
-  return { url: `${url}/v2/pipeline`, token };
+let client: Client | null = null;
+
+/** The Postgres URL, or null when the site runs without a database (it renders regardless). */
+function databaseUrl(): string | null {
+  const url = env("DATABASE_URL");
+  if (!url) return null;
+  if (!/^postgres(ql)?:\/\//i.test(url)) {
+    // Turso (libsql://) is no longer read: the data moved to Postgres in 2026-09.
+    console.error(`hqtui: DATABASE_URL must be a postgres:// URL, got "${url.split(":")[0]}:"; running without a database`);
+    return null;
+  }
+  return url;
 }
 
 export function configured(): boolean {
-  return endpoint() !== null;
+  return databaseUrl() !== null;
 }
 
-/** Run statements in one round trip. Returns one row set per statement. */
+function db(): Client | null {
+  if (client) return client;
+  const url = databaseUrl();
+  if (!url) return null;
+  client = createClient({ url, pool: { max: 3 } });
+  return client;
+}
+
+/** Run statements in one round trip (one transaction). Returns one row set per statement. */
 export async function execute(
   statements: (string | { sql: string; args: Value[] })[],
 ): Promise<Row[][]> {
-  const target = endpoint();
+  const target = db();
   if (!target) return statements.map(() => []);
-
-  const requests = statements.map((statement) => {
-    const sql = typeof statement === "string" ? statement : statement.sql;
-    const args = typeof statement === "string" ? [] : statement.args;
-    return { type: "execute", stmt: { sql, args: args.map(encode) } };
-  });
-  requests.push({ type: "close" } as never);
-
-  const response = await fetch(target.url, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${target.token}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ requests }),
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    throw new Error(`turso: HTTP ${response.status} ${await response.text()}`);
-  }
-
-  const body = (await response.json()) as {
-    results: {
-      type: string;
-      error?: { message: string };
-      response?: {
-        result?: { cols: { name: string }[]; rows: TursoValue[][] };
-      };
-    }[];
-  };
-
-  return body.results.slice(0, statements.length).map((entry) => {
-    if (entry.type === "error") throw new Error(`turso: ${entry.error?.message ?? "query failed"}`);
-    const result = entry.response?.result;
-    if (!result) return [];
-    return result.rows.map((cells) => {
-      const row: Row = {};
-      result.cols.forEach((col, i) => {
-        row[col.name] = decode(cells[i] ?? null);
-      });
-      return row;
-    });
-  });
+  const results = await target.batch(statements, "write");
+  return results.map((rs) =>
+    rs.rows.map((row) => {
+      const out: Row = {};
+      for (const column of rs.columns) out[column] = (row[column] as Value) ?? null;
+      return out;
+    }),
+  );
 }
 
 let ready: Promise<void> | null = null;

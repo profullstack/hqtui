@@ -31,10 +31,10 @@ which is ignored, and finished PNGs into `public/shots/`.
 
 ## Analytics
 
-Theme votes and page views are stored in Turso and read through a small
-`fetch`-based client in `lib/db.ts`. Both are optional: with
-`TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` unset the site renders normally
-and the counters read zero.
+Theme votes, page views and cookbook sales are stored in Postgres and read
+through `@profullstack/libsql-pg` in `lib/db.ts` (the data left Turso in
+2026-09). All are optional: with `DATABASE_URL` unset the site renders
+normally and the counters read zero.
 
 ## Deployment
 
