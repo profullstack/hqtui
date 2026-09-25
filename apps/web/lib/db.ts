@@ -50,7 +50,13 @@ function db(): Client | null {
   return client;
 }
 
-/** Run statements in one round trip (one transaction). Returns one row set per statement. */
+/**
+ * Run statements in one round trip (one transaction). Returns one row set per statement.
+ *
+ * Upserts below qualify the column they increment (`page_views.views + 1`):
+ * inside ON CONFLICT DO UPDATE Postgres reads a bare `views` as ambiguous
+ * between the row and EXCLUDED; SQLite accepts the qualified form too.
+ */
 export async function execute(
   statements: (string | { sql: string; args: Value[] })[],
 ): Promise<Row[][]> {
@@ -128,7 +134,7 @@ export async function voteForTheme(theme: string): Promise<number | null> {
     const [, rows] = await execute([
       {
         sql: `INSERT INTO theme_votes (theme, votes) VALUES (?, 1)
-              ON CONFLICT(theme) DO UPDATE SET votes = votes + 1, updated_at = datetime('now')`,
+              ON CONFLICT(theme) DO UPDATE SET votes = theme_votes.votes + 1, updated_at = datetime('now')`,
         args: [theme],
       },
       { sql: "SELECT votes FROM theme_votes WHERE theme = ?", args: [theme] },
@@ -150,7 +156,7 @@ export async function recordView(path: string): Promise<void> {
     await execute([
       {
         sql: `INSERT INTO page_views (path, views) VALUES (?, 1)
-              ON CONFLICT(path) DO UPDATE SET views = views + 1, updated_at = datetime('now')`,
+              ON CONFLICT(path) DO UPDATE SET views = page_views.views + 1, updated_at = datetime('now')`,
         args: [path],
       },
     ]);
