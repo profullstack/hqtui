@@ -32,6 +32,9 @@ const nextConfig: NextConfig = {
   // The workspace root is two levels up, so tracing has to start there or the
   // library's files are left out of the standalone build.
   outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
+  // The database client (pg under @profullstack/libsql-pg) stays out of the
+  // bundle and is traced from node_modules into the standalone output.
+  serverExternalPackages: ["@profullstack/libsql-pg", "pg"],
   // The blog reads its markdown at request time from content/blog. The tracer
   // only follows imports, so the files have to be named or the standalone
   // image ships an empty blog.

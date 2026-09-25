@@ -5,7 +5,7 @@ import { themes } from "@profullstack/hqtui";
 
 const VALID = new Set(Object.values(themes).map((theme) => theme.name));
 
-/** Reads are cheaper than writes but still reach Turso, so they are bounded too. */
+/** Reads are cheaper than writes but still reach the database, so they are bounded too. */
 const READS_PER_MINUTE = 60;
 
 export async function GET(request: Request) {
