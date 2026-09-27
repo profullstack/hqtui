@@ -21,7 +21,7 @@ jobs:
         with:
           install: false
       - name: Install only binding test toolchains
-        run: mise install ruby@4.0.6 conda:php@8.5.9 perl@5.44.0.0 cmake@4.4.3 python@3.12.13 nim@2.2.4
+        run: mise install ruby@4.0.6 conda:php@8.5.9 perl@5.44.0.0 cmake@4.4.3 python@3.12.13 nim@2.2.12
       - name: Install private Perl dependencies
         run: mise exec perl@5.44.0.0 -- cpanm --local-lib-contained "${{ runner.temp }}/hqtui-perl" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.12
       - name: Build optimized binding library and PHP adapter
@@ -31,7 +31,7 @@ jobs:
           mise exec -- cmake --build ports/cpp/build-bindings --target hqtui_bindings hqtui_php hqtui_bindings_test --parallel 3
           mise exec -- ctest --test-dir ports/cpp/build-bindings -R bindings_abi --output-on-failure
       - name: Compile Nim examples and API tests
-        run: mise exec nim@2.2.4 -- sh ports/nim/tests/build.sh
+        run: mise exec nim@2.2.12 -- sh ports/nim/tests/build.sh
       - name: Check APIs, 960 reference frames, real data and terminal cleanup
         shell: bash
         run: |

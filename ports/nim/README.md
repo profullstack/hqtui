@@ -83,7 +83,7 @@ arbitrary nested widgets, and input is not a high-level event/callback API.
 ```sh
 sh ports/nim/tests/build.sh
 export HQTUI_NATIVE_LIB="$PWD/ports/cpp/build-bindings/libhqtui_bindings.so"
-HQTUI_BINDING_COMMANDS='{"nim":["sh","ports/nim/tests/run.sh"]}' \
+HQTUI_BINDING_COMMANDS="{\"nim\":[\"sh\",\"$PWD/ports/nim/tests/run.sh\"]}" \
   python3 ports/bindings/tests/check.py
 ports/nim/build/widgets
 ```
