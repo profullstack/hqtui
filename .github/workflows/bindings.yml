@@ -1,4 +1,4 @@
-name: Ruby PHP Perl bindings
+name: Ruby PHP Perl Nim bindings
 on:
   push:
     branches: [main]
@@ -21,7 +21,7 @@ jobs:
         with:
           install: false
       - name: Install only binding test toolchains
-        run: mise install ruby@4.0.6 conda:php@8.5.9 perl@5.44.0.0 cmake@4.4.3 python@3.12.13
+        run: mise install ruby@4.0.6 conda:php@8.5.9 perl@5.44.0.0 cmake@4.4.3 python@3.12.13 nim@2.2.4
       - name: Install private Perl dependencies
         run: mise exec perl@5.44.0.0 -- cpanm --local-lib-contained "${{ runner.temp }}/hqtui-perl" --notest --mirror https://cpan.metacpan.org --mirror-only FFI::Platypus@2.12
       - name: Build optimized binding library and PHP adapter
@@ -30,7 +30,9 @@ jobs:
           mise exec -- cmake -S ports/cpp -B ports/cpp/build-bindings -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON -DHQTUI_LTO=ON -DHQTUI_BUILD_BINDINGS=ON -DHQTUI_PHP_CONFIG="$(mise exec conda:php@8.5.9 -- which php-config)"
           mise exec -- cmake --build ports/cpp/build-bindings --target hqtui_bindings hqtui_php hqtui_bindings_test --parallel 3
           mise exec -- ctest --test-dir ports/cpp/build-bindings -R bindings_abi --output-on-failure
-      - name: Check APIs, 360 reference frames, real data and terminal cleanup
+      - name: Compile Nim examples and API tests
+        run: mise exec nim@2.2.4 -- sh ports/nim/tests/build.sh
+      - name: Check APIs, 960 reference frames, real data and terminal cleanup
         shell: bash
         run: |
           extension=so
@@ -38,7 +40,7 @@ jobs:
           export HQTUI_NATIVE_LIB="$PWD/ports/cpp/build-bindings/libhqtui_bindings.$extension"
           export PERL5LIB="${{ runner.temp }}/hqtui-perl/lib/perl5"
           mise exec -- python ports/bindings/tests/check.py
-      - name: Widget galleries (C++, Ruby, PHP, Perl)
+      - name: Widget galleries (C++, Ruby, PHP, Perl, Nim)
         shell: bash
         run: |
           extension=so
@@ -47,6 +49,7 @@ jobs:
           export PERL5LIB="${{ runner.temp }}/hqtui-perl/lib/perl5"
           mise exec -- cmake --build ports/cpp/build-bindings --target hqtui-widgets --parallel 3
           ./ports/cpp/build-bindings/hqtui-widgets >/dev/null
+          ./ports/nim/build/widgets >/dev/null
           (cd ports/ruby && mise exec ruby@4.0.6 -- ruby examples/widgets.rb >/dev/null)
           php_adapter="$PWD/ports/cpp/build-bindings/hqtui_php.so"
           (cd ports/php && mise exec conda:php@8.5.9 -- php -d "extension=$php_adapter" examples/widgets.php >/dev/null)

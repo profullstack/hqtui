@@ -1,4 +1,4 @@
-"""Exercise actual Ruby/PHP/Perl APIs and VMs against the shared TS corpus."""
+"""Exercise actual Ruby/PHP/Perl/Nim APIs and runtimes against the shared TS corpus."""
 import ctypes
 import fcntl
 import json
@@ -15,9 +15,9 @@ import time
 
 ROOT = Path(__file__).resolve().parents[3]
 LIB = Path(os.environ['HQTUI_NATIVE_LIB']).resolve()
-DEFAULT = {'ruby': ['ruby'], 'php': ['php', '-d', f'extension={LIB.parent / "hqtui_php.so"}'], 'perl': ['perl']}
+DEFAULT = {'ruby': ['ruby'], 'php': ['php', '-d', f'extension={LIB.parent / "hqtui_php.so"}'], 'perl': ['perl'], 'nim': ['sh', str(ROOT/'ports/nim/tests/run.sh')]}
 COMMANDS = json.loads(os.environ.get('HQTUI_BINDING_COMMANDS', json.dumps(DEFAULT)))
-EXT = {'ruby':'rb','php':'php','perl':'pl'}
+EXT = {'ruby':'rb','php':'php','perl':'pl','nim':'nim'}
 
 def invoke(language, relative, args=(), **kwargs):
     return subprocess.run([*COMMANDS[language], str(ROOT/'ports'/language/relative), *args],
@@ -71,7 +71,7 @@ def terminal(language, custom=False, terminate=False):
 
 def main():
     cases=json.loads((ROOT/'ports/conformance/fixtures/demo-parity.json').read_text())
-    # Custom API is exercised separately: all three languages submit this tree,
+    # Custom API is exercised separately: all binding languages submit this tree,
     # and their own builders are tested by core and interactive hello programs.
     tree={'type':'col','children':[
         {'type':'panel','title':'Shared API','children':[

@@ -6,7 +6,7 @@ a C++17 ownership/widget API. The C++ ten-screen demo is now runnable and has
 The C-only demo is **not complete**. See
 [C](c/README.md), [C++](cpp/README.md), and the [acceptance checklist](c/STATUS.md).
 
-Ruby, PHP and Perl now have experimental [shared-engine bindings](bindings/README.md)
+Ruby, PHP, Perl and Nim now have experimental [shared-engine bindings](bindings/README.md)
 with custom widget APIs and the ten-screen demo running inside each language VM.
 These are bindings, not independent ports. Their native dependency is intentional.
 

@@ -20,7 +20,7 @@ The following runtime/tool IDs were checked with `mise registry` on 2026-09-07:
 | C++ | cmake (host GCC/Clang compiler required) | Native demo; experimental API |
 | C# / F# / .NET | dotnet | Pending implementation strategy |
 | Java / Kotlin / Scala / Clojure | java, kotlin, scala, clojure | Pending |
-| Ruby, PHP, Perl | ruby, conda:php, perl | Experimental shared-engine bindings implemented |
+| Ruby, PHP, Perl, Nim | ruby, conda:php, perl, nim | Experimental shared-engine bindings implemented |
 | Lua / LuaJIT | lua, luajit | Pending |
 | Swift, Crystal, Odin, V | swift, crystal, odin, v | Pending |
 | Elixir / Erlang / Gleam | elixir, erlang, gleam | Pending |
@@ -31,7 +31,7 @@ mise plugins, future registry additions or completed HQTUI ports.
 
 ## Selected architecture after C++
 
-Ruby, PHP and Perl use an in-process C ABI over the C/C++ engine, with batched
+Ruby, PHP, Perl and Nim use an in-process C ABI over the C/C++ engine, with batched
 custom widget APIs and shared collectors/demo implementation. The user selected
 the fastest/easiest shared architecture. These are explicitly bindings, not
 independent native ports or subprocess launchers. No reference screenshots are

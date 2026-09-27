@@ -1,4 +1,4 @@
-# Shared native bindings: Ruby, PHP, Perl
+# Shared native bindings: Ruby, PHP, Perl, Nim
 
 Experimental bindings, not independent renderer ports. Custom applications build
 widget trees in their own language; a versioned C ABI parses a bounded batch and
@@ -6,11 +6,12 @@ uses the C++ layout/widgets plus the C11 framebuffer/diff renderer. The JSON tre
 is retained and only reparsed on `set`, not on every render. No per-cell FFI calls,
 JSON subprocess pipe, JavaScript runtime or child demo executable is involved.
 
+Nim uses its built-in C FFI and requires Nim 2.2.4+; see [Nim](../nim/README.md).
 Ruby uses Fiddle. Perl uses FFI::Platypus. PHP prefers a tiny compiled Zend adapter
 to the same C ABI (so FFI need not be enabled); an FFI path is available otherwise.
 The full ten-screen example calls the shared C++ demo **inside the language VM**,
 including its Linux collectors, responsive layouts, input and terminal loop.
-This explicit reuse is how demo fixes reach all three bindings together.
+This explicit reuse is how demo fixes reach all four bindings together.
 
 All twenty-eight widgets cross the ABI, the same list the native ports draw. The
 one thing that does not is a widget whose *content* is another container: a
@@ -23,6 +24,7 @@ than an arbitrary subtree. See [PROTOCOL.md](PROTOCOL.md) for the field list.
 curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise ruby
 curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise php
 curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise perl
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --mise nim
 ```
 
 Replace `--mise` with `--system` for installed runtimes/build tools. Every launch
@@ -62,23 +64,24 @@ new packages have **not** been published to those registries.
 
 ## API and tests
 
-- [Ruby example](../ruby/examples/hello.rb), [PHP example](../php/examples/hello.php), [Perl example](../perl/examples/hello.pl).
+- [Ruby example](../ruby/examples/hello.rb), [PHP example](../php/examples/hello.php), [Perl example](../perl/examples/hello.pl), [Nim example](../nim/examples/hello.nim).
 - `Scene.set(tree)` sends a batch; `render` returns text, full ANSI or ANSI diff.
 - `with_terminal` / `withTerminal` acquires/restores the terminal; `present` handles
   resize and output, `poll` returns raw key/escape bytes for application handling.
   Use structured cleanup even when application code raises an exception.
 - [Protocol and limits](PROTOCOL.md), [C ABI](include/hqtui_bindings.h).
 
-The acceptance runner `tests/check.py` uses the actual three VMs, checks 120 shared
+Compile Nim first with `sh ports/nim/tests/build.sh` from the repository root.
+The acceptance runner `tests/check.py` uses the actual language runtimes, checks 240 shared
 TypeScript demo-body frames per binding, exercises independent widget builders,
 UTF-8, errors, ownership, diff/resize, ten-tab PTYs, custom interactive apps and
 signal cleanup. Linux additionally checks live snapshots and injected sensor,
 traffic, session, HTTP and container data through the real collectors. Core memory/error-path
 checks run through the native ABI under address/undefined-behavior sanitizers.
 
-The APIs are experimental: the custom builder covers rows/columns/panels, text,
-meters, graphs, gauges, tables, key/value lists, logs, dividers and spacers. It does
-not yet expose every TypeScript widget or a normalized high-level input API.
+The APIs are experimental: the builders expose every widget in the shared
+protocol, including overlays. They do not expose the complete TypeScript API
+or a normalized high-level input API.
 Shared demo parity does not imply complete library/control parity. JSON batching
 avoids per-cell crossings but still costs serialization/parsing on updates; no
 zero-allocation or end-to-end speed claim is made without measurements.

@@ -1,0 +1,7 @@
+/build/
+/nimcache/
+/examples/dashboard
+/examples/hello
+/examples/widgets
+/tests/core
+/tests/render

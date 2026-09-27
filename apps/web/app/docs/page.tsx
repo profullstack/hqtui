@@ -70,7 +70,7 @@ export default async function Docs() {
             HQTUI builds terminal applications in TypeScript, Rust, Go, Python and Zig,
             with a new native C++ ten-screen demo over the shared C rendering core.
             The C++ library API remains experimental.
-            Ruby, PHP and Perl now have experimental bindings to the same native engine.
+            Ruby, PHP, Perl and Nim now have experimental bindings to the same native engine.
           </P>
 
           <H2 id="languages">Choose a language</H2>
@@ -101,13 +101,14 @@ export default async function Docs() {
             The C-only demo and languages beyond those listed here are not ready yet.
           </P>
           <P>
-            Ruby, PHP and Perl are bindings, not independent renderer ports. Their widget
+            Ruby, PHP, Perl and Nim are bindings, not independent renderer ports. Their widget
             APIs submit batched scene updates; the shared ten-screen demo, collectors and
             terminal loop execute inside the calling runtime. They need GCC/Clang and CMake.
             Ruby needs Fiddle; Perl needs FFI::Platypus (the launcher installs it into its
             private cache using cpanm if missing). PHP uses a small native adapter built
             with matching php-config/development headers, or FFI when available.
-            Mise supplies pinned Ruby/Perl, prebuilt PHP via its Conda backend, and CMake.
+            Nim uses its built-in C FFI and needs Nim 2.2.4 or newer.
+            Mise supplies pinned Ruby/Perl/Nim, prebuilt PHP via its Conda backend, and CMake.
             No system packages or global gems/CPAN modules are installed by the launcher.
           </P>
           <P>

@@ -23,12 +23,12 @@ export type Language = {
 export const CLONE = "git clone https://github.com/profullstack/hqtui";
 export const LAUNCHER = "https://hqtui.com/demo.sh";
 export function latestDemo(language: string, mise = false): string {
-  if (!["typescript", "rust", "go", "python", "zig", "cpp", "ruby", "php", "perl", "cobol"].includes(language)) throw new Error("Unsupported demo language");
+  if (!["typescript", "rust", "go", "python", "zig", "cpp", "ruby", "php", "perl", "nim", "cobol"].includes(language)) throw new Error("Unsupported demo language");
   return `curl -fsSL ${LAUNCHER} | sh -s -- --${mise ? "mise" : "system"} ${language}`;
 }
 
 export const LANGUAGES: readonly Language[] = [
-  ...([['Ruby', 'ruby'], ['PHP', 'php'], ['Perl', 'perl']] as const).map(([name, id]) => ({
+  ...([['Ruby', 'ruby'], ['PHP', 'php'], ['Perl', 'perl'], ['Nim', 'nim']] as const).map(([name, id]) => ({
     name, id, href: `/docs#${id}`,
     description: `${name} bindings with a batched widget API. The shared C/C++ demo engine runs inside your language runtime; not an independent port.`,
     demo: latestDemo(id), interactiveDemo: latestDemo(id),

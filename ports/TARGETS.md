@@ -63,7 +63,7 @@ Community, 1-5, weighted toward *terminal* work rather than language size:
 | Swift | 4 | 3 | almost nothing serious | candidate |
 | Lua | 2 | 3 | via neovim, not standalone | candidate |
 | Ruby | 2 | 3 | tty-toolkit, curses | candidate |
-| Nim | 4 | 2 | illwill | unlikely |
+| Nim | 4 | 2 | illwill | **shared-engine binding** |
 | Crystal | 4 | 2 | term-* shards | unlikely |
 | Kotlin / Java | 3 | 3 | JLine, Lanterna | unlikely |
 | PHP | 2 | 3 | symfony/console (not a TUI) | unlikely |

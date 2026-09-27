@@ -65,6 +65,7 @@ export const LANGUAGES: LanguageSpec[] = [
   { id: "python", label: "Python", file: "ports/python/examples/widgets.py", syntax: "python" },
   { id: "zig", label: "Zig", file: "ports/zig/examples/widgets.zig", syntax: "zig" },
   { id: "cpp", label: "C++", file: "ports/cpp/examples/widgets.cpp", syntax: "cpp" },
+  { id: "nim", label: "Nim", file: "ports/nim/examples/widgets.nim", syntax: "nim" },
   { id: "ruby", label: "Ruby", file: "ports/ruby/examples/widgets.rb", syntax: "ruby" },
   { id: "php", label: "PHP", file: "ports/php/examples/widgets.php", syntax: "php" },
   { id: "perl", label: "Perl", file: "ports/perl/examples/widgets.pl", syntax: "perl" },

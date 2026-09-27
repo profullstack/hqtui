@@ -44,6 +44,12 @@
       "syntax": "cpp"
     },
     {
+      "id": "nim",
+      "label": "Nim",
+      "file": "ports/nim/examples/widgets.nim",
+      "syntax": "nim"
+    },
+    {
       "id": "ruby",
       "label": "Ruby",
       "file": "ports/ruby/examples/widgets.rb",
@@ -106,6 +112,10 @@
           "code": "void widget_text(Surface s) {\n  // `text` places a string at a cell; `aligned` centres or right-aligns it on\n  // a row. Both take the colour explicitly.\n  const auto &t = theme(s);\n  text(s, 0, 0, \"Plain text. It fills the width it is given.\", t.foreground);\n  aligned(s, 1, \"Centered.\", t.foreground, HQ_CENTER);\n  aligned(s, 2, \"Right aligned.\", t.muted, HQ_RIGHT);\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc exampletext(ui: UI) =\n  ui.text(\"Plain text. It fills the width it is given.\")\n  ui.text(\"Centered.\", %*{\"align\": 1})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def text(ui)\n  # align is 0 left, 1 center, 2 right.\n  ui.text('Plain text. It fills the width it is given.')\n  ui.text('Centered.', align: 1)\n  ui.text('Right aligned.', align: 2)\nend",
           "syntax": "ruby"
@@ -160,6 +170,10 @@
         "cpp": {
           "code": "void widget_label(Surface s) {\n  // Muted secondary copy: captions, and the line under a number that says what\n  // the number is.\n  const auto &t = theme(s);\n  {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    {\n    TextStyle text_style;\n    text_style.attrs = HQ_BOLD;\n    {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    draw_text(s, \"cpu · 8 cores · 3.4 GHz\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"42.1%\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"15 minute average\",\n            text_style);\n  }\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplelabel(ui: UI) =\n  ui.label(\"Muted supporting text\")",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def label(ui)\n  # `label` is `text` in the theme's muted color: secondary copy, captions,\n  # the line under a number that says what the number is.\n  ui.label('cpu · 8 cores · 3.4 GHz')\n  ui.text('42.1%', color: 'success', attrs: 1)\n  ui.label('15 minute average')\nend",
@@ -216,6 +230,10 @@
           "code": "void widget_heading(Surface s) {\n  const auto &t = theme(s);\n  {\n    TextStyle text_style;\n    text_style.fg = t.muted;\n    {\n    TextStyle text_style;\n    text_style.fg = t.title;\n    text_style.attrs = HQ_BOLD;\n    draw_text(s, \"Storage\", text_style);\n  }\n  draw_text(s.sub(Rect{0, 1, s.rect().width, 1}), \"Four volumes, one degraded\",\n            text_style);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc exampleheading(ui: UI) =\n  ui.heading(\"System overview\")",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def heading(ui)\n  # `heading` is `text` in the theme's title color, bold.\n  ui.heading('Storage')\n  ui.label('Four volumes, one degraded')\n  ui.spacer(size: 1)\n  ui.heading('Network', color: 'accent')\nend",
           "syntax": "ruby"
@@ -270,6 +288,10 @@
         "cpp": {
           "code": "void widget_badge(Surface s) {\n  const auto &t = theme(s);\n  {\n    Badge badge;\n    badge.text = \"failed\";\n    badge.color = t.danger;\n    badge.variant = HQ_BADGE_OUTLINE;\n    {\n    Badge badge;\n    badge.text = \"idle\";\n    badge.color = t.warning;\n    badge.variant = HQ_BADGE_SUBTLE;\n    {\n    Badge badge;\n    badge.text = \"active\";\n    badge.color = t.success;\n    draw_badge(s.sub(Rect{0, 0, 10, 1}), badge);\n  }\n  draw_badge(s.sub(Rect{10, 0, 10, 1}),\n             badge);\n  }\n  draw_badge(s.sub(Rect{20, 0, 10, 1}),\n             badge);\n  }\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplebadge(ui: UI) =\n  ui.badge(\"RUNNING\", %*{\"color\": \"success\"})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def badge(ui)\n  ui.badge('active')\nend",
@@ -326,6 +348,10 @@
           "code": "void widget_divider(Surface s) {\n  draw_text(s, \"Above the line\");\n  draw_divider(s.sub(Rect{0, 1, s.rect().width, 1}));\n  draw_text(s.sub(Rect{0, 2, s.rect().width, 1}), \"Below it\");\n  {\n    Divider divider;\n    divider.label = \"status\";\n    divider.align = HQ_CENTER;\n    draw_divider(s.sub(Rect{0, 3, s.rect().width, 1}),\n               divider);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc exampledivider(ui: UI) =\n  ui.text(\"Above the line\")\n  ui.divider(\"status\")\n  ui.text(\"Below it\")",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def divider(ui)\n  ui.text('Above the line')\n  ui.divider\n  ui.text('Below it')\n  ui.divider('status')\n  ui.text('A labelled divider titles a section without spending a panel on it')\nend",
           "syntax": "ruby"
@@ -380,6 +406,10 @@
         "cpp": {
           "code": "void widget_key_values(Surface s) {\n  // The backbone of every \"System\" panel: labels left, values right.\n  std::vector<KeyValue> rows{\n      {\"Host\", \"web-01.iad\"},\n      {\"Uptime\", \"18d 04:12\"},\n      {\"Load\", \"0.42  0.51  0.60\"},\n      {\"Established\", \"1,284\"},\n  };\n  draw_keys(s, rows);\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplekeyValues(ui: UI) =\n  ui.keys(%*[[\"Host\", \"web-01\"], [\"Uptime\", \"18d 04:12\"], [\"Load\", \"0.42\"]])",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def key_values(ui)\n  # The backbone of every \"System\" panel: labels left, values right.\n  ui.keys([\n            ['Host', 'web-01.iad'],\n            ['Uptime', '18d 04:12'],\n            ['Load', '0.42  0.51  0.60'],\n            ['Established', '1,284']\n          ])\nend",
@@ -436,6 +466,10 @@
           "code": "void widget_status_bar(Surface s) {\n  {\n    StatusBar status_bar;\n    status_bar.items = {{\"F1\", \"Help\"}, {\"F2\", \"Theme\"}, {\"F3\", \"Filter\", 0, true}, {\"q\", \"Quit\"}};\n    status_bar.right = {{\"\", \"0.41ms 184 cells\"}};\n    // Usually the last thing drawn, pinned to the bottom row.\n  draw_status_bar(s, status_bar);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplestatusBar(ui: UI) =\n  ui.statusbar(%*[{\"key\": \"q\", \"label\": \"Quit\"}, {\"key\": \"Tab\", \"label\": \"Next\"}], %*{\"right\": \"Connected\"})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def status_bar(ui)\n  ui.statusbar([{ key: 'F1', label: 'Help' }, { key: 'q', label: 'Quit' }],\n               right: [{ label: '0.41ms' }])\nend",
           "syntax": "ruby"
@@ -490,6 +524,10 @@
         "cpp": {
           "code": "void widget_table(Surface s) {\n  Table t;\n  t.columns = {{\"Name\"}, {\"Size\", 9, 1, 0, HQ_RIGHT}, {\"Type\", 6}, {\"Modified\", 10, 1, 0, HQ_RIGHT}};\n  t.rows = {\n      {{\"src\", \"4.2 KB\", \"dir\", \"2m ago\"}},\n      {{\"test\", \"1.1 KB\", \"dir\", \"5m ago\"}},\n      {{\"package.json\", \"1.2 KB\", \"file\", \"10m ago\"}},\n      {{\"README.md\", \"3.4 KB\", \"file\", \"1h ago\"}},\n  };\n  t.zebra = true;\n  // The pane carries selection and scroll, and stays yours between frames.\n  Pane pane;\n  pane.selected = 1;\n  pane.total = static_cast<int>(t.rows.size());\n  t.pane = &pane;\n  draw_table(s, t);\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc exampletable(ui: UI) =\n  ui.table(%*[\"Name\", \"Status\"], %*[[\"worker\", \"running\"], [\"queue\", \"ready\"]], %*{\"selected\": 1})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def table(ui)\n  ui.table(\n    %w[Name Size Type Modified],\n    [\n      ['src', '4.2 KB', 'dir', '2m ago'],\n      ['test', '1.1 KB', 'dir', '5m ago'],\n      ['package.json', '1.2 KB', 'file', '10m ago'],\n      ['README.md', '3.4 KB', 'file', '1h ago']\n    ],\n    selected: 1\n  )\nend",
@@ -546,6 +584,10 @@
           "code": "void widget_list(Surface s) {\n  List l;\n  l.items = {{\"apps/demo\"}, {\"packages/hqtui\"}, {\"apps/web\"}, {\"docs\"}};\n  l.selected = 0;\n  l.bullet = \"▸\";\n  l.scrollbar = true;\n  draw_list(s, l);\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplelist(ui: UI) =\n  ui.list(%*[\"Dashboard\", \"Network\", \"Services\"], %*{\"selected\": 1})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def list(ui)\n  ui.list(['apps/demo', 'packages/hqtui', 'apps/web', 'docs'], selected: 0, bullet: '▸')\nend",
           "syntax": "ruby"
@@ -600,6 +642,10 @@
         "cpp": {
           "code": "void widget_tree(Surface s) {\n  Tree tree;\n  TreeNode root;\n  root.label = \"systemd\";\n  {\n    TreeNode tree_node;\n    tree_node.label = \"bash\";\n    root.children.push_back(tree_node);\n  }\n  TreeNode bun;\n  bun.label = \"bun\";\n  {\n    TreeNode tree_node;\n    tree_node.label = \"bun:worker\";\n    bun.children.push_back(tree_node);\n  }\n  root.children.push_back(bun);\n  {\n    TreeNode tree_node;\n    tree_node.label = \"postgres\";\n    root.children.push_back(tree_node);\n  }\n  tree.nodes.push_back(root);\n  tree.selected = 2;\n  draw_tree(s, tree);\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc exampletree(ui: UI) =\n  ui.tree(%*[{\"label\": \"src\", \"children\": [{\"label\": \"main.nim\"}, {\"label\": \"widgets.nim\"}]}])",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def tree(ui)\n  ui.tree([{ label: 'systemd', children: [{ label: 'bash' }, { label: 'postgres' }] }], selected: 1)\nend",
@@ -656,6 +702,10 @@
           "code": "void widget_log(Surface s) {\n  std::vector<LogEntry> entries{\n      {\"12:45:02\", \"INFO\", \"listening on :8080\", \"\"},\n      {\"12:45:09\", \"WARN\", \"slow query 412ms\", \"table=users\"},\n      {\"12:45:11\", \"ERROR\", \"upstream timeout\", \"\"},\n      {\"12:45:14\", \"INFO\", \"retry succeeded\", \"\"},\n  };\n  Pane pane;\n  pane.log = true;\n  pane.total = static_cast<int>(entries.size());\n  draw_log(s, entries, &pane);\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplelog(ui: UI) =\n  ui.log(%*[{\"time\": \"12:45\", \"level\": \"INFO\", \"message\": \"Listening on :8080\"}])",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def log(ui)\n  ui.log([\n           { time: '12:45:02', level: 'INFO', message: 'listening on :8080' },\n           { time: '12:45:09', level: 'WARN', message: 'slow query 412ms', meta: 'table=users' },\n           { time: '12:45:11', level: 'ERROR', message: 'upstream timeout' },\n           { time: '12:45:14', level: 'INFO', message: 'retry succeeded' }\n         ])\nend",
           "syntax": "ruby"
@@ -710,6 +760,10 @@
         "cpp": {
           "code": "void widget_scrollbar(Surface s) {\n  // The bar is over state you own, so it works beside anything that scrolls:\n  // wrapped prose, a canvas, a draw() of your own. Here it takes the rightmost\n  // column and the prose takes the rest.\n  int w = s.rect().width, h = s.rect().height;\n  const auto &t = theme(s);\n  draw_text(s.sub({0, 0, w - 2, h}),\n            \"A scrollbar you drive yourself. It has no idea what is beside it, \"\n            \"only how much there is, how much fits, and where you are.\",\n            TextStyle{t.foreground, std::nullopt, HQ_LEFT, 0, true});\n  draw_scrollbar(s.sub({w - 1, 0, 1, h}), Scrollbar{40, 5, 12, HQ_SCROLLBAR_RIGHT});\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplescrollbar(ui: UI) =\n  ui.scrollbar(120, %*{\"viewport\": 8, \"offset\": 36, \"orientation\": \"bottom\"})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def scrollbar(ui)\n  # The bar is over state you own: it knows how much there is, how much fits\n  # and where you are, and nothing about what it sits beside.\n  ui.text('120 lines, 8 of them on screen, starting at 36.')\n  ui.scrollbar(120, viewport: 8, offset: 36, orientation: 'bottom')\nend",
@@ -766,6 +820,10 @@
           "code": "void widget_chart(Surface s) {\n  // Points carry their own x, so a sparse series and a dense one line up.\n  Chart c;\n  c.series = {\n      {{{0, 1}, {2, 6}, {5, 3}, {8, 9}, {10, 4}}, 0, \"load\"},\n      {{{0, 8}, {10, 2}}, 0, \"limit\"},\n  };\n  c.axis = true;\n  c.legend = true;\n  Axis x;\n  x.min = 0;\n  x.max = 10;\n  x.ticks = 3;\n  Axis y;\n  y.min = 0;\n  y.max = 10;\n  c.plot.x = x;\n  c.plot.y = y;\n  draw_chart(s, c);\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplechart(ui: UI) =\n  ui.chart(%*[{\"label\": \"load\", \"points\": [{\"x\": 0, \"y\": 1}, {\"x\": 2, \"y\": 6}, {\"x\": 5, \"y\": 3}]}], %*{\"axis\": true, \"legend\": true})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def chart(ui)\n  # Points carry their own x, so a sparse series and a dense one line up.\n  ui.chart(\n    [\n      { points: [{ x: 0, y: 1 }, { x: 2, y: 6 }, { x: 5, y: 3 }, { x: 8, y: 9 }, { x: 10, y: 4 }],\n        label: 'load' },\n      { points: [{ x: 0, y: 8 }, { x: 10, y: 2 }], label: 'limit' }\n    ],\n    axis: true, legend: true,\n    x: { min: 0, max: 10, ticks: 3 }, y: { min: 0, max: 10 }\n  )\nend",
           "syntax": "ruby"
@@ -820,6 +878,10 @@
         "cpp": {
           "code": "void widget_calendar(Surface s) {\n  // The dates are arithmetic, not a host calendar: every port has a different\n  // date type and none of them is consulted.\n  Calendar c{2026, 9};\n  c.selected = 8;\n  c.marks = {CalendarMark{15}, CalendarMark{22, 0, 0, true}};\n  draw_calendar(s, c);\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplecalendar(ui: UI) =\n  ui.calendar(2026, 9, %*{\"selected\": 8, \"marks\": [{\"day\": 15}]})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def calendar(ui)\n  # The dates are arithmetic, not a host calendar: every port has a different\n  # date type and none of them is consulted.\n  ui.calendar(2026, 9, selected: 8, marks: [{ day: 15 }, { day: 22, bold: true }])\nend",
@@ -876,6 +938,10 @@
           "code": "void widget_meter(Surface s) {\n  const int width = s.rect().width;\n  {\n    Meter meter;\n    meter.value = 0.87;\n    meter.label = \"SWP\";\n    {\n    Meter meter;\n    meter.value = 0.31;\n    meter.label = \"MEM\";\n    {\n    Meter meter;\n    meter.value = 0.62;\n    meter.label = \"CPU\";\n    draw_meter(s.sub(Rect{0, 0, width, 1}), meter);\n  }\n  draw_meter(s.sub(Rect{0, 1, width, 1}), meter);\n  }\n  draw_meter(s.sub(Rect{0, 2, width, 1}), meter);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplemeter(ui: UI) =\n  ui.meter(0.72, %*{\"label\": \"CPU\", \"color\": \"success\"})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def meter(ui)\n  ui.meter(0.62, label: 'CPU')\n  ui.meter(0.31, label: 'MEM')\n  ui.meter(0.87, label: 'SWP')\nend",
           "syntax": "ruby"
@@ -930,6 +996,10 @@
         "cpp": {
           "code": "void widget_meters(Surface s) {\n  // One call for a whole bank. `columns` lays them out side by side.\n  Meters m;\n  for (int i = 0; i < 8; i++)\n    m.items.push_back({\"P\" + std::to_string(i), (i * 13 % 100) / 100., 0, 0, \"\"});\n  m.columns = 2;\n  m.label_width = 4;\n  m.value_width = 5;\n  m.style = HQ_BAR_SEGMENTED;\n  draw_meters(s, m);\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplemeters(ui: UI) =\n  ui.meters(%*[{\"label\": \"P0\", \"value\": 0.72}, {\"label\": \"P1\", \"value\": 0.45}], %*{\"columns\": 2})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def meters(ui)\n  # One call for a whole bank. `columns` lays them out side by side.\n  ui.meters(\n    [0.12, 0.44, 0.71, 0.09, 0.38, 0.55, 0.22, 0.66].each_with_index.map { |value, i| { label: \"P#{i}\", value: value } },\n    columns: 2, labelWidth: 4, valueWidth: 5, style: 1\n  )\nend",
@@ -986,6 +1056,10 @@
           "code": "void widget_progress(Surface s) {\n  {\n    Progress progress;\n    progress.value = 0.82;\n    progress.label = \"Upload\";\n    {\n    Progress progress;\n    progress.value = 37;\n    progress.max = 120;\n    progress.label = \"Indexing\";\n    progress.show_count = true;\n    draw_progress(s, progress);\n  }\n  draw_progress(s.sub(Rect{0, 1, s.rect().width, 1}),\n                progress);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc exampleprogress(ui: UI) =\n  ui.progress(42, %*{\"max\": 100, \"label\": \"Build\", \"count\": true})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def progress(ui)\n  ui.progress(37, max: 120, label: 'Indexing', count: true)\n  ui.progress(0.82, label: 'Upload')\nend",
           "syntax": "ruby"
@@ -1040,6 +1114,10 @@
         "cpp": {
           "code": "void widget_graph(Surface s) {\n  // Braille line chart, filled under the curve.\n  Graph g;\n  g.series.push_back({cpu_history(), 0, \"cpu\", true});\n  g.min = 0;\n  g.max = 100;\n  draw_graph(s, g);\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplegraph(ui: UI) =\n  ui.graph(%*[12, 18, 26, 22, 44, 38, 61, 48, 72], %*{\"min\": 0, \"max\": 100})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def graph(ui)\n  # Braille line chart, filled under the curve.\n  ui.graph(CPU_HISTORY, min: 0, max: 100)\nend",
@@ -1096,6 +1174,10 @@
           "code": "void widget_sparkline(Surface s) {\n  {\n    Sparkline sparkline;\n    sparkline.values = cpu_history();\n    sparkline.label = \"CPU \";\n    sparkline.text = \"44%\";\n    draw_sparkline(s, sparkline);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplesparkline(ui: UI) =\n  ui.sparkline(%*[12, 18, 26, 22, 44, 38, 61, 48, 72], %*{\"label\": \"CPU\"})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def sparkline(ui)\n  ui.sparkline(CPU_HISTORY, label: 'CPU ', text: '44%')\nend",
           "syntax": "ruby"
@@ -1150,6 +1232,10 @@
         "cpp": {
           "code": "void widget_histogram(Surface s) {\n  {\n    Columns columns;\n    columns.values = cpu_history();\n    // Block columns. Cheaper than Braille and easier to read when short.\n  draw_columns(s, columns);\n  }\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplehistogram(ui: UI) =\n  ui.columns(%*[12, 18, 26, 22, 44, 38, 61, 48, 72], %*{\"max\": 100})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def histogram(ui)\n  # Block columns. Cheaper than Braille and easier to read when short.\n  ui.columns(CPU_HISTORY)\nend",
@@ -1206,6 +1292,10 @@
           "code": "void widget_heat_bar(Surface s) {\n  {\n    HeatBar heat_bar;\n    heat_bar.value = 0.91;\n    {\n    HeatBar heat_bar;\n    heat_bar.value = 0.64;\n    {\n    HeatBar heat_bar;\n    heat_bar.value = 0.28;\n    // Coloured along the theme's heat ramp, like btop's temperatures.\n  draw_heat_bar(s, heat_bar);\n  }\n  draw_heat_bar(s.sub(Rect{0, 1, s.rect().width, 1}), heat_bar);\n  }\n  draw_heat_bar(s.sub(Rect{0, 2, s.rect().width, 1}), heat_bar);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc exampleheatBar(ui: UI) =\n  ui.heatbar(0.72)",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def heat_bar(ui)\n  ui.heatbar(0.28)\n  ui.heatbar(0.64)\n  ui.heatbar(0.91)\nend",
           "syntax": "ruby"
@@ -1260,6 +1350,10 @@
         "cpp": {
           "code": "void widget_gauge(Surface s) {\n  // A semicircular dial. Wants at least nine columns by five rows.\n  draw_gauge(s, 0.62, \"62%\");\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplegauge(ui: UI) =\n  ui.gauge(0.72, %*{\"label\": \"CPU\"})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def gauge(ui)\n  # A semicircular dial. Wants at least nine columns by five rows.\n  ui.gauge(0.62, label: '62%')\nend",
@@ -1316,6 +1410,10 @@
           "code": "void widget_donut(Surface s) {\n  const auto &t = theme(s);\n  Donut d;\n  d.segments = {{4.65, t.primary, \"Used\"}, {10.96, t.warning, \"Free\"}};\n  draw_donut(s, d);\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc exampledonut(ui: UI) =\n  ui.donut(%*[{\"value\": 60, \"label\": \"Used\", \"color\": \"primary\"}, {\"value\": 40, \"label\": \"Free\", \"color\": \"muted\"}])",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def donut(ui)\n  ui.donut([{ value: 4.65, label: 'Used' }, { value: 10.96, label: 'Free' }])\nend",
           "syntax": "ruby"
@@ -1370,6 +1468,10 @@
         "cpp": {
           "code": "void widget_button(Surface s) {\n  {\n    Button button;\n    button.label = \"Danger\";\n    button.variant = HQ_BUTTON_DANGER;\n    {\n    Button button;\n    button.label = \"Success\";\n    button.variant = HQ_BUTTON_SUCCESS;\n    {\n    Button button;\n    button.label = \"Primary\";\n    draw_button(s.sub(Rect{0, 0, 11, 1}), button);\n  }\n  draw_button(s.sub(Rect{12, 0, 11, 1}), button);\n  }\n  draw_button(s.sub(Rect{24, 0, 10, 1}), button);\n  }\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc examplebutton(ui: UI) =\n  ui.button(\"Deploy\", %*{\"focused\": true})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def button(ui)\n  # variant: 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n  ui.button('Primary')\nend",
@@ -1426,6 +1528,10 @@
           "code": "void widget_checkbox(Surface s) {\n  {\n    Checkbox checkbox;\n    checkbox.label = \"Checkbox\";\n    {\n    Checkbox checkbox;\n    checkbox.label = \"Toggle\";\n    checkbox.checked = true;\n    checkbox.variant = HQ_CHECKBOX_TOGGLE;\n    draw_checkbox(s.sub(Rect{0, 0, 14, 1}),\n                checkbox);\n  }\n  draw_checkbox(s.sub(Rect{16, 0, 14, 1}), checkbox);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplecheckbox(ui: UI) =\n  ui.checkbox(\"Auto-refresh\", %*{\"checked\": true})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def checkbox(ui)\n  ui.checkbox('Toggle', checked: true, variant: 1)\n  ui.checkbox('Checkbox', checked: false)\nend",
           "syntax": "ruby"
@@ -1480,6 +1586,10 @@
         "cpp": {
           "code": "void widget_select(Surface s) {\n  {\n    Select select;\n    select.value = \"Dracula\";\n    select.open = true;\n    select.options = {\"Dark\", \"Dracula\", \"Nord\", \"Tokyo Night\"};\n    select.selected_index = 1;\n    select.width = 20;\n    draw_select(s, select);\n  }\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc exampleselect(ui: UI) =\n  ui.select(\"Production\", %*{\"options\": [\"Production\", \"Staging\"], \"selected\": 0})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def select(ui)\n  ui.select('Dracula', open: true, options: %w[Dark Dracula Nord], selected: 1)\nend",
@@ -1536,6 +1646,10 @@
           "code": "void widget_text_input(Surface s) {\n  {\n    TextInput text_input;\n    text_input.placeholder = \"type to filter…\";\n    text_input.label = \"Filter\";\n    {\n    TextInput text_input;\n    text_input.value = \"postgres\";\n    text_input.label = \"Search\";\n    draw_text_input(s, text_input);\n  }\n  draw_text_input(s.sub(Rect{0, 2, s.rect().width, 1}),\n                  text_input);\n  }\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc exampletextInput(ui: UI) =\n  ui.input(\"web-01\", %*{\"label\": \"Host\", \"focused\": true})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def text_input(ui)\n  ui.input('postgres', label: 'Search')\nend",
           "syntax": "ruby"
@@ -1590,6 +1704,10 @@
         "cpp": {
           "code": "void widget_tabs(Surface s) {\n  {\n    Tabs tabs;\n    tabs.tabs = {\"1 dashboard\", \"2 traffic\", \"3 sessions\", \"4 network\"};\n    tabs.active = 1;\n    draw_tabs(s, tabs);\n  }\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc exampletabs(ui: UI) =\n  ui.tabs(%*[\"Overview\", \"Network\", \"Services\"], %*{\"active\": 1})",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def tabs(ui)\n  ui.tabs(['1 dashboard', '2 traffic', '3 sessions'], active: 1)\nend",
@@ -1646,6 +1764,10 @@
           "code": "void widget_modal(Surface s) {\n  // Overlays draw over everything already on the screen, centred.\n  Modal modal;\n  modal.title = \"Confirm Action\";\n  modal.message = \"Terminate process 4821 (postgres)?\";\n  modal.width = 46;\n  modal.height = 9;\n  ModalButton yes;\n  yes.label = \"Yes\";\n  yes.variant = HQ_BUTTON_SUCCESS;\n  yes.focused = true;\n  ModalButton no;\n  no.label = \"No\";\n  no.variant = HQ_BUTTON_GHOST;\n  modal.buttons = {yes, no};\n  draw_modal(s, modal);\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplemodal(ui: UI) =\n  ui.modal(%*{\"title\": \"Deploy?\", \"message\": \"Update production now?\", \"buttons\": [{\"label\": \"Cancel\"}, {\"label\": \"Deploy\", \"focused\": true}]})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def modal(ui)\n  # Overlays draw over everything already on the screen, centered.\n  # variant is 0 primary, 1 success, 2 warning, 3 danger, 4 ghost.\n  ui.modal(\n    title: 'Confirm Action',\n    width: 46,\n    height: 9,\n    message: \"Terminate process 4821 (postgres)?\\n\\nThis cannot be undone.\",\n    buttons: [\n      { label: 'Yes', variant: 1, focused: true },\n      { label: 'No', variant: 4 }\n    ]\n  )\nend",
           "syntax": "ruby"
@@ -1701,6 +1823,10 @@
           "code": "void widget_command_palette(Surface s) {\n  CommandPalette palette;\n  palette.query = \"the\";\n  palette.items = {{\"Toggle theme\", \"F2\"}, {\"Filter processes\", \"F3\"}, {\"Sort by memory\", \"F6\"}};\n  draw_command_palette(s, palette);\n}",
           "syntax": "cpp"
         },
+        "nim": {
+          "code": "proc examplecommandPalette(ui: UI) =\n  ui.commandPalette(%*{\"query\": \"de\", \"items\": [{\"label\": \"Deploy\", \"hint\": \"production\"}, {\"label\": \"Describe\"}], \"selected\": 0})",
+          "syntax": "nim"
+        },
         "ruby": {
           "code": "def command_palette(ui)\n  ui.command_palette(\n    query: 'the',\n    items: [\n      { label: 'Toggle theme', hint: 'F2' },\n      { label: 'Filter processes', hint: 'F3' },\n      { label: 'Sort by memory', hint: 'F6' }\n    ],\n    selected: 0\n  )\nend",
           "syntax": "ruby"
@@ -1755,6 +1881,10 @@
         "cpp": {
           "code": "void widget_tooltip(Surface s) {\n  draw_text(s, \"Tooltips are overlays positioned at a cell.\");\n  {\n    Tooltip tooltip;\n    tooltip.text = \"swap is 87% full\";\n    tooltip.x = 6;\n    tooltip.y = 3;\n    draw_tooltip(s, tooltip);\n  }\n}",
           "syntax": "cpp"
+        },
+        "nim": {
+          "code": "proc exampletooltip(ui: UI) =\n  ui.text(\"Hover for details\")\n  ui.tooltip(\"CPU usage\", 4, 2)",
+          "syntax": "nim"
         },
         "ruby": {
           "code": "def tooltip(ui)\n  ui.text('Tooltips are overlays positioned at a cell, for hover and hints.')\n  ui.tooltip('swap is 87% full', x: 6, y: 3)\nend",

@@ -45,7 +45,7 @@ class Updater(unittest.TestCase):
         # version: these tests cover updating and caching, not the version gate,
         # and must not depend on how new the host interpreter happens to be.
         host = subprocess.check_output(["python3", "--version"], text=True).split()[-1]
-        (self.repo / "mise.toml").write_text(f'[tools]\nbun = "1.4.0"\npython = "{host}"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\ncmake = "4.4.3"\nruby = "4.0.6"\n"conda:php" = "8.5.9"\nperl = "5.44.0.0"\n')
+        (self.repo / "mise.toml").write_text(f'[tools]\nbun = "1.4.0"\npython = "{host}"\nrust = "1.97.1"\ngo = "1.26.0"\nzig = "0.16.0"\ncmake = "4.4.3"\nruby = "4.0.6"\n"conda:php" = "8.5.9"\nperl = "5.44.0.0"\nnim = "2.2.4"\n')
         (self.repo / ".gitignore").write_text('__pycache__/\ndist/\n')
         path = self.repo / "ports/python/examples"
         path.mkdir(parents=True, exist_ok=True)
@@ -54,7 +54,7 @@ class Updater(unittest.TestCase):
             'import json, os, sys\n'
             f'print(json.dumps({{"revision": {label!r}, "args": sys.argv[1:], "cwd": os.getcwd(), "tty": os.isatty(0), "tmpdir": os.environ.get("TMPDIR")}}), flush=True)\n'
             'if "--wait" in sys.argv: input()\n')
-        for language in ("typescript", "rust", "go", "zig", "cpp", "ruby", "php", "perl"):
+        for language in ("typescript", "rust", "go", "zig", "cpp", "ruby", "php", "perl", "nim"):
             (self.repo / "ports" / language).mkdir(exist_ok=True)
             (self.repo / "ports" / language / "source").write_text(label)
         self.git("add", ".")
@@ -116,7 +116,7 @@ import json, os, pathlib, sys, tempfile
 tool=pathlib.Path(sys.argv[0]).name
 args=sys.argv[1:]
 with open(os.environ["UPDATER_TEST_LOG"],"a") as log: log.write(json.dumps([tool,*args])+"\\n")
-pins={'bun':'1.4.0','cargo':'1.97.1','go':'1.26.0','zig':'0.16.0','cmake':'4.4.3','ruby':'4.0.6','perl':'5.44.0.0'}
+pins={'bun':'1.4.0','cargo':'1.97.1','go':'1.26.0','zig':'0.16.0','cmake':'4.4.3','ruby':'4.0.6','perl':'5.44.0.0','nim':'2.2.4'}
 reported=os.environ.get('UPDATER_'+tool.upper()+'_VERSION',pins.get(tool,''))
 # The launcher probes each system tool before building. Answer in the shape the
 # real tool answers: a bare number, or a number buried in a sentence.
@@ -127,7 +127,7 @@ if tool!='php-config' and (args[:1]==['--version'] or (tool in ('go','zig') and 
 if tool=='perl' and args[:1]==['-e'] and '$^V' in args[1]:
     print('.'.join(reported.split('.')[:3]),end='') # Perl reports three fields; mise pins four.
     sys.exit(0)
-if tool in ('cmake','cargo','go','zig'):
+if tool in ('cmake','cargo','go','zig','nim'):
     expected=pathlib.Path(os.environ['HQTUI_DEMO_CACHE'])/'v1/tmp'
     assert pathlib.Path(os.environ['TMPDIR'])==expected, 'compiler scratch escaped demo cache'
     with tempfile.TemporaryFile(dir=os.environ['TMPDIR']) as scratch: scratch.write(b'compiler scratch')
@@ -163,6 +163,9 @@ elif tool=="bun":
         sys.exit(0)
     print(json.dumps(dict(revision=pathlib.Path(args[0]).read_text(),args=args[1:])))
     sys.exit(0)
+elif tool=="nim":
+    assert args[0]=='c'
+    output=pathlib.Path(next(arg.split(':',1)[1] for arg in args if arg.startswith('--out:')))
 elif tool=="cargo":
     assert args==["build","--release","--example","dashboard"]
     output=pathlib.Path(os.environ["CARGO_TARGET_DIR"])/"release/examples/dashboard"
@@ -186,12 +189,12 @@ elif tool=="cmake":
     assert args[0]=="--build" and args[2:4]==["--target","hqtui-demo-cpp"]
     output=pathlib.Path(args[1])/"hqtui-demo-cpp"
 else: raise AssertionError(tool)
-label=(pathlib.Path(args[1])/"source" if tool=="cmake" else pathlib.Path("source")).read_text()
+label=(pathlib.Path(args[1])/"source" if tool=="cmake" else pathlib.Path(args[-1]).parents[1]/"source" if tool=="nim" else pathlib.Path("source")).read_text()
 output.parent.mkdir(parents=True,exist_ok=True)
 output.write_text("#!/usr/bin/env python3\\nimport json,sys\\nprint(json.dumps(dict(revision="+repr(label)+",args=sys.argv[1:])))\\n")
 output.chmod(0o700)
 '''
-        for name in ("mise", "bun", "cargo", "go", "zig", "cmake", "ruby", "php", "perl", "php-config"):
+        for name in ("mise", "bun", "cargo", "go", "zig", "cmake", "ruby", "php", "perl", "php-config", "nim"):
             path = self.bin / name
             path.write_text(code)
             path.chmod(0o700)
@@ -295,6 +298,7 @@ output.chmod(0o700)
             "python": (ROOT / "ports/python/pyproject.toml", r'requires-python\s*=\s*">=\s*([0-9.]+)"'),
             "ruby": (ROOT / "ports/ruby/hqtui.gemspec", r"required_ruby_version\s*=\s*'>=\s*([0-9.]+)'"),
             "php": (ROOT / "ports/php/composer.json", r'"php":\s*">=\s*([0-9.]+)"'),
+            "nim": (ROOT / "ports/nim/hqtui.nimble", r'requires "nim >= ([0-9.]+)"'),
             "cpp": (ROOT / "ports/cpp/CMakeLists.txt", r"cmake_minimum_required\(VERSION ([0-9.]+)"),
         }
         for language, (path, pattern) in manifests.items():
@@ -319,23 +323,23 @@ output.chmod(0o700)
     def test_bindings_update_both_managers_and_keep_builds_outside_source(self):
         self.stub_compilers()
         for manager in ('--system', '--mise'):
-            for language in ('ruby', 'php', 'perl'):
+            for language in ('ruby', 'php', 'perl', 'nim'):
                 result=self.run_demo(manager,language,'--snapshot','literal argument')
                 self.assertEqual(result.returncode,0,result.stderr)
                 self.assertEqual(json.loads(result.stdout),dict(revision='first',args=['--snapshot','literal argument']))
         def builds():
             return sum(json.loads(line)[:2]==['cmake','--build'] for line in (self.root/'tools.jsonl').read_text().splitlines())
         count=builds()
-        self.assertEqual(count,8) # engine × three languages, plus PHP adapter; two managers
-        for language in ('ruby','php','perl'):
+        self.assertEqual(count,10) # engine × four languages, plus PHP adapter; two managers
+        for language in ('ruby','php','perl','nim'):
             self.assertEqual(self.run_demo('--mise',language,'--version').returncode,0)
         self.assertEqual(builds(),count)
         self.commit('second')
-        for language in ('ruby','php','perl'):
+        for language in ('ruby','php','perl','nim'):
             result=self.run_demo('--mise',language,'--snapshot')
             self.assertEqual(result.returncode,0,result.stderr)
             self.assertEqual(json.loads(result.stdout)['revision'],'second')
-        self.assertEqual(builds(),count+4)
+        self.assertEqual(builds(),count+5)
         self.assertFalse((self.root/'cache/v1/update.lock').exists())
 
     def test_failed_binding_build_retries_with_private_scratch_without_ready_marker(self):

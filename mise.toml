@@ -10,6 +10,7 @@ cmake = "4.4.3"
 ruby = "4.0.6"
 "conda:php" = "8.5.9"
 perl = "5.44.0.0"
+nim = "2.2.4"
 # The cookbook: markdown in, PDF and EPUB out. Typst is pandoc's PDF engine
 # here, so the book builds without a LaTeX installation.
 pandoc = "3.11"
@@ -112,3 +113,7 @@ run = ["cmake -S ports/cpp -B ports/cpp/build -DCMAKE_BUILD_TYPE=Release -DBUILD
 [tasks."bench:cpp"]
 description = "Matched C/C++/TypeScript core benchmarks; not full-demo FPS"
 run = ["cmake -S ports/cpp -B ports/cpp/build-release -DCMAKE_BUILD_TYPE=Release -DHQTUI_LTO=ON", "cmake --build ports/cpp/build-release --parallel", "bun apps/benchmark/src/compare-native-core.ts"]
+
+[tasks."demo:nim"]
+description = "Update and run the Nim binding demo"
+run = "sh apps/web/public/demo.sh --mise nim"

@@ -3,7 +3,7 @@
 </p>
 <p align="center"><strong>High Quality Terminal UI</strong><br>
 btop-grade dashboards with a one-import API, dark by default, zero runtime dependencies.<br>
-TypeScript, Rust, Go, Python, Zig, C++, Ruby, PHP and Perl.</p>
+TypeScript, Rust, Go, Python, Zig, C++, Ruby, PHP, Perl and Nim.</p>
 <p align="center">
   <a href="https://hqtui.com">hqtui.com</a> ·
   <a href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a> ·
@@ -23,6 +23,7 @@ TypeScript, Rust, Go, Python, Zig, C++, Ruby, PHP and Perl.</p>
   <a href="ports/cpp/"><img src="https://img.shields.io/badge/C%2B%2B-demo-00599C?logo=cplusplus&logoColor=white" alt="C++ demo"></a>
   <a href="ports/bindings/"><img src="https://img.shields.io/badge/Ruby-bindings-CC342D?logo=ruby&logoColor=white" alt="Ruby bindings"></a>
   <a href="ports/bindings/"><img src="https://img.shields.io/badge/PHP-bindings-777BB4?logo=php&logoColor=white" alt="PHP bindings"></a>
+  <a href="ports/nim/"><img src="https://img.shields.io/badge/Nim-bindings-FFE953?logo=nim&logoColor=black" alt="Nim bindings"></a>
   <a href="ports/bindings/"><img src="https://img.shields.io/badge/Perl-bindings-39457E?logo=perl&logoColor=white" alt="Perl bindings"></a>
 </p>
 
@@ -63,7 +64,7 @@ deno add npm:@profullstack/hqtui    # Deno 2
 ```
 
 The API below is the TypeScript reference implementation. Rust, Go, Python, Zig,
-C++, Ruby, PHP and Perl each have their own idiomatic API over the same
+C++, Ruby, PHP, Perl and Nim each have their own idiomatic API over the same
 rendering model: see [Other languages](#other-languages).
 
 ## Hello, terminal
@@ -191,6 +192,7 @@ curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system cpp
 curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system ruby
 curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system php
 curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system perl
+curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system nim
 ```
 
 `--system` uses the toolchain you already have installed. Swap it for `--mise`
@@ -211,7 +213,7 @@ cd ports/python && python examples/dashboard.py      # Python
 cd ports/zig    && zig build run-dashboard           # Zig
 ```
 
-C++, Ruby, PHP and Perl build a native library first; their READMEs have the
+C++, Ruby, PHP, Perl and Nim build a native library first; their READMEs have the
 CMake invocation.
 
 ### Traffic — every protocol in and out of the host
@@ -406,7 +408,7 @@ packages/hqtui   the library
 apps/demo        the reference dashboard (real + simulated data)
 apps/web         hqtui.com
 examples/        small, focused programs
-ports/           Rust, Go, Python, Zig, C, C++ and the Ruby/PHP/Perl bindings
+ports/           Rust, Go, Python, Zig, C, C++ and the Ruby/PHP/Perl/Nim bindings
 docs/            the original PRD
 ```
 
@@ -428,6 +430,7 @@ and the same escape bytes, byte for byte.
 | [C++](ports/cpp/) | native demo on the C core; library API experimental | none | [README](ports/cpp/README.md) |
 | [Ruby](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
 | [PHP](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
+| [Nim](ports/nim/) | binding over the shared C ABI | the native engine | [README](ports/nim/README.md) |
 | [Perl](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
 
 The four native ports are ports, not bindings: no Node is in the picture at

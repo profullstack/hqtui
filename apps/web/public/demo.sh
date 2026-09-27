@@ -9,7 +9,7 @@ main() (
     note() { printf 'hqtui-demo: %s\n' "$*" >&2; }
     usage() {
         printf '%s\n' 'Usage: demo.sh [--mise|--system] [--check] LANGUAGE [demo arguments...]' \
-          'Languages: typescript (ts), rust, go, python, zig, cpp (c++), ruby, php, perl, cobol' \
+          'Languages: typescript (ts), rust, go, python, zig, cpp (c++), ruby, php, perl, nim, cobol' \
           'Every invocation fetches latest main. --check prints the revision without building.' \
           'Defaults to mise when installed, otherwise uses your installed compiler/runtime.' \
           'Examples: demo.sh rust --sim; demo.sh --mise rust --snapshot'
@@ -30,13 +30,13 @@ main() (
     language=$1; shift
     case "$language" in
         ts|typescript) language=typescript; tool=bun ;;
-        rust|go|python|zig|ruby|perl) tool=$language ;;
+        rust|go|python|zig|ruby|perl|nim) tool=$language ;;
         php) tool=conda:php ;;
         cpp|c++) language=cpp; tool=cmake ;;
         # COBOL does not link against the library: it writes records that an
         # adapter renders, so the toolchain it needs is the adapter's.
         cob|cobol) language=cobol; tool=bun ;;
-        *) fail "Unsupported language '$language'. Use typescript, rust, go, python, zig, cpp, ruby, php, perl or cobol. The C-only demo is not ready." ;;
+        *) fail "Unsupported language '$language'. Use typescript, rust, go, python, zig, cpp, ruby, php, perl, nim or cobol. The C-only demo is not ready." ;;
     esac
     # When invoked through curl | sh, the pipe is not the demo's keyboard.
     # Connect only interactive runs to the controlling terminal; preserve pipes
@@ -175,6 +175,7 @@ main() (
         ruby) minimum=3.1 ;;
         php) minimum=8.1 ;;
         perl) minimum=5.20 ;;
+        nim) minimum=2.2.4 ;;
     esac
     # Field-wise numeric comparison; absent trailing fields count as zero.
     version_ge() {
@@ -189,7 +190,7 @@ main() (
     }
     if [ "$manager" = system ]; then
         case "$language" in
-            typescript|cobol|rust|python|cpp|ruby) installed=$("$driver_path" --version 2>/dev/null) ;;
+            typescript|cobol|rust|python|cpp|ruby|nim) installed=$("$driver_path" --version 2>/dev/null) ;;
             go|zig) installed=$("$driver_path" version 2>/dev/null) ;;
             php) installed=$("$driver_path" -r 'echo PHP_VERSION;' 2>/dev/null) ;;
             perl) installed=$("$driver_path" -e 'printf "%vd", $^V' 2>/dev/null) ;;
@@ -228,7 +229,7 @@ main() (
     bins=$cache/bin/$platform/$manager-$tool-$version/$revision
     mkdir -p "$bins" "$cache/build"
     case "$language" in
-        ruby|php|perl)
+        ruby|php|perl|nim)
             case "$(uname -s)" in Linux) library_suffix=so ;; Darwin) library_suffix=dylib ;; *) fail 'These bindings currently support Linux/macOS.' ;; esac
             command -v "${CXX:-c++}" >/dev/null 2>&1 || fail 'A C++17 compiler (GCC/Clang) is required.'
             cmake_version=$(awk '$1 == "cmake" && $2 == "=" {gsub(/"/, "", $3); print $3; exit}' "$source/mise.toml")
@@ -286,6 +287,13 @@ main() (
             HQTUI_NATIVE_LIB=$binding_build/libhqtui_bindings.$library_suffix
             export HQTUI_NATIVE_LIB
             case "$language" in
+                nim)
+                    if [ ! -x "$bins/hqtui-demo-nim" ]; then
+                        run_tool nim c -d:release --hints:off --nimcache:"$binding_build/nimcache" --out:"$bins/hqtui-demo-nim.tmp" "$source/ports/nim/examples/dashboard.nim" >&2
+                        mv "$bins/hqtui-demo-nim.tmp" "$bins/hqtui-demo-nim"
+                    fi
+                    launch "$bins/hqtui-demo-nim" "$@"
+                    ;;
                 ruby)
                     run_tool ruby -rfiddle/import -e '' || fail 'Ruby needs Fiddle (gem install fiddle).'
                     launch ruby "$source/ports/ruby/examples/dashboard.rb" "$@"
