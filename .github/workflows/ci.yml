@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4.3.0
+      - uses: jdx/mise-action@v5.0.0
       - name: Verify update-and-run launcher isolation and fresh revisions
         run: python apps/demo/scripts/test-updater.py
       - run: mise run test:rust
@@ -150,7 +150,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4.3.0
+      - uses: jdx/mise-action@v5.0.0
       - name: Compile the COBOL program
         run: |
           printf 'FROM ubuntu:24.04\nRUN apt-get update -qq && apt-get install -y -qq gnucobol4 && rm -rf /var/lib/apt/lists/*\n' > /tmp/Dockerfile.cobol
