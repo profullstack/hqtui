@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { LANGUAGES, PORTS, LAUNCHER, latestDemo } from "../lib/languages.ts";
+import { LANGUAGES, PORTS, LAUNCHER, NIMBLE_INSTALL, latestDemo } from "../lib/languages.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
 
@@ -66,4 +66,14 @@ test("docs show demos and mise alternatives at the existing native language anch
   assert.ok(page.includes('LANGUAGES.find(({ id }) => id === "typescript")'));
   assert.ok(page.includes("command={TYPESCRIPT.interactiveDemo}"));
   assert.ok(page.includes("command={TYPESCRIPT.miseDemo}"));
+});
+
+test("only verified package-manager installs are listed, and the docs render them", () => {
+  assert.deepEqual(LANGUAGES.filter((language) => language.install).map(({ id, install }) => [id, install]),
+    [["nim", NIMBLE_INSTALL]]);
+  // The package lives in a monorepo subdirectory whose .nimble file must exist.
+  assert.ok(NIMBLE_INSTALL.endsWith("?subdir=ports/nim"));
+  assert.ok(existsSync(resolve(root, "ports/nim/hqtui.nimble")));
+  const page = readFileSync(resolve(root, "apps/web/app/docs/page.tsx"), "utf8");
+  assert.ok(page.includes("command={port.install}"));
 });

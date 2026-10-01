@@ -13,6 +13,11 @@ export type Language = {
   native: boolean;
   binding?: boolean;
   /**
+   * Adds the library to a project from the language's own package manager.
+   * Only for packages a real install has been verified from.
+   */
+  install?: string;
+  /**
    * Drives the library without linking against it: it writes records that an
    * adapter renders. Neither a port nor a binding.
    */
@@ -22,6 +27,8 @@ export type Language = {
 /** Optional developer checkout; public demo commands do not require it. */
 export const CLONE = "git clone https://github.com/profullstack/hqtui";
 export const LAUNCHER = "https://hqtui.com/demo.sh";
+/** Verified from the v0.7.1 tag; `nimble install hqtui` once nim-lang/packages#3554 merges. */
+export const NIMBLE_INSTALL = "nimble install https://github.com/profullstack/hqtui?subdir=ports/nim";
 export function latestDemo(language: string, mise = false): string {
   if (!["typescript", "rust", "go", "python", "zig", "cpp", "ruby", "php", "perl", "nim", "cobol"].includes(language)) throw new Error("Unsupported demo language");
   return `curl -fsSL ${LAUNCHER} | sh -s -- --${mise ? "mise" : "system"} ${language}`;
@@ -34,6 +41,7 @@ export const LANGUAGES: readonly Language[] = [
     demo: latestDemo(id), interactiveDemo: latestDemo(id),
     snapshotDemo: `${latestDemo(id)} --snapshot`, miseDemo: latestDemo(id, true),
     native: true, binding: true,
+    ...(id === "nim" ? { install: NIMBLE_INSTALL } : {}),
   })),
   {
     name: "C++",
