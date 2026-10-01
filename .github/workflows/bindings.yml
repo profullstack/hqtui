@@ -9,6 +9,54 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  # What `nimble install hqtui` gets: the vendored engine must match ports/c,
+  # ports/cpp and ports/bindings, `nimble test` must pass, and an installed copy
+  # must build a program with no checkout or shared library around it.
+  nim-package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5.0.0
+        with:
+          install: false
+      - name: Install Nim
+        run: mise install nim@2.2.12
+      - name: Vendored engine matches its sources
+        shell: bash
+        run: |
+          sh ports/nim/tools/vendor.sh
+          changes=$(git status --porcelain --untracked-files=all -- ports/nim/src/hqtui/engine)
+          if [ -n "$changes" ]; then
+            printf '%s\n' "$changes"
+            git --no-pager diff --stat -- ports/nim/src/hqtui/engine
+            echo "::error::ports/nim/src/hqtui/engine is stale. Run sh ports/nim/tools/vendor.sh and commit the result."
+            exit 1
+          fi
+      - name: nimble test
+        working-directory: ports/nim
+        run: mise exec nim@2.2.12 -- nimble test
+      - name: nimble install, then build against the installed package
+        shell: bash
+        run: |
+          scratch="$RUNNER_TEMP/nimble-install"
+          mkdir -p "$scratch/app"
+          (cd ports/nim && mise exec nim@2.2.12 -- nimble install -y --nimbleDir:"$scratch/nimble")
+          cat > "$scratch/app/hello.nim" <<'EOF'
+          import std/strutils, hqtui
+          let ui = newUI()
+          ui.panel("Installed", proc(p: UI) = p.meter(0.5, %*{"label": "CPU"}))
+          var scene = newScene(30, 4)
+          scene.set(ui)
+          let frame = scene.render()
+          doAssert "Installed" in frame and "CPU" in frame, frame
+          echo frame
+          EOF
+          cd "$scratch/app"
+          mise exec nim@2.2.12 -- nim c -r --hints:off --nimblePath:"$scratch/nimble/pkgs2" hello.nim
   bindings:
     strategy:
       fail-fast: false

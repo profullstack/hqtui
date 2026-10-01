@@ -6,7 +6,8 @@ uses the C++ layout/widgets plus the C11 framebuffer/diff renderer. The JSON tre
 is retained and only reparsed on `set`, not on every render. No per-cell FFI calls,
 JSON subprocess pipe, JavaScript runtime or child demo executable is involved.
 
-Nim uses its built-in C FFI and requires Nim 2.2.4+; see [Nim](../nim/README.md).
+Nim compiles the engine from source into the program (no shared library) and
+requires Nim 2.2.4+; it installs with Nimble, see [Nim](../nim/README.md).
 Ruby uses Fiddle. Perl uses FFI::Platypus. PHP prefers a tiny compiled Zend adapter
 to the same C ABI (so FFI need not be enabled); an FFI path is available otherwise.
 The full ten-screen example calls the shared C++ demo **inside the language VM**,
@@ -57,10 +58,10 @@ matching the PHP binary, then build target `hqtui_php`. Run PHP with
 to the current invocation and does not edit php.ini. Without the adapter, PHP
 must provide its FFI extension and permit CLI FFI calls.
 
-The loaders find this conventional checkout build or use `HQTUI_NATIVE_LIB` to
-select an explicitly installed shared library. Copying a binding package alone
-does not install the engine. RubyGems/Composer/CPAN metadata is included, but these
-new packages have **not** been published to those registries.
+The Ruby, PHP and Perl loaders find this conventional checkout build or use
+`HQTUI_NATIVE_LIB` to select an explicitly installed shared library. Copying one of
+those packages alone does not install the engine. RubyGems/Composer/CPAN metadata is
+included, but those packages have **not** been published to their registries.
 
 ## API and tests
 

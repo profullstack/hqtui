@@ -67,6 +67,17 @@ test("every version badge on the site matches the library", () => {
   for (const v of found) assert.equal(v, versionOf("packages", "hqtui"), `page.tsx has ${v}`);
 });
 
+test("the Nim package is versioned with the library", () => {
+  // Nimble resolves `nimble install hqtui` to the newest vX.Y.Z tag of this
+  // repository and reads ports/nim/hqtui.nimble there, so the two must agree
+  // or the registry installs a package that reports another version.
+  const library = versionOf("packages", "hqtui");
+  const nimble = allMatches(read("ports", "nim", "hqtui.nimble"), /^version\s*=\s*"([^"]+)"/gm);
+  assert.deepEqual(nimble, [library], `hqtui.nimble has ${nimble.join(", ")}`);
+  const source = allMatches(read("ports", "nim", "src", "hqtui.nim"), /^const version\*\s*=\s*"([^"]+)"/gm);
+  assert.deepEqual(source, [library], `hqtui.nim has ${source.join(", ")}`);
+});
+
 /**
  * Whether `version` satisfies `range`, for the range forms this repo uses.
  * Returns null for anything else so the caller fails loudly rather than

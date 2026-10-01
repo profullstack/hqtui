@@ -1,14 +1,54 @@
 ## Nim API over HQTUI's shared native rendering engine (ABI 1).
 ## Scenes own their handles, cannot be copied, and restore terminals on destruction.
-import std/[json, os]
+## The engine is compiled from source into the program (src/hqtui/engine, a
+## generated copy of ports/c, ports/cpp and ports/bindings), so a Nimble install
+## needs only Nim and a C/C++17 compiler: no CMake and no shared library.
+import std/[json, os, strutils]
 export json
 
-const version* = "0.1.0"
-const checkoutLibrary = currentSourcePath().parentDir / "../../cpp/build-bindings" /
-  (when defined(macosx): "libhqtui_bindings.dylib" else: "libhqtui_bindings.so")
-proc libraryPath(): string = getEnv("HQTUI_NATIVE_LIB", checkoutLibrary)
+const version* = "0.7.1"
 
-{.push cdecl, dynlib: libraryPath(), importc.}
+const
+  engine = currentSourcePath().parentDir / "hqtui" / "engine"
+  engineVersion = staticRead(engine / "VERSION").strip()
+  includes = block:
+    var flags = ""
+    for dir in ["c/include", "cpp/include", "cpp/demo", "cpp/demo/generated", "bindings/include"]:
+      flags.add " -I" & quoteShell(engine / dir)
+    flags
+  # -ffp-contract=off keeps each operation rounded like the TypeScript reference;
+  # a fused multiply-add can move a glyph or colour boundary on ARM.
+  cFlags = "-std=c11 -ffp-contract=off" & includes
+  cppFlags = "-std=c++17 -ffp-contract=off -pthread" & includes &
+    " " & quoteShell("-DHQTUI_DEMO_VERSION=\"" & engineVersion & "\"")
+
+{.compile(engine / "c/src/color.c", cFlags).}
+{.compile(engine / "c/src/unicode.c", cFlags).}
+{.compile(engine / "c/src/buffer.c", cFlags).}
+{.compile(engine / "c/src/layout.c", cFlags).}
+{.compile(engine / "c/src/diff.c", cFlags).}
+{.compile(engine / "c/src/theme.c", cFlags).}
+{.compile(engine / "c/src/surface.c", cFlags).}
+{.compile(engine / "cpp/src/widgets.cpp", cppFlags).}
+{.compile(engine / "cpp/src/scrollbar.cpp", cppFlags).}
+{.compile(engine / "cpp/src/chart.cpp", cppFlags).}
+{.compile(engine / "cpp/src/calendar.cpp", cppFlags).}
+{.compile(engine / "cpp/src/canvas.cpp", cppFlags).}
+{.compile(engine / "cpp/src/shadow.cpp", cppFlags).}
+{.compile(engine / "cpp/src/world.cpp", cppFlags).}
+{.compile(engine / "cpp/src/world_data.cpp", cppFlags).}
+{.compile(engine / "cpp/demo/collect.cpp", cppFlags).}
+{.compile(engine / "cpp/demo/dashboard.cpp", cppFlags).}
+{.compile(engine / "cpp/demo/telemetry.cpp", cppFlags).}
+{.compile(engine / "cpp/demo/showcase.cpp", cppFlags).}
+{.compile(engine / "bindings/src/bridge.cpp", cppFlags).}
+when defined(macosx):
+  {.passL: "-lc++".}
+else:
+  {.passL: "-lstdc++ -pthread".}
+{.passL: "-lm".}
+
+{.push cdecl, importc.}
 proc hqb_abi_version(): cint
 proc hqb_error(): cstring
 proc hqb_create(width, height: cint, theme: cstring): pointer

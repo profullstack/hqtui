@@ -103,11 +103,12 @@ export default async function Docs() {
           <P>
             Ruby, PHP, Perl and Nim are bindings, not independent renderer ports. Their widget
             APIs submit batched scene updates; the shared ten-screen demo, collectors and
-            terminal loop execute inside the calling runtime. They need GCC/Clang and CMake.
+            terminal loop execute inside the calling runtime. They need GCC/Clang, and Ruby,
+            PHP and Perl also need CMake.
             Ruby needs Fiddle; Perl needs FFI::Platypus (the launcher installs it into its
             private cache using cpanm if missing). PHP uses a small native adapter built
             with matching php-config/development headers, or FFI when available.
-            Nim uses its built-in C FFI and needs Nim 2.2.4 or newer.
+            Nim compiles the engine into the program from source and needs Nim 2.2.4 or newer.
             Mise supplies pinned Ruby/Perl/Nim, prebuilt PHP via its Conda backend, and CMake.
             No system packages or global gems/CPAN modules are installed by the launcher.
           </P>
