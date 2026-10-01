@@ -4,26 +4,36 @@ Nim 2.2.4+ bindings to the shared C/C++ engine, with no Nim package dependencies
 Build custom widget trees in Nim or run the full ten-screen dashboard in the same
 process. Linux and macOS are supported; live metrics require Linux.
 
-## Build and run
-
-From the repository root, with Nim, a C/C++17 compiler and CMake 3.20+ installed:
+## Install
 
 ```sh
-cmake -S ports/cpp -B ports/cpp/build-bindings \
-  -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
-  -DBUILD_TESTING=OFF -DHQTUI_BUILD_BINDINGS=ON
-cmake --build ports/cpp/build-bindings --target hqtui_bindings --parallel 2
+nimble install https://github.com/profullstack/hqtui?subdir=ports/nim
+```
+
+`nimble install hqtui` works the same way once the package is listed in
+[nim-lang/packages](https://github.com/nim-lang/packages). Nimble picks the
+newest `vX.Y.Z` tag, and the package version follows the hqtui release.
+
+The engine is compiled from source into your program: the package carries a
+copy of `ports/c`, `ports/cpp` and `ports/bindings` in `src/hqtui/engine`, built
+through Nim's `compile` pragma. You need Nim 2.2.4+ and a C11/C++17 compiler
+(GCC or Clang); there is no CMake step, no shared library and nothing to set at
+run time. The first build of a program compiles the engine (about 20 seconds);
+later builds reuse the objects in its nimcache.
+
+## Build and run from a checkout
+
+```sh
 nim c -r ports/nim/examples/hello.nim
 nim c -r -d:release ports/nim/examples/dashboard.nim --sim
 nim c -r ports/nim/examples/widgets.nim
+cd ports/nim && nimble test
 ```
 
-The loader uses that checkout build by default. Set `HQTUI_NATIVE_LIB` to the
-absolute path of `libhqtui_bindings.so` (Linux) or `libhqtui_bindings.dylib`
-(macOS) when installing or moving the executable. The library must remain
-available at runtime. Nimble metadata is included; this package is not published.
+`src/hqtui/engine` is generated. After changing the C, C++ or binding sources,
+run `sh ports/nim/tools/vendor.sh`; CI fails when the copy differs.
 
-Once this change is on main, the latest-source launcher supports both forms:
+The latest-source launcher runs the demo without a checkout:
 
 ```sh
 curl -fsSL https://hqtui.com/demo.sh | sh -s -- --system nim
@@ -49,7 +59,7 @@ stdout.write scene.render()
 scene.close()
 ```
 
-Compile with `--path:ports/nim/src` when using the checkout. Each widget accepts
+Compile with `--path:ports/nim/src` when using the checkout instead of Nimble. Each widget accepts
 an optional JSON object for options, with the same fields as the
 [shared protocol](../bindings/PROTOCOL.md). Arrays and records use Nim's `%*`
 JSON literal macro, exported by `hqtui`. Named procedures cover every widget in
@@ -79,6 +89,10 @@ Ruby, PHP and Perl. It includes all shared widgets, nine themes, overlays,
 headless output and the full interactive demo. It does not implement the larger
 TypeScript API independently: modal content uses protocol fields rather than
 arbitrary nested widgets, and input is not a high-level event/callback API.
+
+`nimble test` runs the API suite and replays the `demo-parity` conformance
+group (240 TypeScript reference frames). The shared binding runner checks the
+same frames across Ruby, PHP, Perl and Nim, plus interactive behaviour:
 
 ```sh
 sh ports/nim/tests/build.sh

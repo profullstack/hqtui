@@ -213,8 +213,9 @@ cd ports/python && python examples/dashboard.py      # Python
 cd ports/zig    && zig build run-dashboard           # Zig
 ```
 
-C++, Ruby, PHP, Perl and Nim build a native library first; their READMEs have the
-CMake invocation.
+C++, Ruby, PHP and Perl build a native library first; their READMEs have the
+CMake invocation. Nim compiles the engine into the program itself:
+`nim c -r ports/nim/examples/dashboard.nim`.
 
 ### Traffic — every protocol in and out of the host
 
@@ -430,7 +431,7 @@ and the same escape bytes, byte for byte.
 | [C++](ports/cpp/) | native demo on the C core; library API experimental | none | [README](ports/cpp/README.md) |
 | [Ruby](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
 | [PHP](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
-| [Nim](ports/nim/) | binding over the shared C ABI | the native engine | [README](ports/nim/README.md) |
+| [Nim](ports/nim/) | binding over the shared C ABI, engine compiled in; `nimble install https://github.com/profullstack/hqtui?subdir=ports/nim` | none (vendored engine) | [README](ports/nim/README.md) |
 | [Perl](ports/bindings/) | binding over the shared C ABI | the native engine | [README](ports/bindings/README.md) |
 
 The four native ports are ports, not bindings: no Node is in the picture at
