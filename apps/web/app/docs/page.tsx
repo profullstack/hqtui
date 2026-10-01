@@ -140,6 +140,12 @@ export default async function Docs() {
               <section key={port.id} id={port.id} className="min-w-0 scroll-mt-20">
                 <h3 className="text-xl font-bold">{port.name}</h3>
                 <p className="mt-2 text-sm text-white/60">{port.description}</p>
+                {port.install && (
+                  <>
+                    <p className="mt-3 text-sm text-white/60">Install the library</p>
+                    <CommandBlock className="mt-2" command={port.install} label={`${port.name} install`} />
+                  </>
+                )}
                 <p className="mt-3 text-sm text-white/60">Interactive dashboard</p>
                 <CommandBlock className="mt-2" command={port.interactiveDemo} label={`${port.name} demo`} />
                 <p className="mt-4 text-sm text-white/60">With mise</p>
