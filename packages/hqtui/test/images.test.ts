@@ -14,7 +14,10 @@ import { cellText } from "../src/unicode.ts";
 // The 8-byte PNG signature is all the store checks.
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
 const okFetch = (async () => new Response(PNG)) as unknown as typeof fetch;
-const tick = () => new Promise((r) => setTimeout(r, 20));
+/** Wait until `done()` holds (the load is real async I/O), up to two seconds. */
+async function until(done: () => boolean): Promise<void> {
+  for (let i = 0; i < 200 && !done(); i++) await new Promise((r) => setTimeout(r, 10));
+}
 
 test("images turn on in Kitty and Ghostty, on request, and never by surprise", () => {
   assert.equal(imageSupport({ TERM: "xterm-kitty" }), "kitty");
@@ -56,7 +59,7 @@ test("emoji draw as text until their artwork loads, then as image cells with the
   const before = renderToScreen(view, { width: 10, height: 1 });
   assert.equal(cellText(before.buffer.chars[3]), "🚀", "the character first");
 
-  await tick();
+  await until(() => redraws > 0);
   assert.equal(redraws, 1);
   assert.equal(writes.length, 1);
   assert.match(writes[0], /a=T,U=1,f=100,i=1,c=2,r=1/);
