@@ -52,6 +52,9 @@ export type ImageSupport = "kitty" | "iterm" | "none";
 export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport {
   const setting = (env.HQTUI_IMAGES ?? "").toLowerCase();
   if (setting === "0" || setting === "off" || setting === "false") return "none";
+  // Mosh redraws the screen from its own copy of the text and drops every image
+  // escape, so images could only leave blank cells. Not even when asked for.
+  if (behindMosh(env)) return "none";
   if (setting === "1" || setting === "on" || setting === "true" || setting === "kitty" || setting === "ghostty") return "kitty";
   if (setting === "iterm" || setting === "iterm2" || setting === "wezterm") return "iterm";
   const art = (env.HQTUI_EMOJI_ART ?? "").toLowerCase();
@@ -78,6 +81,61 @@ export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport
  */
 export function inTmux(env: NodeJS.ProcessEnv = process.env): boolean {
   return !!env.TMUX || /^(tmux|screen)([-.]|$)/.test(env.TERM ?? "");
+}
+
+type ProcInfo = { comm: string; ppid: number };
+// biome-ignore lint/suspicious/noExplicitAny: Node/Bun built-in, absent in browsers.
+const builtin = (name: string): any => (process as any).getBuiltinModule?.(name);
+
+function procInfo(pid: number): ProcInfo | null {
+  try {
+    const stat: string = builtin("node:fs").readFileSync(`/proc/${pid}/stat`, "utf8");
+    const close = stat.lastIndexOf(")");
+    return { comm: stat.slice(stat.indexOf("(") + 1, close), ppid: Number(stat.slice(close + 2).split(" ")[1]) };
+  } catch {
+    return null;
+  }
+}
+
+function underMoshServer(pid: number): boolean {
+  for (let i = 0; i < 64 && pid > 1; i++) {
+    const p = procInfo(pid);
+    if (!p) return false;
+    if (/^mosh-server/.test(p.comm)) return true;
+    pid = p.ppid;
+  }
+  return false;
+}
+
+let moshCache: boolean | undefined;
+
+/**
+ * Is this terminal reached through mosh? Mosh keeps its own copy of the screen
+ * and sends only text, so images never arrive. Checked on Linux by walking
+ * /proc up from this process and, under tmux, up from every client attached
+ * to this session (tmux breaks the direct chain). `HQTUI_MOSH=1|0` overrides.
+ */
+export function behindMosh(env: NodeJS.ProcessEnv = process.env): boolean {
+  const override = env.HQTUI_MOSH ?? process.env.HQTUI_MOSH;
+  if (override !== undefined && override !== "") return override === "1" || override === "true";
+  if (moshCache !== undefined) return moshCache;
+  moshCache = false;
+  try {
+    if (process.platform !== "linux") return moshCache;
+    if (underMoshServer(process.pid)) return (moshCache = true);
+    if (inTmux(env)) {
+      const target = env.TMUX_PANE ? ["-t", env.TMUX_PANE] : [];
+      const out: string = builtin("node:child_process").execFileSync("tmux", ["list-clients", ...target, "-F", "#{client_pid}"], {
+        encoding: "utf8",
+        timeout: 1500,
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      moshCache = out.split(/\s+/).some((pid) => Number(pid) > 1 && underMoshServer(Number(pid)));
+    }
+  } catch {
+    // Can't tell: assume a direct connection.
+  }
+  return moshCache;
 }
 
 /** Wrap an escape for tmux passthrough (every ESC doubled inside DCS tmux;). */
