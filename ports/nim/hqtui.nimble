@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.10.2"
+version       = "0.10.3"
 author        = "HQTUI contributors"
 description   = "Terminal UI widgets and the ten-screen HQTUI dashboard for Nim, over HQTUI's shared native engine (compiled from source)"
 license       = "MIT"

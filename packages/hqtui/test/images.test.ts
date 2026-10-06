@@ -9,6 +9,17 @@ import {
   createImageStore, drawRichText, imageSupport, inTmux, behindMosh, kittyVirtualImage, passthrough, placeholderCell, PLACEHOLDER,
 } from "../src/images.ts";
 import { renderToScreen } from "../src/testing.ts";
+import { detectCapabilities } from "../src/capabilities.ts";
+
+test("hqterm is recognised: synchronized frames and iTerm2 images, even when launched from Konsole", () => {
+  const env = { TERM: "xterm-256color", TERM_PROGRAM: "hqterm", KONSOLE_VERSION: "240802", HQTUI_MOSH: "0" };
+  const caps = detectCapabilities({ tty: true }, env);
+  assert.equal(caps.program, "hqterm");
+  assert.equal(caps.synchronizedOutput, true);
+  assert.equal(imageSupport(env), "iterm");
+  // On a remote host the desktop app identifies itself the iTerm2 way.
+  assert.equal(detectCapabilities({ tty: true }, { TERM: "xterm-256color", LC_TERMINAL: "iTerm2" }).program, "iterm");
+});
 import { cellText } from "../src/unicode.ts";
 
 // These tests describe terminals, not the machine running them (which may be behind mosh).

@@ -35,10 +35,13 @@ export interface CapabilityOverrides {
 }
 
 function detectProgram(env: NodeJS.ProcessEnv): string {
+  // First: launched from another terminal, hqterm's panes inherit its markers
+  // (KONSOLE_VERSION, KITTY_WINDOW_ID ...), but the pane is hqterm.
+  if (env.TERM_PROGRAM === "hqterm") return "hqterm";
   if (env.KITTY_WINDOW_ID || env.TERM === "xterm-kitty") return "kitty";
   if (env.WEZTERM_EXECUTABLE || env.TERM_PROGRAM === "WezTerm") return "wezterm";
   if (env.GHOSTTY_RESOURCES_DIR || env.TERM === "xterm-ghostty") return "ghostty";
-  if (env.TERM_PROGRAM === "iTerm.app") return "iterm";
+  if (env.TERM_PROGRAM === "iTerm.app" || env.LC_TERMINAL === "iTerm2") return "iterm";
   if (env.ALACRITTY_WINDOW_ID || env.TERM === "alacritty") return "alacritty";
   if (env.TERM_PROGRAM === "vscode") return "vscode";
   if (env.WT_SESSION) return "windows-terminal";
@@ -102,7 +105,7 @@ export function detectCapabilities(
   const unicode = overrides.unicode ?? detectUnicode(env);
 
   const syncCapable =
-    ["kitty", "wezterm", "ghostty", "iterm", "windows-terminal", "konsole", "alacritty"].includes(program) || tmux;
+    ["kitty", "wezterm", "ghostty", "iterm", "windows-terminal", "konsole", "alacritty", "hqterm"].includes(program) || tmux;
 
   return {
     tty,
