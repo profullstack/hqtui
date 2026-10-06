@@ -411,6 +411,14 @@ setEmojiMode("text");                      // or HQTUI_EMOJI=emoji|text`}
             <code className="font-mono text-white/80">openemoji.css</code> from the set and add <code className="font-mono text-white/80">OpenEmoji</code> to xterm.js&apos;s{" "}
             <code className="font-mono text-white/80">fontFamily</code>.
           </P>
+          <P>
+            <strong>HD images inside your app.</strong> <code className="font-mono text-white/80">createImageStore()</code> uploads each
+            OpenEmoji or OpenIcon PNG once as a Kitty Unicode-placeholder image, and{" "}
+            <code className="font-mono text-white/80">drawRichText()</code> / <code className="font-mono text-white/80">drawIcon()</code> draw
+            them as ordinary cells, so redraws, scrolling and tmux keep them. On in Kitty and Ghostty; over SSH or in tmux
+            (with <code className="font-mono text-white/80">allow-passthrough on</code>) set{" "}
+            <code className="font-mono text-white/80">HQTUI_IMAGES=1</code>. Everywhere else it draws the text.
+          </P>
 
           <H2 id="input">Input</H2>
           <P>

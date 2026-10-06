@@ -25,6 +25,11 @@ export function hex(value: string | number): Color {
   return RGB_FLAG | (Number.parseInt(s, 16) & 0xffffff);
 }
 
+/** The palette index of an explicit `ansi256()` colour, else undefined. */
+export function paletteIndex(c: Color): number | undefined {
+  return (c & IDX_FLAG) !== 0 ? c & 255 : undefined;
+}
+
 /** An explicit xterm-256 palette entry (rarely needed; truecolor is quantized for you). */
 export function ansi256(index: number): Color {
   return IDX_FLAG | (index & 255);

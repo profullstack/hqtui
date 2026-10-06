@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { FrameBuffer } from "../src/buffer.ts";
 import { Encoder } from "../src/diff.ts";
-import { hex } from "../src/color.ts";
+import { ansi256, hex } from "../src/color.ts";
 import { stripAnsi } from "../src/ansi.ts";
 
 function pair(width = 20, height = 3): [FrameBuffer, FrameBuffer] {
@@ -91,4 +91,13 @@ test("wide characters are re-emitted with their lead cell", () => {
   next.write(0, 0, "日");
   const result = new Encoder().encode(prev, next);
   assert.ok(stripAnsi(result.output).includes("日"));
+});
+
+test("an explicit palette colour is sent as a palette index, even in truecolor", () => {
+  const [prev, next] = pair(4, 1);
+  next.write(0, 0, "x", { fg: ansi256(196), bg: ansi256(7) });
+  const output = new Encoder({ colors: "truecolor" }).encode(prev, next).output;
+  assert.match(output, /\x1b\[38;5;196m/, "not rgb(0,0,196)");
+  assert.match(output, /\x1b\[48;5;7m/);
+  assert.doesNotMatch(output, /38;2;0;0;196/);
 });

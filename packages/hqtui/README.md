@@ -213,6 +213,22 @@ is picked from 128, 256 and 512 px at twice the cell height
 (`queryCellSize()` or `HQTUI_CELL_PX=10x20`) and cached under
 `~/.cache/hqtui/openemoji`. Everywhere else it returns the emoji character.
 
+**HD images inside your app.** `emojiImage` is a one-off write; for a running
+app, use the image store. Each OpenEmoji or OpenIcon PNG is uploaded once as a
+Kitty *Unicode placeholder* image, then drawn as ordinary cells, so redraws,
+scrolling and tmux all keep it:
+
+```ts
+const images = createImageStore({ write: (s) => app.terminal.write(s), onReady: () => app.invalidate() });
+// in a draw callback:
+drawRichText(surface, x, y, "ship it 🚀", { fg }, images); // the rocket is the PNG once loaded
+drawIcon(surface, x, y, "lock", images, "🔒");              // OpenIcon, or the fallback text
+```
+
+It turns on in Kitty and Ghostty; over SSH or in tmux (with
+`set -g allow-passthrough on`) set `HQTUI_IMAGES=1`, and `HQTUI_IMAGES=0`
+turns it off. Elsewhere it draws the text, so the calls are always safe.
+
 **In a browser terminal** (xterm.js), load the set's stylesheet and name the
 family, so emoji draw with the same art:
 
