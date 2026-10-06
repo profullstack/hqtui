@@ -1,7 +1,7 @@
 import type { Surface, Align } from "../surface.ts";
 import { Attr, type Style } from "../buffer.ts";
 import { type Color, mix } from "../color.ts";
-import { fit, stringWidth, truncate, wrap } from "../unicode.ts";
+import { dropColumns, fit, graphemes, stringWidth, truncate, wrap } from "../unicode.ts";
 import { elevate } from "../theme.ts";
 import type { KeyEvent } from "../input.ts";
 
@@ -136,19 +136,24 @@ export function drawTextInput(surface: Surface, options: TextInputOptions): void
   const bg = elevate(theme, options.focused ? 0.1 : 0.05);
   surface.fillRect(labelWidth, 0, fieldWidth, 1, { bg });
 
-  const shown = options.password ? "•".repeat(options.value.length) : options.value;
+  // The caret is a string index; the screen wants columns. Mask and measure by
+  // grapheme so an emoji (two columns, several code units) never misplaces it.
+  const cursor = Math.max(0, Math.min(options.cursor ?? options.value.length, options.value.length));
+  const mask = (s: string) => "•".repeat(graphemes(s).length);
+  const shown = options.password ? mask(options.value) : options.value;
+  const caretCol = stringWidth(options.password ? mask(options.value.slice(0, cursor)) : options.value.slice(0, cursor));
   const empty = shown.length === 0;
-  const text = empty ? options.placeholder ?? "" : shown;
-  surface.text(labelWidth + 1, 0, truncate(text, Math.max(0, fieldWidth - 2)), {
+  const room = Math.max(0, fieldWidth - 2);
+  // Scroll horizontally so the caret stays in view while typing past the edge.
+  const scroll = options.focused && caretCol >= room ? caretCol - room + 1 : 0;
+  const text = empty ? options.placeholder ?? "" : scroll ? dropColumns(shown, scroll) : shown;
+  surface.text(labelWidth + 1, 0, truncate(text, room, scroll ? "" : "…"), {
     fg: empty ? theme.muted : theme.foreground,
     bg,
   });
 
   if (options.focused) {
-    const cursorX = Math.min(
-      labelWidth + 1 + (options.cursor ?? stringWidth(shown)),
-      labelWidth + fieldWidth - 1,
-    );
+    const cursorX = Math.min(labelWidth + 1 + caretCol - scroll, labelWidth + fieldWidth - 1);
     surface.styleRect(cursorX, 0, 1, 1, { bg: options.color ?? theme.cursor, fg: theme.background });
   }
 }
