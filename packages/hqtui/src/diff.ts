@@ -1,7 +1,7 @@
 import { FrameBuffer } from "./buffer.ts";
 import { Attr } from "./buffer.ts";
 import type { Capabilities } from "./capabilities.ts";
-import { DEFAULT_COLOR, type Color, blue, green, grayscale, red, to16, to256 } from "./color.ts";
+import { DEFAULT_COLOR, type Color, blue, green, grayscale, paletteIndex, red, to16, to256 } from "./color.ts";
 import {
   CSI, ESC, bg16, bg256, bgDefault, bgTrue, fg16, fg256, fgDefault, fgTrue, moveDown, moveTo,
   moveToColumn, moveRight, moveUp,
@@ -84,6 +84,10 @@ export class Encoder {
   private fgSeq(c: Color): string {
     if (this.colors === "none") return "";
     if (c === DEFAULT_COLOR) return fgDefault;
+    // An explicit palette entry is sent as one: as truecolor it would come out
+    // as rgb(0,0,index). Kitty image placeholders rely on the index arriving intact.
+    const index = this.monochrome || this.colors === "ansi16" ? undefined : paletteIndex(c);
+    if (index !== undefined) return fg256(index);
     const col = this.monochrome ? grayscale(c) : c;
     if (this.colors === "truecolor") return fgTrue(red(col), green(col), blue(col));
     if (this.colors === "ansi256") return fg256(to256(col));
@@ -93,6 +97,10 @@ export class Encoder {
   private bgSeq(c: Color): string {
     if (this.colors === "none") return "";
     if (c === DEFAULT_COLOR) return bgDefault;
+    // An explicit palette entry is sent as one: as truecolor it would come out
+    // as rgb(0,0,index). Kitty image placeholders rely on the index arriving intact.
+    const index = this.monochrome || this.colors === "ansi16" ? undefined : paletteIndex(c);
+    if (index !== undefined) return bg256(index);
     const col = this.monochrome ? grayscale(c) : c;
     if (this.colors === "truecolor") return bgTrue(red(col), green(col), blue(col));
     if (this.colors === "ansi256") return bg256(to256(col));
