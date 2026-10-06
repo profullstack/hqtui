@@ -99,6 +99,27 @@ export function itermInlineImage(png: Buffer, cols: number, env: NodeJS.ProcessE
   );
 }
 
+/**
+ * Where the current tmux pane sits in the real terminal: its left/top, plus one
+ * row when the status line is at the top. {0,0} when tmux cannot be asked.
+ */
+export async function tmuxPaneOffset(env: NodeJS.ProcessEnv = process.env): Promise<{ x: number; y: number }> {
+  try {
+    const { execFile } = await import("node:child_process");
+    const target = env.TMUX_PANE ? ["-t", env.TMUX_PANE] : [];
+    const out: string = await new Promise((resolve, reject) =>
+      execFile("tmux", ["display", "-p", ...target, "#{pane_left} #{pane_top} #{status} #{status-position}"], { timeout: 2000 }, (err, stdout) =>
+        err ? reject(err) : resolve(String(stdout)),
+      ),
+    );
+    const [left, top, status, position] = out.trim().split(/\s+/);
+    const statusTop = status !== "off" && status !== "0" && position === "top" ? 1 : 0;
+    return { x: Number(left) || 0, y: (Number(top) || 0) + statusTop };
+  } catch {
+    return { x: 0, y: 0 };
+  }
+}
+
 /** Free image `id` and its placements in the terminal. */
 export function kittyDeleteImage(id: number, env: NodeJS.ProcessEnv = process.env): string {
   return passthrough(`\x1b_Ga=d,d=I,i=${id},q=2\x1b\\`, env);
@@ -124,11 +145,14 @@ export interface ImageStoreOptions {
   support?: ImageSupport;
   fetch?: typeof fetch;
   cacheDir?: string;
+  /** Under tmux: the pane's position in the real terminal. Asked of tmux when omitted. */
+  paneOffset?: { x: number; y: number };
 }
 
 /** The parts of an hqtui App the store needs for inline (iTerm/WezTerm) images. */
 export interface ImageHost {
-  on(event: "frame", listener: (stats: { repainted?: boolean }) => void): unknown;
+  // biome-ignore lint/suspicious/noExplicitAny: an App's typed event map, or any emitter.
+  on(event: "frame" | "focus", listener: (arg: any) => void): unknown;
   readonly frameBuffer: { width: number; height: number; chars: Uint32Array; fg: Uint32Array };
   readonly inline?: boolean;
 }
@@ -156,6 +180,19 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
   const pngs = new Map<number, { png: Buffer; cols: number }>(); // inline mode: id -> artwork
   let placements: { x: number; y: number; id: number; cols: number }[] = [];
   let shown = new Map<string, number>(); // "x,y" -> id drawn there and still on screen
+  // Under tmux: where this pane sits in the real terminal (pane offset plus a top status line).
+  let paneOffset: { x: number; y: number } | null = options.paneOffset ?? null;
+  const refreshOffset = () => {
+    if (!env.TMUX || options.paneOffset) return;
+    void tmuxPaneOffset(env).then((o) => {
+      const moved = !paneOffset || o.x !== paneOffset.x || o.y !== paneOffset.y;
+      paneOffset = o;
+      if (moved) {
+        shown = new Map();
+        options.onReady?.();
+      }
+    });
+  };
   const ready = new Map<string, number>(); // key -> id, in least-recently-used order
   const pending = new Set<string>();
   const failed = new Set<string>();
@@ -201,7 +238,15 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
 
   /** Inline mode, after a frame: draw what is new or moved, where the marker cells survived. */
   const afterFrame = (app: ImageHost, repainted: boolean) => {
-    if (repainted) shown = new Map();
+    if (repainted) {
+      shown = new Map();
+      refreshOffset(); // a resize can move the pane
+    }
+    // Under tmux, wait for the pane offset rather than draw in the wrong place.
+    if (env.TMUX && !paneOffset) {
+      placements = [];
+      return;
+    }
     const buf = app.frameBuffer;
     const next = new Map<string, number>();
     let out = "";
@@ -218,12 +263,25 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
       const key = `${p.x},${p.y}`;
       next.set(key, p.id);
       if (shown.get(key) === p.id) continue; // unchanged cells: the image is still there
-      out += `\x1b[${p.y + 1};${p.x + 1}H${itermInlineImage(art.png, p.cols, env)}`;
+      out += inlineAt(p.x, p.y, art.png, p.cols);
     }
     shown = next;
     placements = [];
-    // Save and restore the cursor, so the renderer's idea of it stays true.
-    if (out) options.write(`\x1b7${out}\x1b8`);
+    if (out) options.write(out);
+  };
+
+  /**
+   * One image at a screen cell, cursor saved and restored around it so the
+   * renderer's idea of the cursor stays true. Under tmux the whole thing goes
+   * through as one passthrough: tmux does not move the real terminal's cursor
+   * before forwarding passthrough data, so the move has to travel with the
+   * image, in the outer terminal's coordinates (pane offset added).
+   */
+  const inlineAt = (x: number, y: number, png: Buffer, cols: number): string => {
+    const image = `\x1b]1337;File=inline=1;size=${png.length};width=${cols};height=1;preserveAspectRatio=1:${png.toString("base64")}\x07`;
+    if (!env.TMUX) return `\x1b7\x1b[${y + 1};${x + 1}H${image}\x1b8`;
+    const o = paneOffset ?? { x: 0, y: 0 };
+    return passthrough(`\x1b7\x1b[${y + o.y + 1};${x + o.x + 1}H${image}\x1b8`, env);
   };
 
   return {
@@ -240,7 +298,16 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
     },
     attach(app) {
       if (mode !== "iterm" || app.inline) return;
-      app.on("frame", (stats) => afterFrame(app, !!stats?.repainted));
+      refreshOffset();
+      app.on("frame", (stats: { repainted?: boolean }) => afterFrame(app, !!stats?.repainted));
+      // Coming back to the window (a tmux window switch, a reattach) may have
+      // repainted the terminal underneath us: draw every image again.
+      app.on("focus", (event: { focused?: boolean }) => {
+        if (event?.focused === false) return;
+        shown = new Map();
+        refreshOffset();
+        options.onReady?.();
+      });
     },
     emoji(text) {
       const info = emojiInfo(text);

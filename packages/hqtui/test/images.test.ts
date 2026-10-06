@@ -109,7 +109,7 @@ test("inline mode: each image is drawn once after its frame, where it sits, and 
     cacheDir: await mkdtemp(join(tmpdir(), "hqtui-iterm-")),
   });
   let frameListener: (stats: { repainted?: boolean }) => void = () => {};
-  const host = { frameBuffer: undefined as any, on: (_e: "frame", fn: typeof frameListener) => (frameListener = fn) };
+  const host = { frameBuffer: undefined as any, on: (e: string, fn: any) => { if (e === "frame") frameListener = fn; } };
   images.attach(host);
 
   images.emoji("🚀");
@@ -140,4 +140,39 @@ test("inline mode: each image is drawn once after its frame, where it sits, and 
 
   frame(false, true);
   assert.equal(writes.length, 3, "a full repaint wipes images, so they are drawn again");
+});
+
+test("inline mode under tmux: the cursor move travels inside the passthrough, offset by the pane", async () => {
+  const writes: string[] = [];
+  let redraws = 0;
+  const images = createImageStore({
+    write: (s) => writes.push(s),
+    onReady: () => redraws++,
+    support: "iterm",
+    env: { TMUX: "/tmp/tmux-1/default,1,0" },
+    paneOffset: { x: 2, y: 1 },
+    fetch: okFetch,
+    cacheDir: await mkdtemp(join(tmpdir(), "hqtui-tmux-")),
+  });
+  const listeners: Record<string, (arg: any) => void> = {};
+  const host = { frameBuffer: undefined as any, on: (e: string, fn: any) => { listeners[e] = fn; } };
+  images.attach(host);
+  images.emoji("🚀");
+  await until(() => redraws > 0);
+
+  const frame = () => {
+    const screen = renderToScreen(({ ui }: any) => ui.draw((s: any) => drawRichText(s, 0, 1, "go 🚀!", {}, images)), { width: 10, height: 3 });
+    host.frameBuffer = screen.buffer;
+    listeners.frame!({ repainted: false });
+  };
+  frame();
+  assert.equal(writes.length, 1);
+  // One DCS passthrough: save, move to row 1+1+1, col 3+2+1 in the outer terminal, image, restore.
+  assert.match(writes[0]!, /^\x1bPtmux;\x1b\x1b7\x1b\x1b\[3;6H\x1b\x1b\]1337;File=inline=1;[^\x07]+\x07\x1b\x1b8\x1b\\$/);
+
+  frame();
+  assert.equal(writes.length, 1, "unchanged: not resent");
+  listeners.focus!({ focused: true });
+  frame();
+  assert.equal(writes.length, 2, "back in focus (tmux may have repainted): drawn again");
 });
