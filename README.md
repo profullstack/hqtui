@@ -11,6 +11,9 @@ TypeScript, Rust, Go, Python, Zig, C++, Ruby, PHP, Perl and Nim.</p>
   <a href="https://bbs.hqtui.com/">discussions</a>
 </p>
 <p align="center">
+  <a href="https://pwamart.com/apps/hqtui"><img src="https://pwamart.com/badges/get-it-on-pwamart.svg" alt="Get HQTUI on pwamart" width="135" height="40"></a>
+</p>
+<p align="center">
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node-%E2%89%A5%2022.6-5FA04E?logo=nodedotjs&logoColor=white" alt="Node 22.6 or newer"></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/Bun-%E2%89%A5%201.1-000000?logo=bun&logoColor=white" alt="Bun 1.1 or newer"></a>
   <a href="https://deno.com"><img src="https://img.shields.io/badge/Deno-2.x-000000?logo=deno&logoColor=white" alt="Deno 2"></a>
