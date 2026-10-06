@@ -15,7 +15,7 @@ const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://crawlproof.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://pwamart.com",
   "font-src 'self' data:",
   "connect-src 'self' https://crawlproof.com",
   "frame-ancestors 'self'",

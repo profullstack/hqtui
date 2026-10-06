@@ -208,6 +208,17 @@ export default async function Home() {
                   Star on GitHub
                 </Button>
               </div>
+              <div className="flex justify-center">
+                <a href="https://pwamart.com/apps/hqtui" target="_blank" rel="noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://pwamart.com/badges/get-it-on-pwamart.svg"
+                    alt="Get HQTUI on pwamart"
+                    height={40}
+                    className="h-10 w-auto"
+                  />
+                </a>
+              </div>
             </div>
           </div>
 
