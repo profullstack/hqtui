@@ -68,7 +68,7 @@ export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport
   if (/^(ghostty|kitty)$/i.test(env.TERM_PROGRAM ?? "")) return "kitty";
   if (/^xterm-(kitty|ghostty)$/.test(env.TERM ?? "")) return "kitty";
   // WezTerm and iTerm2: inline images, not placeholders.
-  if (program === "wezterm" || program === "iterm") return "iterm";
+  if (program === "wezterm" || program === "iterm" || program === "hqterm") return "iterm";
   if (env.WEZTERM_PANE || env.WEZTERM_EXECUTABLE || /^(wezterm|iterm\.app)$/i.test(env.TERM_PROGRAM ?? "")) return "iterm";
   if (env.LC_TERMINAL === "iTerm2") return "iterm";
   return "none";

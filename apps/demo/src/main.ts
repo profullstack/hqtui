@@ -52,7 +52,7 @@ function parseArgs(argv: string[]): Options {
       case "-h":
       case "--help": printHelp(); process.exit(0);
       case "-v":
-      case "--version": console.log("hqtui-demo 0.10.2"); process.exit(0);
+      case "--version": console.log("hqtui-demo 0.10.3"); process.exit(0);
     }
   }
   return options;
