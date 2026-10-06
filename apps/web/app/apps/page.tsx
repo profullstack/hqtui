@@ -182,6 +182,22 @@ const APPS: App[] = [
       + "headlessly and asserts on the text. A meter with a leading track bar and a panel subtitle "
       + "that ate its title both showed up that way, in a test, before anyone opened a terminal.",
   },
+  {
+    shot: "pwamart",
+    name: "pwamart",
+    tagline: "An app store for web apps, in your terminal",
+    repo: "https://github.com/profullstack/pwamart.com",
+    install: "bunx @profullstack/pwamart tui",
+    body:
+      "Browse and search pwamart.com, the store for Progressive Web Apps: the catalog on the left, "
+      + "the selected app on the right with its installability checks, and i to install it. Installing "
+      + "opens the app as its own window through TronBrowser (or Chrome, Edge or Brave) and writes a "
+      + "launcher entry with the app's icon, so a web app lands in the menu like any other program.",
+    found:
+      "List badges are declared in ListOptions but never drawn, so the category column is part of "
+      + "the label. And a column of two panels splits its height evenly unless the first is given a "
+      + "fixed size: the search box took half the screen until it was told it needs four rows.",
+  },
 ];
 
 export default async function Apps() {
