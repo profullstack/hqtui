@@ -27,7 +27,7 @@
 
 import { detectCapabilities } from "./capabilities.ts";
 import {
-  OPENEMOJI_ALIASES, OPENEMOJI_EMOTICONS, OPENEMOJI_GROUPS, OPENEMOJI_ROWS, OPENEMOJI_TONED,
+  OPENEMOJI_ALIASES, OPENEMOJI_EMOTICONS, OPENEMOJI_GROUPS, OPENEMOJI_ORDER, OPENEMOJI_ROWS, OPENEMOJI_TONED,
   OPENEMOJI_UNICODE, OPENEMOJI_VERSION,
 } from "./emoji-data.ts";
 import { stringWidth } from "./unicode.ts";
@@ -204,6 +204,24 @@ export function emojiSearch(query: string, limit = 20): EmojiInfo[] {
   }
   if (exact && !exact.base && !scored.some(([, e]) => e.key === exact.key)) scored.push([0, exact]);
   return scored.sort((a, b) => a[0] - b[0] || a[1].name.length - b[1].name.length).slice(0, limit).map(([, e]) => e);
+}
+
+/** The set's groups, in Unicode order ("Smileys & Emotion" first, "Flags" last). */
+export function emojiGroups(): string[] {
+  return [...OPENEMOJI_GROUPS];
+}
+
+/** Every base emoji in a group (by name or index), in the set's order. Skin-tone variants are left out. */
+export function emojiByGroup(group: string | number): EmojiInfo[] {
+  const name = typeof group === "number" ? OPENEMOJI_GROUPS[group] : group;
+  if (!name) return [];
+  const t = load();
+  const out: EmojiInfo[] = [];
+  for (const i of OPENEMOJI_ORDER) {
+    const e = t.byKey.get(OPENEMOJI_ROWS[i]![0]);
+    if (e && !e.base && e.group === name) out.push(e);
+  }
+  return out;
 }
 
 /** Every shortcode in the set, sorted. */

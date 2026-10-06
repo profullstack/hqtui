@@ -74,9 +74,11 @@ export {
 } from "./icons.ts";
 export {
   emoji, emojify, emojiInfo, emojiText, emojiSearch, emojiNames, emojiMode, setEmojiMode, emojiWidth,
+  emojiGroups, emojiByGroup,
   openEmoji,
 } from "./emoji.ts";
 export type { EmojiMode, EmojiInfo, EmojiOptions } from "./emoji.ts";
+export { editText, insertText, type TextEditState } from "./text-edit.ts";
 export {
   emojiImage, emojiPng, artProtocol, artSize, queryCellSize, cellSizeFromEnv, kittyImage, itermImage,
 } from "./emoji-art.ts";

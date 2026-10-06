@@ -133,7 +133,12 @@ for (const e of set.emoji) {
   const short = shortOf(e) === slug(e.name) ? "" : shortOf(e);
   rows.push([e.key, short, e.name, groups.indexOf(e.group), keywords]);
 }
+// The set's own order (Unicode's emoji-test order: 😀 first, flags last) is
+// what a picker shows; the rows stay sorted by key for the ports' binary search.
+const setOrder = rows.map((r) => r[0]);
 rows.sort((a, b) => byteOrder(a[0], b[0]));
+const rowIndex = new Map(rows.map((r, i) => [r[0], i]));
+const order = setOrder.map((k) => rowIndex.get(k)!);
 toned.sort((a, b) => byteOrder(a[0], b[0]));
 for (const [alias, key] of Object.entries(ALIASES)) {
   if (!keys.has(key)) throw new Error(`alias ${alias} points at ${key}, which the set does not have`);
@@ -180,6 +185,11 @@ export const OPENEMOJI_GROUPS: readonly string[] = [${groups.map(lit).join(", ")
 
 export const OPENEMOJI_ROWS: ReadonlyArray<readonly [string, string, string, number, string]> = [
 ${rows.map(([k, s, n, g, kw]) => `  [${lit(k)}, ${lit(s)}, ${lit(n)}, ${g}, ${lit(kw)}],`).join("\n")}
+];
+
+/** OPENEMOJI_ROWS indices in the set's order, which is the order a picker shows. */
+export const OPENEMOJI_ORDER: readonly number[] = [
+${order.join(",").replace(/((?:\d+,){30})/g, "$1\n")}
 ];
 
 export const OPENEMOJI_TONED: ReadonlyArray<readonly [string, string]> = [

@@ -4,6 +4,7 @@ import type { Color } from "./color.ts";
 import type { Theme } from "./theme.ts";
 import type { Capabilities } from "./capabilities.ts";
 import type { KeyEvent } from "./input.ts";
+import type { EmojiInfo } from "./emoji.ts";
 import {
   type Constraint, type Justify, type Rect, type Padding, type Size, inset, stack, solve, isEmpty,
 } from "./layout.ts";
@@ -850,6 +851,56 @@ export class Container {
 
   commandPalette(options: W.CommandPaletteOptions): this {
     this.ctx.overlay((root) => W.drawCommandPalette(root, options));
+    return this;
+  }
+
+  /**
+   * The OpenEmoji picker as a modal popover. Keys go through emojiPickerKey();
+   * the mouse picks (click), switches groups (click a tab), scrolls the grid
+   * and highlights on hover. Clicking outside, or Escape, closes it.
+   */
+  emojiPicker(options: W.EmojiPickerOptions & {
+    onChange: (state: W.EmojiPickerState) => void;
+    onPick: (emoji: EmojiInfo) => void;
+    onClose: () => void;
+  }): this {
+    let layout: W.EmojiPickerLayout | undefined;
+    const sizes = () => ({ recent: options.recent, columns: layout?.columns ?? options.columns, rows: layout?.rows ?? options.rows });
+    this.ctx.overlay((root) => {
+      layout = W.drawEmojiPicker(root, options);
+      const at = layout;
+      this.ctx.hit({ rect: root.hitRect(), onClick: () => options.onClose() });
+      this.ctx.hit({ rect: at.box });
+      for (const { rect, tab } of at.tabs) {
+        this.ctx.hit({ rect, onClick: () => options.onChange({ ...options.state, tab, query: "", index: 0, offset: 0 }) });
+      }
+      const items = () => W.emojiPickerItems(options.state, options.recent);
+      this.ctx.hit({
+        rect: at.grid,
+        onClick: (x, y) => {
+          const e = items()[W.emojiPickerIndexAt(options.state, at, x, y)];
+          if (e) options.onPick(e);
+        },
+        onHover: (x, y) => {
+          const index = W.emojiPickerIndexAt(options.state, at, x, y);
+          if (index >= 0 && index < items().length && index !== options.state.index) options.onChange({ ...options.state, index });
+        },
+        onScroll: (delta) => {
+          const lastOffset = Math.max(0, Math.ceil(items().length / at.columns) - at.rows);
+          const offset = Math.max(0, Math.min(options.state.offset + delta, lastOffset));
+          options.onChange({ ...options.state, offset, index: Math.max(options.state.index, offset * at.columns) });
+        },
+      });
+    }, {
+      modal: true,
+      onDismiss: options.onClose,
+      onKey: (event) => {
+        const result = W.emojiPickerKey(options.state, event, sizes());
+        if (result.close) options.onClose();
+        else if (result.picked) options.onPick(result.picked);
+        else options.onChange(result.state);
+      },
+    });
     return this;
   }
 
