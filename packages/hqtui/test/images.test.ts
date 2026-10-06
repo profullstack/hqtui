@@ -88,3 +88,56 @@ test("a store that is off draws plain text and fetches nothing", () => {
   assert.equal(cellText(screen.buffer.chars[0]), "🚀");
   assert.equal(fetched, 0);
 });
+
+test("WezTerm and iTerm2 get inline images: on request, or detected locally", () => {
+  assert.equal(imageSupport({ HQTUI_IMAGES: "wezterm" }), "iterm");
+  assert.equal(imageSupport({ HQTUI_IMAGES: "iterm" }), "iterm");
+  assert.equal(imageSupport({ TERM_PROGRAM: "WezTerm" }), "iterm");
+  assert.equal(imageSupport({ WEZTERM_PANE: "0" }), "iterm");
+  assert.equal(imageSupport({ LC_TERMINAL: "iTerm2" }), "iterm");
+});
+
+test("inline mode: each image is drawn once after its frame, where it sits, and never over a popup", async () => {
+  const writes: string[] = [];
+  let redraws = 0;
+  const images = createImageStore({
+    write: (s) => writes.push(s),
+    onReady: () => redraws++,
+    support: "iterm",
+    env: {},
+    fetch: okFetch,
+    cacheDir: await mkdtemp(join(tmpdir(), "hqtui-iterm-")),
+  });
+  let frameListener: (stats: { repainted?: boolean }) => void = () => {};
+  const host = { frameBuffer: undefined as any, on: (_e: "frame", fn: typeof frameListener) => (frameListener = fn) };
+  images.attach(host);
+
+  images.emoji("🚀");
+  await until(() => redraws > 0);
+  assert.equal(writes.length, 0, "inline images are not uploaded ahead of time");
+
+  const frame = (popup = false, repainted = false) => {
+    const screen = renderToScreen(({ ui }: any) => ui.draw((s: any) => {
+      drawRichText(s, 0, 1, "go 🚀!", {}, images);
+      if (popup) s.text(3, 1, "POP");
+    }), { width: 10, height: 3 });
+    host.frameBuffer = screen.buffer;
+    frameListener({ repainted });
+  };
+
+  frame();
+  assert.equal(writes.length, 1);
+  assert.match(writes[0], /^\x1b7\x1b\[2;4H\x1b\]1337;File=inline=1;size=11;width=2;height=1;preserveAspectRatio=1:[^\x07]+\x07\x1b8$/);
+
+  frame();
+  assert.equal(writes.length, 1, "same image, same place: nothing to redraw");
+
+  frame(true);
+  assert.equal(writes.length, 1, "covered by a popup: not drawn");
+
+  frame();
+  assert.equal(writes.length, 2, "uncovered again: drawn again");
+
+  frame(false, true);
+  assert.equal(writes.length, 3, "a full repaint wipes images, so they are drawn again");
+});

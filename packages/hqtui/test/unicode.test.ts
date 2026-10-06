@@ -1,6 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { stringWidth, truncate, fit, wrap, graphemes, charWidth } from "../src/unicode.ts";
+import { emojiInfo, emojiNames } from "../src/emoji.ts";
+
+test("every OpenEmoji is two columns, as terminals draw it (the emoji picker overflowed)", () => {
+  const narrow = emojiNames()
+    .map((n) => emojiInfo(n)!.char)
+    .filter((c) => stringWidth(c) !== 2);
+  assert.deepEqual(narrow, [], `measured narrow: ${narrow.slice(0, 10).join(" ")}`);
+  for (const c of ["⏰", "⚓", "♒", "⚾", "✅", "❌", "⭐", "🩹", "🪗", "🫀", "🫘", "🛺"]) assert.equal(stringWidth(c), 2, c);
+});
 
 test("ascii width is one column per character", () => {
   assert.equal(stringWidth("hello"), 5);

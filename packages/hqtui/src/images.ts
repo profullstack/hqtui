@@ -19,9 +19,17 @@
  * an encoder may quantize. Images load lazily: until one is ready the text
  * (the emoji character) is drawn and `onReady` asks for a redraw.
  *
- * Enable with HQTUI_IMAGES=1 (needed under tmux or SSH, where the terminal
- * cannot be detected; tmux also needs `set -g allow-passthrough on`), or it
- * turns itself on in Kitty and Ghostty. HQTUI_IMAGES=0 turns it off.
+ * WezTerm and iTerm2 do not do Unicode placeholders; they get iTerm2 inline
+ * images instead (`HQTUI_IMAGES=wezterm` or `=iterm`, detected locally). Those
+ * are not tied to cells, so the store marks each image's cells in the frame
+ * (blank cells coloured with the id, which the diff renderer notices when they
+ * change) and, once attached to the app, draws the images after each frame:
+ * only where they are new or moved, never over something drawn on top.
+ *
+ * Enable with HQTUI_IMAGES=1 (Kitty/Ghostty) or HQTUI_IMAGES=wezterm (WezTerm,
+ * iTerm2): needed under tmux or SSH, where the terminal cannot be detected;
+ * tmux also needs `set -g allow-passthrough on`. Kitty, Ghostty, WezTerm and
+ * iTerm2 are detected locally. HQTUI_IMAGES=0 turns it off.
  */
 
 import { join } from "node:path";
@@ -38,14 +46,17 @@ const DIACRITICS = ["̅", "̍", "̎", "̐", "̒", "̽", "̾", "̿"];
 export const OPENICON_PNG_BASE = "https://raw.githubusercontent.com/profullstack/openicon/main/png";
 const MAX_IDS = 255;
 
-export type ImageSupport = "kitty" | "none";
+export type ImageSupport = "kitty" | "iterm" | "none";
 
 /** Whether in-frame images can be drawn here. */
 export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport {
   const setting = (env.HQTUI_IMAGES ?? "").toLowerCase();
   if (setting === "0" || setting === "off" || setting === "false") return "none";
-  if (setting === "1" || setting === "on" || setting === "true" || setting === "kitty") return "kitty";
-  if ((env.HQTUI_EMOJI_ART ?? "").toLowerCase() === "kitty") return "kitty";
+  if (setting === "1" || setting === "on" || setting === "true" || setting === "kitty" || setting === "ghostty") return "kitty";
+  if (setting === "iterm" || setting === "iterm2" || setting === "wezterm") return "iterm";
+  const art = (env.HQTUI_EMOJI_ART ?? "").toLowerCase();
+  if (art === "kitty") return "kitty";
+  if (art === "iterm") return "iterm";
   // Kitty/Ghostty environment variables survive into a local tmux, which then
   // only needs passthrough for the uploads; over SSH set HQTUI_IMAGES=1.
   const program = detectCapabilities({}, env).program;
@@ -53,6 +64,10 @@ export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport
   if (env.KITTY_WINDOW_ID || env.GHOSTTY_RESOURCES_DIR) return "kitty";
   if (/^(ghostty|kitty)$/i.test(env.TERM_PROGRAM ?? "")) return "kitty";
   if (/^xterm-(kitty|ghostty)$/.test(env.TERM ?? "")) return "kitty";
+  // WezTerm and iTerm2: inline images, not placeholders.
+  if (program === "wezterm" || program === "iterm") return "iterm";
+  if (env.WEZTERM_PANE || env.WEZTERM_EXECUTABLE || /^(wezterm|iterm\.app)$/i.test(env.TERM_PROGRAM ?? "")) return "iterm";
+  if (env.LC_TERMINAL === "iTerm2") return "iterm";
   return "none";
 }
 
@@ -74,6 +89,14 @@ export function kittyVirtualImage(id: number, png: Buffer, cols: number, rows = 
       return passthrough(`\x1b_G${keys};${chunk}\x1b\\`, env);
     })
     .join("");
+}
+
+/** An iTerm2 inline image `cols` cells wide, one row high, at the cursor. */
+export function itermInlineImage(png: Buffer, cols: number, env: NodeJS.ProcessEnv = process.env): string {
+  return passthrough(
+    `\x1b]1337;File=inline=1;size=${png.length};width=${cols};height=1;preserveAspectRatio=1:${png.toString("base64")}\x07`,
+    env,
+  );
 }
 
 /** Free image `id` and its placements in the terminal. */
@@ -103,8 +126,20 @@ export interface ImageStoreOptions {
   cacheDir?: string;
 }
 
+/** The parts of an hqtui App the store needs for inline (iTerm/WezTerm) images. */
+export interface ImageHost {
+  on(event: "frame", listener: (stats: { repainted?: boolean }) => void): unknown;
+  readonly frameBuffer: { width: number; height: number; chars: Uint32Array; fg: Uint32Array };
+  readonly inline?: boolean;
+}
+
 export interface ImageStore {
   readonly enabled: boolean;
+  readonly mode: ImageSupport;
+  /** Reserve `cols` cells at (x, y) of `surface` for image `id` (inline mode). */
+  place(surface: Surface, x: number, y: number, id: number, cols: number): number;
+  /** Inline mode: draw images after each frame of `app`. Call once. */
+  attach(app: ImageHost): void;
   /** The image id for an emoji (character or name), loading it if needed; undefined until ready. */
   emoji(text: string): number | undefined;
   /** The image id for an OpenIcon by name; undefined until ready (or unknown). */
@@ -116,7 +151,11 @@ export interface ImageStore {
 /** Load-once, id-per-image store for emoji and icon artwork. */
 export function createImageStore(options: ImageStoreOptions): ImageStore {
   const env = options.env ?? process.env;
-  const enabled = (options.support ?? imageSupport(env)) === "kitty";
+  const mode: ImageSupport = options.support ?? imageSupport(env);
+  const enabled = mode !== "none";
+  const pngs = new Map<number, { png: Buffer; cols: number }>(); // inline mode: id -> artwork
+  let placements: { x: number; y: number; id: number; cols: number }[] = [];
+  let shown = new Map<string, number>(); // "x,y" -> id drawn there and still on screen
   const ready = new Map<string, number>(); // key -> id, in least-recently-used order
   const pending = new Set<string>();
   const failed = new Set<string>();
@@ -128,7 +167,8 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
     // Recycle the least recently used id.
     const [oldKey, oldId] = ready.entries().next().value as [string, number];
     ready.delete(oldKey);
-    options.write(kittyDeleteImage(oldId, env));
+    if (mode === "kitty") options.write(kittyDeleteImage(oldId, env));
+    pngs.delete(oldId);
     return oldId;
   };
 
@@ -151,15 +191,57 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
           return;
         }
         const newId = allocate();
-        options.write(kittyVirtualImage(newId, png, cols, 1, env));
+        if (mode === "kitty") options.write(kittyVirtualImage(newId, png, cols, 1, env));
+        else pngs.set(newId, { png, cols });
         ready.set(key, newId);
         options.onReady?.();
       });
     return undefined;
   };
 
+  /** Inline mode, after a frame: draw what is new or moved, where the marker cells survived. */
+  const afterFrame = (app: ImageHost, repainted: boolean) => {
+    if (repainted) shown = new Map();
+    const buf = app.frameBuffer;
+    const next = new Map<string, number>();
+    let out = "";
+    for (const p of placements) {
+      const art = pngs.get(p.id);
+      if (!art || p.y < 0 || p.y >= buf.height || p.x < 0 || p.x + p.cols > buf.width) continue;
+      // Something drawn on top (a popup) replaced the marker: no image there.
+      let intact = true;
+      for (let c = 0; c < p.cols && intact; c++) {
+        const i = p.y * buf.width + p.x + c;
+        intact = buf.chars[i] === 32 && buf.fg[i] === ansi256(p.id);
+      }
+      if (!intact) continue;
+      const key = `${p.x},${p.y}`;
+      next.set(key, p.id);
+      if (shown.get(key) === p.id) continue; // unchanged cells: the image is still there
+      out += `\x1b[${p.y + 1};${p.x + 1}H${itermInlineImage(art.png, p.cols, env)}`;
+    }
+    shown = next;
+    placements = [];
+    // Save and restore the cursor, so the renderer's idea of it stays true.
+    if (out) options.write(`\x1b7${out}\x1b8`);
+  };
+
   return {
     enabled,
+    mode,
+    place(surface, x, y, id, cols) {
+      const fg: Color = ansi256(id);
+      surface.text(x, y, " ".repeat(cols), { fg });
+      const ax = surface.rect.x + x;
+      const ay = surface.rect.y + y;
+      const c = surface.clip;
+      if (ax >= c.x && ay >= c.y && ax + cols <= c.x + c.width && ay < c.y + c.height) placements.push({ x: ax, y: ay, id, cols });
+      return cols;
+    },
+    attach(app) {
+      if (mode !== "iterm" || app.inline) return;
+      app.on("frame", (stats) => afterFrame(app, !!stats?.repainted));
+    },
     emoji(text) {
       const info = emojiInfo(text);
       if (!info) return undefined;
@@ -172,8 +254,10 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
       return use(`i:${name}`, 2, () => iconPng(name, 128, { env, fetch: options.fetch, cacheDir: options.cacheDir }));
     },
     clear() {
-      for (const id of ready.values()) options.write(kittyDeleteImage(id, env));
+      if (mode === "kitty") for (const id of ready.values()) options.write(kittyDeleteImage(id, env));
       ready.clear();
+      pngs.clear();
+      shown.clear();
     },
   };
 }
@@ -202,8 +286,9 @@ export async function iconPng(
   return png;
 }
 
-/** Draw image `id` as `cols` placeholder cells at (x, y). Returns the columns used. */
-export function drawImage(surface: Surface, x: number, y: number, id: number, cols = 2): number {
+/** Draw image `id` in `cols` cells at (x, y). Returns the columns used. */
+export function drawImage(surface: Surface, x: number, y: number, id: number, cols = 2, images?: ImageStore): number {
+  if (images?.mode === "iterm") return images.place(surface, x, y, id, cols);
   const fg: Color = ansi256(id);
   for (let c = 0; c < cols; c++) surface.text(x + c, y, placeholderCell(0, c), { fg });
   return cols;
@@ -236,7 +321,7 @@ export function drawRichText(
       continue;
     }
     flush();
-    col += drawImage(surface, x + col, y, id, 2);
+    col += drawImage(surface, x + col, y, id, 2, images);
   }
   flush();
   return col;
@@ -254,5 +339,5 @@ export function drawIcon(
 ): number {
   const id = images?.icon(name);
   if (id === undefined) return surface.text(x, y, fallback, style);
-  return drawImage(surface, x, y, id, 2);
+  return drawImage(surface, x, y, id, 2, images);
 }

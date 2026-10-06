@@ -67,6 +67,8 @@ export interface FrameStats {
   dirtyRows: number;
   bytes: number;
   fps: number;
+  /** The whole screen was redrawn (resize, forced repaint), not just a diff. */
+  repainted: boolean;
 }
 
 type EventMap = {
@@ -90,6 +92,16 @@ export class App {
 
   private current: FrameBuffer;
   private previous: FrameBuffer;
+
+  /** What is on screen now (the last frame written). Read-only by convention. */
+  get frameBuffer(): FrameBuffer {
+    return this.previous;
+  }
+
+  /** True when frames are drawn relative to an inline viewport, not the whole screen. */
+  get inline(): boolean {
+    return this.encoder.relative;
+  }
   private encoder: Encoder;
   private renderFn: RenderFn = () => {};
   private options: AppOptions;
@@ -117,7 +129,7 @@ export class App {
   private overlays: { draw: (root: Surface) => void; options?: OverlayOptions }[] = [];
   private modal: OverlayOptions | undefined;
   private backgroundFocusIndex = 0;
-  private lastStats: FrameStats = { frame: 0, renderMs: 0, changedCells: 0, dirtyRows: 0, bytes: 0, fps: 0 };
+  private lastStats: FrameStats = { frame: 0, renderMs: 0, changedCells: 0, dirtyRows: 0, bytes: 0, fps: 0, repainted: false };
 
   constructor(options: AppOptions = {}) {
     this.options = options;
@@ -529,6 +541,7 @@ export class App {
       this.dirty = true;
     }
 
+    const repainted = this.forceRepaint;
     const result = this.encoder.encode(this.previous, this.current, this.forceRepaint);
     this.forceRepaint = false;
 
@@ -551,6 +564,7 @@ export class App {
       dirtyRows: result.dirtyRows,
       bytes: output.length,
       fps: this.lastFrameAt ? 1000 / Math.max(1, now - this.lastFrameAt) : 0,
+      repainted,
     };
     this.lastFrameAt = now;
     this.lastStats = stats;

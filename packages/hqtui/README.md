@@ -225,9 +225,12 @@ drawRichText(surface, x, y, "ship it 🚀", { fg }, images); // the rocket is th
 drawIcon(surface, x, y, "lock", images, "🔒");              // OpenIcon, or the fallback text
 ```
 
-It turns on in Kitty and Ghostty; over SSH or in tmux (with
-`set -g allow-passthrough on`) set `HQTUI_IMAGES=1`, and `HQTUI_IMAGES=0`
-turns it off. Elsewhere it draws the text, so the calls are always safe.
+Kitty and Ghostty use placeholders. WezTerm and iTerm2, which do not support
+them, get iTerm2 inline images drawn after each frame: add
+`images.attach(app)` once. Local terminals are detected; over SSH or in tmux
+(with `set -g allow-passthrough on`) set `HQTUI_IMAGES=1` for Kitty/Ghostty or
+`HQTUI_IMAGES=wezterm` for WezTerm/iTerm2. `HQTUI_IMAGES=0` turns it off.
+Elsewhere it draws the text, so the calls are always safe.
 
 **In a browser terminal** (xterm.js), load the set's stylesheet and name the
 family, so emoji draw with the same art:
