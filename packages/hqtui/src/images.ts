@@ -30,7 +30,7 @@ import { detectCapabilities } from "./capabilities.ts";
 import { emojiInfo } from "./emoji.ts";
 import { artCacheDir, artSize, cellSizeFromEnv, emojiPng } from "./emoji-art.ts";
 import type { Surface } from "./surface.ts";
-import { cellText, graphemes } from "./unicode.ts";
+import { cellText, graphemes, internCluster } from "./unicode.ts";
 
 export const PLACEHOLDER = "\u{10EEEE}";
 /** Row/column diacritics from the Kitty spec: index n marks row or column n. */
@@ -85,6 +85,11 @@ export function kittyDeleteImage(id: number, env: NodeJS.ProcessEnv = process.en
 export function placeholderCell(row: number, col: number): string {
   return PLACEHOLDER + (DIACRITICS[row] ?? DIACRITICS[0]) + (DIACRITICS[col] ?? DIACRITICS[0]);
 }
+
+// Reserve the single-row placeholder cells in the cluster table now, at import:
+// a table that later fills up degrades new clusters to their base character,
+// and a placeholder without its diacritics would lose its column.
+for (let col = 0; col < DIACRITICS.length; col++) internCluster(placeholderCell(0, col));
 
 export interface ImageStoreOptions {
   /** Raw terminal write, outside the frame (e.g. `app.terminal.write`). */
