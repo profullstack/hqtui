@@ -415,9 +415,11 @@ setEmojiMode("text");                      // or HQTUI_EMOJI=emoji|text`}
             <strong>HD images inside your app.</strong> <code className="font-mono text-white/80">createImageStore()</code> uploads each
             OpenEmoji or OpenIcon PNG once as a Kitty Unicode-placeholder image, and{" "}
             <code className="font-mono text-white/80">drawRichText()</code> / <code className="font-mono text-white/80">drawIcon()</code> draw
-            them as ordinary cells, so redraws, scrolling and tmux keep them. On in Kitty and Ghostty; over SSH or in tmux
-            (with <code className="font-mono text-white/80">allow-passthrough on</code>) set{" "}
-            <code className="font-mono text-white/80">HQTUI_IMAGES=1</code>. Everywhere else it draws the text.
+            them as ordinary cells, so redraws, scrolling and tmux keep them. WezTerm and iTerm2 get inline images drawn after
+            each frame (<code className="font-mono text-white/80">images.attach(app)</code>). Over SSH or in tmux (with{" "}
+            <code className="font-mono text-white/80">allow-passthrough on</code>) set{" "}
+            <code className="font-mono text-white/80">HQTUI_IMAGES=1</code> (Kitty/Ghostty) or{" "}
+            <code className="font-mono text-white/80">HQTUI_IMAGES=wezterm</code>. Everywhere else it draws the text.
           </P>
 
           <H2 id="input">Input</H2>
