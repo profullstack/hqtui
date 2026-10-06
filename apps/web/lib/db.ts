@@ -228,3 +228,23 @@ export async function claimDownload(paymentId: string): Promise<boolean> {
   ]);
   return true;
 }
+
+/** For the health check: one SELECT 1, capped at 3s. False when unconfigured or unreachable. */
+export async function ping(): Promise<boolean> {
+  const target = db();
+  if (!target) return false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      target.execute("SELECT 1"),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("timeout")), 3000);
+      }),
+    ]);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
