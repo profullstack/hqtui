@@ -6,7 +6,7 @@ import { join } from "node:path";
 
 import { ansi256 } from "../src/color.ts";
 import {
-  createImageStore, drawRichText, imageSupport, kittyVirtualImage, passthrough, placeholderCell, PLACEHOLDER,
+  createImageStore, drawRichText, imageSupport, inTmux, kittyVirtualImage, passthrough, placeholderCell, PLACEHOLDER,
 } from "../src/images.ts";
 import { renderToScreen } from "../src/testing.ts";
 import { cellText } from "../src/unicode.ts";
@@ -175,4 +175,14 @@ test("inline mode under tmux: the cursor move travels inside the passthrough, of
   listeners.focus!({ focused: true });
   frame();
   assert.equal(writes.length, 2, "back in focus (tmux may have repainted): drawn again");
+});
+
+test("tmux is recognised by TERM when TMUX was lost (su, sudo, some SSH hops)", () => {
+  assert.equal(inTmux({ TMUX: "/tmp/tmux-1/default,1,0" }), true);
+  assert.equal(inTmux({ TERM: "tmux-256color" }), true);
+  assert.equal(inTmux({ TERM: "screen-256color" }), true);
+  assert.equal(inTmux({ TERM: "screen" }), true);
+  assert.equal(inTmux({ TERM: "xterm-256color" }), false);
+  assert.equal(inTmux({ TERM: "screenshot" }), false);
+  assert.match(passthrough("\x1b_Gx\x1b\\", { TERM: "tmux-256color" }), /^\x1bPtmux;/);
 });

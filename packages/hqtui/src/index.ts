@@ -85,7 +85,7 @@ export {
 export type { ArtProtocol, CellSize, EmojiImageOptions } from "./emoji-art.ts";
 export {
   imageSupport, createImageStore, drawImage, drawRichText, drawIcon, iconPng, kittyVirtualImage, kittyDeleteImage,
-  placeholderCell, passthrough, PLACEHOLDER, OPENICON_PNG_BASE,
+  placeholderCell, passthrough, inTmux, PLACEHOLDER, OPENICON_PNG_BASE,
 } from "./images.ts";
 export type { ImageSupport, ImageStore, ImageStoreOptions } from "./images.ts";
 export { installEmojiFont, emojiFontStatus, removeEmojiFont, terminalSnippets } from "./fonts.ts";

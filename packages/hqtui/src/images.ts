@@ -71,9 +71,18 @@ export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport
   return "none";
 }
 
+/**
+ * Inside tmux? `TMUX` is the usual sign, but it is lost across su, sudo and
+ * some SSH or mosh hops while `TERM` still says tmux (or screen, which tmux
+ * also sets). Either one counts.
+ */
+export function inTmux(env: NodeJS.ProcessEnv = process.env): boolean {
+  return !!env.TMUX || /^(tmux|screen)([-.]|$)/.test(env.TERM ?? "");
+}
+
 /** Wrap an escape for tmux passthrough (every ESC doubled inside DCS tmux;). */
 export function passthrough(seq: string, env: NodeJS.ProcessEnv = process.env): string {
-  if (!env.TMUX) return seq;
+  if (!inTmux(env)) return seq;
   return `\x1bPtmux;${seq.replace(/\x1b/g, "\x1b\x1b")}\x1b\\`;
 }
 
@@ -183,7 +192,7 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
   // Under tmux: where this pane sits in the real terminal (pane offset plus a top status line).
   let paneOffset: { x: number; y: number } | null = options.paneOffset ?? null;
   const refreshOffset = () => {
-    if (!env.TMUX || options.paneOffset) return;
+    if (!inTmux(env) || options.paneOffset) return;
     void tmuxPaneOffset(env).then((o) => {
       const moved = !paneOffset || o.x !== paneOffset.x || o.y !== paneOffset.y;
       paneOffset = o;
@@ -243,7 +252,7 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
       refreshOffset(); // a resize can move the pane
     }
     // Under tmux, wait for the pane offset rather than draw in the wrong place.
-    if (env.TMUX && !paneOffset) {
+    if (inTmux(env) && !paneOffset) {
       placements = [];
       return;
     }
@@ -279,7 +288,7 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
    */
   const inlineAt = (x: number, y: number, png: Buffer, cols: number): string => {
     const image = `\x1b]1337;File=inline=1;size=${png.length};width=${cols};height=1;preserveAspectRatio=1:${png.toString("base64")}\x07`;
-    if (!env.TMUX) return `\x1b7\x1b[${y + 1};${x + 1}H${image}\x1b8`;
+    if (!inTmux(env)) return `\x1b7\x1b[${y + 1};${x + 1}H${image}\x1b8`;
     const o = paneOffset ?? { x: 0, y: 0 };
     return passthrough(`\x1b7\x1b[${y + o.y + 1};${x + o.x + 1}H${image}\x1b8`, env);
   };
