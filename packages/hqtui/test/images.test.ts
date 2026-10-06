@@ -6,10 +6,13 @@ import { join } from "node:path";
 
 import { ansi256 } from "../src/color.ts";
 import {
-  createImageStore, drawRichText, imageSupport, kittyVirtualImage, passthrough, placeholderCell, PLACEHOLDER,
+  createImageStore, drawRichText, imageSupport, inTmux, behindMosh, kittyVirtualImage, passthrough, placeholderCell, PLACEHOLDER,
 } from "../src/images.ts";
 import { renderToScreen } from "../src/testing.ts";
 import { cellText } from "../src/unicode.ts";
+
+// These tests describe terminals, not the machine running them (which may be behind mosh).
+process.env.HQTUI_MOSH = "0";
 
 // The 8-byte PNG signature is all the store checks.
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
@@ -175,4 +178,21 @@ test("inline mode under tmux: the cursor move travels inside the passthrough, of
   listeners.focus!({ focused: true });
   frame();
   assert.equal(writes.length, 2, "back in focus (tmux may have repainted): drawn again");
+});
+
+test("tmux is recognised by TERM when TMUX was lost (su, sudo, some SSH hops)", () => {
+  assert.equal(inTmux({ TMUX: "/tmp/tmux-1/default,1,0" }), true);
+  assert.equal(inTmux({ TERM: "tmux-256color" }), true);
+  assert.equal(inTmux({ TERM: "screen-256color" }), true);
+  assert.equal(inTmux({ TERM: "screen" }), true);
+  assert.equal(inTmux({ TERM: "xterm-256color" }), false);
+  assert.equal(inTmux({ TERM: "screenshot" }), false);
+  assert.match(passthrough("\x1b_Gx\x1b\\", { TERM: "tmux-256color" }), /^\x1bPtmux;/);
+});
+
+test("behind mosh, images are off even when asked for: mosh drops image escapes", () => {
+  assert.equal(behindMosh({ HQTUI_MOSH: "1" }), true);
+  assert.equal(imageSupport({ HQTUI_IMAGES: "wezterm", HQTUI_MOSH: "1" }), "none");
+  assert.equal(imageSupport({ TERM: "xterm-kitty", HQTUI_MOSH: "1" }), "none");
+  assert.equal(imageSupport({ HQTUI_IMAGES: "wezterm", HQTUI_MOSH: "0" }), "iterm");
 });

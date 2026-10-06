@@ -14,7 +14,7 @@ import { detectCapabilities } from "./capabilities.ts";
 import { themeList, themes } from "./theme.ts";
 import { BrailleCanvas } from "./graphics/braille.ts";
 
-const VERSION = "0.10.1";
+const VERSION = "0.10.2";
 
 function help(): void {
   console.log(`hqtui ${VERSION} — High Quality Terminal UI for TypeScript

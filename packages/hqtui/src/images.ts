@@ -52,6 +52,9 @@ export type ImageSupport = "kitty" | "iterm" | "none";
 export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport {
   const setting = (env.HQTUI_IMAGES ?? "").toLowerCase();
   if (setting === "0" || setting === "off" || setting === "false") return "none";
+  // Mosh redraws the screen from its own copy of the text and drops every image
+  // escape, so images could only leave blank cells. Not even when asked for.
+  if (behindMosh(env)) return "none";
   if (setting === "1" || setting === "on" || setting === "true" || setting === "kitty" || setting === "ghostty") return "kitty";
   if (setting === "iterm" || setting === "iterm2" || setting === "wezterm") return "iterm";
   const art = (env.HQTUI_EMOJI_ART ?? "").toLowerCase();
@@ -71,9 +74,73 @@ export function imageSupport(env: NodeJS.ProcessEnv = process.env): ImageSupport
   return "none";
 }
 
+/**
+ * Inside tmux? `TMUX` is the usual sign, but it is lost across su, sudo and
+ * some SSH or mosh hops while `TERM` still says tmux (or screen, which tmux
+ * also sets). Either one counts.
+ */
+export function inTmux(env: NodeJS.ProcessEnv = process.env): boolean {
+  return !!env.TMUX || /^(tmux|screen)([-.]|$)/.test(env.TERM ?? "");
+}
+
+type ProcInfo = { comm: string; ppid: number };
+// biome-ignore lint/suspicious/noExplicitAny: Node/Bun built-in, absent in browsers.
+const builtin = (name: string): any => (process as any).getBuiltinModule?.(name);
+
+function procInfo(pid: number): ProcInfo | null {
+  try {
+    const stat: string = builtin("node:fs").readFileSync(`/proc/${pid}/stat`, "utf8");
+    const close = stat.lastIndexOf(")");
+    return { comm: stat.slice(stat.indexOf("(") + 1, close), ppid: Number(stat.slice(close + 2).split(" ")[1]) };
+  } catch {
+    return null;
+  }
+}
+
+function underMoshServer(pid: number): boolean {
+  for (let i = 0; i < 64 && pid > 1; i++) {
+    const p = procInfo(pid);
+    if (!p) return false;
+    if (/^mosh-server/.test(p.comm)) return true;
+    pid = p.ppid;
+  }
+  return false;
+}
+
+let moshCache: boolean | undefined;
+
+/**
+ * Is this terminal reached through mosh? Mosh keeps its own copy of the screen
+ * and sends only text, so images never arrive. Checked on Linux by walking
+ * /proc up from this process and, under tmux, up from every client attached
+ * to this session (tmux breaks the direct chain). `HQTUI_MOSH=1|0` overrides.
+ */
+export function behindMosh(env: NodeJS.ProcessEnv = process.env): boolean {
+  const override = env.HQTUI_MOSH ?? process.env.HQTUI_MOSH;
+  if (override !== undefined && override !== "") return override === "1" || override === "true";
+  if (moshCache !== undefined) return moshCache;
+  moshCache = false;
+  try {
+    if (process.platform !== "linux") return moshCache;
+    if (underMoshServer(process.pid)) return (moshCache = true);
+    if (inTmux(env)) {
+      const target = env.TMUX_PANE ? ["-t", env.TMUX_PANE] : [];
+      const out: string = builtin("node:child_process").execFileSync("tmux", ["list-clients", ...target, "-F", "#{client_pid}"], {
+        encoding: "utf8",
+        timeout: 1500,
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      moshCache = out.split(/\s+/).some((pid) => Number(pid) > 1 && underMoshServer(Number(pid)));
+    }
+  } catch {
+    // Can't tell: assume a direct connection.
+  }
+  return moshCache;
+}
+
 /** Wrap an escape for tmux passthrough (every ESC doubled inside DCS tmux;). */
 export function passthrough(seq: string, env: NodeJS.ProcessEnv = process.env): string {
-  if (!env.TMUX) return seq;
+  if (!inTmux(env)) return seq;
   return `\x1bPtmux;${seq.replace(/\x1b/g, "\x1b\x1b")}\x1b\\`;
 }
 
@@ -183,7 +250,7 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
   // Under tmux: where this pane sits in the real terminal (pane offset plus a top status line).
   let paneOffset: { x: number; y: number } | null = options.paneOffset ?? null;
   const refreshOffset = () => {
-    if (!env.TMUX || options.paneOffset) return;
+    if (!inTmux(env) || options.paneOffset) return;
     void tmuxPaneOffset(env).then((o) => {
       const moved = !paneOffset || o.x !== paneOffset.x || o.y !== paneOffset.y;
       paneOffset = o;
@@ -243,7 +310,7 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
       refreshOffset(); // a resize can move the pane
     }
     // Under tmux, wait for the pane offset rather than draw in the wrong place.
-    if (env.TMUX && !paneOffset) {
+    if (inTmux(env) && !paneOffset) {
       placements = [];
       return;
     }
@@ -279,7 +346,7 @@ export function createImageStore(options: ImageStoreOptions): ImageStore {
    */
   const inlineAt = (x: number, y: number, png: Buffer, cols: number): string => {
     const image = `\x1b]1337;File=inline=1;size=${png.length};width=${cols};height=1;preserveAspectRatio=1:${png.toString("base64")}\x07`;
-    if (!env.TMUX) return `\x1b7\x1b[${y + 1};${x + 1}H${image}\x1b8`;
+    if (!inTmux(env)) return `\x1b7\x1b[${y + 1};${x + 1}H${image}\x1b8`;
     const o = paneOffset ?? { x: 0, y: 0 };
     return passthrough(`\x1b7\x1b[${y + o.y + 1};${x + o.x + 1}H${image}\x1b8`, env);
   };

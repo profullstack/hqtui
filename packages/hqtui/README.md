@@ -230,6 +230,9 @@ them, get iTerm2 inline images drawn after each frame: add
 `images.attach(app)` once. Local terminals are detected; over SSH or in tmux
 (with `set -g allow-passthrough on`) set `HQTUI_IMAGES=1` for Kitty/Ghostty or
 `HQTUI_IMAGES=wezterm` for WezTerm/iTerm2. `HQTUI_IMAGES=0` turns it off.
+Behind **mosh** images are always off (mosh syncs only text and drops image
+escapes), so emoji stay characters; use plain SSH or WezTerm's multiplexer
+(`wezterm connect`) for images. `HQTUI_MOSH=0|1` overrides the detection.
 Elsewhere it draws the text, so the calls are always safe.
 
 **In a browser terminal** (xterm.js), load the set's stylesheet and name the
