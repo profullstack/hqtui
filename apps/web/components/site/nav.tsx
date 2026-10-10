@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Footer } from "@profullstack/footer/react";
 import { Button } from "@/components/ui/button";
 
 /** lucide dropped brand icons in v1, so the mark lives here. */
@@ -84,34 +85,28 @@ export function SiteNav() {
   );
 }
 
+/**
+ * @profullstack/footer: links, copyright and the webring, from the package's
+ * @latest template (an async server component).
+ */
 export function SiteFooter({ views }: { views?: number }) {
   return (
-    <footer className="border-t border-white/10 py-10">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-white/50 sm:flex-row sm:items-center sm:px-6">
-        <div className="flex items-center gap-2 font-mono">
-          <Image src="/icons/icon-512x512.png" alt="HQTUI" width={512} height={512} className="h-4 w-4 opacity-70" />
-          <span className="text-white/50">·</span>
-          <span>MIT</span>
-        </div>
-        <div className="flex flex-wrap gap-4 sm:ml-auto">
-          <Link className="hover:text-white" href="/#languages">Languages</Link>
-          <a className="hover:text-white" href="https://bbs.hqtui.com">Discussions</a>
-          <a className="hover:text-white" href="https://github.com/profullstack/hqtui">GitHub</a>
-          <a className="hover:text-white" href="https://www.npmjs.com/package/@profullstack/hqtui">npm</a>
-          <Link className="hover:text-white" href="/docs">Docs</Link>
-          <Link className="hover:text-white" href="/apps">Apps</Link>
-          <Link className="hover:text-white" href="/book">Cookbook</Link>
-          <Link className="hover:text-white" href="/blog">Blog</Link>
-          <a className="hover:text-white" href="https://github.com/profullstack/hqtui/blob/main/docs/PRD.md">PRD</a>
-        </div>
-        <nav className="webring flex gap-3 font-mono text-xs" aria-label="Profullstack webring">
-          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/previous?from=https%3A%2F%2Fhqtui.com%2F" rel="prev" title="Previous site">{"<<"}</a>
-          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack">Profullstack</a>
-          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/next?from=https%3A%2F%2Fhqtui.com%2F" rel="next" title="Next site">{">>"}</a>
-          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/random?from=https%3A%2F%2Fhqtui.com%2F" title="Random site" aria-label="Random site">{"⚄"}</a>
-        </nav>
-        {views ? <span className="font-mono text-xs text-white/50">{views.toLocaleString()} views</span> : null}
-      </div>
-    </footer>
+    <div className="text-white">
+      <Footer
+        site="https://hqtui.com/"
+        tagline={views ? `MIT · ${views.toLocaleString()} views` : "MIT"}
+        links={[
+          { label: "Languages", href: "/#languages" },
+          { label: "Discussions", href: "https://bbs.hqtui.com" },
+          { label: "GitHub", href: "https://github.com/profullstack/hqtui" },
+          { label: "npm", href: "https://www.npmjs.com/package/@profullstack/hqtui" },
+          { label: "Docs", href: "/docs" },
+          { label: "Apps", href: "/apps" },
+          { label: "Cookbook", href: "/book" },
+          { label: "Blog", href: "/blog" },
+          { label: "PRD", href: "https://github.com/profullstack/hqtui/blob/main/docs/PRD.md" },
+        ]}
+      />
+    </div>
   );
 }
