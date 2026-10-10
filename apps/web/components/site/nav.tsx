@@ -105,9 +105,10 @@ export function SiteFooter({ views }: { views?: number }) {
           <a className="hover:text-white" href="https://github.com/profullstack/hqtui/blob/main/docs/PRD.md">PRD</a>
         </div>
         <nav className="webring flex gap-3 font-mono text-xs" aria-label="Profullstack webring">
-          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/previous?from=https%3A%2F%2Fhqtui.com%2F" rel="prev">{"<<"}</a>
+          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/previous?from=https%3A%2F%2Fhqtui.com%2F" rel="prev" title="Previous site">{"<<"}</a>
           <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack">Profullstack</a>
-          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/next?from=https%3A%2F%2Fhqtui.com%2F" rel="next">{">>"}</a>
+          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/next?from=https%3A%2F%2Fhqtui.com%2F" rel="next" title="Next site">{">>"}</a>
+          <a className="hover:text-white" href="https://rssamplifier.com/ring/profullstack/random?from=https%3A%2F%2Fhqtui.com%2F" title="Random site" aria-label="Random site">{"⚄"}</a>
         </nav>
         {views ? <span className="font-mono text-xs text-white/50">{views.toLocaleString()} views</span> : null}
       </div>
