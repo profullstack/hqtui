@@ -60,6 +60,16 @@ No ncurses. No browser DOM. No React. No native addon. No network access. Ever.
 
 ## Install
 
+The `hqtui` CLI (widget showcase, `hqtui doctor`, the emoji font installer) in
+one line. It uses bun if you have it, otherwise npm with Node 22.6+, and never
+asks for sudo:
+
+```sh
+curl -fsSL https://hqtui.com/install.sh | sh
+```
+
+To build an app, add the library to your project:
+
 ```bash
 bun  add @profullstack/hqtui        # Bun is the default runtime
 npm  add @profullstack/hqtui        # Node 22.6+ works too

@@ -58,6 +58,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // The curl installer: shown as text in a browser, never cached stale.
+        source: "/install.sh",
+        headers: [
+          { key: "Cache-Control", value: "no-store" },
+          { key: "Content-Type", value: "text/plain; charset=utf-8" },
+        ],
+      },
+      {
         source: "/demo.sh",
         headers: [
           { key: "Cache-Control", value: "no-store" },

@@ -194,6 +194,12 @@ export default async function Home() {
                 </p>
                 <CommandBlock command="bun add @profullstack/hqtui" label="install" />
               </div>
+              <div className="text-left">
+                <p className="mb-1.5 text-center text-xs uppercase tracking-wide text-white/40">
+                  Or install the CLI
+                </p>
+                <CommandBlock command="curl -fsSL https://hqtui.com/install.sh | sh" label="CLI install" />
+              </div>
               <div className="mt-1 flex justify-center gap-3">
                 <Button size="lg" render={<Link href="#languages" />}>
                   Choose your language <ArrowRight className="ml-1 h-4 w-4" />
