@@ -175,7 +175,7 @@ npm  add @profullstack/hqtui   # Node 22.6+ works unchanged`} />
             There is also a CLI: <code className="font-mono text-white/80">hqtui doctor</code>{" "}
             reports what your terminal actually supports, and{" "}
             <code className="font-mono text-white/80">hqtui</code> opens a built-in showcase.
-            Install it in one line (bun if present, otherwise npm with Node 22.6+, no sudo):
+            Install it in one line (into ~/.local, no sudo; fetches a private Node if you have no Node 22+):
           </P>
           <CommandBlock className="mt-3" command="curl -fsSL https://hqtui.com/install.sh | sh" label="CLI install" />
 
