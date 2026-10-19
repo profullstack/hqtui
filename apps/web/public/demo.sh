@@ -373,7 +373,9 @@ main() (
             cd "$source/ports/go"
             if [ ! -f "$bins/go.ready" ] || [ ! -x "$bins/go" ]; then
                 note 'Building Go demo (first run of this revision)…'
-                run_tool go build -o "$bins/go" ./examples/dashboard
+                # Go stamps VCS info by running git itself, without this script's
+                # safe.directory settings, so it fails on the cached worktree.
+                run_tool go build -buildvcs=false -o "$bins/go" ./examples/dashboard
                 printf '%s\n' "$revision" > "$bins/go.ready"
             fi
             launch "$bins/go" "$@"
