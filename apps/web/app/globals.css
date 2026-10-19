@@ -195,3 +195,10 @@
 .font-nerd {
   font-family: "OpenIcon Nerd Symbols", ui-monospace, monospace;
 }
+
+/* The site is always dark; the pit.world footer follows prefers-color-scheme,
+   so pin its dark palette here. */
+html.dark .pit-foot { color: #a9b5a0; }
+html.dark .pit-foot b { color: #dfe8d8; }
+html.dark .pit-foot-links > a,
+html.dark .pit-foot-links > button { color: #c4ff6b; }

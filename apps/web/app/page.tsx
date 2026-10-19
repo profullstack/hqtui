@@ -12,7 +12,7 @@ import { SiteFooter, SiteNav } from "@/components/site/nav";
 import { Terminal } from "@/components/site/terminal";
 import { ThemeGallery, type ThemeCard } from "@/components/site/theme-gallery";
 
-import { recordView, themeVotes, totalViews } from "@/lib/db";
+import { recordView, themeVotes } from "@/lib/db";
 import { themes } from "@profullstack/hqtui";
 import { LANGUAGES } from "@/lib/languages";
 
@@ -124,7 +124,7 @@ const BENCHMARKS = [
 
 export default async function Home() {
   await recordView("/");
-  const [votes, views] = await Promise.all([themeVotes(), totalViews()]);
+  const votes = await themeVotes();
   const voteMap = new Map(votes.map((v) => [v.theme, v.votes]));
 
   // Only themes with a captured screenshot appear in the gallery.
@@ -522,7 +522,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <SiteFooter views={views} />
+      <SiteFooter />
     </div>
   );
 }
