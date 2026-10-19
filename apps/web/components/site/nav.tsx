@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Footer } from "@profullstack/footer/react";
 import { Button } from "@/components/ui/button";
 
 /** lucide dropped brand icons in v1, so the mark lives here. */
@@ -84,30 +85,27 @@ export function SiteNav() {
   );
 }
 
-const FOOTER_LINKS = [
-  { label: "Docs", href: "/docs" },
-  { label: "Cookbook", href: "/book" },
-  { label: "Apps", href: "/apps" },
-  { label: "Blog", href: "/blog" },
-  { label: "Discussions", href: "https://bbs.hqtui.com" },
-  { label: "GitHub", href: "https://github.com/profullstack/hqtui" },
-  { label: "npm", href: "https://www.npmjs.com/package/@profullstack/hqtui" },
-];
-
-/** One row: copyright and the links people need. The network is the pit.world footer's job. */
+/**
+ * @profullstack/footer: links, copyright and the webring, from the package's
+ * @latest template (an async server component). The pit.world network footer
+ * follows it from the root layout.
+ */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/10 text-sm text-white/60">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-5 gap-y-2 px-6 py-6 text-center">
-        <span>&copy; {new Date().getFullYear()} Profullstack, Inc. &middot; MIT</span>
-        <nav aria-label="Footer" className="flex flex-wrap justify-center gap-x-5 gap-y-1">
-          {FOOTER_LINKS.map((l) => (
-            <a key={l.label} href={l.href} className="hover:text-white">
-              {l.label}
-            </a>
-          ))}
-        </nav>
-      </div>
-    </footer>
+    <div className="text-white">
+      <Footer
+        site="https://hqtui.com/"
+        tagline="MIT"
+        links={[
+          { label: "Docs", href: "/docs" },
+          { label: "Cookbook", href: "/book" },
+          { label: "Apps", href: "/apps" },
+          { label: "Blog", href: "/blog" },
+          { label: "Discussions", href: "https://bbs.hqtui.com" },
+          { label: "GitHub", href: "https://github.com/profullstack/hqtui" },
+          { label: "npm", href: "https://www.npmjs.com/package/@profullstack/hqtui" },
+        ]}
+      />
+    </div>
   );
 }
