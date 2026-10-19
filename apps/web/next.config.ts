@@ -20,7 +20,7 @@ const CSP = [
   "font-src 'self' data:",
   "connect-src 'self' https://crawlproof.com",
   // The home page ad.network unit is an iframe to crawlproof's ad frame.
-  "frame-src https://crawlproof.com",
+  "frame-src 'self' https://crawlproof.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
