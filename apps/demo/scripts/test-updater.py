@@ -170,8 +170,9 @@ elif tool=="cargo":
     assert args==["build","--release","--example","dashboard"]
     output=pathlib.Path(os.environ["CARGO_TARGET_DIR"])/"release/examples/dashboard"
 elif tool=="go":
-    assert args[0:2]==["build","-o"] and args[3]=="./examples/dashboard"
-    output=pathlib.Path(args[2])
+    # -buildvcs=false: Go's own git call lacks the launcher's safe.directory settings.
+    assert args[0:3]==["build","-buildvcs=false","-o"] and args[4]=="./examples/dashboard"
+    output=pathlib.Path(args[3])
 elif tool=="zig":
     assert args[0:3]==["build","-Doptimize=ReleaseFast","--prefix"]
     output=pathlib.Path(args[3])/"bin/hqtui-demo-zig"
