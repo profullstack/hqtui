@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Boxes, Cpu, Gauge, Keyboard, Palette, TerminalSquare, TestTube2, Zap } from "lucide-react";
@@ -27,6 +28,20 @@ import { CommandBlock } from "@/components/site/command";
 import { OpenSets } from "@/components/site/open-sets";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * ad.network publisher claim for hqtui.com. The meta tag lets ad.network
+ * verify ownership from the server-rendered HTML. The home page unit is a
+ * plain iframe to crawlproof's ad frame rather than ad.js: the site CSP has no
+ * frame-src for srcdoc frames to inherit, so `frame-src https://crawlproof.com`
+ * in next.config.ts is what lets it load.
+ */
+const AD_NETWORK_CODE = "KGszGjGwRQ4SSvKg";
+const HOME_AD_SLOT = "a20c56e3-c608-4a38-be7d-9cc12d2d7dff";
+
+export const metadata: Metadata = {
+  other: { "ad.network": AD_NETWORK_CODE },
+};
 
 const HELLO = `import { createApp } from "@profullstack/hqtui";
 
@@ -256,6 +271,23 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <aside
+        data-ad-network={AD_NETWORK_CODE}
+        data-cp-ad=""
+        data-slot={HOME_AD_SLOT}
+        data-format="banner_300x250"
+        className="mx-auto flex max-w-7xl justify-center px-4 pt-16 sm:px-6"
+      >
+        <iframe
+          src={`https://crawlproof.com/api/ads/frame?slot=${HOME_AD_SLOT}&format=banner_300x250`}
+          width={300}
+          height={250}
+          loading="lazy"
+          style={{ border: 0 }}
+          title="Advertisement"
+        />
+      </aside>
 
       <section id="languages" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6">
         <h2 className="text-3xl font-bold tracking-tight">

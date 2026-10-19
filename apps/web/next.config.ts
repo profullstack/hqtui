@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 /**
- * The only external origin the site loads from is the stats script. Fonts are
+ * The only external origins the site loads from are the stats script and
+ * the home page ad frame, both on crawlproof.com. Fonts are
  * `next/font/google`, which self-hosts them at build time, so nothing is
  * fetched from Google at run time; the other external URLs in the source are
  * links, not resource loads.
@@ -18,6 +19,8 @@ const CSP = [
   "img-src 'self' data: blob: https://pwamart.com",
   "font-src 'self' data:",
   "connect-src 'self' https://crawlproof.com",
+  // The home page ad.network unit is an iframe to crawlproof's ad frame.
+  "frame-src https://crawlproof.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
