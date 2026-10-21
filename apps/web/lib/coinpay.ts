@@ -36,6 +36,8 @@ export function configured(): boolean {
 }
 
 export const PRICE_USD = 1;
+export const PROPERTY = "hqtui.com";
+export const PRODUCT = "hqtui-cookbook-pdf";
 
 export interface Chain {
   /** What the payments API calls `blockchain`. */
@@ -90,7 +92,10 @@ export interface CreatedPayment {
  * resolves the right wallet per chain. Passing one here would offer a single
  * address for every chain, which is wrong the moment there is more than one.
  */
-export async function createPayment(chain: string = DEFAULT_CHAIN): Promise<CreatedPayment> {
+export async function createPayment(
+  chain: string = DEFAULT_CHAIN,
+  buyer: { accountId?: string | null; email?: string | null } = {},
+): Promise<CreatedPayment> {
   const key = env("COINPAY_API_KEY");
   const business = env("COINPAY_BUSINESS_ID");
   if (!key || !business) throw new Error("CoinPay is not configured");
@@ -107,7 +112,16 @@ export async function createPayment(chain: string = DEFAULT_CHAIN): Promise<Crea
       amount: PRICE_USD,
       blockchain: chain,
       description: "The High Quality Terminal UI Cookbook (PDF)",
-      metadata: { product: "hqtui-cookbook-pdf", reference: randomUUID() },
+      // `property` names the site so a webhook (or a human reading the CoinPay
+      // dashboard) can tell which fleet site a payment belongs to. The buyer is
+      // anonymous today; account_id and email ride along when a caller has them.
+      metadata: {
+        property: PROPERTY,
+        product: PRODUCT,
+        reference: randomUUID(),
+        ...(buyer.accountId ? { account_id: buyer.accountId } : {}),
+        ...(buyer.email ? { email: buyer.email } : {}),
+      },
     }),
   });
 
@@ -123,21 +137,81 @@ export async function createPayment(chain: string = DEFAULT_CHAIN): Promise<Crea
   return { id, url: `${siteBase()}/pay/${id}` };
 }
 
+/** CoinPay rejects a signature older than this, and so do we. */
+const SIGNATURE_TOLERANCE_SECONDS = 300;
+
 /**
  * Verifies a webhook against the business's plaintext secret.
+ *
+ * CoinPay sends `X-CoinPay-Signature: t=<unix>,v1=<hex>` where the hex is
+ * HMAC-SHA256 of `${t}.${rawBody}` (coinpayportal src/lib/webhooks/service.ts
+ * signWebhookPayload). An HMAC of the bare body never matches, which is how
+ * this route used to refuse every real webhook. The timestamp is bound into
+ * the MAC and checked against a 300s window so a captured delivery cannot be
+ * replayed later.
  *
  * Compared in constant time, and length-checked first because
  * `timingSafeEqual` throws on a length mismatch rather than returning false.
  */
-export function verifyWebhook(rawBody: string, signature: string | null): boolean {
-  const secret = env("COINPAY_WEBHOOK_SECRET");
+export function verifyWebhook(
+  rawBody: string,
+  signature: string | null,
+  secret: string | undefined = env("COINPAY_WEBHOOK_SECRET"),
+  nowSeconds: number = Math.floor(Date.now() / 1000),
+): boolean {
   if (!secret || !signature) return false;
 
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const given = signature.replace(/^sha256=/, "").trim();
+  const parts: Record<string, string> = {};
+  for (const part of signature.split(",")) {
+    const at = part.indexOf("=");
+    if (at > 0) parts[part.slice(0, at).trim()] = part.slice(at + 1).trim();
+  }
+  const t = parts.t;
+  const given = parts.v1;
+  if (!t || !given || !/^\d+$/.test(t)) return false;
+  if (Math.abs(nowSeconds - Number(t)) > SIGNATURE_TOLERANCE_SECONDS) return false;
+
+  const expected = createHmac("sha256", secret).update(`${t}.${rawBody}`).digest("hex");
   if (given.length !== expected.length) return false;
 
   return timingSafeEqual(Buffer.from(given, "utf8"), Buffer.from(expected, "utf8"));
+}
+
+export interface WebhookEvent {
+  type: string;
+  paymentId: string | null;
+  status: string;
+  metadata: Record<string, unknown>;
+  /** True when the event says the money arrived. */
+  settled: boolean;
+}
+
+/** Statuses that mean the buyer paid. `forwarded` follows `confirmed`. */
+const SETTLED = new Set(["confirmed", "forwarded", "completed", "paid"]);
+
+/**
+ * Reads CoinPay's webhook body.
+ *
+ * The payment is nested under `data`, and the top-level `id` is the EVENT id
+ * (`evt_<paymentId>_<ts>`), not the payment. Reading the flat fields first
+ * would key the sale to the event id, so `data` is read first and the flat
+ * shape is only a fallback for the older test sender.
+ */
+export function readWebhook(body: unknown): WebhookEvent {
+  const payload = (body ?? {}) as Record<string, any>;
+  const data = (payload.data && typeof payload.data === "object" ? payload.data : payload) as Record<string, any>;
+  const type = String(payload.type ?? payload.event ?? "");
+  const paymentId = data.payment_id ?? payload.payment?.id ?? (payload.data ? data.id : null) ?? null;
+  const status = String(data.status ?? "").toLowerCase();
+  const metadata = (data.metadata ?? payload.metadata ?? {}) as Record<string, unknown>;
+  const settled =
+    SETTLED.has(status) || (!status && (type === "payment.confirmed" || type === "payment.forwarded"));
+  return { type, paymentId: paymentId ? String(paymentId) : null, status, metadata, settled };
+}
+
+/** True when the metadata says this payment was created by this site. */
+export function isOurs(metadata: Record<string, unknown>): boolean {
+  return metadata.property === PROPERTY || metadata.product === PRODUCT;
 }
 
 const TOKEN_TTL_SECONDS = 48 * 60 * 60;

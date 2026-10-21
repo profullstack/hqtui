@@ -196,17 +196,36 @@ export async function recordCheckout(paymentId: string, chain: string): Promise<
   }
 }
 
-export async function markPaid(paymentId: string): Promise<void> {
-  if (!configured()) return;
+export type MarkPaidResult = "paid" | "already_paid" | "unknown" | "unconfigured";
+
+/**
+ * Marks a purchase paid. Idempotent: a repeat delivery of the same payment
+ * (CoinPay sends `payment.confirmed` then `payment.forwarded`, and retries)
+ * changes nothing and keeps the first paid_at.
+ *
+ * A payment with no checkout row is only inserted when `ours` says the
+ * payment's metadata names this site. Otherwise it is an id we never sold,
+ * and the webhook answers a 200 no-op rather than minting a download for it.
+ */
+export async function markPaid(paymentId: string, ours = false): Promise<MarkPaidResult> {
+  if (!configured()) return "unconfigured";
   await migrate();
+  const [rows] = await execute([
+    { sql: `SELECT status FROM book_purchases WHERE payment_id = ?`, args: [paymentId] },
+  ]);
+  const existing = rows?.[0];
+  if (existing?.status === "paid") return "already_paid";
+  if (!existing && !ours) return "unknown";
   await execute([
     {
       sql: `INSERT INTO book_purchases (payment_id, chain, status, paid_at)
             VALUES (?, 'unknown', 'paid', datetime('now'))
-            ON CONFLICT(payment_id) DO UPDATE SET status = 'paid', paid_at = datetime('now')`,
+            ON CONFLICT(payment_id) DO UPDATE SET status = 'paid', paid_at = datetime('now')
+            WHERE book_purchases.status <> 'paid'`,
       args: [paymentId],
     },
   ]);
+  return "paid";
 }
 
 /** True when the payment confirmed. Counts the download on the way past. */
