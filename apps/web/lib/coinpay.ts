@@ -1,10 +1,8 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
 /**
- * Selling the cookbook PDF for a dollar, in crypto, through CoinPay.
- *
- * Crypto only. On a one dollar sale a card fee takes most of it, and this is
- * the rail CoinPay exists for. The HTML and the EPUB are free, so nobody is
+ * Selling the cookbook PDF for a dollar through a CoinPay hosted checkout
+ * session: any coin the business holds a wallet for, or PayPal. No card. The HTML and the EPUB are free, so nobody is
  * paywalled out of the content; the PDF is the typeset artifact.
  *
  * Next inlines `process.env.NAME` at build time, so every secret here is read
@@ -32,109 +30,116 @@ function siteBase(): string {
 }
 
 export function configured(): boolean {
-  return Boolean(env("COINPAY_API_KEY") && env("COINPAY_BUSINESS_ID"));
+  return Boolean(env("COINPAY_API_KEY"));
 }
 
 export const PRICE_USD = 1;
 export const PROPERTY = "hqtui.com";
 export const PRODUCT = "hqtui-cookbook-pdf";
 
-export interface Chain {
-  /** What the payments API calls `blockchain`. */
-  code: string;
-  label: string;
-  group: "Stablecoin" | "Coin";
+/** Sessions last this long; an unpaid one simply expires. */
+export const SESSION_WINDOW_MINUTES = 60;
+
+/** The site's public origin, for return URLs. Never taken from the request. */
+export function siteOrigin(): string {
+  return (env("SITE_URL") ?? env("NEXT_PUBLIC_SITE_URL") ?? `https://${PROPERTY}`).replace(/\/+$/, "");
 }
 
-/**
- * Every chain the business has a wallet for. A payment on a chain with no
- * wallet is refused by the API rather than falling back to a platform wallet,
- * so this list and the business's wallets have to agree.
- */
-export const CHAINS: Chain[] = [
-  { code: "USDC_SOL", label: "USDC on Solana", group: "Stablecoin" },
-  { code: "USDC_POL", label: "USDC on Polygon", group: "Stablecoin" },
-  { code: "USDC_ETH", label: "USDC on Ethereum", group: "Stablecoin" },
-  { code: "USDT_SOL", label: "USDT on Solana", group: "Stablecoin" },
-  { code: "USDT_POL", label: "USDT on Polygon", group: "Stablecoin" },
-  { code: "USDT_ETH", label: "USDT on Ethereum", group: "Stablecoin" },
-  { code: "SOL", label: "Solana", group: "Coin" },
-  { code: "POL", label: "Polygon", group: "Coin" },
-  { code: "ETH", label: "Ethereum", group: "Coin" },
-  { code: "BTC", label: "Bitcoin", group: "Coin" },
-  { code: "BCH", label: "Bitcoin Cash", group: "Coin" },
-  { code: "BNB", label: "BNB", group: "Coin" },
-  { code: "ADA", label: "Cardano", group: "Coin" },
-  { code: "XRP", label: "XRP", group: "Coin" },
-  { code: "DOGE", label: "Dogecoin", group: "Coin" },
-];
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/**
- * A dollar is a rounding error next to an Ethereum fee, so the default is the
- * cheapest thing that settles in seconds. Every other chain is still offered.
- */
-export const DEFAULT_CHAIN = "USDC_SOL";
-
-export function isSupportedChain(code: string): boolean {
-  return CHAINS.some((chain) => chain.code === code);
+/** A trimmed, lower-cased email, or null when it is not one. */
+export function normalizeEmail(value: unknown): string | null {
+  const email = typeof value === "string" ? value.trim().toLowerCase() : "";
+  return email && email.length <= 254 && EMAIL.test(email) ? email : null;
 }
 
-export interface CreatedPayment {
+export interface CheckoutSession {
+  /** cs_..., also our purchase key (book_purchases.payment_id). */
   id: string;
-  /** Where to send the buyer. */
+  /** CoinPay's hosted checkout page. */
   url: string;
 }
 
 /**
- * Creates a crypto payment and returns where to send the buyer.
- *
- * No `merchant_wallet_address`: the payee belongs on the business, which
- * resolves the right wallet per chain. Passing one here would offer a single
- * address for every chain, which is wrong the moment there is more than one.
+ * The body POSTed to /api/checkout/sessions. The buyer has no account here, so
+ * the account is the buyer's email (CoinPay requires both fields).
  */
-export async function createPayment(
-  chain: string = DEFAULT_CHAIN,
-  buyer: { accountId?: string | null; email?: string | null } = {},
-): Promise<CreatedPayment> {
+export function sessionBody(email: string, reference: string): Record<string, unknown> {
+  const origin = siteOrigin();
+  return {
+    amount: PRICE_USD,
+    currency: "USD",
+    description: "The High Quality Terminal UI Cookbook (PDF)",
+    customer_email: email,
+    account_id: email,
+    property: PROPERTY,
+    metadata: { property: PROPERTY, product: PRODUCT, reference, email, account_id: email },
+    success_url: `${origin}/book/thanks?session={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/book/buy?cancelled=1`,
+    expires_in_minutes: SESSION_WINDOW_MINUTES,
+  };
+}
+
+/**
+ * Opens a CoinPay hosted checkout session. The buyer picks any coin the
+ * business holds a wallet for, or PayPal, on CoinPay's page, so there is no
+ * chain list to keep in step with the business's wallets here.
+ */
+export async function createCheckoutSession(
+  email: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<CheckoutSession> {
   const key = env("COINPAY_API_KEY");
-  const business = env("COINPAY_BUSINESS_ID");
-  if (!key || !business) throw new Error("CoinPay is not configured");
-  if (!isSupportedChain(chain)) throw new Error(`unsupported chain ${chain}`);
+  if (!key) throw new Error("CoinPay is not configured");
+  const buyer = normalizeEmail(email);
+  if (!buyer) throw new Error("a valid email is required");
 
-  const response = await fetch(`${apiBase()}/payments/create`, {
+  const response = await fetchImpl(`${apiBase()}/checkout/sessions`, {
     method: "POST",
-    // The business API key travels as a bearer token. `x-api-key` is refused
-    // with "Missing authorization header", which reads like the key is absent
-    // rather than in the wrong place.
+    // The business API key travels as a bearer token; x-api-key is refused.
     headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      business_id: business,
-      amount: PRICE_USD,
-      blockchain: chain,
-      description: "The High Quality Terminal UI Cookbook (PDF)",
-      // `property` names the site so a webhook (or a human reading the CoinPay
-      // dashboard) can tell which fleet site a payment belongs to. The buyer is
-      // anonymous today; account_id and email ride along when a caller has them.
-      metadata: {
-        property: PROPERTY,
-        product: PRODUCT,
-        reference: randomUUID(),
-        ...(buyer.accountId ? { account_id: buyer.accountId } : {}),
-        ...(buyer.email ? { email: buyer.email } : {}),
-      },
-    }),
+    body: JSON.stringify(sessionBody(buyer, randomUUID())),
+    signal: AbortSignal.timeout(10_000),
   });
-
   if (!response.ok) {
-    throw new Error(`CoinPay refused the payment: ${response.status} ${await response.text()}`);
+    throw new Error(`CoinPay refused the checkout session: ${response.status} ${await response.text()}`);
   }
 
-  const body = (await response.json()) as { payment?: { id?: string } };
-  // The id is on `payment`, not at the top level.
-  const id = body.payment?.id;
-  if (!id) throw new Error("CoinPay returned no payment id");
+  const body = (await response.json()) as { id?: string; url?: string };
+  if (!body.id || !body.url) throw new Error("CoinPay returned no checkout session");
+  // Only ever send buyers to CoinPay's own origin.
+  const origin = new URL(siteBase()).origin;
+  const url = new URL(body.url, origin);
+  if (url.origin !== origin) throw new Error("CoinPay returned an off-site checkout url");
+  return { id: body.id, url: url.toString() };
+}
 
-  return { id, url: `${siteBase()}/pay/${id}` };
+/**
+ * Asks CoinPay whether a session was paid, for the thanks page when the buyer
+ * comes back before the webhook. Authenticated with the business key, so the
+ * answer can be trusted. Null on any failure.
+ */
+export async function sessionPaid(
+  sessionId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<boolean | null> {
+  const key = env("COINPAY_API_KEY");
+  if (!key || !/^cs_[A-Za-z0-9]{8,64}$/.test(sessionId)) return null;
+  try {
+    const response = await fetchImpl(`${apiBase()}/checkout/sessions/${sessionId}`, {
+      headers: { authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(5_000),
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { session?: { status?: string; property?: string }; status?: string };
+    const session = body.session ?? body;
+    if ((session as { property?: string }).property && (session as { property?: string }).property !== PROPERTY) {
+      return false;
+    }
+    return ["paid", "complete", "completed", "confirmed"].includes(String(session.status ?? "").toLowerCase());
+  } catch {
+    return null;
+  }
 }
 
 /** CoinPay rejects a signature older than this, and so do we. */
@@ -180,6 +185,10 @@ export function verifyWebhook(
 export interface WebhookEvent {
   type: string;
   paymentId: string | null;
+  /** cs_... when the payment came through a hosted checkout session. */
+  sessionId: string | null;
+  /** The site CoinPay says the session belongs to. */
+  property: string | null;
   status: string;
   metadata: Record<string, unknown>;
   /** True when the event says the money arrived. */
@@ -204,14 +213,23 @@ export function readWebhook(body: unknown): WebhookEvent {
   const paymentId = data.payment_id ?? payload.payment?.id ?? (payload.data ? data.id : null) ?? null;
   const status = String(data.status ?? "").toLowerCase();
   const metadata = (data.metadata ?? payload.metadata ?? {}) as Record<string, unknown>;
+  const session = data.checkout_session_id ?? payload.checkout_session_id ?? metadata.checkout_session_id ?? null;
   const settled =
     SETTLED.has(status) || (!status && (type === "payment.confirmed" || type === "payment.forwarded"));
-  return { type, paymentId: paymentId ? String(paymentId) : null, status, metadata, settled };
+  return {
+    type,
+    paymentId: paymentId ? String(paymentId) : null,
+    sessionId: session ? String(session) : null,
+    property: data.property ? String(data.property) : null,
+    status,
+    metadata,
+    settled,
+  };
 }
 
 /** True when the metadata says this payment was created by this site. */
-export function isOurs(metadata: Record<string, unknown>): boolean {
-  return metadata.property === PROPERTY || metadata.product === PRODUCT;
+export function isOurs(metadata: Record<string, unknown>, property?: unknown): boolean {
+  return property === PROPERTY || metadata.property === PROPERTY || metadata.product === PRODUCT;
 }
 
 const TOKEN_TTL_SECONDS = 48 * 60 * 60;

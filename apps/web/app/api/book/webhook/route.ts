@@ -6,7 +6,8 @@ import { markPaid } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 /**
- * CoinPay tells us a payment confirmed.
+ * CoinPay tells us a payment confirmed. Settles by checkout_session_id, then
+ * payment_id; confirmed and forwarded both settle, a repeat changes nothing.
  *
  * The signature is over the raw body, so the body is read as text and parsed
  * afterwards. Re-serialising the parsed object would change the bytes and the
@@ -33,12 +34,15 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const event = readWebhook(body);
-  if (!event.paymentId) return NextResponse.json({ ok: true, ignored: "no payment id" });
+  // A hosted checkout session payment is keyed by its cs_ id (what checkout
+  // stored); a payment opened before sessions is keyed by its payment id.
+  const key = event.sessionId ?? event.paymentId;
+  if (!key) return NextResponse.json({ ok: true, ignored: "no payment id" });
   if (!event.settled) {
     return NextResponse.json({ ok: true, ignored: event.type || event.status || "event" });
   }
 
-  const result = await markPaid(event.paymentId, isOurs(event.metadata));
+  const result = await markPaid(key, isOurs(event.metadata, event.property));
   if (result === "unknown") return NextResponse.json({ ok: true, settled: false, reason: "unknown payment" });
   if (result === "unconfigured") return NextResponse.json({ ok: true, settled: false, reason: "no database" });
 
@@ -48,6 +52,6 @@ export async function POST(request: Request): Promise<Response> {
     ok: true,
     settled: true,
     duplicate: result === "already_paid",
-    download: `/api/book/download?token=${signDownloadToken(event.paymentId)}`,
+    download: `/api/book/download?token=${signDownloadToken(key)}`,
   });
 }

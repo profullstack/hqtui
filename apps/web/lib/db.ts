@@ -267,3 +267,18 @@ export async function ping(): Promise<boolean> {
     clearTimeout(timer);
   }
 }
+
+/** A purchase's status ('pending' | 'paid'), or null when there is no such row. */
+export async function purchaseStatus(key: string): Promise<string | null> {
+  if (!configured()) return null;
+  try {
+    await migrate();
+    const [rows] = await execute([
+      { sql: `SELECT status FROM book_purchases WHERE payment_id = ?`, args: [key] },
+    ]);
+    return rows?.[0]?.status ? String(rows[0].status) : null;
+  } catch (error) {
+    console.error("hqtui: purchaseStatus failed", error);
+    return null;
+  }
+}

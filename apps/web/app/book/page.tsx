@@ -40,7 +40,7 @@ export default async function Book() {
         </div>
         <p className="mt-3 text-[13px] text-white/40">
           The whole book is on this site and in the EPUB, both free. The PDF is a dollar, paid in
-          crypto through CoinPay, and it exists because typeset things are nicer to keep.
+          crypto or PayPal through CoinPay, and it exists because typeset things are nicer to keep.
         </p>
 
         <ol className="mt-10 space-y-1">
