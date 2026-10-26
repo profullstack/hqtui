@@ -128,6 +128,18 @@ export interface RenderContext {
 }
 
 /** Mouse behaviour shared by every scrollable widget. */
+export interface DataGridHandlers {
+  /** Wheel over the grid. `delta` is -1 up, 1 down. */
+  onScroll?: (delta: number) => void;
+  /** Click on a body cell: its position in the displayed order, and its column (-1 on the gutter). */
+  onSelectCell?: (row: number, column: number) => void;
+  /** Double-click on a body cell, after `onSelectCell` for the same press. */
+  onActivateCell?: (row: number, column: number) => void;
+  /** Click on a column title. */
+  onHeaderClick?: (column: number) => void;
+  onFocus?: () => void;
+}
+
 export interface ScrollHandlers {
   /** Wheel over this widget. `delta` is -1 up, 1 down. */
   onScroll?: (delta: number) => void;
@@ -531,6 +543,36 @@ export class Container {
       W.drawTable(s, options);
       this.attachScroll(s, options, options.header === false ? 0 : 1);
     }, this.sizeOf(options, "fill", intrinsic));
+  }
+
+  /**
+   * A data grid (widgets/data-grid.ts): cells that scroll on both axes under
+   * a cell cursor. Clicks are reported as cells, in the displayed order, so a
+   * sorted or filtered view needs no translating; a header click names the
+   * column, which is where a sort toggle goes.
+   */
+  dataGrid(options: W.DataGridOptions & ContainerOptions & DataGridHandlers): this {
+    return this.add((s) => {
+      const frame = W.drawDataGrid(s, options);
+      const { onScroll, onSelectCell, onActivateCell, onHeaderClick, onFocus } = options;
+      if (!onScroll && !onSelectCell && !onActivateCell && !onHeaderClick && !onFocus) return;
+      this.ctx.hit({
+        rect: s.hitRect(),
+        onScroll: onScroll ? (delta) => onScroll(delta) : undefined,
+        onClick: (x, y, _button, clicks = 1) => {
+          onFocus?.();
+          const column = W.dataGridCellAt(frame, x);
+          if (y === 0) {
+            if (column >= 0) onHeaderClick?.(column);
+            return;
+          }
+          const row = frame.rowOffset + y - 1;
+          if (row >= frame.total) return;
+          onSelectCell?.(row, column);
+          if (clicks >= 2) onActivateCell?.(row, column);
+        },
+      });
+    }, this.sizeOf(options, "fill", (options.order?.length ?? options.rows.length) + 1));
   }
 
   list(options: W.ListOptions & ContainerOptions & ScrollHandlers): this {

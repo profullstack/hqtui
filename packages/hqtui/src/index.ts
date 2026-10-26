@@ -16,7 +16,7 @@
 export { App, createApp, type AppOptions, type RenderArgs, type RenderFn, type FrameStats } from "./app.ts";
 export { Container, GridContainer } from "./ui.ts";
 export type {
-  RenderContext, ContainerOptions, PanelOptions, GridOptions, CellOptions, HitRegion, HitEvent, ScrollHandlers, MarkdownCopy,
+  RenderContext, ContainerOptions, PanelOptions, GridOptions, CellOptions, HitRegion, HitEvent, ScrollHandlers, DataGridHandlers, MarkdownCopy,
 } from "./ui.ts";
 export { dispatchHit, countClicks, DOUBLE_CLICK_MS } from "./ui.ts";
 
