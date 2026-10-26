@@ -16,7 +16,7 @@ const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://crawlproof.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://pwamart.com",
+  "img-src 'self' data: blob: https://pwamart.com https://built.indie.pit.world",
   "font-src 'self' data:",
   "connect-src 'self' https://crawlproof.com https://pit.world",
   // The home page ad.network unit is an iframe to crawlproof's ad frame.
