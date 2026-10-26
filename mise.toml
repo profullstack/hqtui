@@ -1,7 +1,7 @@
 # Reproducible runtime/build tools for the demos in this monorepo.
 # Adding a tool here is not a claim that a native hqtui library exists for it.
 [tools]
-bun = "1.4.0"
+bun = "1.4.4"
 python = "3.12.13"
 go = "1.26.0"
 rust = "1.97.1"

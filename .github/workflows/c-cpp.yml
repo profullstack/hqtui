@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: '1.4.0'
+          bun-version: '1.4.4'
       - name: Sanitizer build
         run: cmake -S ports/cpp -B ports/cpp/build-sanitize -DCMAKE_BUILD_TYPE=Debug -DHQTUI_SANITIZE=ON -DHQTUI_BUILD_BINDINGS=ON
       - run: cmake --build ports/cpp/build-sanitize --parallel
