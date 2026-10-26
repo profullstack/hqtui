@@ -18,13 +18,13 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://pwamart.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://crawlproof.com",
+  "connect-src 'self' https://crawlproof.com https://pit.world",
   // The home page ad.network unit is an iframe to crawlproof's ad frame.
   "frame-src 'self' https://crawlproof.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   // The crawl pass checkout (/crawl/checkout) redirects to CoinPay.
-  "form-action 'self' https://coinpayportal.com",
+  "form-action 'self' https://coinpayportal.com https://pit.world",
   "object-src 'none'",
   "upgrade-insecure-requests",
 ].join("; ");
