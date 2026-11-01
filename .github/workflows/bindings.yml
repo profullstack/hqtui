@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5.0.0
+      - uses: jdx/mise-action@v5.2.4
         with:
           install: false
       - name: Install Nim
@@ -65,7 +65,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5.0.0
+      - uses: jdx/mise-action@v5.2.4
         with:
           install: false
       - name: Install only binding test toolchains
