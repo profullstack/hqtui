@@ -29,6 +29,20 @@ export interface HitRegion {
   onClick?: (x: number, y: number, button: string, clicks?: number) => void;
   onScroll?: (delta: number) => void;
   onHover?: (x: number, y: number) => void;
+  /**
+   * A right-click inside the region, relative to it. A right press goes to the
+   * topmost region under the pointer that has one of these, so a menu on a
+   * whole pane still opens over a table inside it that only handles left
+   * clicks. A region with only this handler is transparent to every other
+   * event: a left click falls through it to whatever it covers.
+   */
+  onContextMenu?: (x: number, y: number) => void;
+  /**
+   * Registered by a modal overlay. The search for a context menu stops here,
+   * so a right-click on a dialog never opens a menu belonging to the screen
+   * behind it. The app sets this; widgets do not need to.
+   */
+  overlay?: boolean;
 }
 
 /** What a hit-test needs to know about a mouse event. */
@@ -49,10 +63,24 @@ export interface HitEvent {
  * region took it.
  */
 export function dispatchHit(regions: readonly HitRegion[], event: HitEvent): boolean {
+  const inside = (r: Rect) => event.x >= r.x && event.y >= r.y && event.x < r.x + r.width && event.y < r.y + r.height;
+  if (event.action === "press" && event.button === "right") {
+    for (let i = regions.length - 1; i >= 0; i--) {
+      const hit = regions[i];
+      if (!inside(hit.rect)) continue;
+      if (hit.onContextMenu) {
+        hit.onContextMenu(event.x - hit.rect.x, event.y - hit.rect.y);
+        return true;
+      }
+      if (hit.overlay) break;
+    }
+  }
   for (let i = regions.length - 1; i >= 0; i--) {
     const hit = regions[i];
     const r = hit.rect;
-    if (event.x < r.x || event.y < r.y || event.x >= r.x + r.width || event.y >= r.y + r.height) continue;
+    if (!inside(r)) continue;
+    // A menu-only region is a layer for right-clicks and nothing else.
+    if (hit.onContextMenu && !hit.onClick && !hit.onScroll && !hit.onHover && !hit.overlay) continue;
     if (event.action === "scroll") hit.onScroll?.(event.scroll);
     else if (event.action === "press") hit.onClick?.(event.x - r.x, event.y - r.y, event.button, event.clicks);
     else if (event.action === "move") hit.onHover?.(event.x - r.x, event.y - r.y);
@@ -125,6 +153,51 @@ export interface RenderContext {
   hit(region: HitRegion): void;
   overlay(draw: (root: Surface) => void, options?: OverlayOptions): void;
   invalidate(): void;
+  /**
+   * Open a context menu at a screen point. The app keeps it open across
+   * frames, handles its keys and pointer, and closes it when an item is
+   * chosen or it is dismissed. Absent where nothing can be opened (scrollback).
+   */
+  openContextMenu?(menu: OpenContextMenu): void;
+}
+
+/** A context menu the app holds open: where, and what is in it. */
+export interface OpenContextMenu {
+  /** Screen column. */
+  x: number;
+  /** Screen row. */
+  y: number;
+  items: W.ContextMenuItem[];
+  /** Highlighted item; -1 or absent highlights nothing until the pointer or a key moves it. */
+  selected?: number;
+}
+
+/** What a right-click on a tab offers. Every default appears only when its callback is given. */
+export interface TabsMenuOptions {
+  /** Close one tab: "Close tab" in the menu, and a middle-click on the tab. */
+  onClose?: (index: number) => void;
+  /** "Close all but this tab". Disabled while there is only one tab. */
+  onCloseOthers?: (index: number) => void;
+  /** "Close all tabs". */
+  onCloseAll?: () => void;
+  /**
+   * Extra items, listed above the close actions with a rule between, e.g.
+   * "Reload from disk". A function receives the right-clicked tab's index.
+   */
+  menu?: W.ContextMenuItem[] | ((index: number) => W.ContextMenuItem[]);
+}
+
+/** The menu a right-click on tab `index` opens. Exported for apps that draw their own tabs. */
+export function tabMenuItems(index: number, count: number, options: TabsMenuOptions): W.ContextMenuItem[] {
+  const extra = typeof options.menu === "function" ? options.menu(index) : options.menu ?? [];
+  const close: W.ContextMenuItem[] = [];
+  const { onClose, onCloseOthers, onCloseAll } = options;
+  if (onClose) close.push({ label: "Close tab", hint: "middle-click", onSelect: () => onClose(index) });
+  if (onCloseOthers) {
+    close.push({ label: "Close all but this tab", disabled: count < 2, onSelect: () => onCloseOthers(index) });
+  }
+  if (onCloseAll) close.push({ label: "Close all tabs", onSelect: () => onCloseAll() });
+  return extra.length && close.length ? [...extra, W.MENU_SEPARATOR, ...close] : [...extra, ...close];
 }
 
 /** Mouse behaviour shared by every scrollable widget. */
@@ -807,22 +880,72 @@ export class Container {
     );
   }
 
-  tabs(options: W.TabsOptions & ContainerOptions & { onSelect?: (index: number) => void }): this {
+  /**
+   * A row of tabs. With `onClose`, `onCloseOthers`, `onCloseAll` or `menu`, a
+   * right-click on a tab opens a context menu of those actions, and with
+   * `onClose` a middle-click closes the tab outright, the way a browser does.
+   */
+  tabs(options: W.TabsOptions & ContainerOptions & TabsMenuOptions & { onSelect?: (index: number) => void }): this {
     return this.add((s) => {
       W.drawTabs(s, options);
-      if (options.onSelect) {
-        let x = 0;
-        options.tabs.forEach((tab, i) => {
-          const w = stringWidth(tab) + 4;
-          const r = s.hitRect();
-          this.ctx.hit({
-            rect: { x: r.x + x, y: r.y, width: w, height: 1 },
-            onClick: () => options.onSelect?.(i),
-          });
-          x += w;
+      const hasMenu = !!(options.onClose || options.onCloseOthers || options.onCloseAll || options.menu);
+      if (!options.onSelect && !hasMenu) return;
+      const r = s.hitRect();
+      // drawTabs offsets the row for center/right alignment; match it.
+      const total = options.tabs.reduce((a, t) => a + stringWidth(t) + 4, 0);
+      let x = options.align === "center" ? Math.max(0, Math.floor((s.width - total) / 2))
+        : options.align === "right" ? Math.max(0, s.width - total) : 0;
+      options.tabs.forEach((tab, i) => {
+        const w = stringWidth(tab) + 4;
+        const rect = { x: r.x + x, y: r.y, width: Math.max(0, Math.min(w, r.width - x)), height: 1 };
+        x += w;
+        if (rect.width <= 0) return;
+        this.ctx.hit({
+          rect,
+          onClick: (_x, _y, button) => {
+            if (button === "middle") {
+              options.onClose?.(i);
+              return;
+            }
+            options.onSelect?.(i);
+          },
+          onContextMenu: hasMenu
+            ? (cx) => {
+              const items = tabMenuItems(i, options.tabs.length, options);
+              // Open just under the tab, at the column that was clicked.
+              if (items.length) this.ctx.openContextMenu?.({ x: rect.x + cx, y: rect.y + 1, items });
+            }
+            : undefined,
         });
-      }
+      });
     }, this.sizeOf(options, "auto", 1));
+  }
+
+  /**
+   * A column whose right-click opens a context menu, for any content: a pane,
+   * a list, a canvas. A tab or another area inside it with a menu of its own
+   * takes precedence; left clicks pass straight through to what is inside.
+   * `menu` may be a function of the click, relative to the area.
+   */
+  contextArea(
+    options: ContainerOptions & { menu: W.ContextMenuItem[] | ((x: number, y: number) => W.ContextMenuItem[]) },
+    build?: (area: Container) => void,
+  ): this {
+    const summary = this.summary?.child();
+    return this.add((surface) => {
+      const r = surface.hitRect();
+      // Registered before the children, so anything inside with its own menu is on top.
+      this.ctx.hit({
+        rect: r,
+        onContextMenu: (x, y) => {
+          const items = typeof options.menu === "function" ? options.menu(x, y) : options.menu;
+          if (items.length) this.ctx.openContextMenu?.({ x: r.x + x, y: r.y + y, items });
+        },
+      });
+      const container = new Container(surface, this.ctx, "column", options, summary);
+      build?.(container);
+      container.flush();
+    }, this.sizeOf(options, "fill"), options.bordered ?? false);
   }
 
   statusBar(options: W.StatusBarOptions & ContainerOptions): this {
@@ -941,6 +1064,52 @@ export class Container {
         if (result.close) options.onClose();
         else if (result.picked) options.onPick(result.picked);
         else options.onChange(result.state);
+      },
+    });
+    return this;
+  }
+
+  /**
+   * A context menu whose state you own, drawn as a modal overlay: you keep
+   * `selected` and whether it is open, the way the emoji picker works. Most
+   * apps want `ui.contextArea` or the menu on `ui.tabs` instead, which open
+   * one the app keeps for you.
+   *
+   * Keys: Up/Down move, Enter chooses, Escape closes. The pointer highlights
+   * on hover and chooses on click; a click anywhere outside closes it.
+   */
+  contextMenu(options: W.ContextMenuOptions & {
+    /** An item was chosen. Close the menu here; `item.onSelect` is not called for you. */
+    onSelect: (index: number, item: W.ContextMenuItem) => void;
+    onClose: () => void;
+    /** The highlight moved, by key or by hover. */
+    onChange?: (selected: number) => void;
+  }): this {
+    const choose = (index: number) => {
+      const item = options.items[index];
+      if (item && !item.separator && !item.disabled) options.onSelect(index, item);
+    };
+    this.ctx.overlay((root) => {
+      const layout = W.drawContextMenu(root, options);
+      this.ctx.hit({ rect: root.hitRect(), onClick: () => options.onClose() });
+      this.ctx.hit({ rect: layout.box });
+      for (const { index, rect } of layout.rows) {
+        const item = options.items[index];
+        if (item.separator || item.disabled) continue;
+        this.ctx.hit({
+          rect,
+          onClick: (_x, _y, button) => { if (button === "left" || button === "right") choose(index); },
+          onHover: () => { if (index !== options.selected) options.onChange?.(index); },
+        });
+      }
+    }, {
+      modal: true,
+      onDismiss: options.onClose,
+      onKey: (event) => {
+        const result = W.contextMenuKey(options.items, options.selected ?? -1, event);
+        if (result.close) options.onClose();
+        else if (result.activate !== undefined) choose(result.activate);
+        else if (result.selected !== (options.selected ?? -1)) options.onChange?.(result.selected);
       },
     });
     return this;

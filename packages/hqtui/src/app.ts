@@ -5,7 +5,10 @@ import { Terminal, type TerminalOptions, emergencyRestore } from "./terminal.ts"
 import type { Capabilities } from "./capabilities.ts";
 import { type Theme, type ThemeName, resolveTheme, themes } from "./theme.ts";
 import { Surface, createSurface } from "./surface.ts";
-import { Container, countClicks, dispatchHit, type RenderContext, type HitRegion, type FocusRegistration, type OverlayOptions } from "./ui.ts";
+import {
+  Container, countClicks, dispatchHit,
+  type RenderContext, type HitRegion, type FocusRegistration, type OverlayOptions, type OpenContextMenu,
+} from "./ui.ts";
 import type { InputEvent, KeyEvent, MouseEvent, PasteEvent, FocusEvent } from "./input.ts";
 import { matchKey } from "./input.ts";
 import { clipboardSequence } from "./markdown.ts";
@@ -129,6 +132,8 @@ export class App {
   private overlays: { draw: (root: Surface) => void; options?: OverlayOptions }[] = [];
   private modal: OverlayOptions | undefined;
   private backgroundFocusIndex = 0;
+  /** The context menu held open across frames, if any. One at a time, as on a desktop. */
+  private menu: OpenContextMenu | null = null;
   private lastStats: FrameStats = { frame: 0, renderMs: 0, changedCells: 0, dirtyRows: 0, bytes: 0, fps: 0, repainted: false };
 
   constructor(options: AppOptions = {}) {
@@ -242,6 +247,29 @@ export class App {
       : (this.focusIndex + delta + this.focusCount) % this.focusCount;
     this.focusEngaged = true;
     this.dirty = true;
+  }
+
+  /**
+   * Open a context menu at a screen point, replacing any that is open. It
+   * stays up across frames until an item is chosen (its `onSelect` runs after
+   * the menu closes), Escape is pressed, or the pointer clicks outside it.
+   * `ui.tabs` and `ui.contextArea` call this on a right-click.
+   */
+  openContextMenu(menu: OpenContextMenu): void {
+    this.menu = { ...menu, selected: menu.selected ?? -1 };
+    this.invalidate();
+  }
+
+  /** Close the open context menu, if there is one. */
+  closeContextMenu(): void {
+    if (!this.menu) return;
+    this.menu = null;
+    this.invalidate();
+  }
+
+  /** The open context menu, or null. */
+  get contextMenu(): Readonly<OpenContextMenu> | null {
+    return this.menu;
   }
 
   /** Activate the focused control, as Enter does. */
@@ -391,7 +419,9 @@ export class App {
         if (event.name === "tab") {
           this.focusNext(event.shift ? -1 : 1);
           if (this.modal || this.focusConsumesKey.some(Boolean)) return;
-        } else if (this.modal && ["left", "right", "up", "down"].includes(event.name)) {
+        } else if (this.modal && this.focusCount > 0 && ["left", "right", "up", "down"].includes(event.name)) {
+          // Only a dialog with controls to move between takes the arrows; one
+          // without (a menu, the emoji picker) gets them through its onKey.
           this.focusNext(event.name === "left" || event.name === "up" ? -1 : 1);
           return;
         } else if (event.name === "enter" || event.name === "space") {
@@ -492,10 +522,14 @@ export class App {
         this.focusConsumesKey[index] = consumeKey;
         return { index, focused: index === this.focusIndex && (!consumeKey || this.focusEngaged || !!this.modal) };
       },
-      hit: (region) => this.hits.push(region),
+      // Everything a modal overlay registers is marked, so a right-click on a
+      // dialog never finds a context menu on the screen behind it.
+      hit: (region) => this.hits.push(layered ? { ...region, overlay: true } : region),
       overlay: (draw, options) => this.overlays.push({ draw, options }),
       invalidate: () => this.invalidate(),
+      openContextMenu: (menu) => this.openContextMenu(menu),
     };
+    let layered = false;
 
     const root = createSurface(this.current, this.theme);
     const container = new Container(root, ctx, "column");
@@ -511,8 +545,25 @@ export class App {
       app: this,
     });
     container.flush();
+    if (this.menu) {
+      // Last, so the menu sits over any dialog that opened it.
+      const menu = this.menu;
+      container.contextMenu({
+        x: menu.x,
+        y: menu.y,
+        items: menu.items,
+        selected: menu.selected,
+        onChange: (selected) => { if (this.menu === menu) menu.selected = selected; },
+        onClose: () => { if (this.menu === menu) this.closeContextMenu(); },
+        onSelect: (_index, item) => {
+          if (this.menu === menu) this.closeContextMenu();
+          item.onSelect?.();
+        },
+      });
+    }
     for (const overlay of this.overlays) {
       if (overlay.options?.modal) {
+        layered = true;
         // Built-in buttons and custom controls form one focus order. Reset
         // for each modal so only the topmost dialog can receive activation.
         this.focusIndex = wasModal ? modalFocusIndex : 0;
