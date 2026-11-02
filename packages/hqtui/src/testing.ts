@@ -1,7 +1,7 @@
 import { FrameBuffer } from "./buffer.ts";
 import { Encoder } from "./diff.ts";
 import { createSurface, Surface } from "./surface.ts";
-import { Container, dispatchHit, type RenderContext, type HitRegion } from "./ui.ts";
+import { Container, dispatchHit, type RenderContext, type HitRegion, type OpenContextMenu } from "./ui.ts";
 import { type Theme, type ThemeName, resolveTheme } from "./theme.ts";
 import { detectCapabilities, type Capabilities, type CapabilityOverrides } from "./capabilities.ts";
 import { CONTINUATION, cellText } from "./unicode.ts";
@@ -22,6 +22,11 @@ export interface RenderOptions {
   collapseBorders?: boolean;
   /** Hold animated widgets still, as `createApp({ reducedMotion: true })` does. */
   reducedMotion?: boolean;
+  /**
+   * Render with this context menu open, as the app would after a right-click.
+   * Pass `screen.menu` from an earlier render to draw what it opened.
+   */
+  contextMenu?: OpenContextMenu | null;
 }
 
 export interface CellSnapshot {
@@ -43,6 +48,12 @@ export interface RenderedScreen {
    * only observable by running a real terminal.
    */
   regions: HitRegion[];
+  /**
+   * The context menu that is open: the one passed in `contextMenu`, or the
+   * one a right-click on this screen opened. Choosing an item or dismissing
+   * the drawn menu sets it back to null, as the app would.
+   */
+  menu: OpenContextMenu | null;
   /**
    * Press the mouse on a screen cell, exactly as the app would deliver it:
    * the topmost region containing the cell takes it. Returns whether any
@@ -123,18 +134,36 @@ export function renderToScreen(
       const index = focusCursor++;
       return { index, focused: index === (options.focus ?? 0) };
     },
-    hit: (region) => regions.push(region),
+    hit: (region) => regions.push(layered ? { ...region, overlay: true } : region),
     overlay: (draw, overlayOptions) => overlays.push((root) => {
-      if (overlayOptions?.modal) focusCursor = 0;
+      if (overlayOptions?.modal) {
+        focusCursor = 0;
+        layered = true;
+      }
       draw(root);
     }),
     invalidate: () => {},
+    openContextMenu: (opened) => { state.menu = { ...opened, selected: opened.selected ?? -1 }; },
   };
+  let layered = false;
+  const state: { menu: OpenContextMenu | null } = { menu: options.contextMenu ?? null };
 
   const root = createSurface(buffer, theme);
   const container = new Container(root, ctx, "column");
   view({ ui: container, theme, width, height, capabilities });
   container.flush();
+  if (state.menu) {
+    const menu = state.menu;
+    container.contextMenu({
+      ...menu,
+      onChange: (selected) => { if (state.menu === menu) state.menu = { ...menu, selected }; },
+      onClose: () => { if (state.menu === menu) state.menu = null; },
+      onSelect: (_index, item) => {
+        if (state.menu === menu) state.menu = null;
+        item.onSelect?.();
+      },
+    });
+  }
   for (const overlay of overlays) overlay(root);
 
   return {
@@ -143,6 +172,7 @@ export function renderToScreen(
     height,
     buffer,
     regions,
+    get menu() { return state.menu; },
     click: (x, y, options = {}) =>
       dispatchHit(regions, {
         action: "press",

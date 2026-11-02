@@ -105,7 +105,7 @@ activity, sessions, services and the full widget catalogue.
 | | |
 |---|---|
 | **Layout** | rows, columns, grid with spans, `"40%"`, `"2fr"`, `auto`, min/max, padding, gaps, clipping, responsive breakpoints |
-| **Widgets** | panel, table, data grid, tree, list, log viewer, key/values, meter, gauge, donut, progress, sparkline, line/area/multi-series graph, histogram, heat bar, tabs, status bar, button, checkbox, toggle, radio, select, text input, modal, command palette, tooltip, badge, spinner, divider |
+| **Widgets** | panel, table, data grid, tree, list, log viewer, key/values, meter, gauge, donut, progress, sparkline, line/area/multi-series graph, histogram, heat bar, tabs, status bar, button, checkbox, toggle, radio, select, text input, modal, command palette, context menu, tooltip, badge, spinner, divider |
 | **Graphics** | Braille canvas (2×4 pixels per cell), block/half-block/quadrant/ASCII modes, gradients, software alpha blending |
 | **Color** | 24-bit truecolor, automatic 256 and 16-colour quantization, `NO_COLOR`, monochrome and high-contrast modes |
 | **Themes** | dark (default), dracula, nord, tokyo night, gruvbox, matrix, monochrome, high contrast, light — plus `defineTheme()` |
@@ -136,6 +136,33 @@ The grid only draws: parsing, sorting and filtering stay with the caller, which 
 the library free of dependencies. `onLayout` reports what fit (`capacity`, visible
 columns) so page keys move by a real screenful. `dataGridWidths`, `dataGridLayout` and
 `dataGridCellAt` are exported for callers that draw their own.
+
+## Context menus
+
+Right-click opens a menu at the pointer: clamped on screen, Up/Down/Enter/Escape,
+hover to highlight, click outside to close. The app keeps it open for you.
+
+```ts
+ui.tabs({
+  tabs, active,
+  onSelect: (i) => { active = i; },
+  onClose: (i) => close(i),          // "Close tab", and middle-click closes too
+  onCloseOthers: (i) => keepOnly(i), // "Close all but this tab"
+  onCloseAll: () => closeAll(),      // "Close all tabs"
+  menu: (i) => [{ label: "Reload from disk", onSelect: () => reload(i) }],
+});
+
+// Any content: right-click inside opens the menu, left clicks pass through.
+ui.contextArea({ menu: [
+  { label: "New file", hint: "ctrl+n", onSelect: newFile },
+  MENU_SEPARATOR,
+  { label: "Delete", danger: true, disabled: !selected, onSelect: remove },
+] }, (area) => area.list({ items }));
+```
+
+`app.openContextMenu({ x, y, items })` opens one from code. `ui.contextMenu` draws
+one whose state you own, and `drawContextMenu` / `contextMenuKey` are exported for
+callers that draw their own.
 
 ## Icons
 

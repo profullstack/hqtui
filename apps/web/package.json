@@ -10,7 +10,7 @@
   "dependencies": {
     "@base-ui/react": "1.9.0",
     "@profullstack/footer": "latest",
-    "@profullstack/hqtui": "^0.11.1",
+    "@profullstack/hqtui": "^0.12.0",
     "@profullstack/libsql-pg": "^0.1.4",
     "@profullstack/x402-gateway": "^0.13.1",
     "class-variance-authority": "0.7.1",

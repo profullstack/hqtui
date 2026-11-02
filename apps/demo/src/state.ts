@@ -11,6 +11,9 @@ export const SCREENS: ScreenName[] = [
   "components", "graphics", "themes", "input", "stress", "world",
 ];
 
+/** The tabs the components screen starts with, and gets back from "Reopen all". */
+export const DOC_TABS = ["README.md", "main.ts", "notes.txt"];
+
 /**
  * The key that jumps straight to each screen. Digits run out at ten, so the
  * eleventh takes a letter rather than a second "1" that would shadow the first.
@@ -62,6 +65,9 @@ export interface DemoState {
   checkbox: boolean;
   selectOpen: boolean;
   selectIndex: number;
+  /** Editor-style tabs on the components screen; right-click one for its menu. */
+  docTabs: string[];
+  docTab: number;
   slider: number;
   inputValue: string;
   lastKey: string;
@@ -173,6 +179,8 @@ export function createState(
     checkbox: true,
     selectOpen: false,
     selectIndex: 0,
+    docTabs: [...DOC_TABS],
+    docTab: 0,
     slider: 0.7,
     inputValue: "",
     lastKey: "—",

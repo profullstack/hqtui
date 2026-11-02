@@ -11,3 +11,4 @@ export * from "./controls.ts";
 export * from "./spinner.ts";
 export * from "./emoji-picker.ts";
 export * from "./data-grid.ts";
+export * from "./context-menu.ts";

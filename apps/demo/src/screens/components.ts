@@ -1,5 +1,5 @@
 import type { Container, Theme } from "@profullstack/hqtui";
-import { focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
+import { DOC_TABS, focusPane, pane, panelGap, scrollPane, type DemoState } from "../state.ts";
 import { bytes, percent } from "../format.ts";
 
 const FILES = [
@@ -81,6 +81,37 @@ export function componentsScreen(ui: Container, state: DemoState, theme: Theme):
         p.spacer(1);
         p.meter({ label: "Slider", value: state.slider, style: "smooth", heat: false, color: theme.primary });
         p.progress({ label: "Progress", value: 37, max: 120, showCount: true });
+        p.spacer(1);
+        // Right-click a tab for its menu, middle-click to close it. The strip
+        // itself is a context area, so an empty one can still bring them back.
+        p.contextArea({
+          size: 1,
+          menu: [{ label: "Reopen all tabs", onSelect: () => { state.docTabs = [...DOC_TABS]; state.docTab = 0; } }],
+        }, (area) => {
+          if (state.docTabs.length === 0) {
+            area.label("No tabs open. Right-click here to reopen them.");
+            return;
+          }
+          const close = (keep: (name: string, i: number) => boolean) => {
+            const active = state.docTabs[state.docTab];
+            state.docTabs = state.docTabs.filter(keep);
+            const still = state.docTabs.indexOf(active);
+            state.docTab = still >= 0 ? still : Math.max(0, Math.min(state.docTab, state.docTabs.length - 1));
+          };
+          area.tabs({
+            tabs: state.docTabs,
+            active: state.docTab,
+            variant: "underline",
+            onSelect: (i) => { state.docTab = i; },
+            onClose: (i) => close((_, j) => j !== i),
+            onCloseOthers: (i) => close((_, j) => j === i),
+            onCloseAll: () => close(() => false),
+            menu: (i) => [{
+              label: "Reload from disk",
+              onSelect: () => { state.inputValue = `reloaded ${state.docTabs[i] ?? ""}`; },
+            }],
+          });
+        });
       });
 
       left.panel({ title: "Table Widget", size: "1fr" }, (p) => {

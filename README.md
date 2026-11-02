@@ -372,7 +372,7 @@ ports. Modes, environment variables and the font installer are covered in the
 | | |
 |---|---|
 | **Layout** | rows, columns, grid with spans, `"40%"`, `"2fr"`, `auto`, min/max, padding, gaps, clipping, responsive breakpoints |
-| **Widgets** | panel, table, tree, list, log viewer, key/values, meter, gauge, donut, progress, sparkline, line/area/multi-series graph, histogram, heat bar, tabs, status bar, button, checkbox, toggle, radio, select, text input, modal, command palette, tooltip, badge, spinner, divider |
+| **Widgets** | panel, table, tree, list, log viewer, key/values, meter, gauge, donut, progress, sparkline, line/area/multi-series graph, histogram, heat bar, tabs, status bar, button, checkbox, toggle, radio, select, text input, modal, command palette, context menu, tooltip, badge, spinner, divider |
 | **Graphics** | Braille canvas (2×4 pixels per cell), block/half-block/quadrant/ASCII modes, gradients, software alpha blending |
 | **Color** | 24-bit truecolor, automatic 256 and 16-colour quantization, `NO_COLOR`, monochrome and high-contrast modes |
 | **Icons and emoji** | 370 OpenIcon icons (`icon()`: Nerd Font, Unicode or ASCII) and 3,963 OpenEmoji emoji (`emoji()`, `emojify()`, `emojiSearch()`), on by default |

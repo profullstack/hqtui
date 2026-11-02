@@ -108,3 +108,44 @@ for hover text with the mouse, or to explain a value that has just gone red.
 Tooltips are the one overlay that should usually be transient. Register it only
 while the condition holds, and let the next frame not register it, rather than
 tracking a dismissal.
+
+## Context menus
+
+A right-click opens a small menu where the pointer is. Unlike every other
+overlay here, you do not keep its state: the app holds the one open menu across
+frames, moves its highlight with the arrows and the pointer, and closes it when
+an item is chosen, on Escape, or on a click outside.
+
+Tabs have one built in. Give them close callbacks and a right-click offers them:
+
+```ts
+ui.tabs({
+  tabs: files.map((f) => f.name),
+  active,
+  onSelect: (i) => { active = i; },
+  onClose: (i) => closeFile(i),             // "Close tab", and middle-click
+  onCloseOthers: (i) => keepOnly(i),        // "Close all but this tab"
+  onCloseAll: () => closeAll(),             // "Close all tabs"
+  menu: (i) => [{ label: "Reload from disk", onSelect: () => reload(i) }],
+});
+```
+
+Anything else gets one by sitting inside a `contextArea`. Left clicks pass
+straight through to what is inside it, and anything inside with a menu of its
+own wins:
+
+```ts
+ui.contextArea({ menu: [
+  { label: "New file", hint: "ctrl+n", onSelect: newFile },
+  MENU_SEPARATOR,
+  { label: "Delete", danger: true, disabled: !selected, onSelect: remove },
+] }, (area) => {
+  area.list({ items, selected, onSelectRow });
+});
+```
+
+A menu near the right edge slides left and one near the bottom opens upward,
+so it is always whole. To open one from your own code, call
+`app.openContextMenu({ x, y, items })`. If you would rather own the state, as
+with the emoji picker, `ui.contextMenu` draws one from `selected`, `onChange`,
+`onSelect` and `onClose`, and `contextMenuKey` turns a key into what it does.

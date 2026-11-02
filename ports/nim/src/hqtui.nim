@@ -6,7 +6,7 @@
 import std/[json, os, strutils]
 export json
 
-const version* = "0.11.1"
+const version* = "0.12.0"
 
 const
   engine = currentSourcePath().parentDir / "hqtui" / "engine"

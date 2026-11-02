@@ -17,8 +17,13 @@ export { App, createApp, type AppOptions, type RenderArgs, type RenderFn, type F
 export { Container, GridContainer } from "./ui.ts";
 export type {
   RenderContext, ContainerOptions, PanelOptions, GridOptions, CellOptions, HitRegion, HitEvent, ScrollHandlers, DataGridHandlers, MarkdownCopy,
+  OpenContextMenu, TabsMenuOptions,
 } from "./ui.ts";
-export { dispatchHit, countClicks, DOUBLE_CLICK_MS } from "./ui.ts";
+export { dispatchHit, countClicks, DOUBLE_CLICK_MS, tabMenuItems } from "./ui.ts";
+export {
+  drawContextMenu, contextMenuLayout, contextMenuKey, contextMenuStep, MENU_SEPARATOR,
+  type ContextMenuItem, type ContextMenuOptions, type ContextMenuLayout, type ContextMenuKeyResult,
+} from "./widgets/context-menu.ts";
 
 // Terminal + capabilities
 export {
