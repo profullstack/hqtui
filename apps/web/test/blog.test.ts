@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { allPosts, excerpt, parseFrontmatter, postBySlug, renderMarkdown } from "../lib/blog.ts";
+import { allPosts, canonicalUrl, excerpt, parseFrontmatter, postBySlug, postFromFile, renderMarkdown } from "../lib/blog.ts";
 
 test("frontmatter is read and the body is what follows it", () => {
   const { data, body } = parseFrontmatter(`---\ntitle: "Hello: world"\ndate: 2026-09-03\n---\n\nFirst line.`);
@@ -69,4 +69,15 @@ test("the shipped posts all parse", () => {
     assert.ok(post.title.length > 0);
     assert.ok(!/[—–]/.test(post.body), `${post.slug} has no dashes of the long kind`);
   }
+});
+
+test("a mirrored post keeps an http(s) canonical and drops anything else", () => {
+  const post = postFromFile(
+    "mirror.md",
+    "---\ntitle: Mirror\ndate: 2026-11-11\ncanonical: https://dev.profullstack.com/~anthony/blog/1-post.html\n---\n\nBody.",
+  );
+  assert.equal(post?.canonical, "https://dev.profullstack.com/~anthony/blog/1-post.html");
+  assert.equal(postFromFile("own.md", "---\ntitle: Own\ndate: 2026-11-11\n---\n\nBody.")?.canonical, undefined);
+  assert.equal(canonicalUrl("javascript:alert(1)"), undefined);
+  assert.equal(canonicalUrl("not a url"), undefined);
 });

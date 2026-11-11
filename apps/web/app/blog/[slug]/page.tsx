@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Params) {
   return {
     title: post.title,
     description: post.description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical: post.canonical ?? `/blog/${post.slug}` },
     openGraph: {
       type: "article",
       url: `/blog/${post.slug}`,
@@ -56,6 +56,15 @@ export default async function BlogPost({ params }: Params) {
             <p className="mt-3 text-sm text-white/50">{post.author}</p>
           </header>
           <ProseBody className="post-body mt-8" html={renderMarkdown(post.body)} />
+          {post.canonical ? (
+            <p className="mt-8 text-sm text-white/50">
+              Originally published at{" "}
+              <a href={post.canonical} className="text-white/70 hover:text-white">
+                {new URL(post.canonical).host}
+              </a>
+              .
+            </p>
+          ) : null}
         </article>
         <p className="mt-12 border-t border-white/10 pt-6 text-sm text-white/50">
           Comments live on{" "}
