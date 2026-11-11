@@ -14,7 +14,7 @@ import type { NextConfig } from "next";
  */
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://crawlproof.com",
+  "script-src 'self' 'unsafe-inline' https://crawlproof.com https://cdn.jsdelivr.net",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://pwamart.com https://built.indie.pit.world",
   "font-src 'self' data:",
