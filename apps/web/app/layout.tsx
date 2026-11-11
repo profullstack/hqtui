@@ -60,6 +60,23 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* WebMCP (@profullstack/webmcp): site_info and open_page for an AI
+            agent in the visitor's browser. */}
+        <script
+          type="module"
+          data-webmcp=""
+          src="https://cdn.jsdelivr.net/npm/@profullstack/webmcp@0/src/embed.js"
+          data-pages={JSON.stringify({
+            apps: "/apps",
+            widgets: "/widgets",
+            showcase: "/showcase",
+            docs: "/docs",
+            blog: "/blog",
+            book: "/book",
+          })}
+        />
+      </head>
       <body className={`${sans.variable} ${mono.variable} antialiased`}>
         {children}
         <Script data-site="78aa3a25-d804-46fc-b49e-28ffeb75861f" src="https://crawlproof.com/stats.js" strategy="afterInteractive" />
