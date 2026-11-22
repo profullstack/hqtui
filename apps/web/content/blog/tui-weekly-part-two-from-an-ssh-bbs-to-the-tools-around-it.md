@@ -16,8 +16,6 @@ A BBS also invites a useful question about shared spaces. What should be easy to
 
 ## Where should agent-facing surfaces live?
 
-[vu1nz](https://vu1nz.com/) is listed as an open-source CI/CD workflow and software package supply-chain security scanner, with an offline feature and an HTTP MCP endpoint. The supplied record doesn’t specify a CLI or API. That distinction matters in a real workflow: a person investigating a build may want a command they can run beside the logs, while an agent may benefit from an MCP connection. We shouldn’t promise either workflow beyond the surface the listing confirms.
-
 [r4ck](https://r4ck.dev/) is a server search engine built for agents. Here the listing is unusually explicit about surfaces: a `r4ck` command, an API at `https://r4ck.dev/api/v1`, and HTTP MCP at `https://r4ck.dev/mcp`. It also names W3BS as a package route. I’d ask whether a human needs a full-screen search UI, or whether a command that fits into a shell pipeline plus an agent interface covers the useful cases.
 
 [NicheDB](https://nichedb.dev/) describes itself as an open, ever-growing database of real-time data: sources in, feeds out. Its record lists a `nichedb` command, an API at `https://nichedb.dev/api/v1`, and HTTP MCP at `https://nichedb.dev/mcp`. That’s a strong set of ways to connect, though the listing doesn’t tell us which sources or feed controls are available. In a terminal workflow, I’d want to inspect what a feed represents before wiring it into automation.
