@@ -1,5 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
-import { COINPAY_UA } from "./coinpay-ua";
+
+/** Names this app to CoinPay (logs/throttle) instead of `node`. */
+const COINPAY_UA = "hqtui.com (+https://hqtui.com)";
 
 /**
  * Selling the cookbook PDF for a dollar through a CoinPay hosted checkout

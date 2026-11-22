@@ -1,6 +1,12 @@
 import { createGateway } from "@profullstack/x402-gateway";
 import { x402Proxy } from "@profullstack/x402-gateway/next";
-import { coinpayFetch } from "./coinpay-ua";
+
+/** fetch that names this app to CoinPay instead of `Next.js Middleware` (kept if a caller set one). */
+const coinpayFetch: typeof fetch = (input, init = {}) => {
+  const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined));
+  if (!headers.has("user-agent")) headers.set("user-agent", "hqtui.com (+https://hqtui.com)");
+  return fetch(input, { ...init, headers });
+};
 
 /**
  * Sells crawl access to AI training crawlers (GPTBot, ClaudeBot, CCBot, ...)
