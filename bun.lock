@@ -37,7 +37,7 @@
         "@profullstack/footer": "latest",
         "@profullstack/hqtui": "^0.12.0",
         "@profullstack/libsql-pg": "^0.1.4",
-        "@profullstack/x402-gateway": "^0.13.1",
+        "@profullstack/x402-gateway": "^0.18.4",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
         "lucide-react": "1.61.0",
@@ -301,7 +301,7 @@
 
     "@profullstack/libsql-pg": ["@profullstack/libsql-pg@0.1.4", "", { "dependencies": { "@profullstack/libsql-pg": "^0.1.1", "pg": "^8.13.0" }, "optionalDependencies": { "@libsql/client": "^0.15.0" }, "bin": { "libsql-pg": "bin/libsql-pg.js" } }, "sha512-FB+rGGmM9Ua5ZqcrZQvjhagjDDIXZRj9mTC2wLsluD4MTk7/XcjHbOsHb6uMh5gEzhmH2yZz/yGpKCsMyVLujw=="],
 
-    "@profullstack/x402-gateway": ["@profullstack/x402-gateway@0.13.1", "", { "dependencies": { "@profullstack/keys": "^0.1.0" } }, "sha512-V7liSO0tShZRlp8dancuDuUSF/rqrr5YF3bzLoZy9wn6ixf1RIRPYTepe72s36JOdSVzi3wfuhaZFm9y0RpV4w=="],
+    "@profullstack/x402-gateway": ["@profullstack/x402-gateway@0.18.4", "", { "dependencies": { "@profullstack/keys": "^0.1.0" } }, "sha512-Glff1R6FvaYbiZK+zJv+vB11DOxUU7zQt9yIw/aLrVnta9OTqkULnGzqLy62egL6BZbxtVfW3kx/yHXiZOKVAw=="],
 
     "@sec-ant/readable-stream": ["@sec-ant/readable-stream@0.4.1", "", {}, "sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg=="],
 

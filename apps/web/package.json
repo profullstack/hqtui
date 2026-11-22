@@ -12,7 +12,7 @@
     "@profullstack/footer": "latest",
     "@profullstack/hqtui": "^0.12.0",
     "@profullstack/libsql-pg": "^0.1.4",
-    "@profullstack/x402-gateway": "^0.13.1",
+    "@profullstack/x402-gateway": "^0.18.4",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "lucide-react": "1.61.0",
