@@ -1,5 +1,6 @@
 import { createGateway } from "@profullstack/x402-gateway";
 import { x402Proxy } from "@profullstack/x402-gateway/next";
+import { coinpayFetch } from "./coinpay-ua";
 
 /**
  * Sells crawl access to AI training crawlers (GPTBot, ClaudeBot, CCBot, ...)
@@ -17,6 +18,8 @@ export const gateway = createGateway({
   siteUrl: (env("SITE_URL") || env("NEXT_PUBLIC_SITE_URL") || "https://hqtui.com").replace(/\/+$/, ""),
   siteName: "HQTUI",
   coinpay: { apiKey: env("COINPAY_X402_KEY") },
+  // Name the site to CoinPay on verify/settle and checkout calls.
+  fetch: coinpayFetch,
   payTo: env("CRAWL_PAY_TO"),
   contact: "mailto:anthony@profullstack.com",
   // Health checks, the API (votes, book checkout and its CoinPay webhook, the
