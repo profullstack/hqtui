@@ -1,5 +1,8 @@
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
+/** Names this app to CoinPay (logs/throttle) instead of `node`. */
+const COINPAY_UA = "hqtui.com (+https://hqtui.com)";
+
 /**
  * Selling the cookbook PDF for a dollar through a CoinPay hosted checkout
  * session: any coin the business holds a wallet for, or PayPal. No card. The HTML and the EPUB are free, so nobody is
@@ -97,7 +100,7 @@ export async function createCheckoutSession(
   const response = await fetchImpl(`${apiBase()}/checkout/sessions`, {
     method: "POST",
     // The business API key travels as a bearer token; x-api-key is refused.
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+    headers: { "content-type": "application/json", authorization: `Bearer ${key}`, "user-agent": COINPAY_UA },
     body: JSON.stringify(sessionBody(buyer, randomUUID())),
     signal: AbortSignal.timeout(10_000),
   });
@@ -127,7 +130,7 @@ export async function sessionPaid(
   if (!key || !/^cs_[A-Za-z0-9]{8,64}$/.test(sessionId)) return null;
   try {
     const response = await fetchImpl(`${apiBase()}/checkout/sessions/${sessionId}`, {
-      headers: { authorization: `Bearer ${key}` },
+      headers: { authorization: `Bearer ${key}`, "user-agent": COINPAY_UA },
       signal: AbortSignal.timeout(5_000),
     });
     if (!response.ok) return null;
