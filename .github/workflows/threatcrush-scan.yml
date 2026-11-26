@@ -1,7 +1,7 @@
 # Managed by sh1pt Actions Fleet
-# pack: threatcrush-scan@2.0.2
+# pack: threatcrush-scan@2.1.1
 # install: sh1pt-actions-store
-# hash: sha256:f9f3e196c795a7ea03cfa7ed79f3ac585581835a691eef44e1d09d75b4b720a1
+# hash: sha256:66bcb069caec3c64c34bcd647b937401708e1442e742c191315a1d4c14db1611
 name: threatcrush security scan
 
 on:
@@ -83,8 +83,8 @@ jobs:
       - name: Install ThreatCrush
         run: |
           set -euo pipefail
-          spec='@profullstack/threatcrush@0.11.5'
-          want='sha512-kIa0rMs/TdINhryjDDyO2butWxvk6pj4bwnARqhjpOduN6+TcbgAPeZE4cCeZlRqOpq9r0P8cNkjuzd+rN166Q=='
+          spec='@profullstack/threatcrush@0.21.0'
+          want='sha512-bzkPU+cOJ52K/ltDGqVUN4BpAQ6CnToX8VDd5uU/B1/V0SqZvC/YbRHNguavKSzxLQjcIxKOwBefyVdSPlcRrA=='
 
           # Retried: a transient registry blip is not a security signal.
           name=""
@@ -181,6 +181,104 @@ jobs:
               exit "${code}"
               ;;
           esac
+
+      # A credential this pull request adds is never backlog, so it fails the
+      # job whatever failOn says. failOn stays empty by default because the scan
+      # covers the whole tree and an old finding three directories away should
+      # not block an unrelated change; this gate only looks at files the pull
+      # request itself touches, so it blocks exactly the new leak and nothing
+      # that was already there.
+      #
+      # crawlproof.com#160 is why: it committed `.env.bak-2026-07-28`, a full
+      # production environment, into a public repository. A report-only scan
+      # would have listed it in a comment beside a green check.
+      #
+      # Two triggers, both scoped to the diff:
+      #   1. a dotenv file (.env, .env.*, *.env, *.env.*) that holds real-looking
+      #      secret values — checked here directly, so it does not depend on the
+      #      scanner recognising any one key format;
+      #   2. any `secret-*` finding at level error in a changed file.
+      # A path listed in .threatcrushignore is exempt from (1); the scanner
+      # already honours it for (2).
+      - name: Block credentials this pull request adds
+        id: gate
+        if: always() && steps.scan.outputs.status != 'error' && steps.changed.outputs.scoped == 'true'
+        env:
+          SCAN_PATH: "."
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import fnmatch, json, os, re, sys
+
+          changed = [l.strip() for l in open(os.path.join(os.environ["RUNNER_TEMP"], "threatcrush-changed.txt")) if l.strip()]
+          present = [p for p in changed if os.path.isfile(p)]  # deletions are fixes, not leaks
+
+          ignore = []
+          if os.path.isfile(".threatcrushignore"):
+              ignore = [l.strip() for l in open(".threatcrushignore") if l.strip() and not l.startswith("#")]
+          def ignored(p):
+              return any(fnmatch.fnmatch(p, g) or fnmatch.fnmatch(os.path.basename(p), g) for g in ignore)
+
+          TEMPLATE = re.compile(r"\.(example|sample|template|dist|defaults|schema)(\.|$)", re.I)
+          CODE = re.compile(r"\.(ts|tsx|js|jsx|mjs|cjs|py|go|rs|rb|php|java|kt|swift|md|json|ya?ml|toml|sh|d\.ts)$", re.I)
+          def is_env_file(p):
+              b = os.path.basename(p)
+              if TEMPLATE.search(b) or CODE.search(b):
+                  return False
+              return b == ".env" or b.startswith(".env.") or b.endswith(".env") or ".env." in b
+
+          SECRET_KEY = re.compile(r"(KEY|SECRET|TOKEN|PASSWORD|PASSWD|PASS|PEPPER|PRIVATE|CREDENTIAL|DSN|AUTH)", re.I)
+          PLACEHOLDER = re.compile(r"^(changeme|change-me|xxx+|todo|example|placeholder|dummy|test|none|null|your[-_].*|<.*>|\$\{.*\}|\*+)$", re.I)
+          def secret_lines(p):
+              hits = []
+              try:
+                  lines = open(p, errors="replace").read().splitlines()
+              except OSError:
+                  return hits
+              for n, line in enumerate(lines, 1):
+                  m = re.match(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$", line)
+                  if not m or not SECRET_KEY.search(m.group(1)):
+                      continue
+                  v = m.group(2).strip().strip("'\"")
+                  if len(v) < 8 or PLACEHOLDER.match(v) or len(set(v)) == 1:
+                      continue
+                  hits.append(n)
+              return hits
+
+          problems = []
+          for p in present:
+              if is_env_file(p) and not ignored(p):
+                  hits = secret_lines(p)
+                  if hits:
+                      problems.append((p, hits[0], "committed-env-file",
+                                       f"dotenv file with {len(hits)} secret-looking value(s) is committed; secrets belong in the vault, not git"))
+
+          try:
+              results = json.load(open("threatcrush.sarif"))["runs"][0]["results"]
+          except Exception as err:
+              print(f"::error::could not read threatcrush.sarif ({err}); refusing to pass the credential gate")
+              sys.exit(1)
+          prefix = os.environ.get("SCAN_PATH", ".").strip().strip("/")
+          wanted = set(present)
+          for r in results:
+              rule = r.get("ruleId", "")
+              if not rule.startswith("secret-") or r.get("level") != "error":
+                  continue
+              loc = r["locations"][0]["physicalLocation"]
+              uri = loc["artifactLocation"]["uri"]
+              path = os.path.normpath(os.path.join(prefix, uri)) if prefix not in ("", ".") else os.path.normpath(uri)
+              if path in wanted:
+                  problems.append((path, loc.get("region", {}).get("startLine", 1), rule, "credential added by this pull request"))
+
+          if not problems:
+              print(f"No credentials added in {len(present)} changed file(s).")
+              sys.exit(0)
+          for path, line, rule, msg in problems:
+              print(f"::error file={path},line={line},title=ThreatCrush {rule}::{msg}")
+          print(f"::error::{len(problems)} credential finding(s) in files this pull request changes. "
+                "Remove them from the branch AND rotate them: anything pushed to a pull request is already exposed.")
+          sys.exit(1)
+          PY
 
       - name: Build the report
         if: always()
